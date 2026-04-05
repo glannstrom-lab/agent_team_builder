@@ -78,7 +78,10 @@ identifiera. Ett arbetsmoment är något som:
 Arbeta från det specifika till det generella:
 1. Börja med det användaren explicit sa i intake ("återkommande moment"
    och "var det klämmer")
-2. Lägg till moment som är implicita givet bransch och storlek
+2. Lägg till moment som är implicita givet bransch och storlek, men
+   *bara om de rimligen kan hamna över ribban*. Implicita moment som
+   uppenbart inte lämpar sig för AI eller saknar smärta ska inte
+   inkluderas för fullständighetens skull — de är brus.
 3. Var försiktig med steg 2 — implicita moment markeras `[implicit]`
    och viktas lägre
 
@@ -88,7 +91,10 @@ För varje moment, bedöm:
 
 - **Frekvens:** dagligen / flera ggr i veckan / veckovis / månadsvis
 - **Tidsåtgång:** hur stor del av veckan det tar (grov bedömning)
-- **Smärta:** låg / medel / hög — baserat på vad intake sa, inte gissning
+- **Smärta:** låg / medel / hög / okänd — baserat på vad intake sa, inte
+  gissning. Om intake inte tydligt signalerar smärtnivå, markera som
+  `okänd` snarare än att gissa. En synlig `okänd` är ärligare än en
+  "medel" som ser kvalificerad ut men egentligen är skakig.
 - **Felbenägenhet:** låg / medel / hög — gör man ofta fel, missar saker?
 - **Ägare:** vem gör det idag? (en person, delat, oklart)
 - **AI-lämplighet:** hur väl kan en Claude-agent hjälpa till med just
@@ -131,7 +137,10 @@ nyhetsbrev" och "skriver produkttexter" är tre moment men de bildar
 ett naturligt kluster: innehållsproduktion.
 
 Identifiera kluster, men tvinga inte. Om ett moment står ensamt och
-är tillräckligt viktigt — låt det stå ensamt.
+är tillräckligt viktigt — låt det stå ensamt. Slå inte ihop moment
+med olika kontextprofiler i samma kluster om distinktionen är
+meningsfull — ett välavgränsat moment och ett bullrigt moment hör
+sällan hemma i samma agent.
 
 Klustren blir embryon till agenter i proposal-steget, men research
 föreslår inga agenter själv. Research säger "de här momenten hänger
@@ -152,12 +161,13 @@ Det här är kritiskt. Kvalitetschecklistan i CLAUDE.md säger att
 avvisningen börjar här — research måste identifiera moment som
 *inte* lämpar sig, inte bara de som gör det.
 
-### Steg 5: Bryt ner toppklustrena
+### Steg 5: Förbered råmaterial för proposal
+
+Det här steget är inte en analys i sig — det är material som proposal-
+steget behöver för att kunna formulera vad en agent faktiskt ska göra.
 
 För de kluster som prioriterats högst (typiskt de 3–5 översta), bryt
-ner momenten i konkreta delsteg. Det här ger proposal-steget det
-material det behöver för att skriva en agentprompt som faktiskt
-instruerar agenten vad den ska göra.
+ner momenten i konkreta delsteg.
 
 Exempel:
 
@@ -187,6 +197,13 @@ och scaling-steget förlitar sig på den.
 ```markdown
 # Research: [företagsnamn]
 
+## Körningsmetadata
+- **Antal identifierade moment:** X
+- **Över ribban:** X  |  **Under ribban:** X
+- **Källa intervju:** X  |  **Implicita:** X  |  **Hypoteser:** X
+- **Okänd smärta:** X moment
+- **Språk:** <samma som intake>
+
 ## Sammanfattning
 <3–5 meningar: vad verksamheten gör, vad som tar tid, och var
 ett agent-team kan göra mest nytta.>
@@ -197,7 +214,7 @@ ett agent-team kan göra mest nytta.>
 - **Källa:** intervju / implicit / hypotes
 - **Frekvens:** ...
 - **Tidsåtgång:** ...
-- **Smärta:** ...
+- **Smärta:** ... (låg / medel / hög / okänd)
 - **Felbenägenhet:** ...
 - **Ägare:** ...
 - **AI-lämplighet:** hög / medel / låg
@@ -303,11 +320,12 @@ och hur.>
    har 5–8 moment, varav 3 lämpar sig för AI. Det är ett legitimt
    resultat. Pumpa inte upp det för att det känns tunt.
 
-6. **VD-momentet.** Identifiera alltid minst ett moment som handlar
-   om prioritering, riktning eller beslut. Det är VD-agentens
-   bränsle. Om företaget är litet ska det momentet vara operativt
-   ("prioritera veckans tasks") inte abstrakt ("sätta strategisk
-   riktning").
+6. **VD-momentet.** Om intake innehåller indikationer på prioritering,
+   riktning eller beslut — lyft fram dem särskilt, eftersom de motiverar
+   VD-agenten i nästa steg. Om företaget är litet ska sådana moment
+   vara operativa ("prioritera veckans tasks") inte abstrakta ("sätta
+   strategisk riktning"). Om intake *inte* innehåller sådana
+   indikationer, notera det i "Osäkerheter" istället för att hitta på.
 
 7. **Det viktigaste testet.** Om research-outputen för tre olika
    företag ser likadan ut — prompten är trasig. Den ska fånga det
@@ -318,3 +336,11 @@ och hur.>
 8. **Motsägelser flaggas, inte löses.** Om intake-svaren säger emot
    varandra — notera det i "Osäkerheter och motsägelser". Välj inte
    tyst en sida. Proposal-steget tar det vidare till användaren.
+
+9. **Språk följer intake.** Research-outputen skrivs på samma språk
+   som intake — inte översatt, inte blandat. Om intake är på svenska
+   är research på svenska. Om intake är på engelska är research på
+   engelska. Modellen defaultar gärna till engelska i analytiskt läge;
+   den impulsen ska motstås. Kontrollera stavning och grammatik i
+   outputen innan leverans — slarvig output underminerar förtroendet
+   för hela analysen.
