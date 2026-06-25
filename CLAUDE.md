@@ -74,11 +74,45 @@ regeln.
 6. **Editerbar av människa.** All output är markdown tänkt att läsas och
    justeras för hand.
 7. **Idempotent uppdatering.** Att köra igen skrotar aldrig befintligt arbete.
-8. **Noll infrastruktur.** Allt via användarens egen Claude Code.
+8. **Noll infrastruktur i kärnan.** Genereringen sker via användarens egen
+   Claude Code. Det valfria webblagret (se **Webbgränssnitt**) är också nära
+   noll-infra: rena statiska filer, kunden använder sin egen API-nyckel i
+   webbläsaren — ingen server, ingen databas.
 9. **Språk följer input.** Pratar användaren svenska, svarar systemet på
    svenska. Pratar de engelska, engelska. Enkel regel, lätt att glömma.
 10. **(Konsult-läget) Pedagogik är situerad.** Förklara det som händer framför
     kunden, just nu, i deras eget projekt. Inte AI-teori i förskott.
+
+## Webbgränssnitt (valfritt lager ovanpå kärnan)
+
+Tre statiska webbappar + en hub gör verktyget demobart och användbart för
+icke-tekniska kunder. De delar designsystem (`site/showcase.css`) och kör helt
+i webbläsaren — kunden anger sin egen Anthropic-nyckel (lagras lokalt, anropar
+`api.anthropic.com` direkt via `anthropic-dangerous-direct-browser-access`).
+Ingen backend.
+
+- **Hub** (`index.html`) — front-dörr som navigerar till de tre.
+- **Builder** (`builder/`) — bygg ett team live framför en kund. Kör den
+  **riktiga pipelinen** i webbläsaren: hämtar `prompts/shared/research.md`,
+  `scale.md`, `proposal.md` (+ `ai-consultant/first-project.md`) live och kör
+  dem verbatim, steg för steg, plus ett avslutande sammanställningssteg som
+  formaterar förslaget till render-JSON + portal-systemprompter (ändrar inget
+  innehåll). Eftersom den hämtar filerna live följer den alltid de underhållna
+  prompterna — Builder och `/build-team` kan inte glida isär.
+- **Galleri** (`site/`) — `index.html` + sex scroll-stories (en per exempel)
+  som visar hela processen. Säljmaterial. Statiskt, ingen nyckel.
+- **Portal** (`portal/`) — där kunden använder sitt team: chattar med varje
+  agent. Multi-tenant via `?team=<slug>` → `portal/teams/<slug>.js`; utan
+  parameter visas en kundväljare; `?team=__draft` öppnar ett Builder-utkast.
+
+**Kör lokalt:** `python -m http.server 8420` från repo-roten, öppna
+`http://localhost:8420/`. Builder och portal kräver http:// (inte file://),
+och Buildern kräver att `prompts/` serveras.
+
+**Stage 2-krok:** `prompts/shared/generate.md` (steg 7–8) genererar — när man
+kör inifrån detta repo — även en portal-konfig (`templates/shared/portal-team.md`)
+och en galleri-sida (`templates/shared/showcase-page.md`) per körning, så varje
+ny kund dyker upp i både galleri och portal automatiskt.
 
 ## Repo-struktur
 
@@ -87,6 +121,12 @@ regeln.
 ├── CLAUDE.md                       # Den här filen (paraply)
 ├── README.md                       # Kort intro för nya användare
 ├── skills-catalog.md               # Kurerad lista över kända Claude Skills
+│
+├── index.html                      # Webb-hub (Bygg / Galleri / Portal)
+├── builder/                        # Builder-UI: bygg ett team live i webbläsaren
+├── site/                           # Galleri: showcase-sidor + showcase.css
+├── portal/                         # Kundportal: chatta med ett genererat team
+│   └── teams/                      # En <slug>.js per kund + index.js (register)
 │
 ├── docs/                           # Djupare dokumentation per område
 │   ├── team-builder.md             # Team-builder-lägets flöde och regler
@@ -123,6 +163,9 @@ regeln.
 ├── templates/
 │   ├── shared/
 │   │   ├── agent-base.md           # Grundskelett som båda lägena bygger på
+│   │   ├── team-presentation.md    # Fristående HTML-presentation per team
+│   │   ├── portal-team.md          # Genererar portal-konfig (Stage 2-krok)
+│   │   ├── showcase-page.md        # Genererar galleri-sida (Stage 2-krok)
 │   │   └── meetings/
 │   │       ├── project-review.md
 │   │       ├── specific-improvement.md

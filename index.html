@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Agent Team Builder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="site/showcase.css" />
+<style>
+  /* hub-specifik nav ovanpå det delade designsystemet */
+  .hubnav { position: sticky; top: 0; z-index: 50; background: rgba(10,10,15,0.72); backdrop-filter: blur(14px); border-bottom: 1px solid var(--border); }
+  .hubnav .inner { max-width: 1080px; margin: 0 auto; padding: 13px 24px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .hubnav .home { font-weight: 700; font-size: 14px; margin-right: auto; display: flex; align-items: center; gap: 8px; text-decoration: none; }
+  .hubnav a.np { font-size: 13px; color: var(--text-dim); text-decoration: none; padding: 6px 13px; border-radius: 100px; border: 1px solid transparent; transition: color 0.2s, border-color 0.2s, background 0.2s; }
+  .hubnav a.np:hover { color: var(--text); border-color: var(--border); background: var(--surface); }
+  .gcard .gicon.big { font-size: 26px; width: 54px; height: 54px; }
+  .flow { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 44px; counter-reset: step; }
+  @media (max-width: 720px) { .flow { grid-template-columns: 1fr; } }
+  .flow-step { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 24px; position: relative; }
+  .flow-step .n { font-size: 13px; font-weight: 800; color: var(--accent-2); letter-spacing: 0.05em; }
+  .flow-step h4 { font-size: 17px; font-weight: 700; margin: 8px 0 6px; }
+  .flow-step p { font-size: 13.5px; color: var(--text-dim); line-height: 1.55; }
+</style>
+</head>
+<body>
+
+<!-- ===== NAV ===== -->
+<div class="hubnav">
+  <div class="inner">
+    <a class="home" href="./"><span class="dot"></span> Agent Team Builder</a>
+    <a class="np" href="builder/">Bygg</a>
+    <a class="np" href="site/">Galleri</a>
+    <a class="np" href="portal/">Portal</a>
+  </div>
+</div>
+
+<!-- ===== HERO ===== -->
+<section class="hero">
+  <div class="wrap">
+    <div class="badge"><span class="dot"></span> Skräddarsydda AI-team</div>
+    <h1>Bygg, visa och använd<br /><span class="grad">AI-team</span> åt kunder</h1>
+    <p class="sub">Verktyget skapar skräddarsydda team av AI-agenter utifrån vad ett företag faktiskt gör i veckan. Olika input ger meningsfullt olika team. Allt körs i webbläsaren — ingen infrastruktur.</p>
+    <div class="stats">
+      <div class="stat"><div class="num">3</div><div class="lbl">verktyg som hänger ihop</div></div>
+      <div class="stat"><div class="num">6</div><div class="lbl">färdiga exempel-team</div></div>
+      <div class="stat"><div class="num">0</div><div class="lbl">rader infrastruktur</div></div>
+    </div>
+  </div>
+  <div class="scroll-hint">↓</div>
+</section>
+
+<!-- ===== THE THREE TOOLS ===== -->
+<section>
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow"><span class="dot"></span> Tre verktyg</div>
+      <h2 class="section-title">Välj var du vill börja</h2>
+      <p class="section-lead">Bygg ett nytt team framför kunden, visa upp metoden med färdiga exempel, eller låt kunden använda sitt team.</p>
+    </div>
+    <div class="gallery">
+
+      <a class="gcard reveal" href="builder/">
+        <div class="gtop"><div class="gicon big">🛠️</div><div><h3>Bygg ett team</h3><div class="gsub">Builder</div></div></div>
+        <div class="gdesc">Mata in kundens uppgifter och se hela den riktiga pipelinen köra live — research, skalning, förslag — tills teamet växer fram. Öppna det direkt i portalen.</div>
+        <div class="gmeta"><span class="gtag mode">Live-demo</span><span class="gtag">Kräver API-nyckel</span></div>
+        <div class="go">Öppna Builder →</div>
+      </a>
+
+      <a class="gcard reveal d1" href="site/">
+        <div class="gtop"><div class="gicon big">🖼️</div><div><h3>Galleriet</h3><div class="gsub">Showcase</div></div></div>
+        <div class="gdesc">Sex färdiga körningar från solo till enterprise. Klicka på vilken som helst och följ hela processen steg för steg — perfekt för att sälja in metoden.</div>
+        <div class="gmeta"><span class="gtag mode">Säljmaterial</span><span class="gtag">Statiskt · ingen nyckel</span></div>
+        <div class="go">Öppna galleriet →</div>
+      </a>
+
+      <a class="gcard reveal d2" href="portal/">
+        <div class="gtop"><div class="gicon big">💬</div><div><h3>Kundportalen</h3><div class="gsub">Portal</div></div></div>
+        <div class="gdesc">Där kunden faktiskt använder sitt team — chattar med varje agent i ett rent gränssnitt, utan att veta vad Claude Code är. Välj bland alla kunder eller öppna ett färskt utkast.</div>
+        <div class="gmeta"><span class="gtag mode">Produkt</span><span class="gtag">Kräver API-nyckel</span></div>
+        <div class="go">Öppna portalen →</div>
+      </a>
+
+    </div>
+  </div>
+</section>
+
+<!-- ===== HOW IT FITS ===== -->
+<section>
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow"><span class="dot"></span> Så hänger de ihop</div>
+      <h2 class="section-title">Bygg → Visa → Använd</h2>
+    </div>
+    <div class="flow">
+      <div class="flow-step reveal">
+        <div class="n">01 · BYGG</div>
+        <h4>I Buildern</h4>
+        <p>Framför kunden: fyll i deras vardag, kör pipelinen, och teamet ritas upp. Ett klick öppnar det i portalen.</p>
+      </div>
+      <div class="flow-step reveal d1">
+        <div class="n">02 · VISA</div>
+        <h4>I galleriet</h4>
+        <p>Behöver du bevisa metoden först? Visa de färdiga exemplen — tre olika företag, tre olika team, samma motor.</p>
+      </div>
+      <div class="flow-step reveal d2">
+        <div class="n">03 · ANVÄND</div>
+        <h4>I portalen</h4>
+        <p>Kunden loggar in med sin egen nyckel och pratar med sitt team. Inget Claude Code, ingen terminal.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer>
+  <div class="wrap">
+    <div class="built"><span class="dot"></span> Agent Team Builder</div>
+    <div class="fstats">Föredrar du terminalen? Kör <b>/build-team</b> eller <b>/consult</b> i Claude Code för den fullständiga körningen.</div>
+  </div>
+</footer>
+
+<script>
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.reveal').forEach((el) => io.observe(el));
+</script>
+
+</body>
+</html>

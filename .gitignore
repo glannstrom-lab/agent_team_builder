@@ -1,0 +1,9 @@
+# Bygg-output för Cloudflare Pages
+/dist/
+
+# Node
+/node_modules/
+npm-debug.log*
+
+# Wrangler / Cloudflare
+.wrangler/

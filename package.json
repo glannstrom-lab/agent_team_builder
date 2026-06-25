@@ -1,0 +1,13 @@
+{
+  "name": "agent-team-builder-web",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Statiskt webblager (hub/builder/galleri/portal) för Agent Team Builder.",
+  "type": "module",
+  "scripts": {
+    "build": "node build-dist.mjs",
+    "serve": "node build-dist.mjs && npx --yes http-server dist -p 8420 -c-1",
+    "dev": "npx --yes http-server . -p 8420 -c-1",
+    "deploy": "node build-dist.mjs && npx --yes wrangler pages deploy dist --project-name agent-team-builder"
+  }
+}

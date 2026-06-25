@@ -344,3 +344,13 @@ och hur.>
    den impulsen ska motstås. Kontrollera stavning och grammatik i
    outputen innan leverans — slarvig output underminerar förtroendet
    för hela analysen.
+
+10. **Körningsmetadata ska stämma.** Innan du levererar, kontrollera
+    att siffrorna i körningsmetadata matchar resten av dokumentet:
+    - "Över ribban" = antal kluster som *inte* listas under "Under
+      ribban"
+    - "Under ribban" = antal moment/kluster som explicit avvisas
+    - "Över ribban" + "Under ribban" behöver inte summera till
+      totalt antal moment (ett moment kan ingå i ett kluster),
+      men siffrorna ska vara konsistenta med kluster-sektionen.
+    Om de inte stämmer — rätta siffrorna, inte texten.
