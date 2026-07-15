@@ -43,6 +43,13 @@ window.TEAM = {
 }
 ```
 
+**Avatarer:** sätt INGET `avatar`/`avatarN`-fält. Portalen tilldelar varje
+agent ett porträtt automatiskt vid inladdning (delad logik i `avatars.js` —
+stabilt seedat på `company`, kanonisk ordning VD-assistent → VD →
+specialister). `icon`-emojin behålls som fallback om en bild inte kan laddas.
+Sätt bara ett uttryckligt `avatarN` (1–25) om kunden specifikt vill låsa en
+viss face till en viss agent.
+
 ### `system`-promptens struktur
 
 Skriv den **för agenten**, inte för användaren (jfr regel 4 i generate.md).

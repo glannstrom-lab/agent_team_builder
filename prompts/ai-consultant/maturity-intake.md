@@ -125,6 +125,19 @@ Motivering: <varför, baserat på fråga 3>
 
 Visa sammanställningen för kunden och fråga om den ser rätt ut.
 
+### Storleksmappning
+
+Banden matchar `docs/scaling.md` (facit) och builder-formuläret. Mappa på
+antal personer:
+
+| Antal personer | storlek      |
+|----------------|--------------|
+| 1 (solo)       | solo         |
+| 2              | mikro        |
+| 3–10           | litet        |
+| 10–100         | medelstort   |
+| 100+           | stort        |
+
 ## Språk
 
 Hela samtalet sker på kundens språk. Byt aldrig språk.

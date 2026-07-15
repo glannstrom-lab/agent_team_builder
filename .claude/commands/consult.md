@@ -49,12 +49,14 @@ Allt fungerar som i team-builder, men var extra uppmärksam på:
 
 ### Steg 3: Skalning
 
-Läs `prompts/shared/scale.md`.
+Läs `prompts/shared/scale.md` och tillämpa mognadsjusteringen i dess
+steg 2 — det är enda facit. Upprepa **inte** siffrorna här; den tabellen
+äger nybörjare/van/byggare-dämpningen så att consult.md och scale.md
+aldrig kan glida isär.
 
-**Mognadsdämpning gäller:**
-- Nybörjare: max(tabellvärde - 2, 2) — minimum 2, alltid
-- Van: max(tabellvärde - 1, 2)
-- Byggare: tabellvärdet rakt av
+Kom ihåg: mognadstaket är ett **hårt tak**. Klarar research-jämförelsen
+fler kluster än taket tillåter, vinner taket — överskjutande kluster
+skjuts till en framtida version, inte in i ett nybörjarteam.
 
 ### Steg 4: Första-projekt-identifiering
 

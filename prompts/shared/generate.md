@@ -124,9 +124,11 @@ till en rad i `portal/teams/index.js` (idempotent — uppdatera om slug finns).
 
 Läs `templates/shared/showcase-page.md`. Skapa `site/<slug>.html` — en
 scroll-story som visar hela processen (intake → research → skalning →
-[första projekt] → team) med `showcase.css`. Använd `site/bonusloots.html`
-som strukturell mall. Lägg till ett galleri-kort i `site/index.html`
-(idempotent) och uppdatera hero-siffrorna där.
+[första projekt] → team) med `showcase.css`. Använd `site/coachonline.html`
+som strukturell mall. Sätt `<body data-team="<Företagsnamn>">` och inkludera
+avatar-skripten (`../avatars.js` + `gallery.js`) sist i `<body>` så
+agentkorten får porträtt automatiskt (se showcase-page.md). Lägg till ett
+galleri-kort i `site/index.html` (idempotent) och uppdatera hero-siffrorna där.
 
 Sidans "Prova teamet live"-knapp länkar till `../portal/?team=<slug>`, så
 showcase och portal pekar på samma kund.

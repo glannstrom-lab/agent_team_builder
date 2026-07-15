@@ -21,8 +21,23 @@ första-projekt-briefen). Inget fabricerat.
 
 Länka det delade arket: `<link rel="stylesheet" href="showcase.css" />`.
 **Hitta inte på nya CSS-klasser** — använd bara de som finns i `site/showcase.css`.
-Använd `site/bonusloots.html` som strukturell referensmall (kopiera dess
+Använd `site/coachonline.html` som strukturell referensmall (kopiera dess
 sektionsordning, klasser, stepnav och `reveal`-script rakt av).
+
+**Avatarer (porträtt på agentkorten + org-noderna):** sätt företagsnamnet som
+seed på body-taggen — `<body data-team="<Företagsnamn>">` (exakt samma sträng
+som `company` i portal-konfigurationen, så galleri och portal visar samma
+faces) — och inkludera de två avatar-skripten sist i `<body>`, efter
+`reveal`-scriptet:
+
+```html
+<script src="../avatars.js"></script>
+<script src="gallery.js"></script>
+```
+
+`gallery.js` byter automatiskt ut emoji-ikonerna i `.card .icon` och `.org
+.node` mot porträtt. Behåll emojin i HTML:en som fallback — skriv ikonerna
+precis som vanligt; scriptet sköter resten.
 
 ## Sektioner (i ordning)
 
@@ -36,7 +51,7 @@ sektionsordning, klasser, stepnav och `reveal`-script rakt av).
 8. **Avvisade** — `.rejected-grid` med `.rej` per avvisat moment och motivering.
 9. **Möten** — `.meet-grid` med tre `.meet`.
 10. **`footer`** — `.built`, `.fstats`, en `.try-live`-knapp `href="../portal/?team=<slug>"` (texten "💬 Prova teamet live →"), och `.backlink` till `index.html`. Läge B: lägg `.hyp-warn` före knappen.
-11. **`<script>`** — samma IntersectionObserver som i bonusloots.html (lägger `.in` på `.reveal`-element).
+11. **`<script>`** — samma IntersectionObserver som i coachonline.html (lägger `.in` på `.reveal`-element).
 
 Ikoner: VD ⚡, VD-assistent 🧭, domän-emoji för specialister.
 

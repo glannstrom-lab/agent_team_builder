@@ -112,8 +112,10 @@ Lika viktigt som förslagna agenter. Lista varje kluster/moment som
 frekvens för liten, redan hanteras av annan agent, etc.]
 ```
 
-Minst en avvisning i en typisk körning. Om inget avvisas — ifrågasätt
-om du har sänkt ribban.
+Minst en avvisning i en typisk körning. Minst en av dem ska vara en
+kandidat som var *seriöst påtänkt som egen agent* men föll på skalning
+eller överlapp — inte bara ett research-moment under ribban. Om inget
+avvisas — ifrågasätt om du har sänkt ribban.
 
 ## Osäkerheter från research
 
@@ -155,3 +157,11 @@ här med en kort rekommendation:
 
 7. **Språk följer research.** Om research är på svenska, är
    förslaget på svenska.
+
+8. **Divergens-självtest (obligatoriskt sista steg).** Innan du lämnar
+   förslaget: skulle exakt den här agentuppsättningen kunna klistras in
+   hos ett annat företag i samma bransch och fortfarande passa? Om ja —
+   den är för generisk. Knyt varje agent hårdare till ett konkret fynd ur
+   *denna* intake/research, eller stryk den. Output ska vara omöjlig att
+   förväxla med ett annat företags team. Det här är projektets viktigaste
+   regel: ser output likadan ut oavsett input är förslaget trasigt.
