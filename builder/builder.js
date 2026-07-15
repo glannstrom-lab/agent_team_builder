@@ -24,7 +24,8 @@ const PORTAL_RULES = `Bygg varje agents "system" som en komplett systemprompt SK
 3. (Bara VD-assistenten) DITT TEAM — lista övriga agenter och vad de gör, så den kan hänvisa rätt.
 4. ARBETSSÄTT — be om data agenten saknar istället för att gissa.
 5. TON — kort; nybörjarkund → pedagogisk/klarspråk, van/byggare → rakare. Avsluta med "Svara på <språk>."
-6. VIKTIGT — vad agenten INTE gör (proposalens "Rör inte"); slutbeslut/juridik ligger hos människan.`;
+6. VIKTIGT — vad agenten INTE gör (proposalens "Rör inte"); slutbeslut/juridik ligger hos människan.
+7. STARTERS — per agent: 2–4 korta exempeluppgifter i du-form ("Skriv ett utkast till …", "Gå igenom …"), hämtade ur agentens kapaciteter och kundens veckomoment. De blir klickbara startförslag i portalen — konkreta nog att skicka direkt.`;
 
 const PROMPTS = {}; // cache av hämtade prompt-filer
 const state = {
@@ -165,9 +166,16 @@ function renderForm() {
   modelSel.onchange = () => { state.model = modelSel.value; localStorage.setItem(MODEL_STORAGE, modelSel.value); };
   form.appendChild(fieldRow("Modell", modelSel));
 
-  const ta = el("textarea", "intake-text"); ta.name = "brief"; ta.id = "f-brief"; ta.rows = 8;
-  ta.placeholder = "Beskriv kunden fritt:\n• Vad gör företaget?\n• Vilka 3 moment återkommer mest i veckan och tar mest tid?\n• Var klämmer skon — vad är frustrerande?\n• Vilka verktyg/system används redan?";
-  form.appendChild(fieldRow("Om kunden", ta));
+  // Strukturerat frågeformulär istället för en tom textruta — kunden vet vad
+  // den ska svara på, och research-steget får jämnt råmaterial i exakt det
+  // format intake-kontraktet (prompts/shared/research.md) kräver.
+  const taEl = (name, rows, ph) => { const t = el("textarea", "intake-text"); t.name = name; t.id = "f-" + name; t.rows = rows; t.placeholder = ph || ""; return t; };
+  form.appendChild(fieldRow("Vad gör företaget?", taEl("what", 2, "1–2 meningar. T.ex: Livs- och karriärcoach som säljer 1-on-1-sessioner online.")));
+  form.appendChild(fieldRow("Veckans återkommande moment — vad tar mest tid?", taEl("moments", 4, "De 2–4 moment som återkommer varje vecka, gärna med ungefärlig tid.\nT.ex: 1) Nyhetsbrev och blogg, 5–7 h. 2) Svara på inkommande leads (mail, DM).")));
+  form.appendChild(fieldRow("Var klämmer skon?", taEl("pains", 2, "Det som är frustrerande eller blir liggande. Valfritt men gör analysen skarpare.")));
+  form.appendChild(fieldRow("Program & system ni använder dagligen", inputEl("tools", "tools", "T.ex. Fortnox, Outlook, Shopify, Google Kalender")));
+  form.appendChild(fieldRow("Vad ska AI-teamet uppnå?", inputEl("goals", "goals", "T.ex. frigöra 5 h/vecka från admin till betalt arbete")));
+  form.appendChild(fieldRow("Något AI inte ska röra?", inputEl("nogo", "nogo", "T.ex. kundsamtalen, prissättningen. Lämna tomt om inget.")));
 
   const err = el("div", "fin-err"); err.id = "form-err"; err.style.display = "none";
   form.appendChild(err);
@@ -177,11 +185,15 @@ function renderForm() {
   form.onsubmit = (e) => {
     e.preventDefault();
     const intake = collect(form);
-    if (!intake.company || !intake.brief || intake.brief.trim().length < 20) {
-      err.textContent = "Fyll i företag och en beskrivning på minst ett par meningar."; err.style.display = "block";
-      return;
+    if (!intake.company || !intake.what || intake.what.trim().length < 10) {
+      err.textContent = "Fyll i företag och vad företaget gör (minst en mening)."; err.style.display = "block"; return;
     }
-    runBuild(intake);
+    if (!intake.moments || intake.moments.trim().length < 20) {
+      err.textContent = "Veckans moment är det viktigaste fältet — beskriv minst ett par moment."; err.style.display = "block"; return;
+    }
+    err.style.display = "none";
+    if (state.demo) runBuild(intake);
+    else clarifyThenBuild(intake, form, btn); // 1–2 AI-följdfrågor innan pipelinen
   };
   wrap.appendChild(form);
 
@@ -196,7 +208,9 @@ function renderForm() {
 function prefillDemo() {
   const d = (window.BUILDER_DEMO || {}).intake || {};
   const set = (id, v) => { const e = $("#f-" + id); if (e && v != null) e.value = v; };
-  set("company", d.company); set("size", d.size); set("brief", d.brief);
+  set("company", d.company); set("size", d.size);
+  set("what", d.what); set("moments", d.moments); set("pains", d.pains);
+  set("tools", d.tools); set("goals", d.goals); set("nogo", d.nogo);
   const mode = $("#f-mode");
   if (mode && d.mode) { mode.value = d.mode; mode.dispatchEvent(new Event("change")); }
   if (d.maturity) set("maturity", d.maturity);
@@ -213,7 +227,10 @@ function selectEl(name, id, opts) { const s = el("select", "fin"); s.name = name
 function collect(form) { const d = Object.fromEntries(new FormData(form).entries()); if (d.mode !== "ai-consultant") delete d.maturity; return d; }
 
 // ---------- intake block ----------
+// Mappar formuläret till intake-kontraktet i prompts/shared/research.md —
+// samma sektioner (inkl. ## Avgränsningar) som intervju-prompterna levererar.
 function buildIntakeBlock(intake) {
+  const val = (v, alt) => (v && v.trim() ? v.trim() : alt);
   return [
     "```",
     `företagsnamn:   ${intake.company}`,
@@ -223,10 +240,79 @@ function buildIntakeBlock(intake) {
     intake.maturity ? `ai_mognad:      ${intake.maturity}` : null,
     `källa:          intervju`,
     "",
-    "## Beskrivning från intake",
-    intake.brief.trim(),
+    "## Vad företaget gör",
+    val(intake.what, "(saknas)"),
+    "",
+    "## Återkommande moment",
+    val(intake.moments, "(saknas)"),
+    "",
+    "## Var det klämmer",
+    val(intake.pains, "Framgår inte uttryckligen — härled försiktigt ur momenten."),
+    "",
+    "## Befintliga verktyg och vanor",
+    val(intake.tools, "Okänt."),
+    "",
+    "## Mål och ambition",
+    val(intake.goals, "Frigöra tid från de mest återkommande momenten."),
+    "",
+    "## Avgränsningar",
+    val(intake.nogo, "Inga uttryckliga avgränsningar."),
+    intake.extra ? "\n## Kompletterande svar (följdfrågor)\n" + intake.extra : null,
     "```",
   ].filter((x) => x !== null).join("\n");
+}
+
+// ---------- följdfrågor (hybrid-intake) ----------
+// Formulär först, sedan max två AI-följdfrågor på det som stack ut — så
+// tappas inte djupet från fri intervju. Frågorna är nice-to-have: vid fel
+// eller "OK" startar pipelinen direkt.
+const CLARIFY_PROMPT = `Du granskar ett intake-underlag för att bygga ett AI-agentteam.
+Bedöm om research-steget kan arbeta med det: konkreta veckomoment (helst med tidsangivelse), begriplig verksamhet, någon bild av verktyg.
+Svara EXAKT "OK" om underlaget räcker.
+Annars: ställ 1–2 korta följdfrågor som skulle göra störst skillnad — en per rad, varje rad börjar med "- ". Fråga bara om sådant som inte redan står i underlaget. Inga andra ord, ingen inledning.`;
+
+async function clarifyThenBuild(intake, form, btn) {
+  if (state.busy) return;
+  const orig = btn.textContent;
+  btn.disabled = true; btn.textContent = "Läser dina svar…";
+  let out = "OK";
+  try {
+    out = (await window.ATBClaude.collect({
+      apiKey: state.apiKey, model: state.model,
+      system: CLARIFY_PROMPT,
+      messages: [{ role: "user", content: buildIntakeBlock(intake) }],
+      maxTokens: 300,
+    })).trim();
+  } catch (_) { /* följdfrågor är nice-to-have — fortsätt utan */ }
+  btn.disabled = false; btn.textContent = orig;
+  const qs = /^ok\b/i.test(out) ? [] : out.split("\n").map((s) => s.replace(/^[-•\d.)\s]+/, "").trim()).filter(Boolean).slice(0, 2);
+  if (!qs.length) { runBuild(intake); return; }
+  renderClarify(form, intake, qs);
+}
+
+function renderClarify(form, intake, qs) {
+  form.querySelector(".clarify-box")?.remove();
+  const box = el("div", "clarify-box");
+  box.appendChild(el("div", "clarify-title", "Snabba följdfrågor — svaren gör analysen skarpare"));
+  const inputs = qs.map((q) => {
+    const r = el("div", "frow");
+    r.appendChild(el("label", "flabel", q));
+    const t = el("textarea", "intake-text"); t.rows = 2;
+    r.appendChild(t); box.appendChild(r);
+    return { q, t };
+  });
+  const row = el("div", "clarify-actions");
+  const go = el("button", "btn-primary", "Fortsätt — bygg teamet"); go.type = "button";
+  go.onclick = () => {
+    const extra = inputs.map(({ q, t }) => `**${q}**\n${t.value.trim() || "(inget svar)"}`).join("\n\n");
+    runBuild(Object.assign({}, intake, { extra }));
+  };
+  const skip = el("button", "link-btn", "Hoppa över och bygg direkt"); skip.type = "button";
+  skip.onclick = () => runBuild(intake);
+  row.append(go, skip); box.appendChild(row);
+  form.appendChild(box);
+  box.scrollIntoView({ behavior: "smooth", block: "center" });
+  inputs[0]?.t.focus();
 }
 
 // ---------- pipeline ----------
@@ -294,7 +380,8 @@ async function structureTeam(intake, r) {
   "rejected": [{ "name": string, "why": string }],
   "agents": [{
     "id": string, "name": string, "icon": string, "role": string, "tagline": string,
-    "always": boolean, "job": string, "capabilities": [string], "triggers": [string], "system": string
+    "always": boolean, "job": string, "capabilities": [string], "triggers": [string],
+    "starters": [string], "system": string
   }]
 }`;
   const sys = `Du sammanställer ett redan färdigt agent-team till strukturerad JSON för rendering och för en kundportal.
@@ -536,8 +623,11 @@ function agentCard(a) {
 }
 
 function stripTeam(team) {
+  // job/capabilities/starters följer med till portalen — de driver agentkortet
+  // ("det här kan jag hjälpa dig med" + klickbara exempeluppgifter).
   return { company: team.company, tagline: team.tagline, language: "sv", defaultModel: state.model, entryAgent: team.entryAgent,
-    agents: team.agents.map((a) => ({ id: a.id, name: a.name, icon: a.icon, avatarN: a.avatarN, role: a.role, tagline: a.tagline, always: !!a.always, system: a.system })) };
+    agents: team.agents.map((a) => ({ id: a.id, name: a.name, icon: a.icon, avatarN: a.avatarN, role: a.role, tagline: a.tagline, always: !!a.always,
+      job: a.job, capabilities: a.capabilities, starters: a.starters, system: a.system })) };
 }
 function downloadConfig(team) {
   const js = "// Genererad av Builder. Lägg i portal/teams/ och registrera i index.js.\nwindow.TEAM = " + JSON.stringify(stripTeam(team), null, 2) + ";\n";

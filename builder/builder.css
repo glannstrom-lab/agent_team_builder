@@ -103,3 +103,14 @@ select.fin { cursor: pointer; }
 .fin-err { color: var(--red); font-size: 13.5px; background: rgba(248,113,113,0.08); border: 1px solid rgba(248,113,113,0.3); border-radius: 10px; padding: 10px 14px; }
 .prog-cancel { margin-top: 22px; }
 .btn-ghost:disabled { opacity: 0.5; cursor: default; transform: none; }
+
+/* ---------- följdfrågor (hybrid-intake) ---------- */
+.clarify-box {
+  margin-top: 18px; padding: 18px; border-radius: 14px;
+  background: var(--surface); border: 1px solid var(--accent);
+  display: flex; flex-direction: column; gap: 12px;
+  animation: clarifyIn 0.25s ease;
+}
+@keyframes clarifyIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.clarify-title { font-weight: 700; font-size: 14px; color: var(--accent-2); }
+.clarify-actions { display: flex; align-items: center; gap: 16px; }

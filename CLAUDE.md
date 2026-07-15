@@ -101,15 +101,23 @@ Demolägen (`?demo=1`) låter både portal och builder visas helt utan nyckel.
   `scale.md`, `proposal.md` (+ `ai-consultant/first-project.md`) live och kör
   dem verbatim, steg för steg, plus ett avslutande sammanställningssteg som
   formaterar förslaget till render-JSON + portal-systemprompter (ändrar inget
-  innehåll). Eftersom den hämtar filerna live följer den alltid de underhållna
-  prompterna — Builder och `/build-team` kan inte glida isär.
+  innehåll). Intaget är ett strukturerat frågeformulär (mappar till
+  intake-kontraktet i `research.md`, inkl. Avgränsningar) följt av max två
+  AI-följdfrågor — hybrid av formulär och intervju. Eftersom den hämtar
+  filerna live följer den alltid de underhållna prompterna — Builder och
+  `/build-team` kan inte glida isär.
 - **Galleri** (`site/`) — `index.html` + scroll-stories (fem i dagsläget;
   täcker inte alla `examples/` — team-builder-exemplen lerverk/
   norrskenspodden/wikander saknar sidor än) som visar hela processen.
   Säljmaterial. Statiskt, ingen nyckel.
-- **Portal** (`portal/`) — där kunden använder sitt team: chattar med varje
-  agent. Multi-tenant via `?team=<slug>` → `portal/teams/<slug>.js`; utan
-  parameter visas en kundväljare; `?team=__draft` öppnar ett Builder-utkast.
+- **Portal** (`portal/`) — där kunden använder sitt team: arbetsyta med
+  agentkort ("det här kan jag hjälpa dig med" + klickbara startförslag,
+  `starters` i teamkonfigen), markdown-renderade svar, persistent
+  chatthistorik per team (localStorage, "Rensa samtal"/"Töm allt"),
+  stoppknapp för strömning. Multi-tenant via `?team=<slug>` →
+  `portal/teams/<slug>.js`; utan parameter visas en kundväljare;
+  `?team=__draft` öppnar ett Builder-utkast, `?team=__vertical` en
+  branschdemo (egen localStorage-nyckel — kan inte skriva över utkast).
   Installerbar **PWA** (`manifest.webmanifest`, `sw.js`).
 - **Branscher** (`verticals/`) — datadrivna branschlandningssidor
   (`?v=<slug>` från `verticals.js`); varje bransch har en live-demo utan nyckel.

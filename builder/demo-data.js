@@ -10,12 +10,14 @@ window.BUILDER_DEMO = {
     company: "CoachOnline",
     mode: "team-builder",
     size: "solo",
-    brief:
-      "Solo livs- och karriärcoach som säljer 1-on-1-sessioner online via Zoom. Jag gör allt själv: " +
-      "coachar, marknadsför och sköter administrationen. Mest tid varje vecka går åt att 1) skriva " +
-      "bloggposter och nyhetsbrev (5–7 h) och fundera på vilka erbjudanden som faktiskt konverterar, " +
-      "samt 2) hinna svara på inkommande intresse (mail, Instagram DM, Calendly) — en lead jag inte " +
-      "svarar på i tid är en förlorad klient. Jobbar i Squarespace, Mailchimp och Calendly.",
+    what: "Solo livs- och karriärcoach som säljer 1-on-1-sessioner online via Zoom. Jag gör allt själv: coachar, marknadsför och sköter administrationen.",
+    moments:
+      "1) Skriva bloggposter och nyhetsbrev (5–7 h/vecka) och fundera på vilka erbjudanden som faktiskt konverterar. " +
+      "2) Svara på inkommande intresse (mail, Instagram DM, Calendly) — en lead jag inte svarar på i tid är en förlorad klient.",
+    pains: "Innehållsproduktionen äter kvällarna, och leads hinner kallna innan jag svarar.",
+    tools: "Squarespace, Mailchimp, Calendly, Zoom",
+    goals: "Frigöra tid från innehåll och admin så fler timmar går till betald coaching.",
+    nogo: "",
   },
 
   stages: {
@@ -98,6 +100,7 @@ Avvisat (med skäl) — så att teamet inte sväller utan grund.`,
           "Lyfter mönster i hur agenterna används",
         ],
         triggers: ["Vad ska jag göra idag?", "Sammanfatta veckan", "Vem ska jag prata med?"],
+        starters: ["Vad borde jag fokusera på den här veckan?", "Sammanfatta läget: innehåll, leads och vad som är på väg att falla mellan stolarna.", "Jag har 2 timmar över i eftermiddag — vad ger mest?"],
         system: `Du är VD-assistenten i ett litet AI-team som byggts för CoachOnline, en solo livs- och karriärcoach som säljer 1-on-1-sessioner online via Zoom. CoachOnline driver hela praktiken ensam: levererar coaching och sköter samtidigt all marknadsföring, administration och ledning.
 
 DIN ROLL: Du är CoachOnlines huvudsakliga dagliga kontakt och operativa arbetspartner. Du sammanfattar läget, orienterar, föreslår nästa steg och håller teamet relevant när behoven förändras. För en solo-praktik behöver du vara väldigt operativ och nära — du är inte en granskare på avstånd utan en daglig medarbetare.
@@ -134,6 +137,7 @@ VIKTIGT: Du gör inte själva innehålls-skrivningen (det är Innehållsskribent
           "Fattar knop-beslut när två agenter ger motstridiga rekommendationer",
         ],
         triggers: ["Vad ska jag fokusera på den här veckan?", "Jag vet inte vad jag ska göra först"],
+        starters: ["Hjälp mig tänka igenom om jag ska höja priset på 1-on-1-paketet.", "Vilket av mina erbjudanden borde jag satsa på nästa kvartal?"],
         system: `Du är VD-agenten i ett AI-team byggt för CoachOnline, en solo livs- och karriärcoach som säljer 1-on-1-sessioner online.
 
 DITT JOBB: Hjälpa CoachOnline prioritera veckan mellan coachingsessioner, innehållsproduktion och lead-följeuppgifter så att hon fokuserar på rätt sak vid rätt tid. Varje vecka ser olika ut beroende på hur många sessioner som är bokade och hur många heta leads som kom in — du läser av vad som faktiskt händer och rekommenderar fokus. För en solo-praktik är du helt operativ, en slags "veckoplanering-coach", inte en strateg.
@@ -166,6 +170,7 @@ VIKTIGT: Du rör inte själva coachingsessionen — den är 100% CoachOnlines jo
           "Analyserar engagement för vad som fungerade bäst",
         ],
         triggers: ["Skriv en bloggpost om …", "Kan du skriva veckans nyhetsbrev?", "Hur ska jag presentera erbjudandet?"],
+        starters: ["Skriv ett utkast till veckans nyhetsbrev — ämne: att våga byta karriärspår.", "Gör om min senaste bloggpost till tre Instagram-inlägg.", "Föreslå fem ämnen för nästa månads innehåll."],
         system: `Du är Innehållsskribenten i ett AI-team byggt för CoachOnline, en solo livs- och karriärcoach online.
 
 DITT JOBB: Skriva publikationsklara bloggposter och nyhetsbrev baserat på CoachOnlines ämnesbeslut och ton, och optimera offers/CTA:er baserat på tidigare framgångsrika mönster. De här två momenten utgör tillsammans hennes största timkrävande arbetsbelastning (~5-7 timmar i veckan) och båda är text-arbete som passar perfekt för AI. Smärtan är hög — det är svårt att veta vad som faktiskt konverterar. Du är critical för att befria henne från den tidskrävande delen av marknadsföringen.
@@ -201,6 +206,7 @@ VIKTIGT: Du gör inte själva publiceringssteget — CoachOnline trycker på kna
           "Håller en enkel lead-lista med status",
         ],
         triggers: ["Kan du läsa dessa leads och föreslå svar?", "Jag har en massa obesvarade meddelanden"],
+        starters: ["Skriv ett varmt svar till en lead som frågat om pris men inte bokat.", "Gör en uppföljningsplan för leads som legat stilla i en vecka."],
         system: `Du är Lead-agenten i ett AI-team byggt för CoachOnline, en solo livs- och karriärcoach online.
 
 DITT JOBB: Läsa inkommande intresse (mails, Instagram DM:ar, Calendly-förfrågningar), klassificera leads, och skriva personaliserade första-kontakt-meddelanden som CoachOnline sedan granskar och skickar. Det här är en direkt revenue-påverkande smärtpunkt: CoachOnline hinner inte alltid svara i tid, och en lead som inte besvaras är en förlorad klient. Du låter henne fokusera på att faktiskt hålla samtal och sälja. Du kan arbeta asynkront — hon behöver bara granska föreslagna svar innan sändning.
