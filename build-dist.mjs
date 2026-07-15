@@ -1,15 +1,32 @@
 // Samlar webb-delarna i dist/ för Cloudflare Pages.
 // Tar med det som behövs publikt: hub, de fyra apparna (builder/site/portal/
-// verticals), prompts/ (Buildern hämtar dem live), functions/ (Pages Functions
-// måste ligga i deploy-katalogens rot), _headers (CSP m.m.). Lämnar templates/,
-// examples/, docs/, migrations/, .claude/, testoutput/, .git m.m. utanför.
+// verticals), exakt de prompt-filer Buildern hämtar live, och _headers (CSP).
+// OBS: functions/ ska INTE med i dist/ — Cloudflare hämtar Pages Functions
+// från repo-roten (cwd vid `wrangler pages deploy`), och att kopiera in dem
+// i dist/ publicerar API-källkoden som statiska filer.
+// Lämnar templates/, examples/, docs/, migrations/, .claude/, testoutput/ utanför.
 import { rmSync, mkdirSync, cpSync } from "node:fs";
+import { dirname } from "node:path";
 
-const ITEMS = ["index.html", "avatars.js", "atb-claude.js", "builder", "site", "portal", "prompts", "verticals", "functions", "_headers"];
+const ITEMS = ["index.html", "avatars.js", "atb-claude.js", "builder", "site", "portal", "verticals", "_headers"];
+
+// Buildern kör exakt dessa filer verbatim (builder/builder.js). Resten av
+// prompts/ — intake, pedagogik, generate, handoff — är konsult-IP och
+// publiceras inte på den publika sajten.
+const PROMPT_FILES = [
+  "prompts/shared/research.md",
+  "prompts/shared/scale.md",
+  "prompts/shared/proposal.md",
+  "prompts/ai-consultant/first-project.md",
+];
 
 rmSync("dist", { recursive: true, force: true });
 mkdirSync("dist");
 for (const item of ITEMS) {
   cpSync(item, `dist/${item}`, { recursive: true });
 }
-console.log("dist/ byggd med:", ITEMS.join(", "));
+for (const f of PROMPT_FILES) {
+  mkdirSync(dirname(`dist/${f}`), { recursive: true });
+  cpSync(f, `dist/${f}`);
+}
+console.log("dist/ byggd med:", ITEMS.join(", "), "+ " + PROMPT_FILES.length + " prompt-filer");

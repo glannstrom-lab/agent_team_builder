@@ -126,7 +126,13 @@ function renderKeySetup() {
   help.innerHTML = 'Skapa en nyckel på <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noreferrer">console.anthropic.com</a>.';
   wrap.appendChild(help);
   const demoBtn = el("button", "demo-link", "Eller utforska i demoläge utan nyckel →");
-  demoBtn.onclick = () => { state.demo = true; renderForm(); };
+  demoBtn.onclick = () => {
+    state.demo = true;
+    // Spegla till URL:en så demoläget överlever F5 (samma symmetri som connectKey).
+    const params = new URLSearchParams(location.search);
+    if (params.get("demo") !== "1") { params.set("demo", "1"); history.replaceState(null, "", location.pathname + "?" + params.toString()); }
+    renderForm();
+  };
   wrap.appendChild(demoBtn);
   root.appendChild(wrap); setTimeout(() => input.focus(), 50);
 }
@@ -365,8 +371,12 @@ async function retryStructure() {
 // kördes live — samma progress-vy, men inget API anropas.
 async function runDemoBuild(intake) {
   if (state.busy) return;
-  state.busy = true;
   const demo = window.BUILDER_DEMO;
+  if (!demo || !demo.stages || !demo.team) {
+    renderError("Demodatan kunde inte laddas (demo-data.js saknas). Ladda om sidan och försök igen.", false);
+    return;
+  }
+  state.busy = true;
   const stages = [
     { key: "research", label: "Research — analyserar arbetsmoment", text: demo.stages.research },
     { key: "scale", label: "Skalning — väljer antal agenter", text: demo.stages.scaling },

@@ -42,6 +42,19 @@ const el = (tag, cls, txt) => {
 };
 const agentById = (id) => team.agents.find((a) => a.id === id);
 const getSlug = () => new URLSearchParams(location.search).get("team");
+// Behåll demo=1 i alla interna länkar — annars dumpas en demo-besökare på
+// nyckelskärmen vid första klicket (kundväljarkort, brand, mobilmeny).
+const withDemo = (url) => (state.demo ? url + (url.includes("?") ? "&" : "?") + "demo=1" : url);
+// Gör demoläget beständigt över sidladdningar (F5, delning) genom att
+// spegla state.demo till URL:en — samma symmetri som connectKey städar bort den.
+function enterDemo() {
+  state.demo = true;
+  const params = new URLSearchParams(location.search);
+  if (params.get("demo") !== "1") {
+    params.set("demo", "1");
+    history.replaceState(null, "", location.pathname + "?" + params.toString());
+  }
+}
 
 // ---------- avatarer ----------
 // Tilldelningslogiken är delad (../avatars.js → window.ATBAvatars) så att
@@ -95,10 +108,17 @@ function loadScript(src) {
 async function loadTeam(slug) {
   window.TEAM = null;
   if (!/^[A-Za-z0-9_-]{1,64}$/.test(slug || "")) throw new Error("Ogiltig team-länk.");
-  if (slug === "__draft") {
-    const raw = localStorage.getItem("atb_draft_team");
+  if (slug === "__draft" || slug === "__vertical") {
+    // __draft = utkast från Builder; __vertical = branschsidornas demo-team.
+    // Separata nycklar så en branschdemo aldrig skriver över ett Builder-bygge.
+    const storageKey = slug === "__vertical" ? "atb_vertical_demo_team" : "atb_draft_team";
+    const raw = localStorage.getItem(storageKey);
     if (!raw) throw new Error("Inget team-utkast hittades. Bygg ett i Builder först.");
-    window.TEAM = JSON.parse(raw);
+    try {
+      window.TEAM = JSON.parse(raw);
+    } catch (_) {
+      throw new Error("Utkastet i webbläsaren är skadat — bygg ett nytt i Builder.");
+    }
   } else {
     try {
       await loadScript(`teams/${slug}.js`);
@@ -108,7 +128,7 @@ async function loadTeam(slug) {
       // sväljs så att vi faller igenom till "Hittade inget team"-meddelandet.
       const res = await window.ATBClaude.fetchWithTimeout(`/api/teams/${encodeURIComponent(slug)}`)
         .catch((e) => { console.warn("Moln-team kunde inte hämtas:", slug, e && e.message); return null; });
-      if (res && res.ok) window.TEAM = await res.json();
+      if (res && res.ok) window.TEAM = await res.json().catch(() => null);
     }
   }
   if (!window.TEAM) throw new Error("Hittade inget team med den länken — kontrollera att den är komplett.");
@@ -177,7 +197,7 @@ function renderKeySetup() {
   wrap.appendChild(help);
 
   const demoBtn = el("button", "demo-link", "Eller utforska i demoläge utan nyckel →");
-  demoBtn.onclick = () => { state.demo = true; boot(); };
+  demoBtn.onclick = () => { enterDemo(); boot(); };
   wrap.appendChild(demoBtn);
 
   root.appendChild(wrap);
@@ -217,7 +237,7 @@ function renderPicker(errMsg) {
     const grid = el("div", "picker-grid");
     teams.forEach((t) => {
       const card = el("a", "pcard");
-      card.href = `?team=${t.slug}`;
+      card.href = withDemo(`?team=${t.slug}`);
       card.title = t.tagline || t.company;
       card.appendChild(el("span", "pcard-icon", t.icon || "•"));
       const m = el("span", "pcard-meta");
@@ -260,7 +280,7 @@ function renderSidebar() {
   const side = el("aside", "sidebar");
 
   const brand = el("a", "brand");
-  brand.href = "./";
+  brand.href = withDemo("./");
   brand.title = "Till kundväljaren";
   brand.appendChild(el("div", "brand-dot"));
   const bt = el("div");
@@ -312,14 +332,14 @@ function renderMain() {
 
   // mobil-rad (visas < 720px när sidebaren är gömd)
   const mbar = el("div", "mobile-bar");
-  const mhome = el("a", "mb-home", "☰"); mhome.href = "./"; mhome.title = "Byt team";
+  const mhome = el("a", "mb-home", "☰"); mhome.href = withDemo("./"); mhome.title = "Byt team";
   mbar.appendChild(mhome);
   const msel = el("select", "mb-agent"); msel.id = "mb-agent";
   msel.setAttribute("aria-label", "Välj agent");
   team.agents.forEach((a) => { const o = el("option", null, `${a.icon} ${a.name}`); o.value = a.id; msel.appendChild(o); });
   msel.onchange = () => selectAgent(msel.value);
   mbar.appendChild(msel);
-  const mreset = el("button", "mb-reset", state.demo ? "Nyckel" : "Nyckel");
+  const mreset = el("button", "mb-reset", state.demo ? "Anslut" : "Nyckel");
   mreset.onclick = state.demo ? connectKey : resetKey;
   mbar.appendChild(mreset);
 
@@ -434,6 +454,9 @@ async function sendMessage() {
   let acc = "";
   const onDelta = (delta) => {
     acc += delta;
+    // Bubblan kan ha kopplats loss om användaren byter agent under strömningen
+    // (renderLog tömmer loggen) — skriv bara om den fortfarande sitter i DOM:en.
+    if (!assistantBubble.isConnected) return;
     assistantBubble.classList.remove("typing");
     assistantBubble.textContent = acc;
     log.scrollTop = log.scrollHeight;
@@ -442,11 +465,19 @@ async function sendMessage() {
     if (state.demo) await streamDemo(agent, state.history[agentId], onDelta);
     else await streamClaude(agent.system, state.history[agentId], onDelta);
     state.history[agentId].push({ role: "assistant", content: acc });
+    // Klickade användaren runt under strömningen är bubblan detachad —
+    // rita om loggen från historiken så svaret aldrig blir osynligt.
+    if (state.activeAgentId === agentId && !assistantBubble.isConnected) renderLog();
   } catch (err) {
-    assistantBubble.classList.remove("typing");
-    assistantBubble.classList.add("error");
-    assistantBubble.textContent = "⚠️ " + (err.message || "Något gick fel.");
+    if (assistantBubble.isConnected) {
+      assistantBubble.classList.remove("typing");
+      assistantBubble.classList.add("error");
+      assistantBubble.textContent = "⚠️ " + (err.message || "Något gick fel.");
+    }
     state.history[agentId].pop();
+    // Ge tillbaka det skickade meddelandet så användaren inte behöver skriva om det.
+    const input = $("#composer-input");
+    if (input && !input.value) { input.value = text; input.style.height = "auto"; input.style.height = Math.min(input.scrollHeight, 200) + "px"; }
   } finally {
     state.streaming = false;
     if (send) send.disabled = false;

@@ -124,7 +124,9 @@ function renderSingle(v) {
 }
 
 // Bygger ett lättviktigt demo-team från branschens exempelagenter och öppnar
-// portalen i demoläge (__draft + ?demo=1) — live-demo utan nyckel, för varje bransch.
+// portalen i demoläge (__vertical + ?demo=1) — live-demo utan nyckel, för varje bransch.
+// Egen localStorage-nyckel (inte atb_draft_team) så en branschdemo aldrig
+// skriver över ett team som byggts live i Buildern.
 function openDraftDemo(v) {
   const pool = avatarPool(v.name);
   const agents = v.agents.map((a, i) => ({
@@ -135,7 +137,9 @@ function openDraftDemo(v) {
     role: i === 0 ? "Arbetspartner" : "Specialist",
     tagline: a.role,
     always: i === 0,
-    system: "",
+    // Riktig systemprompt — kopplar användaren in sin nyckel efter demon ska
+    // agenten svara i sin roll, inte som en tom generisk chatt.
+    system: agentSystem(v, a, i),
   }));
   const team = {
     company: v.name,
@@ -145,8 +149,30 @@ function openDraftDemo(v) {
     entryAgent: agents[0].id,
     agents,
   };
-  try { localStorage.setItem("atb_draft_team", JSON.stringify(team)); } catch (_) {}
-  window.open("../portal/?team=__draft&demo=1", "_blank");
+  try { localStorage.setItem("atb_vertical_demo_team", JSON.stringify(team)); } catch (_) {}
+  window.open("../portal/?team=__vertical&demo=1", "_blank");
+}
+
+// Systemprompt för en demo-agent, byggd av branschdatat. Exempelteamet är
+// generiskt (inte kundanpassat), så prompten säger det ärligt och ber om
+// konkret kontext istället för att låtsas veta.
+function agentSystem(v, a, i) {
+  const colleagues = v.agents.filter((x) => x !== a).map((x) => `- ${x.name}: ${x.role}`).join("\n");
+  return [
+    i === 0
+      ? `Du är ${a.name}, VD-assistent och primär arbetspartner i ett AI-team för ett företag i branschen ${v.name.toLowerCase()}.`
+      : `Du är ${a.name}, specialist i ett AI-team för ett företag i branschen ${v.name.toLowerCase()}.`,
+    ``,
+    `DITT JOBB: ${a.role}`,
+    ``,
+    `Vanliga tidstjuvar i branschen som teamet finns för att ta:`,
+    v.pains.map((p) => `- ${p}`).join("\n"),
+    ``,
+    i === 0 ? `DITT TEAM (hänvisa rätt när en fråga hör hemma hos en kollega):\n${colleagues}\n` : null,
+    `ARBETSSÄTT: Det här är ett exempel-team för branschen — det är inte anpassat till användarens specifika företag än. Be om konkreta underlag och kontext (företagets namn, hur deras vecka ser ut, exempel på dokument) istället för att gissa. Leverera utkast användaren bara behöver granska.`,
+    `VIKTIGT: Slutbeslut, juridik och allt som skickas till kund ligger alltid hos människan.`,
+    `Svara på svenska.`,
+  ].filter((x) => x !== null).join("\n");
 }
 
 function footer() {
