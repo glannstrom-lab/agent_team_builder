@@ -75,9 +75,11 @@ regeln.
    justeras för hand.
 7. **Idempotent uppdatering.** Att köra igen skrotar aldrig befintligt arbete.
 8. **Noll infrastruktur i kärnan.** Genereringen sker via användarens egen
-   Claude Code. Det valfria webblagret (se **Webbgränssnitt**) är också nära
-   noll-infra: rena statiska filer, kunden använder sin egen API-nyckel i
-   webbläsaren — ingen server, ingen databas.
+   Claude Code, och BYO-läget + galleriet i webblagret är rena statiska filer
+   utan server. Det finns ett *valfritt, tunt* köp/leverans-lager (Cloudflare
+   Pages Functions + D1) för moln-sparade team — det rör inte kärnan, men
+   webblagret är alltså inte längre kategoriskt "ingen databas". Se
+   **Webbgränssnitt** och `docs/m2-backend-spec.md`.
 9. **Språk följer input.** Pratar användaren svenska, svarar systemet på
    svenska. Pratar de engelska, engelska. Enkel regel, lätt att glömma.
 10. **(Konsult-läget) Pedagogik är situerad.** Förklara det som händer framför
@@ -85,11 +87,13 @@ regeln.
 
 ## Webbgränssnitt (valfritt lager ovanpå kärnan)
 
-Tre statiska webbappar + en hub gör verktyget demobart och användbart för
-icke-tekniska kunder. De delar designsystem (`site/showcase.css`) och kör helt
-i webbläsaren — kunden anger sin egen Anthropic-nyckel (lagras lokalt, anropar
-`api.anthropic.com` direkt via `anthropic-dangerous-direct-browser-access`).
-Ingen backend.
+Fyra statiska webbappar + en hub gör verktyget demobart och användbart för
+icke-tekniska kunder. De delar designsystem (`site/showcase.css`) och kör i
+webbläsaren — i BYO-läget anger kunden sin egen Anthropic-nyckel (lagras lokalt,
+anropar `api.anthropic.com` direkt via `anthropic-dangerous-direct-browser-access`).
+Det finns ett valfritt, tunt köp/leverans-lager (Cloudflare Pages Functions + D1,
+se `docs/m2-backend-spec.md`) för moln-sparade team — annars ingen backend.
+Demolägen (`?demo=1`) låter både portal och builder visas helt utan nyckel.
 
 - **Hub** (`index.html`) — front-dörr som navigerar till de tre.
 - **Builder** (`builder/`) — bygg ett team live framför en kund. Kör den
@@ -99,15 +103,23 @@ Ingen backend.
   formaterar förslaget till render-JSON + portal-systemprompter (ändrar inget
   innehåll). Eftersom den hämtar filerna live följer den alltid de underhållna
   prompterna — Builder och `/build-team` kan inte glida isär.
-- **Galleri** (`site/`) — `index.html` + sex scroll-stories (en per exempel)
+- **Galleri** (`site/`) — `index.html` + fem scroll-stories (en per exempel)
   som visar hela processen. Säljmaterial. Statiskt, ingen nyckel.
 - **Portal** (`portal/`) — där kunden använder sitt team: chattar med varje
   agent. Multi-tenant via `?team=<slug>` → `portal/teams/<slug>.js`; utan
   parameter visas en kundväljare; `?team=__draft` öppnar ett Builder-utkast.
+  Installerbar **PWA** (`manifest.webmanifest`, `sw.js`).
+- **Branscher** (`verticals/`) — datadrivna branschlandningssidor
+  (`?v=<slug>` från `verticals.js`); varje bransch har en live-demo utan nyckel.
 
-**Kör lokalt:** `python -m http.server 8420` från repo-roten, öppna
-`http://localhost:8420/`. Builder och portal kräver http:// (inte file://),
-och Buildern kräver att `prompts/` serveras.
+Säkerhetsheaders/CSP sätts via `_headers` (kopieras till `dist/` vid bygge).
+
+**Kör lokalt:** `python -m http.server 8420` från repo-roten (eller `npm run dev`),
+öppna `http://localhost:8420/`. Builder och portal kräver http:// (inte file://),
+och Buildern kräver att `prompts/` serveras. För att testa backend-lagret
+(`/api/*` + D1) lokalt: `npm run db:migrate:local` och sedan `npm run dev:cf`
+(Cloudflares emulator — den vanliga python-servern serverar inte `/api`).
+Bygg/deploy: `npm run build` / `npm run deploy`.
 
 **Stage 2-krok:** `prompts/shared/generate.md` (steg 7–8) genererar — när man
 kör inifrån detta repo — även en portal-konfig (`templates/shared/portal-team.md`)
@@ -122,11 +134,19 @@ ny kund dyker upp i både galleri och portal automatiskt.
 ├── README.md                       # Kort intro för nya användare
 ├── skills-catalog.md               # Kurerad lista över kända Claude Skills
 │
-├── index.html                      # Webb-hub (Bygg / Galleri / Portal)
-├── builder/                        # Builder-UI: bygg ett team live i webbläsaren
+├── index.html                      # Säljsida + nav till apparna
+├── builder/                        # Builder-UI: bygg ett team live (+ demo-data.js)
 ├── site/                           # Galleri: showcase-sidor + showcase.css
-├── portal/                         # Kundportal: chatta med ett genererat team
+├── portal/                         # Kundportal: chatta med ett team (+ PWA: manifest/sw)
 │   └── teams/                      # En <slug>.js per kund + index.js (register)
+├── verticals/                      # Branschlandningssidor (datadrivet, ?v=<slug>)
+├── functions/                      # Cloudflare Pages Functions (/api/* — moln-team)
+├── migrations/                     # D1-schema (SQL) för köp/leverans-lagret
+│
+├── build-dist.mjs                  # Bygger dist/ för Cloudflare Pages
+├── wrangler.toml                   # Cloudflare-config (D1-bindning)
+├── package.json                    # npm-scripts (build/serve/dev/dev:cf/db:migrate/deploy)
+├── _headers                        # CSP + säkerhetsheaders (kopieras till dist/)
 │
 ├── docs/                           # Djupare dokumentation per område
 │   ├── team-builder.md             # Team-builder-lägets flöde och regler
@@ -134,7 +154,9 @@ ny kund dyker upp i både galleri och portal automatiskt.
 │   ├── scaling.md                  # Skalningsregler (storlek + mognad)
 │   ├── team-roles.md               # VD, VD-assistent, specialisters roller
 │   ├── meetings.md                 # Mötesfunktionen i detalj
-│   └── first-project.md            # Kriterier för ett bra första kundprojekt
+│   ├── first-project.md            # Kriterier för ett bra första kundprojekt
+│   ├── produktstrategi-sjalvbetjaning.md  # Affärs-/produktstrategi (roadmap)
+│   └── m2-backend-spec.md          # Spec för köp/leverans-lagret (Stripe + D1)
 │
 ├── .claude/
 │   └── commands/
@@ -184,10 +206,10 @@ ny kund dyker upp i både galleri och portal automatiskt.
 │       └── handoff-document.md     # Mall för överlämningsdokumentet
 │
 └── examples/
-    ├── team-builder/
-    │   ├── bonusloots/             # Solo, intervju
-    │   ├── coachonline/            # Solo, intervju
-    │   └── ikea/                   # Enterprise, externt namn
+    ├── team-builder/               # Tre solo-körningar — bevisar att samma
+    │   ├── lerverk/                # storleksklass ger olika team:
+    │   ├── norrskenspodden/        # keramik / podd / översättning,
+    │   └── wikander/               # alla solo, helt olika specialister
     │
     └── ai-consultant/
         ├── beginner-accountant/    # Liten bokföringsbyrå, AI-nybörjare
@@ -196,6 +218,13 @@ ny kund dyker upp i både galleri och portal automatiskt.
 ```
 
 ## Nuvarande sprint
+
+> **Status (2026-06-28):** Fas 1–3 nedan är klara (kärna, team-builder,
+> ai-consultant — se `examples/`). Webblagret och köp/leverans-lagret är
+> påbörjade. Det *aktuella* arbetet och roadmappen finns i
+> `docs/produktstrategi-sjalvbetjaning.md` (milstolpar M1–M4) och
+> `docs/m2-backend-spec.md` (byggsekvens; M2a-1 klar). Fas 1–3 nedan står kvar
+> som historik över hur kärnan byggdes.
 
 Bygg i den här ordningen. Hoppa inte över steg.
 
@@ -207,7 +236,7 @@ Bygg i den här ordningen. Hoppa inte över steg.
 3. **`prompts/shared/proposal.md`** + **`templates/shared/agent-base.md`** —
    så att output kan skrivas.
 4. **`PROMPT.md`** + **`.claude/commands/build-team.md`** — ihop end-to-end.
-5. **Testa mot bonusloots, coachonline, ett tredje.** Om output inte är
+5. **Testa mot coachonline, ikea, ett tredje.** Om output inte är
    meningsfullt olika → tillbaka till steg 1.
 
 ### Fas 2: Resten av team-builder
