@@ -33,6 +33,10 @@ implementerar dem.
 Dra inte upp en nybörjare för att det "känns snålt". Två skarpa
 agenter som används varje dag slår sju som glöms bort.
 
+Mognadstaket är ett **hårt tak**. Om research-jämförelsen (steg 3) ger
+kluster + 2 högre än taket — vinner taket. Överskjutande kluster skjuts
+till en framtida version, inte in i ett nybörjarteam.
+
 ### 3. Jämför med research
 
 Research-dokumentets kluster ger en indikation på hur många
@@ -55,6 +59,10 @@ Skalningsbeslut: [antal] agenter (VD + VD-assistent + [antal-2] specialister)
 Motivering: [Storlek X → intervall Y–Z. Research hittade N kluster
 över ribban. Valde [antal] för att [kort motivering].]
 ```
+
+Räkna tyst. Visa **inte** mellansteg eller resonemang i outputen — bara
+blocket ovan. (Buildern kör det här steget verbatim och visar resultatet
+live för kunden, så läckande tankekedja blir ett kundproblem.)
 
 ## Regler
 

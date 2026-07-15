@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Agent Team Builder — bygg ett team</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+<!-- Delat designsystem (tokens, .card, .org, .eyebrow, .section-title …) -->
+<link rel="stylesheet" href="../site/showcase.css" />
+<!-- Builder-specifik chrome -->
+<link rel="stylesheet" href="builder.css" />
+</head>
+<body>
+<div id="root"></div>
+<!-- Delad avatar-tilldelning (window.ATBAvatars) -->
+<script src="../avatars.js"></script>
+<!-- Delad Claude-klient (window.ATBClaude) — samma som portalen använder -->
+<script src="../atb-claude.js"></script>
+<!-- Inspelad körning för demoläget (ingen nyckel) -->
+<script src="demo-data.js"></script>
+<script src="builder.js"></script>
+</body>
+</html>

@@ -1,0 +1,18 @@
+# Bygg-output för Cloudflare Pages
+/dist/
+
+# Node
+/node_modules/
+npm-debug.log*
+
+# Wrangler / Cloudflare
+.wrangler/
+
+# Käll-/arbetsbilder (avatar-crops klipps ur dessa; deployas aldrig)
+/avatarer*.png
+
+# Secrets (lokal dev av Cloudflare Functions / Stripe) — aldrig i git
+.dev.vars
+.dev.vars.*
+.env
+.env.*

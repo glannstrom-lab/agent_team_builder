@@ -1,0 +1,227 @@
+# M2 — Backend-spec (betalning, provisionering, moln)
+
+> Status: spec v1 (2026-06-28). Syftet är att göra produkten **självgående** —
+> kund betalar och får sitt team utan att Mikael rör en tangent.
+> Arkitekturbesluten (§2) är tagna 2026-06-28. Bygget av M2a-1 kan börja direkt
+> (lokal D1, inga konton). M2a-2 och framåt kräver Stripe-kontot i §8.
+> Bygger vidare på [strategin](produktstrategi-sjalvbetjaning.md).
+
+---
+
+## 1. Mål och avgränsning
+
+M2 lägger ett **tunt köp/leverans-lager** ovanpå den statiska webben. Kärnan
+(prompts, skill, generering) och de statiska apparna är oförändrade.
+
+I scope:
+- Kund kan **betala** (Stripe) och automatiskt få ett **moln-sparat team** med en
+  egen portal-URL som funkar från vilken enhet som helst.
+- (Senare, M2b) **Managed-nivå**: backend kör Claude-anropen med Mikaels nyckel,
+  mäter förbrukning och fakturerar.
+
+Inte i scope nu: full kontopanel, teamredigering i molnet, fakturahistorik-UI.
+Allt det kan komma efter att grundflödet bär.
+
+### Den hårda grundbulten (igen)
+Claude Max kan **inte** driva en backend. Managed-nivån kräver en **egen
+Anthropic API-nyckel med credits** på servern. BYO-nivån använder kundens nyckel
+i webbläsaren precis som idag. (Se grundbulten i §1.)
+
+---
+
+## 2. Beslut (kärnan i specen)
+
+**Beslutat 2026-06-28:** A = *Bygg → betala → spara*. B = *Capability-URL*.
+C = *Faza — BYO (M2a) först, managed (M2b) senare*. D (Stripe-priser) = bekräftas
+av Mikael innan live. Detaljerna nedan står kvar som motivering.
+
+### Beslut A — Provisioneringsflöde
+**Hur blir ett betalt team till?**
+1. **Bygg → betala → spara (rekommenderat).** Kunden bygger i Buildern (egen
+   nyckel, gratis), gillar det, klickar "Spara i molnet" → Stripe Checkout → vid
+   betalning sparas teamet (redan i localStorage-utkastet) i molnet och får en
+   permanent portal-URL. Kunden ser värdet *innan* betalning → högst konvertering,
+   och återanvänder utkastflödet som redan finns.
+2. Betala → bygg. Renare konto, men betala-före-värde = lägre konvertering.
+
+→ **Rekommendation: 1.**
+
+### Beslut B — Åtkomst / inloggning
+**Hur kommer kunden åt sitt team från valfri enhet?**
+1. **Capability-URL (rekommenderat för BYO).** Teamet får en lång, ogissningsbar
+   slug: `portal/?team=k7f3...`. Den som har länken kommer in — ingen inloggning,
+   ingen lösenordshantering. "Tillgängligt från vilken enhet som helst" = öppna
+   länken var som helst. Matchar dagens inloggningsfria känsla.
+2. **Magisk länk (e-post).** Kund anger e-post, får en länk. Mer "konto" utan
+   lösenord. Behövs egentligen först för managed-nivån.
+3. Riktiga konton (lösenord). Mest friktion, spara till senare.
+
+→ **Rekommendation: 1 för BYO nu, 2 när managed kommer.**
+
+### Beslut C — Managed-nivå nu eller senare?
+Managed (du proxar Claude + fakturerar förbrukning) är den tyngsta biten:
+proxy, mätning, kostnadstak, abuse-skydd. 
+→ **Rekommendation: faza.** M2a = betalning + provisionering + moln-team (BYO).
+M2b = managed proxy. Släpp M2a först, lägg managed när någon faktiskt vill betala
+för att slippa nyckeln.
+
+### Beslut D — Pris-/produktstruktur i Stripe
+Engångspris för "Bygg själv" (idag 2 900 kr placeholder) → Stripe **one-time
+price**. Retainer/managed → Stripe **subscription price**. 
+→ **Rekommendation:** skapa två produkter i Stripe (engång + prenumeration),
+koppla till prisnivåerna på säljsidan (`index.html`, se även
+`produktstrategi-sjalvbetjaning.md`). Bekräfta de slutliga priserna.
+
+---
+
+## 3. Arkitektur
+
+Allt på Cloudflare (ni kör redan Pages):
+
+```
+Webbläsare (portal/builder)
+        │
+        ├─ statiska filer ............ Cloudflare Pages (som idag)
+        │
+        └─ /api/* .................... Cloudflare Pages Functions  (= Workers)
+                                          │
+                                          ├─ D1 (SQLite) — teams, customers, (usage)
+                                          ├─ Stripe API — checkout + webhook
+                                          └─ (M2b) Anthropic API — managed proxy
+```
+
+**Varför Pages Functions och inte separat Worker:** funktionerna bor i `/functions`
+och deployas med samma Pages-projekt — ingen extra deploy-pipeline, samma domän
+(inga CORS-problem mot `/api`).
+
+---
+
+## 4. Endpoints (Pages Functions)
+
+### M2a — commerce + provisionering
+| Metod | Väg | Gör |
+|------|-----|-----|
+| POST | `/api/checkout` | Skapar Stripe Checkout Session. Body: `{tier, draftId}`. Returnerar `{url}`. Lagrar utkastet temporärt (D1, `pending`) kopplat till sessionen. |
+| POST | `/api/stripe-webhook` | Tar emot `checkout.session.completed`. Verifierar signatur. Flyttar `pending`-utkast → permanent team, genererar capability-slug. |
+| GET | `/api/teams/:slug` | Returnerar team-JSON för portalen. 404 om okänt. |
+| GET | `/api/checkout/status?session_id=` | Pollas av success-sidan tills webhooken hunnit skapa teamet; returnerar `{slug}` när klart. |
+
+### M2b — managed (senare)
+| Metod | Väg | Gör |
+|------|-----|-----|
+| POST | `/api/chat` | Proxar till Anthropic med Mikaels nyckel. Kräver `Authorization` (kundtoken). Mäter tokens, kollar kostnadstak. Streamar tillbaka. |
+| GET | `/api/usage` | Kundens förbrukning innevarande period. |
+
+---
+
+## 5. Datamodell (D1)
+
+```sql
+CREATE TABLE teams (
+  slug        TEXT PRIMARY KEY,          -- capability-slug (≥128 bitar slump)
+  config      TEXT NOT NULL,             -- team-JSON (samma format som portal/teams/*.js)
+  tier        TEXT NOT NULL,             -- 'self-serve' | 'managed'
+  stripe_customer TEXT,
+  created_at  INTEGER NOT NULL
+);
+
+CREATE TABLE pending (
+  id          TEXT PRIMARY KEY,          -- draftId
+  config      TEXT NOT NULL,
+  stripe_session TEXT,
+  created_at  INTEGER NOT NULL           -- städa bort >24h gamla
+);
+
+-- M2b
+CREATE TABLE usage (
+  slug        TEXT NOT NULL,
+  period      TEXT NOT NULL,             -- 'YYYY-MM'
+  input_tok   INTEGER DEFAULT 0,
+  output_tok  INTEGER DEFAULT 0,
+  PRIMARY KEY (slug, period)
+);
+```
+
+Slug genereras med `crypto.getRandomValues` (16+ byte, base62) — oguessbar.
+
+---
+
+## 6. Stripe-integration
+
+- **Checkout:** `/api/checkout` skapar en Session (`mode: 'payment'` för engång,
+  `'subscription'` för retainer) med `success_url` → `/portal/aktivera?session_id={CHECKOUT_SESSION_ID}`,
+  `cancel_url` → tillbaka till Buildern.
+- **Webhook:** verifiera `Stripe-Signature` mot `STRIPE_WEBHOOK_SECRET` (Stripes
+  SDK funkar i Workers, eller verifiera manuellt med Web Crypto). Hantera
+  `checkout.session.completed` → provisionera team.
+- **Idempotens:** webhooken kan komma flera gånger → no-op om teamet redan finns
+  för den sessionen.
+
+Aktiveringssida (`portal/aktivera`) pollar `/api/checkout/status` tills slug finns,
+visar sedan "Ditt team är klart" + länk till `portal/?team=<slug>`.
+
+---
+
+## 7. Ändringar i befintlig frontend (små)
+
+- **Builder:** efter genererat team, ny knapp "Spara i molnet" → POST utkast till
+  `/api/checkout`, redirect till Stripe. (Bredvid dagens "Ladda ner config".)
+- **Portal `loadTeam`:** idag laddar den `teams/<slug>.js`. Lägg till: om den
+  statiska filen 404:ar, gör `GET /api/teams/<slug>` och använd JSON:en. Då funkar
+  både inbyggda exempel och moln-team utan särbehandling.
+- **(M2b) Portal `streamClaude`:** i managed-läge anropa `/api/chat` istället för
+  `api.anthropic.com`, med kundtoken i stället för `x-api-key`.
+
+---
+
+## 8. Konton, secrets och config (det du behöver fixa)
+
+- [ ] **Stripe-konto** + produkter/priser skapade (Beslut D). Secrets:
+      `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`.
+- [ ] **Cloudflare:** D1-databas (`wrangler d1 create agent-team-builder`), bindning
+      i `wrangler.toml`. Pages-projektet finns redan.
+- [ ] **(M2b)** `ANTHROPIC_API_KEY` med credits för managed-proxyn.
+- [ ] Secrets sätts som Pages-miljövariabler (krypterade), aldrig i git.
+
+Inloggning för dessa gör du själv i din terminal med t.ex.
+`! npx wrangler login` och `! npx stripe login`.
+
+---
+
+## 9. Säkerhet
+
+- **Webhook-signatur** måste verifieras — annars kan vem som helst provisionera
+  gratis team.
+- **Capability-slugs** ≥128 bitar slump (oguessbara), serveras bara över HTTPS.
+- **M2b proxy:** kundtoken krävs; **kostnadstak per kund och period** (hård gräns
+  i `/api/chat`); Cloudflare rate limiting; logga aldrig nyckeln.
+- BYO-läget rör ingen kostnad/risk för dig — bara managed gör det.
+
+---
+
+## 10. Byggsekvens inom M2
+
+1. **M2a-1:** ✅ **BYGGT (2026-06-28).** D1-schema (`migrations/0001_init.sql`),
+   `/api/teams/:slug` (`functions/api/teams/[slug].js`), portalens fallback-laddning,
+   D1-bindning i `wrangler.toml`, npm-scripts (`db:migrate:local`, `dev:cf`).
+   Funktionslogiken enhetstestad (200/404/400/500). Återstår innan skarp drift:
+   `npx wrangler d1 create` + klistra in `database_id`, sen `npm run db:migrate`.
+2. **M2a-2:** `/api/checkout` + Stripe i **testläge** + aktiveringssida.
+3. **M2a-3:** `/api/stripe-webhook` + provisionering + idempotens. End-to-end i
+   Stripe-testläge.
+4. **M2a-4:** Builderns "Spara i molnet"-knapp. Skarpt i Stripe live.
+5. **M2b** (separat): managed proxy + mätning + tak + token-auth + magisk länk.
+
+Varje steg är verifierbart för sig. M2a-1 till M2a-3 kan byggas och testas helt i
+Stripe **testläge** utan att en krona rör sig.
+
+---
+
+## 11. Öppna frågor (svara när de blir aktuella)
+
+- Ska moln-team kunna **redigeras** efter köp, eller är de frysta tills nästa körning?
+- Vad händer om kunden vill ha **flera team** (capability-URL per team räcker, men
+  vill du ha en samlingsvy)?
+- Managed: **modellval** låst eller kundstyrt? (Påverkar kostnadstaket.)
+- Retainer: vad ingår konkret per månad (kopplas till prisnivåerna på säljsidan)?
+```

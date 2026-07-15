@@ -1,0 +1,12 @@
+name = "agent-team-builder"
+compatibility_date = "2024-09-01"
+pages_build_output_dir = "dist"
+
+# M2a — D1-databas för moln-sparade team.
+# Skapa den med:  npx wrangler d1 create agent-team-builder
+# Klistra sedan in database_id du får tillbaka nedan (krävs för --remote/deploy;
+# lokal utveckling med --local fungerar utan).
+[[d1_databases]]
+binding = "DB"
+database_name = "agent-team-builder"
+database_id = "FYLL-I-EFTER-wrangler-d1-create"

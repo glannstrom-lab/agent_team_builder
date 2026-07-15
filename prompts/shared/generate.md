@@ -36,7 +36,12 @@ Välj `ceo-small.md` eller `ceo-large.md` baserat på skalningsbeslut:
 Fyll i alla platshållare med data från proposal och research:
 - Jobb-meningen från proposal
 - Kapaciteter — komplettera mallens grund med research-specifika
-- Instruktioner — bygg från research-nedbrytningen
+- Instruktioner — bygg från research-nedbrytningen om den finns.
+  Om research inte bröt ner VD-momentet (t.ex. för att det var
+  implicit eller under ribban), bygg instruktioner från
+  research-sammanfattningen, kontextfaktorer och skalningsbeslutet
+  istället. VD behöver alltid instruktioner — de kan bara inte
+  alltid byggas från nedbrytningen.
 
 Skriv till `.claude/agents/ceo.md`.
 
@@ -44,8 +49,15 @@ Skriv till `.claude/agents/ceo.md`.
 
 Fyll i `chief-of-staff.md`:
 - Lista teamets specialisters namn och domäner
-- Definiera triage-reglerna: vad → vilken agent
-- Anpassa mötesfunktionens deltagarlista till det faktiska teamet
+- Definiera triage-reglerna: vilken typ av fråga → vilken agent
+- Trösklar: vad hanterar VD-assistenten själv, vad eskaleras
+  till VD, vad skickas till specialist
+- Mötesfunktionen: integrera de tre mötesmallarna genom att
+  specificera vilka av teamets agenter som typiskt deltar i varje
+  mötestyp, och vilka typer av frågor som triggar ett möte vs.
+  en direkt hänvisning till specialist
+- Regeln "inte allt är ett möte" ska vara konkret: ge exempel
+  på frågor i det här teamet som *inte* ska bli möten
 
 Skriv till `.claude/agents/chief-of-staff.md`.
 
@@ -74,7 +86,54 @@ det specifika teamet:
 
 Skriv till `.claude/agents/meetings/`.
 
-### 6. Visa sammanfattning
+### 6. Generera team-presentation (HTML)
+
+Läs `templates/shared/team-presentation.md` — den specificerar design,
+sektioner och regler för presentationen.
+
+Skapa en single-file HTML som presenterar det genererade teamet visuellt.
+All data kommer från proposal och research — inget fabricerat.
+
+**Input du behöver:**
+- Företagsnamn och bransch (från intake)
+- Alla godkända agenter med jobb, kapaciteter och triggers (från proposal)
+- Avvisade moment/kluster med motiveringar (från research)
+- Eventuella skills per agent (från proposal)
+- Källa (intervju/externt) — styr om hypotes-varning visas
+- Körningsmetadata från research (antal moment, kluster, avvisade)
+
+**Ai-consultant-läge:** Inkludera även sektion 7 (första-projekt) enligt
+mallen, med data från första-projekt-briefen.
+
+Skriv till `.claude/agents/team-presentation.html`.
+
+### 7. Generera portal-konfiguration (om byggd i builder-repot)
+
+> Detta och nästa steg gäller bara när körningen sker **inuti
+> agent-team-builder-repot** (konsult-cockpiten med `portal/` och `site/`).
+> Om de katalogerna inte finns — hoppa över steg 7–8.
+
+Läs `templates/shared/portal-team.md`. Skapa `portal/teams/<slug>.js` som
+sätter `window.TEAM` med en agent per godkänd agent (varje agent blir en
+systemprompt byggd från jobb, kapaciteter, triggers och "Rör inte"). Lägg
+till en rad i `portal/teams/index.js` (idempotent — uppdatera om slug finns).
+
+`<slug>` = kebab-case av företagsnamnet, inga å/ä/ö.
+
+### 8. Generera showcase-sida (om byggd i builder-repot)
+
+Läs `templates/shared/showcase-page.md`. Skapa `site/<slug>.html` — en
+scroll-story som visar hela processen (intake → research → skalning →
+[första projekt] → team) med `showcase.css`. Använd `site/coachonline.html`
+som strukturell mall. Sätt `<body data-team="<Företagsnamn>">` och inkludera
+avatar-skripten (`../avatars.js` + `gallery.js`) sist i `<body>` så
+agentkorten får porträtt automatiskt (se showcase-page.md). Lägg till ett
+galleri-kort i `site/index.html` (idempotent) och uppdatera hero-siffrorna där.
+
+Sidans "Prova teamet live"-knapp länkar till `../portal/?team=<slug>`, så
+showcase och portal pekar på samma kund.
+
+### 9. Visa sammanfattning
 
 Efter generering, visa användaren:
 
@@ -87,9 +146,18 @@ Genererade filer:
 - .claude/agents/meetings/project-review.md
 - .claude/agents/meetings/specific-improvement.md
 - .claude/agents/meetings/whats-next.md
+- .claude/agents/team-presentation.html
+[om byggd i builder-repot:]
+- portal/teams/[slug].js          (+ rad i portal/teams/index.js)
+- site/[slug].html                (+ kort i site/index.html)
 
 Teamet har [antal] agenter. Prata med VD-assistenten för att
-komma igång.
+komma igång. Öppna team-presentation.html för en visuell
+överblick av teamet.
+
+[om portal/showcase genererades:]
+Kunden kan nu nås i galleriet (site/index.html → [slug].html) och
+i portalen (portal/?team=[slug]).
 ```
 
 ## Regler
@@ -116,3 +184,25 @@ komma igång.
 
 6. **Språk i filerna följer intake.** Om intake var på svenska, är
    agentfilernas innehåll på svenska.
+
+7. **Hypotes-varning för läge B.** Om `källa: externt` — lägg till
+   en varningssektion i varje genererad agentfil, direkt efter
+   kommentarblocket:
+
+   ```markdown
+   > ⚠ **Det här teamet vilar på hypoteser.** Det är byggt från publik
+   > information om företaget, inte från intervju. Alla antaganden om
+   > arbetsmoment, smärtpunkter och verktyg kan vara fel. Kör
+   > `/update-team` efter att ha använt teamet en vecka för att
+   > justera mot verkligheten.
+   ```
+
+8. **Agenter startar utan data.** Instruktioner som refererar till
+   datakällor (materialtabeller, produktionsloggar, kundregister etc.)
+   måste hantera att dessa inte finns dag 1. Skriv explicit:
+   - Var agenten förväntar sig att hitta datan (filnamn, format)
+   - Vad agenten ska göra om datan inte finns (be användaren
+     komplettera, inte gissa)
+   - Förslag på hur användaren kan skapa datakällan (t.ex. "skapa
+     en fil `material.md` med era vanligaste material och deras
+     egenskaper")

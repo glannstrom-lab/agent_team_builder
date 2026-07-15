@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<script>document.documentElement.classList.add('js')</script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>IKEA · Agent Team Builder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="showcase.css" />
+</head>
+<body data-team="IKEA">
+
+<!-- ===== STEP NAV ===== -->
+<div class="stepnav">
+  <div class="inner">
+    <a class="home" href="index.html"><span class="dot"></span> Agent Team Builder</a>
+    <a class="step" href="#intake">1 · Intake</a>
+    <a class="step" href="#research">2 · Research</a>
+    <a class="step" href="#skalning">3 · Skalning</a>
+    <a class="step" href="#proposal">4 · Förslag</a>
+    <a class="step" href="#team">5 · Teamet</a>
+  </div>
+</div>
+
+<!-- ===== HERO ===== -->
+<section class="hero">
+  <div class="wrap">
+    <a class="badge" href="index.html"><span class="dot"></span> Team-builder · Stort · Externt</a>
+    <h1>Från global<br />massmarknads-koloss till<br /><span class="grad">IKEA-teamet</span></h1>
+    <p class="sub">En av världens största detaljhandelskedjor, ~200 000 anställda i 60+ länder. Inget intervjusvar att luta sig mot — bara publicerade källor och hypoteser. Följ vägen från det vi antog till det åtta-agentersteam som föreslogs.</p>
+    <div class="meta-pills">
+      <span class="meta-pill"><b>Bransch:</b> Detaljhandel / Möbler & Hemåde</span>
+      <span class="meta-pill"><b>Storlek:</b> Stort (~200 000 personer)</span>
+      <span class="meta-pill"><b>Källa:</b> Externt (hypoteser)</span>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="num">11</div><div class="lbl">analyserade moment</div></div>
+      <div class="stat"><div class="num">8</div><div class="lbl">agenter i teamet</div></div>
+      <div class="stat"><div class="num">5</div><div class="lbl">medvetet avvisade</div></div>
+    </div>
+  </div>
+  <div class="scroll-hint">↓</div>
+</section>
+
+<!-- ===== STEP 1: INTAKE ===== -->
+<section id="intake">
+  <div class="wrap narrow">
+    <div class="section-head">
+      <div class="eyebrow"><span class="step-num">Steg 1</span> Intake</div>
+      <h2 class="section-title">Vad vi antog</h2>
+      <p class="section-lead">I läge B finns ingen intervju. Vi bygger en känsla av företaget från publicerade källor — allt nedan är hypoteser, inte uttalanden, och varje senare beslut spåras tillbaka hit med den reservationen.</p>
+    </div>
+    <div class="quotes">
+      <div class="quote reveal">
+        "IKEA opererar med en laserliknande mikrofokus på design-till-pris — hur får man kvalitet ned till lågt pris för massmarknaden. Det driver allt."
+        <span class="who">— hypotes om kärnverksamheten</span>
+      </div>
+      <div class="quote reveal d1">
+        "Flaskhalsen är inte design eller tillverkning — det är dataflödet från koncern till lokala marknader. Prissättning, produktinformation, kampanj-logistik sker tusentals gånger parallellt."
+        <span class="who">— hypotes om var det klämmer</span>
+      </div>
+      <div class="quote reveal d2">
+        "En stavfel eller fel mått i en produkttext som replikeras över 10 länder är dyrt att fixa och fördjupar förtroendekrisen. Allt måste göras för tusentals produkter samtidigt."
+        <span class="who">— hypotes om volym och konsistens</span>
+      </div>
+      <div class="quote reveal d3">
+        "På grund av finansiell risk (prissättning) och reputationell risk (innehåll) kan ingen agent köra autonomt. Allt måste granskas av en människa före lansering."
+        <span class="who">— hypotes om mänsklig review</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== STEP 2: RESEARCH ===== -->
+<section id="research">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow"><span class="step-num">Steg 2</span> Research</div>
+      <h2 class="section-title">Vad vi hittade</h2>
+      <p class="section-lead">Elva återkommande arbetsmoment, var och en bedömd för hur väl den lämpar sig för AI. Åtta hamnade över ribban, tre under.</p>
+    </div>
+    <div class="moments reveal">
+      <div class="moment">
+        <div class="mtxt"><div class="mname">Säsongsbaserad prissättning & reprissättning</div><div class="mmeta">~15–20 % av veckan · högt volymtryck, hög smärta</div></div>
+        <span class="fit high">Medel–Hög</span>
+      </div>
+      <div class="moment">
+        <div class="mtxt"><div class="mname">Produktinformation (PIM-uppdateringar)</div><div class="mmeta">dagligen · tusentals produkter, många språk</div></div>
+        <span class="fit high">Hög</span>
+      </div>
+      <div class="moment">
+        <div class="mtxt"><div class="mname">Kampanjplanering & bundling-logistik</div><div class="mmeta">~8–10 % av veckan · många beroenden</div></div>
+        <span class="fit med">Medel</span>
+      </div>
+      <div class="moment">
+        <div class="mtxt"><div class="mname">Lokalisering & multi-språk-anpassning</div><div class="mmeta">~5–8 % av veckan · 20+ språk, kulturell varians</div></div>
+        <span class="fit med">Medel–Låg</span>
+      </div>
+      <div class="moment">
+        <div class="mtxt"><div class="mname">Demand forecasting & supply chain-planering</div><div class="mmeta">~10–15 % av veckan · redan löst av specialprogram</div></div>
+        <span class="fit med">Medel</span>
+      </div>
+      <div class="moment">
+        <div class="mtxt"><div class="mname">Kundfeedback-aggregering & trendanalys</div><div class="mmeta">dagligen · bullrig data, långsiktigt värde</div></div>
+        <span class="fit high">Hög</span>
+      </div>
+      <div class="moment">
+        <div class="mtxt"><div class="mname">Leverantörssamverkan & orderföljning</div><div class="mmeta">löpande · kräver system-integrering</div></div>
+        <span class="fit low">Låg</span>
+      </div>
+      <div class="moment">
+        <div class="mtxt"><div class="mname">Lageroptimering & automatic replenishment</div><div class="mmeta">dagligen · redan körd av WMS-system</div></div>
+        <span class="fit low">Låg–Medel</span>
+      </div>
+      <div class="moment">
+        <div class="mtxt"><div class="mname">Sammonteringsanvisningar & teknisk dokumentation</div><div class="mmeta">~4–6 % av veckan · visuellt CAD-beroende</div></div>
+        <span class="fit med">Medel</span>
+      </div>
+      <div class="moment">
+        <div class="mtxt"><div class="mname">Inredningsrådgivning & kuraterad styling</div><div class="mmeta">löpande · kreativt, estetiskt moment</div></div>
+        <span class="fit low">Låg</span>
+      </div>
+      <div class="moment">
+        <div class="mtxt"><div class="mname">Budgetering & kostnadskontroll</div><div class="mmeta">månads- till kvartalsvis · redan ERP-automatiserat</div></div>
+        <span class="fit low">Låg</span>
+      </div>
+    </div>
+
+    <div class="section-head" style="margin-top:54px">
+      <h2 class="section-title" style="font-size:clamp(22px,3vw,30px)">Grupperat i fyra kluster över ribban</h2>
+    </div>
+    <div class="clusters reveal">
+      <div class="cluster">
+        <div class="cp">Prioritet 1</div>
+        <div class="ct">Prissättningslogik</div>
+        <div class="cd">Säsongsbaserad reprissättning. Högt volymtryck, högt tidsvärde, hög smärta. Välavgränsad input/output. Kan spara 10+ h/vecka — men mänsklig review är obligatorisk före lansering.</div>
+      </div>
+      <div class="cluster">
+        <div class="cp">Prioritet 2</div>
+        <div class="ct">Innehållsproduktion & PIM</div>
+        <div class="cd">Produktinformation över tusentals produkter och många språk. Repetitiv process, välavgränsat format. En agent kan spara 8–12 h/vecka och förbättra konsistensen.</div>
+      </div>
+      <div class="cluster">
+        <div class="cp">Prioritet 3</div>
+        <div class="ct">Kampanj & marknadsföring</div>
+        <div class="cd">Kampanj-logistik (datadriven struktur) + lokalisering (tonmässig anpassning). En agent kan samla båda, men värdet är mindre än prissättning eller innehåll.</div>
+      </div>
+      <div class="cluster">
+        <div class="cp">Prioritet 4</div>
+        <div class="ct">Feedback & insights</div>
+        <div class="cd">Bullrig data, men en fokuserad agent kan extrahera värde dagligen. Låg omedelbar smärta men långsiktigt värde. Isoleras så kontextöverflödet inte påverkar andra agenter.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== STEP 3: SKALNING ===== -->
+<section id="skalning">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow"><span class="step-num">Steg 3</span> Skalning</div>
+      <h2 class="section-title">Varför åtta agenter — inte fjorton</h2>
+    </div>
+    <div class="decision reveal">
+      <div class="big">Stort företag + 4 kluster över ribban → <b>8 agenter</b>: VD, VD-assistent och sex specialister.</div>
+      <p>Skalningstabellen föreslår 10–14 agenter för ett stort företag. Men detta är inte ett vanligt stort-företags-scenario — det är en högspecialiserad massmarknads-operation med mycket volym men begränsad agentdiversitet. De fyra klustren är kraftfulla och väl-motiverade och ger direkt fyra agenter; två ytterligare specialister tar mindre moment och support. Vi slösar inte på komplexitet — vi fokuserar på högt värde.</p>
+      <div class="scale-row">
+        <span class="scale-chip"><b>Tabell-intervall för stort:</b> 10–14 agenter</span>
+        <span class="scale-chip"><b>Antal kluster:</b> 4</span>
+        <span class="scale-chip"><b>Totalt:</b> 1 VD + 1 assistent + 6 specialister</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== STEP 4 & 5: PROPOSAL / TEAM ===== -->
+<section id="proposal">
+  <div class="wrap">
+    <div class="section-head center">
+      <div class="eyebrow center"><span class="step-num">Steg 4</span> Förslag</div>
+      <h2 class="section-title" id="team">Teamet</h2>
+      <p class="section-lead">Varje agent finns på grund av ett konkret fynd — inte en generisk roll. Åtta agenter, strukturerade för stor komplexitet.</p>
+    </div>
+
+    <div class="org">
+      <div class="org-row reveal">
+        <div class="node ceo"><div class="role">VD</div><div class="nm">⚡ VD</div><div class="jb">Strategisk prioritering och trade-offs mellan intäkt, volym och märke.</div></div>
+      </div>
+      <div class="connector solid reveal"></div>
+      <div class="org-row reveal">
+        <div class="node cos"><div class="role">VD-assistent</div><div class="nm">🧭 Chief of Staff</div><div class="jb">Daglig arbetspartner som väcker rätt specialist vid rätt tillfälle.</div></div>
+      </div>
+      <div class="connector reveal"></div>
+      <div class="org-row reveal">
+        <div class="node spec"><div class="role">Specialist</div><div class="nm">💰 Prissättningsanalytiker</div><div class="jb">Föreslår reprissättning veckovis.</div></div>
+        <div class="node spec"><div class="role">Specialist</div><div class="nm">✍️ Innehålls-kurateor</div><div class="jb">Genererar produkttexter i batch.</div></div>
+        <div class="node spec"><div class="role">Specialist</div><div class="nm">🎯 Kampanj-arkitekt</div><div class="jb">Planerar kampanjer & bundles.</div></div>
+      </div>
+      <div class="org-row reveal" style="margin-top:18px">
+        <div class="node spec"><div class="role">Specialist</div><div class="nm">📊 Marknadspulsanalytiker</div><div class="jb">Aggregerar feedback dagligen.</div></div>
+        <div class="node spec"><div class="role">Specialist</div><div class="nm">🌍 Lokaliseringsspecialist</div><div class="jb">Anpassar för lokala marknader.</div></div>
+        <div class="node spec"><div class="role">Specialist</div><div class="nm">🔧 Teknisk Dokumentör</div><div class="jb">Förbättrar sammonteringsanvisningar.</div></div>
+      </div>
+    </div>
+
+    <div class="cards">
+      <div class="card is-ceo reveal">
+        <div class="card-top"><div class="icon">⚡</div><div><h3>VD</h3><span class="tag always">Alltid närvarande</span></div></div>
+        <p class="job">Hålla agent-teamet fokuserat på högt-värde-moment, prioritera när intressegrupper skickar motstridiga önskemål, och döma när data inte räcker.</p>
+        <div class="meta-label">Kapaciteter</div>
+        <ul class="caps">
+          <li>Väger trade-offs mellan intäkt, volym och märkeskvalitet</li>
+          <li>Analyserar data-konflikter och ger vägledning till agenter</li>
+          <li>Håller koll på regulatoriska begränsningar (prisövervakning, RoHS)</li>
+          <li>Avslår eller godkänner större rekommendationer från teamet</li>
+        </ul>
+        <div class="meta-label">Triggas av</div>
+        <div class="chips"><span class="chip">"Reprissätta nu eller vänta på kampanjen?"</span><span class="chip">"Våra agenter föreslår två motsatta saker"</span></div>
+        <div class="meta-label">Föreslagna skills</div>
+        <div class="badges"><span class="skbadge">xlsx</span></div>
+      </div>
+
+      <div class="card is-cos reveal d1">
+        <div class="card-top"><div class="icon">🧭</div><div><h3>VD-assistent</h3><span class="tag always">Alltid närvarande</span></div></div>
+        <p class="job">Din dagliga arbetspartner. Orienterar dig i vad teamet levererar, sorterar de viktigaste insikterna och påminner om nästa steg.</p>
+        <div class="meta-label">Kapaciteter</div>
+        <ul class="caps">
+          <li>Summerar dagens insikter från alla agenter</li>
+          <li>Identifierar motsägelser mellan agent-rekommendationer</li>
+          <li>Påminner om vilken agent som är lämplig för ett givet problem</li>
+          <li>Föreslår <code>/update-team</code> när en agent saknas eller är överflödig</li>
+        </ul>
+        <div class="meta-label">Triggas av</div>
+        <div class="chips"><span class="chip">"Hur går det?"</span><span class="chip">"Vad bör jag fokusera på idag?"</span></div>
+        <div class="meta-label">Föreslagna skills</div>
+        <div class="badges"><span class="skbadge">Ingen — integrationsagent</span></div>
+      </div>
+
+      <div class="card reveal d2">
+        <div class="card-top"><div class="icon">💰</div><div><h3>Prissättningsanalytiker</h3><span class="tag special">Specialist</span></div></div>
+        <p class="job">Föreslå reprissättning veckovis, baserat på kostnad, konkurrens och lager.</p>
+        <div class="meta-label">Kapaciteter</div>
+        <ul class="caps">
+          <li>Läser kostnadsbas, konkurrenspriser, lagerstatus per SKU</li>
+          <li>Tillämpar reprissättnings-logik (margin- och lagerstyrd)</li>
+          <li>Genererar förslag med motivering och uppskattad intäkts-impact</li>
+          <li>Kör scenarioanalys ("vad händer om vi sänker 10 %?")</li>
+        </ul>
+        <div class="meta-label">Triggas av</div>
+        <div class="chips"><span class="chip">"Jag måste reprissätta nästa vecka"</span><span class="chip">"Ge mig ett förslag för produktlinjen X"</span></div>
+        <div class="meta-label">Föreslagna skills</div>
+        <div class="badges"><span class="skbadge">xlsx</span></div>
+      </div>
+
+      <div class="card reveal d3">
+        <div class="card-top"><div class="icon">✍️</div><div><h3>Innehålls-kurateor</h3><span class="tag special">Specialist</span></div></div>
+        <p class="job">Generera och redigera produkttexter för nya och uppdaterade produkter — i batch, på flera språk.</p>
+        <div class="meta-label">Kapaciteter</div>
+        <ul class="caps">
+          <li>Läser produktkod, grunddata (mått, material, ursprung, skötsel)</li>
+          <li>Genererar kort/lång beskrivning + skötselanvisningar på flera språk</li>
+          <li>Applicerar tonstil per kategori och lägger till SEO-taggar</li>
+          <li>Genererar tre utkast-varianter att välja mellan</li>
+        </ul>
+        <div class="meta-label">Triggas av</div>
+        <div class="chips"><span class="chip">"Vi lanserar 50 nya produkter på måndag"</span><span class="chip">"Beskrivningarna är korta & inkonsistenta"</span></div>
+        <div class="meta-label">Föreslagna skills</div>
+        <div class="badges"><span class="skbadge">docx (senare)</span></div>
+      </div>
+
+      <div class="card reveal d4">
+        <div class="card-top"><div class="icon">🎯</div><div><h3>Kampanj-arkitekt</h3><span class="tag special">Specialist</span></div></div>
+        <p class="job">Planera kampanjer och strukturera produktbundles för komplementär försäljning.</p>
+        <div class="meta-label">Kapaciteter</div>
+        <ul class="caps">
+          <li>Tar emot tematisk idé, målgrupp, budget, tidsplan</li>
+          <li>Söker lämpliga produkter ur katalogen som matchar tema</li>
+          <li>Strukturerar bundles (2–4 produkter) med komplementär försäljning</li>
+          <li>Genererar kampanj-brief och kör A/B-scenarioanalys</li>
+        </ul>
+        <div class="meta-label">Triggas av</div>
+        <div class="chips"><span class="chip">"Vi behöver en ny säsongskampanj"</span><span class="chip">"Vilka produkter bör vi bundla för hemarbete?"</span></div>
+        <div class="meta-label">Föreslagna skills</div>
+        <div class="badges"><span class="skbadge">Ingen</span></div>
+      </div>
+
+      <div class="card reveal">
+        <div class="card-top"><div class="icon">📊</div><div><h3>Marknadspulsanalytiker</h3><span class="tag special">Specialist</span></div></div>
+        <p class="job">Aggregera kundrecensioner, feedback och trenddata varje dag och flagga viktiga insikter.</p>
+        <div class="meta-label">Kapaciteter</div>
+        <ul class="caps">
+          <li>Läser recensioner från webben, sociala medier, supportsamtal</li>
+          <li>Extraherar och aggregerar feedback per produkt och kategori</li>
+          <li>Identifierar trendmönster och flaggar viktiga outliers</li>
+          <li>Levererar daglig insikts-sammanfattning till assistenten</li>
+        </ul>
+        <div class="meta-label">Triggas av</div>
+        <div class="chips"><span class="chip">Automatiserad daglig körning</span><span class="chip">"Vilka produkter fick negativ feedback?"</span></div>
+        <div class="meta-label">Föreslagna skills</div>
+        <div class="badges"><span class="skbadge">Ingen</span></div>
+      </div>
+
+      <div class="card reveal d1">
+        <div class="card-top"><div class="icon">🌍</div><div><h3>Lokaliseringsspecialist</h3><span class="tag special">Specialist</span></div></div>
+        <p class="job">Anpassa kampanj-budskap och produkttexter för lokala marknader och språk.</p>
+        <div class="meta-label">Kapaciteter</div>
+        <ul class="caps">
+          <li>Tar emot huvudspråk-text och målspråk</li>
+          <li>Genererar lokaliserad version med kulturell anpassning</li>
+          <li>Flaggar potentiella fallgropar ("denna fras är idiomatisk")</li>
+          <li>Kör batch-lokalisering för hundratals produkttexter</li>
+        </ul>
+        <div class="meta-label">Triggas av</div>
+        <div class="chips"><span class="chip">"Vi lanserar denna kampanj på spanska"</span><span class="chip">"Behöver produktbeskrivningar på italienska"</span></div>
+        <div class="meta-label">Föreslagna skills</div>
+        <div class="badges"><span class="skbadge">Ingen</span></div>
+      </div>
+
+      <div class="card reveal d2">
+        <div class="card-top"><div class="icon">🔧</div><div><h3>Teknisk Dokumentör</h3><span class="tag special">Specialist</span></div></div>
+        <p class="job">Förbättra och standardisera sammonteringsanvisningar och teknisk dokumentation för nya och uppdaterade produkter.</p>
+        <div class="meta-label">Kapaciteter</div>
+        <ul class="caps">
+          <li>Läser CAD-data, dellistor, monteringssekvenser</li>
+          <li>Genererar step-by-step monteringsanvisningar på flera språk</li>
+          <li>Inkluderar säkerhetstips och vanliga misstag</li>
+          <li>Standardiserar instruktions-format över produktlinjer</li>
+        </ul>
+        <div class="meta-label">Triggas av</div>
+        <div class="chips"><span class="chip">"Behöver sammonteringsanvisningar för nya stolen"</span><span class="chip">"Dessa instruktioner är otydliga"</span></div>
+        <div class="meta-label">Föreslagna skills</div>
+        <div class="badges"><span class="skbadge">pdf (senare)</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== REJECTED ===== -->
+<section>
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow"><span class="dot" style="background:var(--red)"></span> Avvisat</div>
+      <h2 class="section-title">Vad som medvetet inte blev agenter</h2>
+      <p class="section-lead">Att avvisa moment är kvalitet, inte lättja. För IKEA är fem moment redan automatiserade eller kräver system-integrering som ligger utanför detta scope.</p>
+    </div>
+    <div class="rejected-grid reveal">
+      <div class="rej">
+        <div class="rn">Demand forecasting & supply chain</div>
+        <div class="rm">AI-lämplighet medel, men redan väl löst av specialiserad prognostiserings-programvara (ARIMA, ML). En Claude-agent skulle lägga semantik på något som redan är optimerat. Låg marginal-värde.</div>
+      </div>
+      <div class="rej">
+        <div class="rn">Leverantörssamverkan & orderföljning</div>
+        <div class="rm">Kräver system-integrering (EDI, leverantörsportaler) och ofta direktkommunikation. Claude kan inte autonomt initiera extern kontakt. Föreslå istället API-integration mot procurement-systemet.</div>
+      </div>
+      <div class="rej">
+        <div class="rn">Lageroptimering & replenishment</div>
+        <div class="rm">Redan automatiserad av WMS-system. En Claude-agent skulle vara redundant. Låg värde.</div>
+      </div>
+      <div class="rej">
+        <div class="rn">Inredningsrådgivning & styling</div>
+        <div class="rm">Kreativ, estetisk aktivitet utan klara rätt/fel-kriterier. Claude kan inte ersätta ett mänskligt öga för stilkombination och trendkänsla. Låg AI-lämplighet.</div>
+      </div>
+      <div class="rej">
+        <div class="rn">Budgetering & kostnadskontroll</div>
+        <div class="rm">Redan väl-automatiserad via ERP. Lågt värde för en Claude-agent. Under ribban.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== MEETINGS ===== -->
+<section>
+  <div class="wrap">
+    <div class="section-head center">
+      <div class="eyebrow center"><span class="dot"></span> Mötesfunktionen</div>
+      <h2 class="section-title">När agenterna behöver samlas</h2>
+      <p class="section-lead">Med sex specialister på olika domäner kallar VD-assistenten bara till möte när en enskild agent inte räcker. Tre format, alla med ett definierat resultat.</p>
+    </div>
+    <div class="meet-grid reveal">
+      <div class="meet"><div class="mi">🔍</div><h4>Projektgranskning</h4><p>Hur presterar teamet — vilka reprissättningar, innehållsuppdateringar och feedbacktrender gav effekt, och vad bör ändras.</p></div>
+      <div class="meet"><div class="mi">🔧</div><h4>Förbättring</h4><p>Ett fokuserat möte kring en specifik del — t.ex. när prissättnings- och kampanj-agenten föreslår motsatta rabatter.</p></div>
+      <div class="meet"><div class="mi">🧭</div><h4>Vad gör vi härnäst</h4><p>Riktning framåt: vilka produktlinjer, marknader och kampanjer som ska prioriteras kommande period.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer>
+  <div class="wrap">
+    <div class="built"><span class="dot"></span> Byggt med Agent Team Builder</div>
+    <div class="fstats"><b>11</b> analyserade moment · <b>4</b> kluster över ribban · <b>5</b> medvetet avvisade</div>
+    <div class="hyp-warn">⚠ Läge B (externt företag): hela intaget bygger på publicerade källor och hypoteser, inte på en intervju. Bekräfta dataintegration och review-processer innan implementering.</div>
+    <a class="try-live" href="../portal/?team=ikea&demo=1">💬 Prova teamet live →</a>
+    <a class="backlink" href="index.html">← Tillbaka till alla team</a>
+  </div>
+</footer>
+
+<script>
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.reveal').forEach((el) => io.observe(el));
+</script>
+<!-- Avatar-porträtt på agentkorten + org-noderna -->
+<script src="../avatars.js"></script>
+<script src="gallery.js"></script>
+
+</body>
+</html>

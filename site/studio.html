@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<script>document.documentElement.classList.add('js')</script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Advanced Studio · Agent Team Builder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="showcase.css" />
+</head>
+<body data-team="Advanced Studio">
+
+<!-- ===== STEP NAV ===== -->
+<div class="stepnav">
+  <div class="inner">
+    <a class="home" href="index.html"><span class="dot"></span> Agent Team Builder</a>
+    <a class="step" href="#intake">1 · Intake</a>
+    <a class="step" href="#research">2 · Research</a>
+    <a class="step" href="#skalning">3 · Skalning</a>
+    <a class="step" href="#forsta-projektet">4 · Första projektet</a>
+    <a class="step" href="#proposal">5 · Teamet</a>
+  </div>
+</div>
+
+<!-- ===== HERO ===== -->
+<section class="hero">
+  <div class="wrap">
+    <a class="badge" href="index.html"><span class="dot"></span> AI-konsult · Medelstort (12 personer) · Byggare</a>
+    <h1>Från egna agenter<br />till ett systematiskt<br /><span class="grad">Advanced Studio-team</span></h1>
+    <p class="sub">En designstudio på 12 personer som redan byggt egna AI-verktyg — men osystematiskt. Följ hela vägen: från mognadsintaket, via research, till det första projektet och de sju agenter som faktiskt föreslogs.</p>
+    <div class="meta-pills">
+      <span class="meta-pill"><b>Bransch:</b> UX/UI-design & design systems</span>
+      <span class="meta-pill"><b>Storlek:</b> Medelstort (12 personer)</span>
+      <span class="meta-pill"><b>AI-mognad:</b> Byggare</span>
+      <span class="meta-pill"><b>Källa:</b> Intervju</span>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="num">9</div><div class="lbl">analyserade moment</div></div>
+      <div class="stat"><div class="num">7</div><div class="lbl">agenter i teamet</div></div>
+      <div class="stat"><div class="num">3</div><div class="lbl">medvetet avvisade</div></div>
+    </div>
+  </div>
+  <div class="scroll-hint">↓</div>
+</section>
+
+<!-- ===== STEP 1: INTAKE ===== -->
+<section id="intake">
+  <div class="wrap narrow">
+    <div class="section-head">
+      <div class="eyebrow"><span class="step-num">Steg 1</span> Intake</div>
+      <h2 class="section-title">Vad de berättade</h2>
+      <p class="section-lead">En byggare-kund har redan provat — och byggt. Innan något team föreslås lyssnar vi på var det faktiskt klämmer, i deras egna ord.</p>
+    </div>
+    <div class="quotes">
+      <div class="quote pain reveal">
+        "Vi dokumenterar mycket design decisions men processen är manuell och tar för mycket tid. Varje projekt ska ha ett 'design rationale'-dokument."
+        <span class="who">— om dokumentationen</span>
+      </div>
+      <div class="quote pain reveal d1">
+        "Kundpresentationer är jättekrävande — vi gör dem i Keynote och det tar ofta en hel dag att förbereda varje."
+        <span class="who">— om presentationerna</span>
+      </div>
+      <div class="quote pain reveal d2">
+        "Onboarding av nya designers tar mycket tid; en ny designer tar ungefär en vecka att komma in i ett projekt, mycket på grund av att mycket kontext är outtalat."
+        <span class="who">— om onboarding</span>
+      </div>
+      <div class="quote reveal d3">
+        "Vi har redan ett par Claude-agenter: en som granskar designbeskrivningar mot vår stilguide, en som skriver kundpresentationer. Dessa fungerar okej men kan bli bättre."
+        <span class="who">— om vad de redan byggt</span>
+      </div>
+      <div class="quote reveal d4">
+        "Att systematisera det vi redan gör — vi har inget gemensamt idag. Att frigöra senior designers från repetitivt arbete så de kan fokusera på det svåra: konceptutveckling och kundworkshops."
+        <span class="who">— om målet</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== STEP 2: RESEARCH ===== -->
+<section id="research">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow"><span class="step-num">Steg 2</span> Research</div>
+      <h2 class="section-title">Vad vi hittade</h2>
+      <p class="section-lead">Nio återkommande arbetsmoment, var och en bedömd för hur väl den lämpar sig för AI. Sex höll måttet, tre gjorde det inte.</p>
+    </div>
+    <div class="moments reveal">
+      <div class="moment">
+        <div class="mtxt"><div class="mname">Skrivande av kundpresentationer</div><div class="mmeta">~5–8 h/presentation · "en hel dag per kund"</div></div>
+        <span class="fit high">Hög</span>
+      </div>
+      <div class="moment">
+        <div class="mtxt"><div class="mname">Dokumentation av design rationale</div><div class="mmeta">~2–3 h/projekt · ett av tre som tar mest tid</div></div>
+        <span class="fit high">Hög</span>
+      </div>
+      <div class="moment">
+        <div class="mtxt"><div class="mname">Onboarding av nya designers</div><div class="mmeta">~1 vecka idag · explicit framgångskriterium</div></div>
+        <span class="fit high">Hög</span>
+      </div>
+      <div class="moment">
+        <div class="mtxt"><div class="mname">Stilguide-granskning & upprätthållande</div><div class="mmeta">kontinuerlig · befintlig agent "hit or miss"</div></div>
+        <span class="fit high">Hög</span>
+      </div>
+      <div class="moment">
+        <div class="mtxt"><div class="mname">Komponentbibliotek-dokumentation</div><div class="mmeta">veckovis · smärtnivå okänd (implicit)</div></div>
+        <span class="fit med">Medel</span>
+      </div>
+      <div class="moment">
+        <div class="mtxt"><div class="mname">Proposals för nya projekt</div><div class="mmeta">veckovis (fredagar) · ej explicit smärta</div></div>
+        <span class="fit med">Medel</span>
+      </div>
+      <div class="moment">
+        <div class="mtxt"><div class="mname">Komponentkod-generering från Figma</div><div class="mmeta">redan löst · Cursor-workflow "fungerar bra"</div></div>
+        <span class="fit low">Under ribban</span>
+      </div>
+      <div class="moment">
+        <div class="mtxt"><div class="mname">Moodboard-generering med generativ AI</div><div class="mmeta">redan använt · Midjourney & DALL-E</div></div>
+        <span class="fit low">Under ribban</span>
+      </div>
+      <div class="moment">
+        <div class="mtxt"><div class="mname">Design reviews (interna)</div><div class="mmeta">veckovis · kräver mänskligt omdöme</div></div>
+        <span class="fit low">Låg</span>
+      </div>
+    </div>
+
+    <div class="section-head" style="margin-top:54px">
+      <h2 class="section-title" style="font-size:clamp(22px,3vw,30px)">Grupperat i tre kluster</h2>
+    </div>
+    <div class="clusters reveal">
+      <div class="cluster">
+        <div class="cp">Prioritet 1</div>
+        <div class="ct">Kundkommunikation & presentationer</div>
+        <div class="cd">Kundpresentationer + proposals. Hög smärta, veckovis. Marcus presentationsskrivare finns redan men kan systematiseras. Input i Figma → Keynote-struktur ut.</div>
+      </div>
+      <div class="cluster">
+        <div class="cp">Prioritet 1</div>
+        <div class="ct">Design-dokumentation & kontextbevarande</div>
+        <div class="cd">Rationale, stilguide-granskning och onboarding. Tre smärtpunkter, en röd tråd: att göra outtalad kontext explicit. Onboarding är det högst prioriterade.</div>
+      </div>
+      <div class="cluster">
+        <div class="cp">Prioritet 2 · version 2</div>
+        <div class="ct">Designsystem & komponenthantering</div>
+        <div class="cd">Komponentkod + komponentdokumentation. Tech lead har redan löst kod-delen med Cursor. Snarare ett designsystem-verktyg i version 2 än egna agenter nu.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== STEP 3: SKALNING ===== -->
+<section id="skalning">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow"><span class="step-num">Steg 3</span> Skalning</div>
+      <h2 class="section-title">Varför sju agenter</h2>
+    </div>
+    <div class="decision reveal">
+      <div class="big">Medelstort (12 personer) + byggare-mognad → tabell 7–10. Research landar på <b>7 agenter</b>: VD, VD-assistent och fem specialister.</div>
+      <p>Storlekstabellen säger 7–10 för ett medelstort företag. Research var konservativ — två starkt motiverade kluster över ribban, plus befintliga agenter att bygga vidare på. Byggare-nivån höjer kapaciteten att driva fler och mer specialiserade agenter, men vi håller oss medvetet i nedre delen av intervallet och låter proposal-steget avgöra. Resultatet: fem specialister i stället för sex, och Kluster C blir version 2.</p>
+      <div class="scale-row">
+        <span class="scale-chip"><b>Tabell-intervall (medelstort):</b> 7–10 agenter</span>
+        <span class="scale-chip"><b>Mognadsjustering (byggare):</b> normal storlek</span>
+        <span class="scale-chip"><b>Kluster över ribban:</b> 2 (+ 1 till v2)</span>
+        <span class="scale-chip"><b>Totalt:</b> 1 VD + 1 assistent + 5 specialister</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== STEP 4: FÖRSTA PROJEKTET ===== -->
+<section id="forsta-projektet">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow"><span class="step-num">Steg 4</span> Första projektet</div>
+      <h2 class="section-title">Första projektet</h2>
+      <p class="section-lead">För en konsultkund börjar vi inte med hela teamet. Vi pekar ut ett första projekt som är litet i tid, har en ägare och mäter något konkret — så att värdet syns redan första veckan.</p>
+    </div>
+
+    <div class="decision reveal">
+      <div class="big">Rekommendation: <b>Onboarding-paketBuilder</b> för nya designers.</div>
+      <p>En ny agent som tar en Figma-fil och en projektbeskrivning och genererar ett komplett onboarding-paket: projektsammanfattning, design-filosofi, stilguide-sammanfattning och tidigare feedback-mönster. Den valdes före design-rationale och presentationsskrivaren för att den är en helt ny agent (inte iterativ), har en tydlig ägare och svarar direkt mot kundens eget framgångskriterium.</p>
+    </div>
+
+    <div class="quotes" style="margin-top:26px">
+      <div class="quote pain reveal">
+        "Onboarding av nya designers tar ungefär en vecka. Vi vill kunna onboarda en ny designer till ett projekt på en dag istället för en vecka."
+        <span class="who">— problemet i deras egna ord</span>
+      </div>
+    </div>
+
+    <div class="section-head" style="margin-top:46px">
+      <h2 class="section-title" style="font-size:clamp(22px,3vw,30px)">Vad som ska vara sant efter vecka 1</h2>
+    </div>
+    <div class="moments reveal">
+      <div class="moment">
+        <div class="mtxt"><div class="mname">Agenten tar en Figma-fil + projektbeskrivning som input</div><div class="mmeta">börjar leverera värde inom första veckan</div></div>
+        <span class="fit high">Klart</span>
+      </div>
+      <div class="moment">
+        <div class="mtxt"><div class="mname">Genererar onboarding-paket: sammanfattning, design-filosofi, stilguide, feedback-mönster</div><div class="mmeta">markdown, läsbart på ett par timmar</div></div>
+        <span class="fit high">Klart</span>
+      </div>
+      <div class="moment">
+        <div class="mtxt"><div class="mname">Marcus testar på nästa nya designer som startar</div><div class="mmeta">mått: tog det &lt; en dag i stället för en vecka?</div></div>
+        <span class="fit high">Klart</span>
+      </div>
+    </div>
+
+    <div class="quotes" style="margin-top:30px">
+      <div class="quote reveal">
+        <b>Vem äger det:</b> Marcus Eriksson, Tech Lead. Han är redan den som förstår AI-systemen på Advanced Studio och har byggt agenter tidigare. Han kan iterera snabbt.
+        <span class="who">— ägarskap & version 2: live-synk från Figma, personalisering per designer-nivå, integration med PM-verktyg</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== STEP 5: PROPOSAL / TEAM ===== -->
+<section id="proposal">
+  <div class="wrap">
+    <div class="section-head center">
+      <div class="eyebrow center"><span class="step-num">Steg 5</span> Förslag</div>
+      <h2 class="section-title" id="team">Teamet</h2>
+      <p class="section-lead">Sju agenter — varje en på grund av ett konkret fynd, och flera byggda vidare på agenter studion redan har.</p>
+    </div>
+
+    <div class="org">
+      <div class="org-row reveal">
+        <div class="node ceo"><div class="role">VD</div><div class="nm">⚡ Studio-dirigent</div><div class="jb">Prioriterar veckan, löser blockerare, spårar AI-tidsvinster.</div></div>
+      </div>
+      <div class="connector solid reveal"></div>
+      <div class="org-row reveal">
+        <div class="node cos"><div class="role">VD-assistent</div><div class="nm">🧭 Studio-logistiker</div><div class="jb">Håller informationen flödande, hänvisar till rätt agent.</div></div>
+      </div>
+      <div class="connector reveal"></div>
+      <div class="org-row reveal">
+        <div class="node spec"><div class="role">Specialist</div><div class="nm">📦 Onboarding-paketBuilder</div><div class="jb">Onboarding-paket för nya designers.</div></div>
+        <div class="node spec"><div class="role">Specialist</div><div class="nm">📝 Design-rationale</div><div class="jb">Dokumenterar varför besluten togs.</div></div>
+        <div class="node spec"><div class="role">Specialist</div><div class="nm">🎤 Presentationsskrivare</div><div class="jb">Keynote-struktur från Figma.</div></div>
+      </div>
+      <div class="org-row reveal" style="margin-top:18px">
+        <div class="node spec"><div class="role">Specialist</div><div class="nm">🔎 Design-granskare</div><div class="jb">Granskar mot stilguiden.</div></div>
+        <div class="node spec"><div class="role">Specialist</div><div class="nm">📄 Proposals-generator</div><div class="jb">Proposal-utkast för nya uppdrag.</div></div>
+      </div>
+    </div>
+
+    <div class="cards">
+      <div class="card is-ceo reveal">
+        <div class="card-top"><div class="icon">⚡</div><div><h3>VD: Studio-dirigent</h3><span class="tag always">Alltid närvarande</span></div></div>
+        <p class="job">Håller huvudet på projekt som närmar sig deadline och designers som gör sitt bästa arbete. Prioriterar veckan, löser blockerare, ser till att senior designers fokuserar på konceptutveckling istället för admin.</p>
+        <div class="meta-label">Kapaciteter</div>
+        <ul class="caps">
+          <li>Prioriterar veckoplanering mot kunddeadlines och personals kapacitet</li>
+          <li>Identifierar när seniordesignern är blockerad av administrativt arbete</li>
+          <li>Ser när AI-agenter sparar faktisk tid för teamet (tracking)</li>
+          <li>Hanterar förändringar i stilguide och uppdaterar AI-systemet</li>
+        </ul>
+        <div class="meta-label">Triggas av</div>
+        <div class="chips"><span class="chip">Måndagens projektgenomgång</span><span class="chip">Blockerade moment & agent-köer</span></div>
+        <div class="meta-label">Rör inte</div>
+        <div class="chips"><span class="chip">Skriver inte kod, designar inte, sitter inte i alla kundmöten</span></div>
+      </div>
+
+      <div class="card is-cos reveal d1">
+        <div class="card-top"><div class="icon">🧭</div><div><h3>VD-assistent: Studio-logistiker</h3><span class="tag always">Alltid närvarande</span></div></div>
+        <p class="job">Ser till att informationen flödar mellan kundmöten, design, AI-agenter och teknik. Hänvisar uppdrag till rätt agent och eskalerar när något ligger fast.</p>
+        <div class="meta-label">Kapaciteter</div>
+        <ul class="caps">
+          <li>Sorterar kundpresentations-förfrågningar till rätt agent, inklusive deadline</li>
+          <li>Hänvisar onboarding-frågor till Onboarding-paketBuilder</li>
+          <li>Säger "du behöver designgranskaren" eller "rationale-dokumentören först"</li>
+          <li>Eskalerar när en agent inte klarar något och en människa behöver ta över</li>
+        </ul>
+        <div class="meta-label">Triggas av</div>
+        <div class="chips"><span class="chip">Dagligt triage</span><span class="chip">"Jag behöver en presentation på onsdag"</span></div>
+        <div class="meta-label">Rör inte</div>
+        <div class="chips"><span class="chip">Skriver inte själv presentationer — vägrar kalla till möte när en agent räcker</span></div>
+      </div>
+
+      <div class="card reveal d2">
+        <div class="card-top"><div class="icon">📦</div><div><h3>Onboarding-paketBuilder</h3><span class="tag special">Specialist · Första projektet</span></div></div>
+        <p class="job">När en ny designer börjar på ett projekt, genererar agenten ett komplett onboarding-paket. Nya designers läser paketet på ett par timmar i stället för att få live-handledning i en vecka.</p>
+        <div class="meta-label">Kapaciteter</div>
+        <ul class="caps">
+          <li>Läser Figma-fil och design history från ett projekt</li>
+          <li>Genererar projektsammanfattning: vad är problemet, vad har lösts, vad är nästa</li>
+          <li>Listar tidigare feedback-mönster (spacing, accessibility, konsistens)</li>
+          <li>Skapar en onboarding-checklista som markdown</li>
+        </ul>
+        <div class="meta-label">Triggas av</div>
+        <div class="chips"><span class="chip">"Jag startar på projekt X på måndag"</span></div>
+        <div class="meta-label">Föreslagna skills</div>
+        <div class="badges"><span class="skbadge">Markdown-dokumentation</span><span class="skbadge">Figma-parsing (om finns)</span></div>
+      </div>
+
+      <div class="card reveal d3">
+        <div class="card-top"><div class="icon">📝</div><div><h3>Design-rationale-dokumentör</h3><span class="tag special">Specialist</span></div></div>
+        <p class="job">Sammanfattar varför varje större designbeslut gjordes. Output: ett "design rationale"-dokument för varje projekt. Naturlig följeslagare till onboarding — båda gör implicit kontext explicit.</p>
+        <div class="meta-label">Kapaciteter</div>
+        <ul class="caps">
+          <li>Läser designbeskrivningar, Figma-anteckningar och commit-messages</li>
+          <li>Strukturerar: Problem → Alternativ → Vald lösning → Anledning → Trade-offs</li>
+          <li>Länkar till stilguide-principer</li>
+          <li>Flaggar när ett beslut verkar strida mot tidigare beslut</li>
+        </ul>
+        <div class="meta-label">Triggas av</div>
+        <div class="chips"><span class="chip">Efter en design review</span><span class="chip">"Vi behöver dokumentera varför"</span></div>
+        <div class="meta-label">Föreslagna skills</div>
+        <div class="badges"><span class="skbadge">Strukturerad sammanfattning</span><span class="skbadge">Git-/Figma-comment-parsing</span></div>
+      </div>
+
+      <div class="card reveal d4">
+        <div class="card-top"><div class="icon">🎤</div><div><h3>Presentationsskrivare — förbättrad</h3><span class="tag special">Specialist · befintlig</span></div></div>
+        <p class="job">Genererar en Keynote-struktur med rätt berättelse, bildplaceringar och noteringar. Seniordesignern laddar in bilderna och tweakar tonen. Bygger på Marcus befintliga agent — "den bästa av dem".</p>
+        <div class="meta-label">Kapaciteter</div>
+        <ul class="caps">
+          <li>Läser designbeskrivning och Figma-fil</li>
+          <li>Skapar berättelse: problem → lösning → design decisions → nästa steg</li>
+          <li>Genererar Keynote-outline med rätt antal slides och anteckningar</li>
+          <li>Personaliserar för kund-typ (pitch eller handoff?)</li>
+        </ul>
+        <div class="meta-label">Triggas av</div>
+        <div class="chips"><span class="chip">"Vi måste presentera för kunden på fredag"</span></div>
+        <div class="meta-label">Föreslagna skills</div>
+        <div class="badges"><span class="skbadge">Keynote-struktur (om finns)</span><span class="skbadge">Design-rationale-integration</span></div>
+      </div>
+
+      <div class="card reveal d4">
+        <div class="card-top"><div class="icon">🔎</div><div><h3>Design-granskare / Stilguide-handlare</h3><span class="tag special">Specialist · befintlig</span></div></div>
+        <p class="job">Läser designbeskrivningar och komponenter, granskar mot stilguide-principerna, flaggar avvikelser och föreslår korrektioner. Förbättring av Marcus befintliga granskare som är "lite hit or miss".</p>
+        <div class="meta-label">Kapaciteter</div>
+        <ul class="caps">
+          <li>Läser stilguide-dokument och Figma-komponenter</li>
+          <li>Verifierar spacing, typografi, färger, ikoner, accessibility</li>
+          <li>Flaggar avvikelser med konkreta förslag på korrektioner</li>
+          <li>Länkar till stilguide-sektionen för varje flagg</li>
+        </ul>
+        <div class="meta-label">Triggas av</div>
+        <div class="chips"><span class="chip">"Granska det här mot stilguiden"</span><span class="chip">Automatiskt före design review</span></div>
+        <div class="meta-label">Föreslagna skills</div>
+        <div class="badges"><span class="skbadge">Stilguide-matching / design-token-parsing</span></div>
+      </div>
+
+      <div class="card reveal d4">
+        <div class="card-top"><div class="icon">📄</div><div><h3>Proposals-generator</h3><span class="tag special">Specialist · prioritet 2</span></div></div>
+        <p class="job">När ett nytt kunduppdrag kommer in, genererar agenten ett proposal-utkast med rätt template, tidsplan och prissättning-struktur. En seniordesigner eller Marcus personaliserar och skickar.</p>
+        <div class="meta-label">Kapaciteter</div>
+        <ul class="caps">
+          <li>Identifierar projekttyp (branding, web design, design system)</li>
+          <li>Hämtar tidigare proposal av samma typ som template</li>
+          <li>Genererar struktur: problem, lösning, timeline, deliverables, pricing</li>
+          <li>Lägger in standardkrav för accessibility och design review</li>
+        </ul>
+        <div class="meta-label">Triggas av</div>
+        <div class="chips"><span class="chip">"Vi behöver ett proposal för detta"</span></div>
+        <div class="meta-label">Rör inte</div>
+        <div class="chips"><span class="chip">Skriver inte kontrakt, juridiska termer eller budgetar — en mall-generator</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== REJECTED ===== -->
+<section>
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow"><span class="dot" style="background:var(--red)"></span> Avvisat</div>
+      <h2 class="section-title">Vad som medvetet inte blev agenter</h2>
+      <p class="section-lead">Att avvisa moment är kvalitet, inte lättja. Här lät vi bli — antingen för att det redan är löst eller för att det kräver mänskligt omdöme.</p>
+    </div>
+    <div class="rejected-grid reveal">
+      <div class="rej">
+        <div class="rn">Komponentkod-generering från Figma</div>
+        <div class="rm">Tech lead har redan löst detta med ett Cursor-baserat workflow som "fungerar bra". Ingen ny agent behövs — kan bli en integration i version 2.</div>
+      </div>
+      <div class="rej">
+        <div class="rn">Design reviews (interna)</div>
+        <div class="rm">Expert judgment; agenten kan inte ersätta den. Kan förberedas av andra agenter, men är primärt mänskligt arbete.</div>
+      </div>
+      <div class="rej">
+        <div class="rn">Moodboard-generering</div>
+        <div class="rm">Redan löst med Midjourney och DALL-E. Agenter behövs inte här; integrationspunkterna är redan etablerade.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== MEETINGS ===== -->
+<section>
+  <div class="wrap">
+    <div class="section-head center">
+      <div class="eyebrow center"><span class="dot"></span> Mötesfunktionen</div>
+      <h2 class="section-title">När agenterna behöver samlas</h2>
+      <p class="section-lead">VD-assistenten kallar bara till möte när en enskild agent inte räcker. Tre format, alla med ett definierat resultat.</p>
+    </div>
+    <div class="meet-grid reveal">
+      <div class="meet"><div class="mi">🔍</div><h4>Projektgranskning</h4><p>Hur presterar teamet och agenterna — vad sparade tid, vad missade kontext, vad bör itereras.</p></div>
+      <div class="meet"><div class="mi">🔧</div><h4>Förbättring</h4><p>Ett fokuserat möte kring en specifik agent som ska bli bättre — t.ex. att skärpa design-granskaren.</p></div>
+      <div class="meet"><div class="mi">🧭</div><h4>Vad gör vi härnäst</h4><p>Riktning framåt: när är onboarding-projektet moget för version 2, och ska designsystem-spåret startas.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer>
+  <div class="wrap">
+    <div class="built"><span class="dot"></span> Byggt med Agent Team Builder · AI-konsult-läge</div>
+    <div class="fstats"><b>9</b> analyserade moment · <b>2</b> kluster över ribban · <b>1</b> första projekt · <b>3</b> medvetet avvisade</div>
+    <a class="try-live" href="../portal/?team=studio&demo=1">💬 Prova teamet live →</a>
+    <a class="backlink" href="index.html">← Tillbaka till alla team</a>
+  </div>
+</footer>
+
+<script>
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.reveal').forEach((el) => io.observe(el));
+</script>
+<!-- Avatar-porträtt på agentkorten + org-noderna -->
+<script src="../avatars.js"></script>
+<script src="gallery.js"></script>
+
+</body>
+</html>

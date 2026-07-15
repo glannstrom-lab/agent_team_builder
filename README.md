@@ -30,7 +30,11 @@ i `meetings/` och (i konsult-läget) ett första-projekt-dokument och en
 
 - Ett generiskt "team-i-en-låda". Om output ser likadant ut oavsett input
   är verktyget trasigt.
-- Ett hostat verktyg. Allt körs via din egen Claude Code-installation.
+- Ett hostat verktyg. Kärnan körs via din egen Claude Code-installation. Det
+  finns ett valfritt webblager (builder/galleri/portal/branscher) som körs i
+  webbläsaren med din egen API-nyckel. Kärnan och BYO-läget kräver ingen server;
+  ett valfritt tunt köp/leverans-lager (Cloudflare Pages Functions + D1) finns
+  för moln-sparade team.
 - En AI-strategirapport. Verktyget producerar fungerande agent-team och
   pedagogiskt material, inte whitepapers.
 
@@ -40,3 +44,24 @@ i `meetings/` och (i konsult-läget) ett första-projekt-dokument och en
 - `docs/team-builder.md` — detaljer om team-builder-läget.
 - `docs/ai-consultant.md` — detaljer om konsult-läget.
 - `examples/` — exempel-output för olika företagstyper.
+- `docs/produktstrategi-sjalvbetjaning.md` — affärs-/produktstrategi och roadmap.
+- `docs/m2-backend-spec.md` — spec för backend-lagret (Stripe + D1).
+
+## Webbgränssnitt (valfritt)
+
+Fyra statiska appar gör verktyget demobart och användbart för icke-tekniska
+kunder, plus en hub som binder ihop dem:
+
+- **`builder/`** — bygg ett team live i webbläsaren (kör den riktiga pipelinen).
+- **`site/`** — galleri med fem exempel som visar hela processen.
+- **`portal/`** — kundportal där kunden chattar med sitt team (installerbar PWA).
+- **`verticals/`** — branschlandningssidor, en live-demo per bransch.
+
+Kör lokalt från repo-roten (`npm run dev` eller `python -m http.server 8420`)
+och öppna `http://localhost:8420/`. Bygg/deploy till Cloudflare Pages med
+`npm run build` / `npm run deploy`.
+
+Builder och portal anropar Claude direkt från webbläsaren och kräver din egen
+Anthropic-nyckel (lagras bara lokalt) — men demolägen (`?demo=1`) visar allt
+utan nyckel. Galleriet kräver ingen nyckel. Mer i `CLAUDE.md` och
+`docs/m2-backend-spec.md`.

@@ -118,13 +118,16 @@ källa:              intervju
 
 ### Storleksmappning
 
-| Svar        | storlek      |
-|-------------|--------------|
-| Solo        | solo         |
-| 2–5         | mikro        |
-| 6–20        | litet        |
-| 20–100      | medelstort   |
-| 100+        | stort        |
+Banden matchar `docs/scaling.md` (facit) och builder-formuläret. Mappa på
+antal personer:
+
+| Antal personer | storlek      |
+|----------------|--------------|
+| 1 (solo)       | solo         |
+| 2              | mikro        |
+| 3–10           | litet        |
+| 10–100         | medelstort   |
+| 100+           | stort        |
 
 ## Språk
 
