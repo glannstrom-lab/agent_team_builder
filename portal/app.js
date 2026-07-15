@@ -10,13 +10,13 @@
 
 const KEY_STORAGE = "atb_api_key";
 const MODEL_STORAGE = "atb_model";
-const API_URL = "https://api.anthropic.com/v1/messages";
-const ANTHROPIC_VERSION = "2023-06-01";
-const DEFAULT_MODEL = "claude-opus-4-8";
+const DEFAULT_MODEL = "claude-sonnet-4-6"; // billig default för BYO-kund; kan höjas till Opus i UI
+// API-URL, anthropic-version och själva strömningen ligger i ../atb-claude.js
+// (window.ATBClaude) — delat med Buildern så de inte kan glida isär.
 
 const MODELS = [
+  { id: "claude-sonnet-4-6", label: "Sonnet 4.6 — snabb & prisvärd (rekommenderad)" },
   { id: "claude-opus-4-8", label: "Opus 4.8 — mest kapabel" },
-  { id: "claude-sonnet-4-6", label: "Sonnet 4.6 — snabb & billigare" },
   { id: "claude-haiku-4-5", label: "Haiku 4.5 — billigast" },
 ];
 
@@ -24,6 +24,9 @@ let team = null; // sätts när ett team laddats
 const state = {
   apiKey: localStorage.getItem(KEY_STORAGE) || "",
   model: localStorage.getItem(MODEL_STORAGE) || DEFAULT_MODEL,
+  // Demoläge: bläddra och chatta utan nyckel — svaren är förskrivna exempel.
+  // Aktiveras via knapp eller ?demo=1 (delbar demolänk).
+  demo: new URLSearchParams(location.search).get("demo") === "1",
   activeAgentId: null,
   history: {}, // { [agentId]: [{role, content}] }
   streaming: false,
@@ -39,6 +42,39 @@ const el = (tag, cls, txt) => {
 };
 const agentById = (id) => team.agents.find((a) => a.id === id);
 const getSlug = () => new URLSearchParams(location.search).get("team");
+
+// ---------- avatarer ----------
+// Tilldelningslogiken är delad (../avatars.js → window.ATBAvatars) så att
+// portal, builder, verticals och galleri ger samma agent samma porträtt.
+// Varje agent får ett `avatarN` (1..25) om den saknar det; bilden ligger i
+// portal/avatars/ och refereras härifrån med basen "avatars/". Ett uttryckligt
+// `avatar`-fält (full sökväg) i team-konfigen vinner alltid.
+const AVATAR_BASE = "avatars/";
+function assignAvatars(t) {
+  if (window.ATBAvatars) window.ATBAvatars.assign(t);
+}
+function avatarSrcFor(agent) {
+  if (agent.avatar) return agent.avatar; // uttryckligt val vinner
+  if (agent.avatarN && window.ATBAvatars) return window.ATBAvatars.src(agent.avatarN, AVATAR_BASE);
+  return null;
+}
+
+// Renderar en agents bild-avatar (om en finns) annars emoji-ikonen.
+// Samma box-klass (.agent-icon/.chat-icon/.empty-icon) används i båda fallen,
+// så styling och aktiv-glow funkar oavsett. Om bilden inte kan laddas faller
+// vi tillbaka till emoji-ikonen så portalen aldrig visar en trasig bild.
+function agentIcon(agent, cls) {
+  const src = avatarSrcFor(agent);
+  if (src) {
+    const box = el("span", cls + " has-img");
+    const img = el("img", "icon-img");
+    img.src = src; img.alt = ""; img.loading = "lazy"; img.decoding = "async";
+    img.onerror = () => { box.classList.remove("has-img"); box.textContent = agent.icon || "•"; };
+    box.appendChild(img);
+    return box;
+  }
+  return el("span", cls, agent.icon);
+}
 
 function hubLink(cls) {
   const a = el("a", cls || "hublink", "← Agent Team Builder");
@@ -58,26 +94,37 @@ function loadScript(src) {
 
 async function loadTeam(slug) {
   window.TEAM = null;
+  if (!/^[A-Za-z0-9_-]{1,64}$/.test(slug || "")) throw new Error("Ogiltig team-länk.");
   if (slug === "__draft") {
     const raw = localStorage.getItem("atb_draft_team");
     if (!raw) throw new Error("Inget team-utkast hittades. Bygg ett i Builder först.");
     window.TEAM = JSON.parse(raw);
   } else {
-    await loadScript(`teams/${slug}.js?v=${Date.now()}`);
+    try {
+      await loadScript(`teams/${slug}.js`);
+    } catch (_) {
+      // Inte ett inbyggt team — försök hämta ett moln-sparat team (M2a, capability-URL).
+      // Timeout så en seg/hängande request inte låser portalen; fel loggas men
+      // sväljs så att vi faller igenom till "Hittade inget team"-meddelandet.
+      const res = await window.ATBClaude.fetchWithTimeout(`/api/teams/${encodeURIComponent(slug)}`)
+        .catch((e) => { console.warn("Moln-team kunde inte hämtas:", slug, e && e.message); return null; });
+      if (res && res.ok) window.TEAM = await res.json();
+    }
   }
-  if (!window.TEAM) throw new Error("Team-filen saknar konfiguration.");
+  if (!window.TEAM) throw new Error("Hittade inget team med den länken — kontrollera att den är komplett.");
   team = window.TEAM;
   // robusthet: säkerställ att teamet har agenter och en giltig ingångsagent
   if (!Array.isArray(team.agents) || team.agents.length === 0) {
     throw new Error("Teamet saknar agenter.");
   }
+  assignAvatars(team); // ge varje agent en (stabil, slumpad) avatar om ingen är satt
   state.activeAgentId = agentById(team.entryAgent) ? team.entryAgent : team.agents[0].id;
   if (!localStorage.getItem(MODEL_STORAGE) && team.defaultModel) state.model = team.defaultModel;
 }
 
 // ---------- boot ----------
 async function boot() {
-  if (!state.apiKey) { renderKeySetup(); return; }
+  if (!state.apiKey && !state.demo) { renderKeySetup(); return; }
   const slug = getSlug();
   if (!slug) { renderPicker(); return; }
   try {
@@ -129,8 +176,24 @@ function renderKeySetup() {
   help.innerHTML = 'Har ni ingen nyckel än? Skapa en på <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noreferrer">console.anthropic.com</a> — det tar någon minut.';
   wrap.appendChild(help);
 
+  const demoBtn = el("button", "demo-link", "Eller utforska i demoläge utan nyckel →");
+  demoBtn.onclick = () => { state.demo = true; boot(); };
+  wrap.appendChild(demoBtn);
+
   root.appendChild(wrap);
   setTimeout(() => input.focus(), 50);
+}
+
+// Lämna demoläget och visa nyckel-skärmen (behåller vald team-slug i URL:en).
+function connectKey() {
+  state.demo = false;
+  const params = new URLSearchParams(location.search);
+  if (params.get("demo")) {
+    params.delete("demo");
+    const q = params.toString();
+    history.replaceState(null, "", location.pathname + (q ? "?" + q : ""));
+  }
+  renderKeySetup();
 }
 
 // ---------- team picker ----------
@@ -166,9 +229,9 @@ function renderPicker(errMsg) {
     wrap.appendChild(grid);
   }
 
-  const reset = el("button", "link-btn", "Byt API-nyckel");
+  const reset = el("button", "link-btn", state.demo ? "Koppla in din nyckel" : "Byt API-nyckel");
   reset.style.marginTop = "26px";
-  reset.onclick = resetKey;
+  reset.onclick = state.demo ? connectKey : resetKey;
   wrap.appendChild(reset);
 
   root.appendChild(wrap);
@@ -212,7 +275,7 @@ function renderSidebar() {
     const item = el("button", "agent-item");
     item.dataset.agent = a.id;
     item.title = a.tagline || a.name;
-    item.appendChild(el("span", "agent-icon", a.icon));
+    item.appendChild(agentIcon(a, "agent-icon"));
     const meta = el("span", "agent-meta");
     meta.appendChild(el("span", "agent-name", a.name));
     meta.appendChild(el("span", "agent-role", a.tagline));
@@ -236,8 +299,8 @@ function renderSidebar() {
   sel.onchange = () => { state.model = sel.value; localStorage.setItem(MODEL_STORAGE, sel.value); };
   foot.appendChild(sel);
 
-  const reset = el("button", "link-btn", "Byt API-nyckel");
-  reset.onclick = resetKey;
+  const reset = el("button", "link-btn", state.demo ? "Koppla in din nyckel" : "Byt API-nyckel");
+  reset.onclick = state.demo ? connectKey : resetKey;
   foot.appendChild(reset);
   side.appendChild(foot);
 
@@ -256,8 +319,20 @@ function renderMain() {
   team.agents.forEach((a) => { const o = el("option", null, `${a.icon} ${a.name}`); o.value = a.id; msel.appendChild(o); });
   msel.onchange = () => selectAgent(msel.value);
   mbar.appendChild(msel);
-  const mreset = el("button", "mb-reset", "Nyckel"); mreset.onclick = resetKey;
+  const mreset = el("button", "mb-reset", state.demo ? "Nyckel" : "Nyckel");
+  mreset.onclick = state.demo ? connectKey : resetKey;
   mbar.appendChild(mreset);
+
+  if (state.demo) {
+    const banner = el("div", "demo-banner");
+    banner.appendChild(el("span", "demo-dot"));
+    banner.appendChild(el("span", "demo-text", "Demoläge — svaren är förskrivna exempel som visar hur portalen känns."));
+    const connect = el("button", "demo-connect", "Koppla in din nyckel för riktiga svar →");
+    connect.onclick = connectKey;
+    banner.appendChild(connect);
+    main.appendChild(banner);
+  }
+
   main.appendChild(mbar);
 
   const header = el("header", "chat-header"); header.id = "chat-header";
@@ -292,7 +367,7 @@ function selectAgent(id) {
 
   const header = $("#chat-header");
   header.innerHTML = "";
-  header.appendChild(el("span", "chat-icon", agent.icon));
+  header.appendChild(agentIcon(agent, "chat-icon"));
   const ht = el("div");
   ht.appendChild(el("div", "chat-title", agent.name));
   ht.appendChild(el("div", "chat-sub", agent.tagline));
@@ -310,7 +385,7 @@ function renderLog() {
 
   if (msgs.length === 0) {
     const empty = el("div", "empty");
-    empty.appendChild(el("div", "empty-icon", agent.icon));
+    empty.appendChild(agentIcon(agent, "empty-icon"));
     empty.appendChild(el("div", "empty-title", agent.name));
     empty.appendChild(el("div", "empty-sub", agent.tagline));
     log.appendChild(empty);
@@ -357,13 +432,15 @@ async function sendMessage() {
   state.streaming = true;
   if (send) send.disabled = true;
   let acc = "";
+  const onDelta = (delta) => {
+    acc += delta;
+    assistantBubble.classList.remove("typing");
+    assistantBubble.textContent = acc;
+    log.scrollTop = log.scrollHeight;
+  };
   try {
-    await streamClaude(agent.system, state.history[agentId], (delta) => {
-      acc += delta;
-      assistantBubble.classList.remove("typing");
-      assistantBubble.textContent = acc;
-      log.scrollTop = log.scrollHeight;
-    });
+    if (state.demo) await streamDemo(agent, state.history[agentId], onDelta);
+    else await streamClaude(agent.system, state.history[agentId], onDelta);
     state.history[agentId].push({ role: "assistant", content: acc });
   } catch (err) {
     assistantBubble.classList.remove("typing");
@@ -377,64 +454,48 @@ async function sendMessage() {
   }
 }
 
+// ---------- demoläge ----------
+// Skapar ett trovärdigt, rollanpassat exempelsvar — utan API-anrop. Tanken är
+// att visa hur portalen känns, inte att ersätta riktiga svar.
+function demoReply(agent, userText) {
+  const topic = (userText || "").replace(/\s+/g, " ").trim();
+  const short = topic.length > 70 ? topic.slice(0, 67).trim() + "…" : topic;
+  const hat = (agent.tagline || agent.role || "din arbetspartner").replace(/\.$/, "").toLowerCase();
+  return [
+    short ? `Bra — låt mig ta "${short}".` : `Hej! Berätta vad du sitter med så sätter vi igång.`,
+    ``,
+    `Min roll i teamet är att ${hat}. Så här skulle jag närma mig det:`,
+    ``,
+    `• Först läser jag av läget och vad som ger mest effekt just nu.`,
+    `• Ge mig de konkreta uppgifterna du har, så levererar jag ett första utkast du bara behöver granska.`,
+    ``,
+    `Vill du att jag tar det vidare — eller ska jag skicka dig till rätt kollega i teamet?`,
+  ].join("\n");
+}
+
+// Strömmar fram demosvaret ord för ord så att det känns som riktig generering.
+async function streamDemo(agent, messages, onDelta) {
+  const last = [...messages].reverse().find((m) => m.role === "user");
+  const full = demoReply(agent, last ? last.content : "");
+  await new Promise((r) => setTimeout(r, 280)); // liten "tänk-paus"
+  const tokens = full.split(/(\s+)/);
+  for (const tk of tokens) {
+    await new Promise((r) => setTimeout(r, 16));
+    onDelta(tk);
+  }
+}
+
 // Anropar Claude Messages API direkt från webbläsaren och strömmar svaret.
+// Själva strömningen + felhanteringen ligger i den delade klienten.
 async function streamClaude(system, messages, onDelta) {
-  const body = {
+  await window.ATBClaude.stream({
+    apiKey: state.apiKey,
     model: state.model,
-    max_tokens: 4096,
-    stream: true,
     system,
     messages: messages.map((m) => ({ role: m.role, content: m.content })),
-  };
-
-  const res = await fetch(API_URL, {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-      "x-api-key": state.apiKey,
-      "anthropic-version": ANTHROPIC_VERSION,
-      "anthropic-dangerous-direct-browser-access": "true",
-    },
-    body: JSON.stringify(body),
+    maxTokens: 4096,
+    onDelta,
   });
-
-  if (!res.ok) {
-    let msg = `Fel ${res.status}`;
-    try {
-      const j = await res.json();
-      if (j.error?.message) msg = j.error.message;
-      if (res.status === 401) msg = "Ogiltig API-nyckel. Kontrollera nyckeln under 'Byt API-nyckel'.";
-      if (res.status === 429) msg = "För många anrop just nu — vänta en stund och försök igen.";
-    } catch (_) {}
-    throw new Error(msg);
-  }
-
-  const reader = res.body.getReader();
-  const decoder = new TextDecoder();
-  let buffer = "";
-  const handleLine = (line) => {
-    const trimmed = line.trim();
-    if (!trimmed.startsWith("data:")) return;
-    const data = trimmed.slice(5).trim();
-    if (!data || data === "[DONE]") return;
-    try {
-      const evt = JSON.parse(data);
-      if (evt.type === "content_block_delta" && evt.delta?.type === "text_delta") onDelta(evt.delta.text);
-      else if (evt.type === "error") throw new Error(evt.error?.message || "Strömningsfel");
-    } catch (e) {
-      if (e instanceof SyntaxError) return;
-      throw e;
-    }
-  };
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    buffer += decoder.decode(value, { stream: true });
-    const lines = buffer.split("\n");
-    buffer = lines.pop();
-    for (const line of lines) handleLine(line);
-  }
-  if (buffer) handleLine(buffer); // ev. sista rad utan avslutande radbrytning
 }
 
 boot();

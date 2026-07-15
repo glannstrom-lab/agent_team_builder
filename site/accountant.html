@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="sv">
 <head>
+<script>document.documentElement.classList.add('js')</script>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Lindgren Bokföring · Agent Team Builder</title>
@@ -9,7 +10,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="showcase.css" />
 </head>
-<body>
+<body data-team="Lindgren Bokföring">
 
 <!-- ===== STEP NAV ===== -->
 <div class="stepnav">
@@ -316,7 +317,7 @@
   <div class="wrap">
     <div class="built"><span class="dot"></span> Byggt med Agent Team Builder · AI-konsult-läge</div>
     <div class="fstats"><b>8</b> analyserade moment · <b>3</b> kluster över ribban · <b>2</b> medvetet avvisade · <b>1</b> första projekt</div>
-    <a class="try-live" href="../portal/?team=accountant">💬 Prova teamet live →</a>
+    <a class="try-live" href="../portal/?team=accountant&demo=1">💬 Prova teamet live →</a>
     <a class="backlink" href="index.html">← Tillbaka till alla team</a>
   </div>
 </footer>
@@ -327,6 +328,9 @@
   }, { threshold: 0.12 });
   document.querySelectorAll('.reveal').forEach((el) => io.observe(el));
 </script>
+<!-- Avatar-porträtt på agentkorten + org-noderna -->
+<script src="../avatars.js"></script>
+<script src="gallery.js"></script>
 
 </body>
 </html>

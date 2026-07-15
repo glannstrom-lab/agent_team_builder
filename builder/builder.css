@@ -35,6 +35,27 @@ body { min-height: 100vh; }
 .setup .btn-primary { margin-top: 18px; width: 100%; }
 .setup-help { margin-top: 22px; font-size: 13.5px; color: var(--text-dim); }
 .setup-help a { color: var(--accent-2); }
+.demo-link {
+  margin-top: 20px; background: none; border: none; color: var(--accent-2);
+  font-size: 14px; font-weight: 600; cursor: pointer; text-align: left; padding: 4px 0;
+  width: fit-content; font-family: inherit;
+}
+.demo-link:hover { text-decoration: underline; }
+
+/* ---------- DEMO-BANNER ---------- */
+.demo-banner {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  background: rgba(99,102,241,0.10); border: 1px solid rgba(99,102,241,0.30);
+  border-radius: 12px; padding: 11px 16px; margin-bottom: 22px;
+  font-size: 13px; color: var(--text-dim);
+}
+.demo-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent-2); flex-shrink: 0; }
+.demo-text { min-width: 0; flex: 1; }
+.demo-connect {
+  background: none; border: none; color: var(--accent-2); font-size: 13px; font-weight: 600;
+  cursor: pointer; font-family: inherit; white-space: nowrap;
+}
+.demo-connect:hover { text-decoration: underline; }
 
 /* ---------- INTAKE FORM ---------- */
 .form-wrap { max-width: 680px; margin: 0 auto; padding: clamp(40px, 7vw, 80px) 24px; }

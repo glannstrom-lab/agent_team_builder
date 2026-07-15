@@ -1,10 +1,11 @@
 // Samlar webb-delarna i dist/ för Cloudflare Pages.
-// Tar bara med det som behövs publikt: hub, de tre apparna och prompts/
-// (Buildern hämtar prompts/ live). Lämnar templates/, examples/, docs/,
-// .claude/, testoutput/, .git m.m. utanför.
+// Tar med det som behövs publikt: hub, de fyra apparna (builder/site/portal/
+// verticals), prompts/ (Buildern hämtar dem live), functions/ (Pages Functions
+// måste ligga i deploy-katalogens rot), _headers (CSP m.m.). Lämnar templates/,
+// examples/, docs/, migrations/, .claude/, testoutput/, .git m.m. utanför.
 import { rmSync, mkdirSync, cpSync } from "node:fs";
 
-const ITEMS = ["index.html", "builder", "site", "portal", "prompts"];
+const ITEMS = ["index.html", "avatars.js", "atb-claude.js", "builder", "site", "portal", "prompts", "verticals", "functions", "_headers"];
 
 rmSync("dist", { recursive: true, force: true });
 mkdirSync("dist");

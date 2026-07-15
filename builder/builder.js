@@ -8,9 +8,9 @@
 const KEY_STORAGE = "atb_api_key";
 const MODEL_STORAGE = "atb_model";
 const DRAFT_STORAGE = "atb_draft_team";
-const API_URL = "https://api.anthropic.com/v1/messages";
-const ANTHROPIC_VERSION = "2023-06-01";
 const DEFAULT_MODEL = "claude-opus-4-8";
+// API-URL, anthropic-version och strömningen ligger i ../atb-claude.js
+// (window.ATBClaude) — delat med Portalen så de inte kan glida isär.
 
 const MODELS = [
   { id: "claude-opus-4-8", label: "Opus 4.8 — mest kapabel (djupast analys)" },
@@ -30,9 +30,12 @@ const PROMPTS = {}; // cache av hämtade prompt-filer
 const state = {
   apiKey: localStorage.getItem(KEY_STORAGE) || "",
   model: localStorage.getItem(MODEL_STORAGE) || DEFAULT_MODEL,
+  // Demoläge: spela upp en inspelad körning utan nyckel (knapp eller ?demo=1).
+  demo: new URLSearchParams(location.search).get("demo") === "1",
   busy: false, team: null, abort: null,
   lastRun: null, // { intake, intakeBlock, r } — för "sammanställ igen"
 };
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 const $ = (s) => document.querySelector(s);
 const el = (t, c, x) => { const e = document.createElement(t); if (c) e.className = c; if (x != null) e.textContent = x; return e; };
@@ -50,8 +53,53 @@ async function fetchPrompt(path) {
 
 function hubLink() { const a = el("a", "hublink", "← Agent Team Builder"); a.href = "../"; return a; }
 
+// PNG:erna ligger i portal/avatars/ — refereras härifrån med detta prefix.
+const AVATAR_BASE = "../portal/avatars/";
+function avatarSrcFor(a) {
+  if (a.avatar) return a.avatar;
+  if (a.avatarN && window.ATBAvatars) return window.ATBAvatars.src(a.avatarN, AVATAR_BASE);
+  return null;
+}
+// Fyller en ikon-box med agentens porträtt (om ett finns) annars emoji.
+function fillIcon(box, a) {
+  const src = avatarSrcFor(a);
+  if (src) {
+    box.classList.add("has-img");
+    const img = el("img", "ava-img");
+    img.src = src; img.alt = ""; img.loading = "lazy"; img.decoding = "async";
+    img.onerror = () => { box.classList.remove("has-img"); box.textContent = a.icon || "•"; };
+    box.appendChild(img);
+  } else {
+    box.textContent = a.icon || "•";
+  }
+  return box;
+}
+
 // ---------- boot ----------
-function boot() { state.apiKey ? renderForm() : renderKeySetup(); }
+function boot() { (state.apiKey || state.demo) ? renderForm() : renderKeySetup(); }
+
+// Liten banner som visas i demoläget.
+function demoBanner() {
+  const b = el("div", "demo-banner");
+  b.appendChild(el("span", "demo-dot"));
+  b.appendChild(el("span", "demo-text", "Demoläge — en inspelad körning spelas upp. Koppla in din nyckel för att bygga mot ett riktigt företag."));
+  const c = el("button", "demo-connect", "Koppla in din nyckel →");
+  c.onclick = connectKey;
+  b.appendChild(c);
+  return b;
+}
+
+// Lämna demoläget och visa nyckel-skärmen.
+function connectKey() {
+  state.demo = false;
+  const params = new URLSearchParams(location.search);
+  if (params.get("demo")) {
+    params.delete("demo");
+    const q = params.toString();
+    history.replaceState(null, "", location.pathname + (q ? "?" + q : ""));
+  }
+  renderKeySetup();
+}
 
 function renderKeySetup() {
   const root = $("#root"); root.innerHTML = "";
@@ -77,6 +125,9 @@ function renderKeySetup() {
   const help = el("div", "setup-help");
   help.innerHTML = 'Skapa en nyckel på <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noreferrer">console.anthropic.com</a>.';
   wrap.appendChild(help);
+  const demoBtn = el("button", "demo-link", "Eller utforska i demoläge utan nyckel →");
+  demoBtn.onclick = () => { state.demo = true; renderForm(); };
+  wrap.appendChild(demoBtn);
   root.appendChild(wrap); setTimeout(() => input.focus(), 50);
 }
 
@@ -85,6 +136,7 @@ function renderForm() {
   const root = $("#root"); root.innerHTML = "";
   const wrap = el("main", "form-wrap");
   wrap.appendChild(hubLink());
+  if (state.demo) wrap.appendChild(demoBanner());
   const head = el("div", "form-head");
   head.appendChild(el("div", "eyebrow", "● Ny körning · djup pipeline"));
   const h = el("h1"); h.innerHTML = `Berätta om kunden — så bygger vi <span class="grad">teamet</span>`;
@@ -93,7 +145,7 @@ function renderForm() {
   wrap.appendChild(head);
 
   const form = el("form", "intake");
-  form.appendChild(fieldRow("Företag / projekt", inputEl("company", "company", "T.ex. BonusLoots")));
+  form.appendChild(fieldRow("Företag / projekt", inputEl("company", "company", "T.ex. CoachOnline")));
   const modeSel = selectEl("mode", "mode", [["team-builder", "Team-builder (för dig själv / tekniska)"], ["ai-consultant", "AI-konsult (för kunduppdrag)"]]);
   form.appendChild(fieldRow("Läge", modeSel));
   const sizeSel = selectEl("size", "size", [["solo", "Solo (1 person)"], ["mikro", "Mikro (2)"], ["litet", "Litet team (3–10)"], ["medelstort", "Medelstort (10–100)"], ["stort", "Stort (100+)"]]);
@@ -128,10 +180,20 @@ function renderForm() {
   wrap.appendChild(form);
 
   const foot = el("div", "form-foot");
-  const reset = el("button", "link-btn", "Byt API-nyckel");
-  reset.onclick = () => { if (confirm("Ta bort sparad nyckel?")) { localStorage.removeItem(KEY_STORAGE); state.apiKey = ""; renderKeySetup(); } };
+  const reset = el("button", "link-btn", state.demo ? "Koppla in din nyckel" : "Byt API-nyckel");
+  reset.onclick = state.demo ? connectKey : () => { if (confirm("Ta bort sparad nyckel?")) { localStorage.removeItem(KEY_STORAGE); state.apiKey = ""; renderKeySetup(); } };
   foot.appendChild(reset); wrap.appendChild(foot);
   root.appendChild(wrap);
+  if (state.demo) prefillDemo();
+}
+
+function prefillDemo() {
+  const d = (window.BUILDER_DEMO || {}).intake || {};
+  const set = (id, v) => { const e = $("#f-" + id); if (e && v != null) e.value = v; };
+  set("company", d.company); set("size", d.size); set("brief", d.brief);
+  const mode = $("#f-mode");
+  if (mode && d.mode) { mode.value = d.mode; mode.dispatchEvent(new Event("change")); }
+  if (d.maturity) set("maturity", d.maturity);
 }
 
 function fieldRow(label, control) {
@@ -163,6 +225,7 @@ function buildIntakeBlock(intake) {
 
 // ---------- pipeline ----------
 async function runBuild(intake) {
+  if (state.demo) return runDemoBuild(intake);
   if (state.busy) return;
   state.busy = true;
   state.abort = new AbortController();
@@ -241,7 +304,7 @@ ${schema}`;
   const fpBlock = r.firstproject ? `\n\nFÖRSTA PROJEKTET:\n${r.firstproject}` : "";
   const user = `RESEARCH-DOKUMENT:\n${r.research}\n\nSKALNINGSBESLUT:\n${r.scaling}\n\nFÖRSLAG (agenterna):\n${r.proposal}${fpBlock}\n\nSammanställ som JSON.`;
 
-  const raw = await callClaude(sys, [{ role: "user", content: user }], 8192);
+  const raw = await callClaude(sys, [{ role: "user", content: user }], 16000);
   let team;
   try {
     team = JSON.parse(extractJson(raw));
@@ -297,6 +360,47 @@ async function retryStructure() {
   }
 }
 
+// ---------- demo-uppspelning ----------
+// Spelar upp den inspelade körningen (window.BUILDER_DEMO) som om pipelinen
+// kördes live — samma progress-vy, men inget API anropas.
+async function runDemoBuild(intake) {
+  if (state.busy) return;
+  state.busy = true;
+  const demo = window.BUILDER_DEMO;
+  const stages = [
+    { key: "research", label: "Research — analyserar arbetsmoment", text: demo.stages.research },
+    { key: "scale", label: "Skalning — väljer antal agenter", text: demo.stages.scaling },
+    { key: "proposal", label: "Förslag — formar agenterna", text: demo.stages.proposal },
+    { key: "structure", label: "Sammanställer teamet" },
+  ];
+  renderProgress(intake, stages);
+  try {
+    for (const stg of stages) {
+      setStage(stg.key);
+      if (stg.key === "structure") {
+        await sleep(550);
+        markDone(stg.key);
+        state.team = demo.team;
+        renderResult(demo.team);
+        return;
+      }
+      const panel = $("#analysis-text"); panel.textContent = "";
+      let acc = "";
+      await streamText(stg.text, (d) => { acc += d; panel.textContent = acc; panel.scrollTop = panel.scrollHeight; });
+      markDone(stg.key);
+      await sleep(220);
+    }
+  } finally {
+    state.busy = false;
+  }
+}
+
+// Strömmar fram text ord för ord så det känns som riktig generering.
+async function streamText(full, onDelta) {
+  const tokens = (full || "").split(/(\s+)/);
+  for (const tk of tokens) { await sleep(7); onDelta(tk); }
+}
+
 // ---------- progress view ----------
 function renderProgress(intake, stages) {
   const root = $("#root"); root.innerHTML = "";
@@ -332,6 +436,7 @@ function markDone(key) { document.querySelectorAll(".prog-step").forEach((n) => 
 
 // ---------- result view ----------
 function renderResult(team) {
+  if (window.ATBAvatars) window.ATBAvatars.assign(team); // ge varje agent ett porträtt
   const root = $("#root"); root.innerHTML = "";
   const wrap = el("main", "result-wrap");
   wrap.appendChild(hubLink());
@@ -343,7 +448,7 @@ function renderResult(team) {
   hero.appendChild(el("p", "result-lead", team.tagline || ""));
   const actions = el("div", "result-actions");
   const live = el("button", "btn-primary", "💬 Prova teamet live");
-  live.onclick = () => { localStorage.setItem(DRAFT_STORAGE, JSON.stringify(stripTeam(team))); window.open("../portal/?team=__draft", "_blank"); };
+  live.onclick = () => { localStorage.setItem(DRAFT_STORAGE, JSON.stringify(stripTeam(team))); window.open("../portal/?team=__draft" + (state.demo ? "&demo=1" : ""), "_blank"); };
   const dl = el("button", "btn-ghost", "⬇ Ladda ner config");
   dl.onclick = () => downloadConfig(team);
   const again = el("button", "btn-ghost", "↺ Bygg ett till");
@@ -394,14 +499,23 @@ function connector(solid) { return el("div", "connector" + (solid ? " solid" : "
 function node(a, kind) {
   const n = el("div", "node " + kind);
   n.appendChild(el("div", "role", a.role || (kind === "spec" ? "Specialist" : "")));
-  n.appendChild(el("div", "nm", `${a.icon || "•"} ${a.name}`));
+  const nm = el("div", "nm");
+  const src = avatarSrcFor(a);
+  if (src) {
+    const img = el("img", "ava-inline");
+    img.src = src; img.alt = ""; img.loading = "lazy"; img.decoding = "async";
+    nm.appendChild(img); nm.appendChild(document.createTextNode(a.name));
+  } else {
+    nm.textContent = `${a.icon || "•"} ${a.name}`;
+  }
+  n.appendChild(nm);
   n.appendChild(el("div", "jb", a.tagline || a.job || ""));
   return n;
 }
 function agentCard(a) {
   const cls = a.id === "vd" ? "card is-ceo" : a.id === "vd-assistent" ? "card is-cos" : "card";
   const c = el("div", cls);
-  const top = el("div", "card-top"); top.appendChild(el("div", "icon", a.icon || "•"));
+  const top = el("div", "card-top"); top.appendChild(fillIcon(el("div", "icon"), a));
   const td = el("div"); td.appendChild(el("h3", null, a.name));
   td.appendChild(el("span", "tag " + (a.always ? "always" : "special"), a.always ? "Alltid närvarande" : "Specialist"));
   top.appendChild(td); c.appendChild(top);
@@ -413,7 +527,7 @@ function agentCard(a) {
 
 function stripTeam(team) {
   return { company: team.company, tagline: team.tagline, language: "sv", defaultModel: state.model, entryAgent: team.entryAgent,
-    agents: team.agents.map((a) => ({ id: a.id, name: a.name, icon: a.icon, role: a.role, tagline: a.tagline, always: !!a.always, system: a.system })) };
+    agents: team.agents.map((a) => ({ id: a.id, name: a.name, icon: a.icon, avatarN: a.avatarN, role: a.role, tagline: a.tagline, always: !!a.always, system: a.system })) };
 }
 function downloadConfig(team) {
   const js = "// Genererad av Builder. Lägg i portal/teams/ och registrera i index.js.\nwindow.TEAM = " + JSON.stringify(stripTeam(team), null, 2) + ";\n";
@@ -441,43 +555,20 @@ function renderError(msg, canRetryStructure) {
 }
 
 // ---------- Claude API ----------
+// Tunna omslag runt den delade klienten (../atb-claude.js). callClaude samlar
+// hela svaret; streamClaude strömmar via onDelta. Abort-signalen kommer från
+// "Avbryt körningen"-knappen.
 async function callClaude(system, messages, maxTokens) {
-  let out = "";
-  await streamClaude(system, messages, (d) => { out += d; }, maxTokens);
-  return out;
+  return window.ATBClaude.collect({
+    apiKey: state.apiKey, model: state.model, system, messages, maxTokens,
+    signal: state.abort ? state.abort.signal : undefined,
+  });
 }
 async function streamClaude(system, messages, onDelta, maxTokens) {
-  const res = await fetch(API_URL, {
-    method: "POST",
+  await window.ATBClaude.stream({
+    apiKey: state.apiKey, model: state.model, system, messages, maxTokens, onDelta,
     signal: state.abort ? state.abort.signal : undefined,
-    headers: { "content-type": "application/json", "x-api-key": state.apiKey, "anthropic-version": ANTHROPIC_VERSION, "anthropic-dangerous-direct-browser-access": "true" },
-    body: JSON.stringify({ model: state.model, max_tokens: maxTokens || 4096, stream: true, system, messages }),
   });
-  if (!res.ok) {
-    let msg = `Fel ${res.status}`;
-    try { const j = await res.json(); if (j.error?.message) msg = j.error.message; if (res.status === 401) msg = "Ogiltig API-nyckel."; } catch (_) {}
-    throw new Error(msg);
-  }
-  const reader = res.body.getReader(); const dec = new TextDecoder(); let buf = "";
-  const handle = (line) => {
-    const t = line.trim();
-    if (!t.startsWith("data:")) return;
-    const data = t.slice(5).trim();
-    if (!data || data === "[DONE]") return;
-    try {
-      const evt = JSON.parse(data);
-      if (evt.type === "content_block_delta" && evt.delta?.type === "text_delta") onDelta(evt.delta.text);
-      else if (evt.type === "error") throw new Error(evt.error?.message || "Strömningsfel");
-    } catch (e) { if (e instanceof SyntaxError) return; throw e; }
-  };
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    buf += dec.decode(value, { stream: true });
-    const lines = buf.split("\n"); buf = lines.pop();
-    for (const line of lines) handle(line);
-  }
-  if (buf) handle(buf);
 }
 
 boot();
