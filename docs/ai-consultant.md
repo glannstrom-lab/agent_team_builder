@@ -24,12 +24,15 @@ dig *vad kunden kan ta emot just nu*. Mognaden är viktigare för
 första-projekt-beslutet.
 
 **AI-nybörjare** — har knappt provat AI, osäker på vad det faktiskt gör.
-Börja med 2–3 agenter oavsett företagsstorlek. Första projektet måste vara
+Hårt dämpat agentantal oavsett företagsstorlek (exakt regel:
+`prompts/shared/scale.md` steg 2). Första projektet måste vara
 litet nog att lyckas med på en vecka. Pedagogiken fokuserar på "vad är det
 AI faktiskt gör här".
 
 **AI-vana** — använder ChatGPT eller Claude regelbundet men har inte byggt
-något. 3–5 agenter. Pedagogiken fokuserar på skillnaden mellan att *prompta*
+något. Dämpat agentantal (exakt regel: `prompts/shared/scale.md` steg 2 —
+enda facit, siffror upprepas inte här). Pedagogiken fokuserar på
+skillnaden mellan att *prompta*
 och att *bygga* — varför ett agent-team är kvalitativt annorlunda än att
 ha en chatt-flik öppen.
 
@@ -45,10 +48,14 @@ Se `docs/scaling.md` för exakt regel.
 Mognadsintake
       │
       ▼
-Första-projekt-identifiering  ← egen fas, unik för konsult-läget
+Research (delad med team-builder)
       │
       ▼
-Research (delad med team-builder)
+Skalning (mognadsjusterad, se scale.md)
+      │
+      ▼
+Första-projekt-identifiering  ← egen fas, unik för konsult-läget
+   (körs EFTER research — kandidaterna korskörs mot research-momenten)
       │
       ▼
 Team-förslag (anpassat efter mognad)

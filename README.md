@@ -7,8 +7,10 @@ hjälper andra komma igång med AI.
 ## Snabbstart
 
 1. Klona repot.
-2. Öppna ditt målprojekt i Claude Code (inte det här repot — det här är
-   verktyget, inte arbetsytan).
+2. Öppna **det här repot** i Claude Code. Kommandona (`/build-team`,
+   `/consult` …) och prompterna de läser ligger här — de finns inte i
+   ditt målprojekt. Verktyget frågar var teamet ska skrivas
+   (målprojektets `.claude/agents/`); ange sökvägen till ditt projekt.
 3. Kör:
    - **`/build-team`** — om du bygger ett team för dig själv eller någon
      som redan kan Claude Code.

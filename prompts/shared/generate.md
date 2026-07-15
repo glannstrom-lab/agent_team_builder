@@ -7,12 +7,14 @@ målprojektets `.claude/agents/`. Sista steget i pipeline:n.
 
 1. **Godkänt förslag** — output från proposal, efter användarens OK
 2. **Research-dokumentet** — för att fylla i instruktionssektionerna
-3. **Rätt mall:**
+3. **Rätt mall — styrs av läget (`läge:` i intake):**
    - Team-builder: `templates/shared/agent-base.md` som grund,
      `templates/team-builder/ceo-small.md` eller `ceo-large.md` för
      VD, `templates/team-builder/chief-of-staff.md` för VD-assistent
    - Ai-consultant: `templates/ai-consultant/agent-pedagogical.md`
-     som grund (byggs i fas 3)
+     som grund, `templates/ai-consultant/ceo-beginner.md` för VD
+     (nybörjare/van — byggare använder team-builder-mallarna),
+     `templates/ai-consultant/chief-of-staff.md` för VD-assistent
 
 ## Ditt jobb
 
@@ -29,9 +31,14 @@ mkdir -p .claude/agents
 
 ### 2. Generera VD
 
-Välj `ceo-small.md` eller `ceo-large.md` baserat på skalningsbeslut:
-- ≤4 agenter totalt → `ceo-small.md`
-- ≥5 agenter totalt → `ceo-large.md`
+**Ai-consultant-läge (nybörjare/van):** använd `ceo-beginner.md` och
+hoppa över mallvalet nedan. Byggare-kunder följer team-builder-valet.
+
+Välj `ceo-small.md` eller `ceo-large.md` baserat på **företagets
+storlek** (inte agentantalet — även ett 6-agentteam åt ett litet
+företag behöver en VD med operativt jobb, se designprincip 3):
+- solo / mikro / litet företag → `ceo-small.md` (operativ VD)
+- medelstort / stort företag → `ceo-large.md` (strategisk VD)
 
 Fyll i alla platshållare med data från proposal och research:
 - Jobb-meningen från proposal
@@ -47,7 +54,8 @@ Skriv till `.claude/agents/ceo.md`.
 
 ### 3. Generera VD-assistent
 
-Fyll i `chief-of-staff.md`:
+Fyll i `chief-of-staff.md` — team-builder-versionen i team-builder-
+läget, `templates/ai-consultant/chief-of-staff.md` i konsult-läget:
 - Lista teamets specialisters namn och domäner
 - Definiera triage-reglerna: vilken typ av fråga → vilken agent
 - Trösklar: vad hanterar VD-assistenten själv, vad eskaleras
@@ -83,6 +91,14 @@ det specifika teamet:
 - `project-review.md` — lista vilka agenter som deltar
 - `specific-improvement.md` — anpassa exemplen till teamets domäner
 - `whats-next.md` — referera till teamets specialister
+
+Anpassa dessutom efter storlek och (i konsult-läget) mognad, som
+`docs/meetings.md` lovar:
+- **Solo/mikro:** korta mallarna — en solo-granskning är ett samtal
+  mellan 3–4 agenter, inte en enterprise-genomgång.
+- **Nybörjarkund:** lägg in mer vägledning i mallen (vad mötet är,
+  när man kallar till det, vad man gör med resultatet — klarspråk).
+- **Byggarkund/tekniskt team:** koncisa mallar utan pedagogik.
 
 Skriv till `.claude/agents/meetings/`.
 

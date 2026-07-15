@@ -103,8 +103,10 @@ Demolägen (`?demo=1`) låter både portal och builder visas helt utan nyckel.
   formaterar förslaget till render-JSON + portal-systemprompter (ändrar inget
   innehåll). Eftersom den hämtar filerna live följer den alltid de underhållna
   prompterna — Builder och `/build-team` kan inte glida isär.
-- **Galleri** (`site/`) — `index.html` + fem scroll-stories (en per exempel)
-  som visar hela processen. Säljmaterial. Statiskt, ingen nyckel.
+- **Galleri** (`site/`) — `index.html` + scroll-stories (fem i dagsläget;
+  täcker inte alla `examples/` — team-builder-exemplen lerverk/
+  norrskenspodden/wikander saknar sidor än) som visar hela processen.
+  Säljmaterial. Statiskt, ingen nyckel.
 - **Portal** (`portal/`) — där kunden använder sitt team: chattar med varje
   agent. Multi-tenant via `?team=<slug>` → `portal/teams/<slug>.js`; utan
   parameter visas en kundväljare; `?team=__draft` öppnar ett Builder-utkast.
@@ -135,13 +137,18 @@ ny kund dyker upp i både galleri och portal automatiskt.
 ├── skills-catalog.md               # Kurerad lista över kända Claude Skills
 │
 ├── index.html                      # Säljsida + nav till apparna
+├── avatars.js                      # Delad avatar-tilldelning (alla ytor)
+├── atb-claude.js                   # Delad Claude-klient (builder + portal)
 ├── builder/                        # Builder-UI: bygg ett team live (+ demo-data.js)
-├── site/                           # Galleri: showcase-sidor + showcase.css
+├── site/                           # Galleri: showcase-sidor + showcase.css + gallery.js
 ├── portal/                         # Kundportal: chatta med ett team (+ PWA: manifest/sw)
+│   ├── avatars/                    # 25 agentporträtt (PNG)
 │   └── teams/                      # En <slug>.js per kund + index.js (register)
 ├── verticals/                      # Branschlandningssidor (datadrivet, ?v=<slug>)
 ├── functions/                      # Cloudflare Pages Functions (/api/* — moln-team)
+│                                   #   OBS: deployas från repo-roten, aldrig via dist/
 ├── migrations/                     # D1-schema (SQL) för köp/leverans-lagret
+├── testoutput/                     # Råa pipeline-körningar (källmaterial, ej deployat)
 │
 ├── build-dist.mjs                  # Bygger dist/ för Cloudflare Pages
 ├── wrangler.toml                   # Cloudflare-config (D1-bindning)
@@ -161,8 +168,9 @@ ny kund dyker upp i både galleri och portal automatiskt.
 ├── .claude/
 │   └── commands/
 │       ├── build-team.md           # /build-team [företagsnamn?]
-│       ├── update-team.md          # /update-team
-│       └── consult.md              # /consult — startar ai-consultant-läget
+│       ├── update-team.md          # /update-team (båda lägena)
+│       ├── consult.md              # /consult — startar ai-consultant-läget
+│       └── handoff.md              # /handoff — avslutar ett konsultuppdrag
 │
 ├── prompts/
 │   ├── shared/                     # Prompts som används av båda lägena
@@ -235,7 +243,8 @@ Bygg i den här ordningen. Hoppa inte över steg.
 2. **`prompts/team-builder/intake-interview.md`** — matar research.
 3. **`prompts/shared/proposal.md`** + **`templates/shared/agent-base.md`** —
    så att output kan skrivas.
-4. **`PROMPT.md`** + **`.claude/commands/build-team.md`** — ihop end-to-end.
+4. **`.claude/commands/build-team.md`** — ihop end-to-end. (Planen nämnde
+   även en `PROMPT.md`; den behövdes aldrig och finns inte.)
 5. **Testa mot coachonline, ikea, ett tredje.** Om output inte är
    meningsfullt olika → tillbaka till steg 1.
 
@@ -293,7 +302,8 @@ vidare till fas 3 förrän fas 2 gör det.
   räcker tills det inte gör det.
 - Lokal skills-scan utöver katalogen? → Efter v1.
 - Återanvändning av mönster över kunduppdrag (utan att lagra kunddata)? →
-  Spännande men v2. Skissa inte nu.
+  Besvarad: det är kärnan i vertikal-spåret (fork C) i
+  `docs/produktstrategi-sjalvbetjaning.md` — team-mallar per bransch.
 - Ska team-builder och ai-consultant kunna kombineras — dvs ett konsult-
   uppdrag som slutar i ett team-builder-genererat team? → Förmodligen ja
   naturligt, eftersom de delar kärna, men implementera inte som eget flöde.

@@ -32,6 +32,11 @@ Tom om okänt (läge B).>
 
 ## Mål och ambition
 <Vad de vill uppnå med ett agent-team. Kort.>
+
+## Avgränsningar
+<"Rör inte"-svar från intake — moment användaren uttryckligen vill
+behålla manuella. "Inga uttryckliga avgränsningar." om inget framkom.
+Proposal-steget kräver den här sektionen (regel 4) — utelämna den inte.>
 ```
 
 För **läge B** (externt företag) kan "återkommande moment" och "var det

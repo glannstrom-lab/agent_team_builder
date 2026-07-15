@@ -111,7 +111,7 @@ Var vill ni börja?"
 
 - Fatta strategiska beslut (det gör VD)
 - Utföra specialistarbete (det gör specialisterna)
-- Överröda VD:ns riktning
+- Köra över VD:ns riktning
 - [Intake-avgränsningar]
 
 ## Samverkan

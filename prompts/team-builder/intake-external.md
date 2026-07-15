@@ -92,6 +92,10 @@ källa:              externt
 
 ## Mål och ambition
 <Generellt antagande baserat på företagstyp. [hypotes]>
+
+## Avgränsningar
+<Alltid "Inga kända — externt läge saknar intervju." Proposal-regel 4
+har ingen riktig input i läge B; verifieras vid första /update-team.>
 ```
 
 ## Regler

@@ -63,7 +63,16 @@ Om dåligt svar — var vänlig men rak: "Det är viktigt att en person
 Matar research-steget. Samma krav på konkretion som team-builder
 fråga 4 och 5. Följ upp om svaret är vagt.
 
-### 8. Vad skulle få er att säga att det här var värt det efter en månad?
+### 8. Vilka program och system använder ni dagligen?
+
+Ekonomisystem, ärendehantering, Office/Google, branschsystem —
+det kunden faktiskt sitter i. Matar research-stegets bedömning av
+AI-lämplighet ("finns input/output i format Claude kan arbeta med?")
+och proposal-stegets skills-matchning (xlsx, docx m.fl.). Extra
+viktigt i konsult-läget: en nybörjarkund kompenserar inte själv
+för ett verktygsglapp som en teknisk användare gör.
+
+### 9. Vad skulle få er att säga att det här var värt det efter en månad?
 
 Framgångskriterium. Behövs för mätbara mål i första-projekt-briefen.
 
@@ -101,10 +110,10 @@ mognad:             <nybörjare / van / byggare>
 <Fråga 7, smärtpunkter, kundens egna ord>
 
 ## Befintliga verktyg och vanor
-<Härled från svaren>
+<Fråga 8, kompletterat med vad som framkom i övriga svar>
 
 ## Mål och ambition
-<Fråga 4 + fråga 8>
+<Fråga 4 + fråga 9>
 
 ## Mognadsbedömning
 Nivå: <nybörjare / van / byggare>
@@ -117,7 +126,7 @@ Motivering: <varför, baserat på fråga 3>
 <Fråga 5, eller "Inga">
 
 ## Framgångskriterium
-<Fråga 8, kundens egna ord>
+<Fråga 9, kundens egna ord>
 
 ## Avgränsningar
 <Om något framkom, annars "Inga uttryckliga avgränsningar.">

@@ -3,9 +3,9 @@
 <!-- Genererad av agent-team-builder.
      Motivering: [fylls i av generate-steget] -->
 
-Mall för operativ VD i solo-projekt och mikro-team (2–4 agenter
-totalt). Bygger på `agent-base.md` men med hårdare krav på operativt
-jobb.
+Mall för operativ VD när **företaget** är litet (solo/mikro/litet,
+oavsett agentantal). Bygger på `agent-base.md` men med hårdare krav
+på operativt jobb.
 
 ---
 

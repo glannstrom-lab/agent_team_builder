@@ -1,8 +1,13 @@
-# Uppdaterings-intake (team-builder, läge C)
+# Uppdaterings-intake (läge C — båda lägena)
 
 Användaren kör `/update-team` i ett projekt som redan har ett
 genererat team i `.claude/agents/`. Systemet läser befintliga
 agenter, frågar vad som har förändrats, och föreslår en diff.
+
+Gäller **både** team-builder- och ai-consultant-genererade team.
+Vilket läge teamet skapades i syns i agentfilernas kommentarblock —
+avgör det i steg 1, det styr en extra fråga (mognad) och mallvalet
+vid generering.
 
 ## Absolut regel
 
@@ -48,6 +53,19 @@ Ställ tre frågor:
    vilken agent du ska prata med, eller uppgifter som inget
    i teamet täcker?
 
+**Konsult-genererat team — ställ även en fjärde fråga:**
+
+4. **Hur känns AI-arbetet nu jämfört med när vi började?** Kör ni
+   agenterna själva i vardagen? Har någon börjat ändra i dem eller
+   byggt något eget?
+
+   Svaret ger uppdaterad mognadsnivå (nybörjare / van / byggare).
+   Mognad är färskvara — en kund som var nybörjare vid första
+   uppdraget kan ha vuxit, och skalningen (`prompts/shared/scale.md`
+   steg 2) behöver den aktuella nivån för att inte föreslå ett
+   team kunden inte kan bära (eller hålla tillbaka en kund som
+   vuxit ur sitt).
+
 Dessa frågor är kortare och mer riktade än intervju-läget
 eftersom basen redan finns.
 
@@ -61,6 +79,8 @@ företagsnamn:       <från befintligt team>
 bransch:            <från befintligt team>
 storlek:            <uppdaterad om den ändrats>
 antal_personer:     <uppdaterat om det ändrats>
+läge:               <team-builder | ai-consultant — från kommentarblocken>
+ai_mognad:          <endast konsult-team: uppdaterad nivå från fråga 4>
 källa:              uppdatering
 
 ## Vad företaget gör

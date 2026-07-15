@@ -1,6 +1,10 @@
 # Produktstrategi: low-touch självbetjäning
 
-> Status: utkast v1 (2026-06-28). Beslutad riktning, inte färdig spec.
+> Status: v1.1 (2026-07-15). Beslutad riktning, inte färdig spec.
+> Läge: M2a-1 byggd + deployad (D1 skapad); M3-*landningssidorna* (9
+> branscher i `verticals/`) är byggda i förväg, men vertikala
+> **team-mallar** (fork C:s egentliga IP) återstår. M2a-2+ väntar på
+> Stripe-konto.
 > Skriven utifrån två beslut: **Hybrid betalmodell** och **A+B+C** som
 > tillsammans tjänar ett mål — en produkt som säljer sig själv och kör utan
 > att Mikael behöver vara inblandad, eftersom säljtiden är starkt begränsad.
@@ -101,4 +105,4 @@ Notera: detta bryter medvetet projektets princip "noll infrastruktur" för
 - **Konvertering kräver trafik:** marknadsföringsarbetet ersätter säljtiden — det
   försvinner inte, det byter form.
 - **Princip-revidering:** "noll infra" gäller fortfarande kärnan, men inte
-  köp/leverans-lagret. Bör skrivas in i CLAUDE.md när Fas 1 påbörjas.
+  köp/leverans-lagret. (Inskrivet i CLAUDE.md princip 8 sedan 2026-06-28.)
