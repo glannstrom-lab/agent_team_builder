@@ -1,666 +1,722 @@
-# Simuleringssession: Marknadsbyrå AI-konsultuppdrag
+# Ai-consultant-körning: Marknadsbyrå X
 
-**Datum:** 2026-04-06
-**Testfall:** Mellanstort byrå (8 personer), AI-van, intermediate mognad
-**Genomfört av:** Automatiserad testuppkörning av ai-consultant-pipelinen
+Skarp körning av ai-consultant-pipelinen för en fiktiv marknadsbyrå på
+mognadsnivå "van". Verifierar att pipelinen producerar ett team som är
+omöjligt att förväxla med ett annat företags — även inom samma bransch.
+
+**Datum:** 2026-07-15 (regenererad mot promptversion 2026-07-15)
+**Testfall:** Marknadsbyrå, 8 personer, mognadsnivå van
+**Pipeline:** ai-consultant — mognadsintake → research → skalning →
+första projekt → team-förslag
 
 ---
 
-## 1. MOGNADSINTAKE
+## 1. Mognadsintake
 
 ```
 företagsnamn:       Marknadsbyrå X
-bransch:            Digital marknadsföring och content marketing
+bransch:            Digital marknadsföring och content marketing (B2B)
 storlek:            litet
 antal_personer:     8
 källa:              intervju
 mognad:             van
+
+## Vad företaget gör
+Digital marknadsbyrå med fokus på content marketing och sociala medier.
+Strategi, produktion och annonsering för B2B-kunder — mest tech och SaaS.
+Åtta personer: byråchefen (grundare), projektledaren Emma Johansson, två
+strateger, tre content creators och en annonsspecialist.
+
+## Återkommande moment
+Måndagar: veckoplanering med content-kalendrar för varje kund. Tisdag till
+onsdag: produktion — de tre content creators hanterar 2–3 kunder var och
+skriver bloggar, LinkedIn-poster och nyhetsbrev. Torsdag–fredag:
+annonsoptimering och rapportarbete. Varje månadsskifte: en rapport per kund,
+byggd för hand i Google Slides.
+
+## Var det klämmer
+"Det som tar mest tid är att varje kund vill ha sin egen ton och vi måste
+komma ihåg vad vi bestämt med varje kund." Rapporteringen är "jobbig och
+manuell" — 4–6 timmar per kund och månad i Google Slides. Alla använder
+ChatGPT dagligen men var för sig, utan gemensamt system. Kvaliteten varierar
+beroende på vem som skriver.
+
+## Befintliga verktyg och vanor
+Google Workspace (Docs, Sheets, Slides, Gmail). Notion för content-kalendrar
+och kunddokument. ChatGPT (var sin licens, egna chatthistoriker). Midjourney
+för bilder, ad hoc. Google Analytics, Google Ads och LinkedIn Campaign
+Manager för annonser och mätning. Mailchimp för kundernas nyhetsbrev.
+De flesta kunders bloggar ligger i WordPress.
+
+## Mål och ambition
+Ta fler kunder utan att anställa fler. Jämnare kvalitet — "just nu varierar
+det beroende på vem som skriver". Efter en månad: "om vi producerar runt 30 %
+mer content med samma personer och månadsrapporterna tar halva tiden".
+
+## Mognadsbedömning
+Nivå: van
+Motivering: Alla åtta använder ChatGPT dagligen för utkast och brainstorming,
+så nybörjare är de inte. Följdfrågan ställdes ("har ni skapat något som andra
+i teamet använder?") — svaret var nej: var och en har sin egen chatthistorik,
+och det enda gemensamma försöket (en promptbank i Notion) övergavs efter en
+vecka. De har provat mycket men byggt inget. Det är definitionen av "van".
+
+## Projektägare
+Emma Johansson, projektledare. Hon har bäst koll på var det skaver i
+produktionen och gör merparten av månadsrapporterna själv idag.
+
+## Tidigare försök
+En promptbank i Notion som alla uppmuntrades att använda. Övergiven efter en
+vecka — ingen gick dit. Kundens egen analys: "alla ville ändå göra sin egen
+grej". Slutsatsen är att en lösning måste ligga i själva arbetsflödet, inte
+bredvid det.
+
+## Framgångskriterium
+"Om vi producerar runt 30 % mer content med samma personer och
+månadsrapporterna tar halva tiden."
+
+## Avgränsningar
+Inget AI-genererat material går till kund utan att en människa har granskat
+det. Kundkontakten och strategiarbetet sköter strategerna själva.
 ```
 
-### Vad företaget gör
-
-Vi är en digital marknadsbyrå med fokus på content marketing och sociala medier. Vi gör strategi, produktion och annonsering för B2B-kunder — mest tech och SaaS.
-
-### Återkommande moment
-
-- Veckoplanering med fokus på content-kalendrar för varje kund
-- Produktion resten av veckan: tre content creators hanterar 2-3 kunder var och skriver bloggar, LinkedIn-poster, nyhetsbrev
-- Torsdag-fredag: annonsoptimering och rapportering
-- Månatlig rapportgenerering i Google Slides (manuell process)
-
-### Var det klämmer
-
-- Det tar mycket tid att komma ihåg tonen för varje kund — varje kund vill ha sin egen ton och vi måste hålla reda på vad vi bestämt
-- Rapportering är jobbigt och tar mycket tid (manuellt i Google Slides varje månad)
-- Ingen struktur eller gemensamt system för AI-användning trots att alla använder ChatGPT dagligen
-- Variation i kvalitet mellan innehåll beroende på vem som skriver
-- Vill kunna ta fler kunder utan att anställa fler
-
-### Befintliga verktyg och vanor
-
-- Använder ChatGPT dagligen för utkast och brainstorming (ingen struktur, alla har sin egen chatthistorik)
-- Använder Midjourney för bildgenerering (begränsat, ad hoc-användning)
-- Notion-promptbank redan försökt men övergiven efter en vecka — ingen använde den
-- Google Slides för rapportgenerering
-- Antagligen Google Docs eller Notion för content-kalendrar per kund
-
-### Mål och ambition
-
-Kunna ta fler kunder utan att anställa fler personer. Att kvaliteten blir jämnare — just nu varierar det beroende på vem som skriver.
-
-### Mognadsbedömning
-
-**Nivå:** Van
-
-**Motivering:** Företaget använder ChatGPT regelbundet för dagliga arbetsuppgifter (utkast, brainstorming) och har provat Midjourney för bilder. De är alltså inte nybörjare. Däremot har de inte byggt något strukturerat — varje person har sin egen chatthistorik och det finns inget gemensamt system eller verktyg som teamet använder tillsammans. Det klassificerar dem som "van" snarare än "byggare". Deras första försök (Notion-promptbank) visar att de förstår value proposition men saknar disciplin/process för att operationalisera det.
-
-### Projektägare
-
-**Emma Johansson, projektledare**
-
-Hon har bäst koll på var det skaver i produktionen. Hon är naturlig ägare för ett första projekt.
-
-### Tidigare försök
-
-Notion-promptbank som alla uppmuntrades att använda efter första veckan. Misslyckades för att ingen använde den — problemet var att alla ändå ville göra sin egen grej. Detta signalerar att en tvingande struktur inte fungerar; lösningen måste vara så enkel och värdefull att folk gör det naturligt.
-
-### Framgångskriterium
-
-Om vi kan producera 30% mer content utan att anställa och om rapporterna tar hälften så lång tid.
-
-### Avgränsningar
-
-Inga uttryckliga avgränsningar från kundens sida.
+*Ser det rätt ut? → Bekräftat innan research kördes.*
 
 ---
 
-## 2. RESEARCH
+## 2. Research: Marknadsbyrå X
 
-# Research: Marknadsbyrå X
-
-## Körningsmetadata
-
-- **Antal identifierade moment:** 11
-- **Över ribban:** 6 | **Under ribban:** 2
-- **Källa intervju:** 11 | **Implicita:** 3
-- **Okänd smärta:** 0 moment
+### Körningsmetadata
+- **Antal identifierade moment:** 8
+- **Över ribban:** 3  |  **Under ribban:** 2
+- **Källa intervju:** 7  |  **Implicita:** 1  |  **Hypoteser:** 0
+- **Okänd smärta:** 3 moment
 - **Språk:** Svenska
 
-## Sammanfattning
+### Sammanfattning
+Marknadsbyrå X producerar innehåll åt 7–9 B2B-kunder i veckan, där varje kund
+ska ha sin egen ton — och just tonen är byråns dyraste huvudvärk: den bärs i
+huvudet på den som skriver, vilket ger både tidsspill ("komma ihåg vad vi
+bestämt") och ojämn kvalitet. Den andra uttalade smärtan är månadsrapporterna,
+som byggs för hand i Google Slides på 4–6 timmar per kund. Research
+identifierar tre kluster över ribban: innehåll i rätt kundton (störst volym,
+hög AI-lämplighet), månadsrapportering (tydligast mätbar vinst, direkt kopplad
+till framgångskriteriet) och annonsvariation (medel lämplighet, beroende av
+systemåtkomst). Avgränsningen att en människa alltid granskar innan något går
+till kund gäller alla förslag: agenter levererar utkast, aldrig publiceringar.
 
-En digital marknadsbyrå för B2B (tech/SaaS) som måste producera högt varierat innehåll åt flera kunder med distinkta tonstilir varje vecka. Kärnautmaningen är konsistens (samma ton för samma kund över tid) och volym (producera mer utan att växa headcount). AI lämpar sig väl för tre områden: innehållsutkast med kundspeifik tonöversättning, rapportsammansättning från data som redan finns, och annonstext-variationer. Momentet "hålla reda på kundens ton" är inte ett arbetsmoment utan ett infrastrukturproblem som en agent kan lösa genom en structured knowledge base.
+### Identifierade arbetsmoment
 
-## Identifierade arbetsmoment
-
-### Moment 1: Skriva bloggposter
+#### Moment 1: Skriva bloggposter åt kunder
 - **Källa:** intervju
-- **Frekvens:** Veckovis (ungefärligen 2–3 poster per vecka totalt för hela teamet)
-- **Tidsåtgång:** ~6–8 timmar per vecka (3 creators × ~2h per post)
-- **Smärta:** medel (tidskrävande, men inte källa till mest irritation)
-- **Felbenägenhet:** låg (process är rätt etablerad)
+- **Frekvens:** Veckovis (2–3 poster per vecka totalt över kunderna)
+- **Tidsåtgång:** ~6–8 timmar per vecka (tre creators, ~2 h per post)
+- **Smärta:** Medel (intake: "kvaliteten varierar beroende på vem som skriver")
+- **Felbenägenhet:** Medel — tonmissar är den vanliga felkällan
 - **Ägare:** De tre content creators (delat)
-- **AI-lämplighet:** hög
-- **Kontextprofil:** välavgränsat
-- **Notering:** AI kan generera publikationsklara utkast med SEO-övervakning och kund-specifik ton. Inputen är: kundens tidigare bloggar (referensmaterial) + ämne + SEO-fokus. Output är: förslag på rubrik, struktur, 1000–1500 ord. Människan granskar och publicerar. Mycket högt värde för tidsbesparingar.
+- **AI-lämplighet:** **Hög**
+- **Kontextprofil:** Välavgränsat
+- **Notering:** Idealfall om kundens ton finns dokumenterad: ämne +
+  tonguide in, utkast på 1 000–1 500 ord ut. Publiceringen i WordPress
+  förblir manuell — människan granskar och publicerar.
 
-### Moment 2: Skriva LinkedIn-poster och sociala medier-innehåll
+#### Moment 2: Skriva LinkedIn-poster åt kunder
 - **Källa:** intervju
-- **Frekvens:** Dagligen (3 creators × 3–5 poster per dag i sina kunders namn)
-- **Tidsåtgång:** ~4–5 timmar per dag totalt
-- **Smärta:** medel (högt volym, men relativt snabbt per post)
-- **Felbenägenhet:** låg till medel (tonmissmatch varierar beroende på creator)
+- **Frekvens:** Dagligen (flera poster per creator och dag)
+- **Tidsåtgång:** ~3–4 timmar per dag totalt
+- **Smärta:** Medel (samma kvalitetsvariation som bloggarna)
+- **Felbenägenhet:** Medel — kort format gör tonmissar extra synliga
 - **Ägare:** De tre content creators (delat)
-- **AI-lämplighet:** hög
-- **Kontextprofil:** välavgränsat
-- **Notering:** Idealt fall för ton-guided generering. "Skapa en LinkedIn-post i tone-of-voice för kund X med tema Y." AI kan snabbt generera 3–5 varianter, creators väljer. Sparar en timme per dag eller mer. Kund-ton är det kritiska elementet.
+- **AI-lämplighet:** **Hög**
+- **Kontextprofil:** Välavgränsat
+- **Notering:** Hög volym, kort format — AI kan generera 3–5 varianter per
+  ämne som creatorn väljer bland och justerar. Utan dokumenterad kundton
+  blir det dock bara snabbare produktion av samma ojämnhet.
 
-### Moment 3: Skriva nyhetsbrev
+#### Moment 3: Skriva nyhetsbrev åt kunder
 - **Källa:** intervju
-- **Frekvens:** Varierar per kund, men typiskt vecko- eller tvåveckors
-- **Tidsåtgång:** ~1–2 timmar per nyhetsbrev (15–20 per månad totalt)
-- **Smärta:** låg till medel
-- **Felbenägenhet:** låg
+- **Frekvens:** Varje eller varannan vecka per kund
+- **Tidsåtgång:** ~1–2 timmar per nyhetsbrev
+- **Smärta:** Okänd (nämns som moment, flaggas inte särskilt)
+- **Felbenägenhet:** Låg — ofta mallstyrt
 - **Ägare:** De tre content creators (delat)
-- **AI-lämplighet:** hög
-- **Kontextprofil:** välavgränsat
-- **Notering:** Ofta mall-baserat (presentera nyhet + varför det är relevant för den här kunden + CTA). AI kan strukturera och fylla på mycket snabbt. Möjlig att hålla till mall.
+- **AI-lämplighet:** **Hög**
+- **Kontextprofil:** Välavgränsat
+- **Notering:** Mallstyrd struktur (nyhet + relevans + CTA) gör detta till
+  den enklaste texttypen att utkast-stödja. Utskicket sker i Mailchimp och
+  förblir manuellt.
 
-### Moment 4: Hantera och uppdatera kundspeifika tone-of-voice-guider
-- **Källa:** [implicit]
-- **Frekvens:** Vid ny kund eller när ton ändras (ungefär 1–2 gånger per månad)
-- **Tidsåtgång:** ~1–2 timmar per uppdatering
-- **Smärta:** hög (nu är denna arbete distributed och fragmenterad; det finns ingen central källa till sanning)
-- **Felbenägenhet:** hög (samma kund får olika ton beroende på vem som skriver)
-- **Ägare:** Strateger (formellt) men snarast "ingen" (det finns ingen process)
-- **AI-lämplighet:** medel till hög
-- **Kontextprofil:** välavgränsat
-- **Notering:** En agent kan strukturera och centralisera detta: en Tone-Assistant som håller en knowledge base per kund. Input: "Vad är den här kundens brand voice?" + exempel från tidigare innehål → Output: strukturerad guider (ord att använda, ord att undvika, satsstrukturer, exempel). Problemet med Notion-promptbanken var att det var centralt men inte *connected* till arbetsflödet. En agent kan göra det friktionslöst genom att presentera ton *när creatorsen behöver den*.
-
-### Moment 5: Optimera och testa annonser (Google Ads, LinkedIn Ads, etc.)
+#### Moment 4: Hålla reda på varje kunds ton
 - **Källa:** intervju
-- **Frekvens:** Torsdag–fredag varje vecka, cirka 3–5 timmar
-- **Tidsåtgång:** ~3–5 timmar per vecka totalt
-- **Smärta:** medel (iterativ process, många varianter att testa)
-- **Felbenägenhet:** låg till medel (beroende på hur mycket data de analyserar)
-- **Ägare:** Ads-spesialist (+ content creators gör lite selv)
-- **AI-lämplighet:** medel
-- **Kontextprofil:** bullrigt (många varianter, data från flera system, många artefakter)
-- **Notering:** AI kan generera headline- och copy-varianter snabbt baserat på performance-data från tidigare annonser. Men detta kräver åtkomst till annondsystem (Google Ads API, etc.) som är begränsande. Om data kan exporteras kan AI göra värde genom *förslag* snarare än direkt drift. Medel-lämplighet — värt en agent om volym är högre, men inte topprioritet för detta team.
+- **Frekvens:** Löpande — aktualiseras vid varje text och varje ny kund
+- **Tidsåtgång:** Svår att mäta; kostnaden syns som omskrivningar och frågor
+- **Smärta:** **Hög** (intake: "det som tar mest tid är att varje kund vill ha
+  sin egen ton och vi måste komma ihåg vad vi bestämt med varje kund")
+- **Felbenägenhet:** **Hög** — samma kund får olika röst beroende på skribent
+- **Ägare:** Formellt strategerna, i praktiken ingen — det finns ingen process
+- **AI-lämplighet:** **Medel–Hög**
+- **Kontextprofil:** Välavgränsat
+- **Notering:** Inte ett produktionsmoment utan ett infrastrukturproblem:
+  kunskapen om varje kunds röst är odokumenterad och personburen. AI är bra
+  på precis den omvandlingen — destillera 10–20 publicerade texter till en
+  strukturerad tonguide. Löses detta blir moment 1–3 både snabbare och
+  jämnare.
 
-### Moment 6: Generera och sammanställa månatliga rapporter
+#### Moment 5: Sammanställa månadsrapporter i Google Slides
 - **Källa:** intervju
-- **Frekvens:** Månatlig
-- **Tidsåtgång:** 4–6 timmar per rapport
-- **Smärta:** hög (nämns specifikt som "jobbigt" och "manuellt")
-- **Felbenägenhet:** låg (process är rätt mekanisk, men tidsödande)
-- **Ägare:** En person per kund (troligen en av strategerna eller projektledaren)
-- **AI-lämplighet:** hög
-- **Kontextprofil:** välavgränsat
-- **Notering:** Mycket högt värde. Inmatning: KPI-data från Google Analytics, sociala medier, Google Ads (troligen redan exporterad till Google Sheets eller liknande). Output: strukturerad rapport i PDF eller presentationsformat med sammanfattning, diagram-tolkningar, rekommendationer. En agent kan göra detta på 15 minuter om data är tillgängligt strukturerat. Framgångskriterium säger "rapporterna tar hälften så långt tid" — det här är prime target.
+- **Frekvens:** Månadsvis, en rapport per kund (7–9 stycken)
+- **Tidsåtgång:** 4–6 timmar per rapport → grovt 30–45 timmar per månad
+- **Smärta:** **Hög** (intake: "jobbig och manuell"; halva tiden är uttalat
+  framgångskriterium)
+- **Felbenägenhet:** Låg — mekaniskt men tidsödande
+- **Ägare:** Emma Johansson gör merparten själv
+- **AI-lämplighet:** **Hög**
+- **Kontextprofil:** Välavgränsat
+- **Notering:** Datan finns redan (Google Analytics, Google Ads, LinkedIn
+  Campaign Manager); problemet är att *formulera och paketera* den. Ren
+  syntesuppgift: siffror in, sammanfattning + tolkning + rekommendationer
+  ut. Direkt träff på framgångskriteriet.
 
-### Moment 7: Veckoplanering med focus på content-kalendrar
+#### Moment 6: Optimera och variera annonser
+- **Källa:** intervju
+- **Frekvens:** Torsdag–fredag varje vecka
+- **Tidsåtgång:** ~3–5 timmar per vecka
+- **Smärta:** Okänd (listas som moment, flaggas inte som kläm)
+- **Felbenägenhet:** Låg–medel
+- **Ägare:** Annonsspecialisten
+- **AI-lämplighet:** **Medel**
+- **Kontextprofil:** Bullrigt (många varianter, data ur tre system)
+- **Notering:** AI kan snabbt generera rubrik- och copyvarianter utifrån
+  vad som presterat, men optimeringen sker i annonssystem som en agent inte
+  når. Värdet finns i förslagsledet, inte i driften — och smärtan är inte
+  uttalad.
+
+#### Moment 7: Veckoplanering med content-kalendrar
 - **Källa:** intervju
 - **Frekvens:** Varje måndag
-- **Tidsåtgång:** ~1 timme (möte + förberedelse)
-- **Smärta:** låg (etablerad process)
-- **Felbenägenhet:** låg
-- **Ägare:** Projektledare + de tre content creators
-- **AI-lämplighet:** låg
-- **Kontextprofil:** brett
-- **Notering:** Mänskligt möte som troligen inte lämpar sig för AI. Klassisk planning-möte.
+- **Tidsåtgång:** ~1–2 timmar (möte + förberedelse)
+- **Smärta:** Okänd (etablerad rutin, inte flaggad)
+- **Felbenägenhet:** Låg
+- **Ägare:** Emma + creators + strateger
+- **AI-lämplighet:** **Låg** som möte — men momentet bär byråns
+  prioriteringsbeslut
+- **Kontextprofil:** Brett
+- **Notering:** Mötet ska inte bli en agent. Men det är här byråns vecka
+  prioriteras: vilka kunder får vems timmar, och var spricker "fler kunder
+  utan att anställa"? Ett operativt prioriteringsmoment — flaggas som
+  VD-krok. Underlaget kan förberedas; beslutet är mänskligt.
 
-### Moment 8: Sökmotoroptimering (SEO) för bloggar
-- **Källa:** [implicit]
-- **Frekvens:** Per blogginlägg (veckovis)
-- **Tidsåtgång:** ~30 minuter per inlägg (integrerat i bloggskrivningen)
-- **Smärta:** låg
-- **Felbenägenhet:** låg
-- **Ägare:** Content creators
-- **AI-lämplighet:** medel
-- **Kontextprofil:** välavgränsat
-- **Notering:** Kan integreras i blogg-agenten. Inte eget moment.
+#### Moment 8: Slutgranskning innan något går till kund
+- **Källa:** `[implicit]` — följer av kvalitetsklämmen och avgränsningen
+- **Frekvens:** Dagligen
+- **Tidsåtgång:** ~1 timme per dag totalt, uppskattat
+- **Smärta:** Medel (kvalitetsvariationen är en uttalad kläm)
+- **Felbenägenhet:** Medel — tonmissar slinker igenom utan facit
+- **Ägare:** Varierar — ofta den som skrev, ibland en strateg
+- **AI-lämplighet:** **Medel**
+- **Kontextprofil:** Välavgränsat
+- **Notering:** Granskningen är uttryckligen fredad ("inget går till kund
+  utan att en människa har granskat det"). Det agentbara — ett facit att
+  granska mot — täcks redan av moment 4. **Under ribban.**
 
-### Moment 9: Strategiutveckling per kund (content strategy, ads strategy)
-- **Källa:** [implicit]
-- **Frekvens:** Vid ny kund eller strategi-review (ungefär varannan månad)
-- **Tidsåtgång:** 2–3 timmar per review
-- **Smärta:** låg (väl definierad process)
-- **Felbenägenhet:** låg
-- **Ägare:** De två strateger
-- **AI-lämplighet:** låg
-- **Kontextprofil:** brett
-- **Notering:** Strategiarbete är mänskligt omdöme-tungt. Inte kandidat för AI.
+### Kluster
 
-### Moment 10: Client-möten och status-uppdateringar
-- **Källa:** [implicit]
-- **Frekvens:** Typiskt varannan vecka (ca 1–2 timmar)
-- **Tidsåtgång:** ~3–4 timmar per vecka totalt
-- **Smärta:** låg
-- **Felbenägenhet:** låg
-- **Ägare:** Projektledare + strateg
-- **AI-lämplighet:** låg
-- **Kontextprofil:** brett
-- **Notering:** Client-management, inte automatiserbar.
+#### Kluster A: Innehåll i rätt kundton  — prioritet 1
+- **Ingående moment:** Hålla reda på varje kunds ton (moment 4), Skriva
+  bloggposter (moment 1), Skriva LinkedIn-poster (moment 2), Skriva
+  nyhetsbrev (moment 3)
+- **Samlad AI-lämplighet:** **Hög**
+- **Notering:** Momenten hänger ihop i en kedja: tonen är infrastrukturen,
+  texterna är produktionen. Utan dokumenterad ton blir AI-utkast bara
+  snabbare ojämnhet; med den träffas bägge målen ("30 % mer content" och
+  "jämnare kvalitet") samtidigt. En agent här bygger tonguider ur publicerat
+  material och skriver utkast mot dem.
 
-### Moment 11: Revidering och quality-check av innehål
-- **Källa:** [implicit]
-- **Frekvens:** Daglig (innan publikation)
-- **Tidsåtgång:** ~1–2 timmar per dag
-- **Smärta:** medel (irritation över quality variation)
-- **Felbenägenhet:** medel till hög (tonmissmatch, typos, factual errors)
-- **Ägare:** Variable (ofta den som skrev, ibland strateger)
-- **AI-lämplighet:** medel
-- **Kontextprofil:** välavgränsat
-- **Notering:** En agent kan göra automated quality-checks (grammar, tone-consistency, brand-guideline-compliance) innan det går till human review. Sparar lite tid, höjer konsistensen. Medel prioritet.
+#### Kluster B: Månadsrapportering  — prioritet 2
+- **Ingående moment:** Sammanställa månadsrapporter (moment 5)
+- **Samlad AI-lämplighet:** **Hög**
+- **Notering:** Enklare än kluster A (ingen tonvariation — rapporterna går i
+  byråns egen röst), tydligast mätbar vinst: 4–6 timmar per rapport idag,
+  halva tiden som uttalat framgångskriterium, en enda ägare (Emma). Datan
+  finns redan strukturerad i tre system; uppgiften är syntes och paketering.
 
-## Kluster
+#### Kluster C: Annonsvariation  — prioritet 3
+- **Ingående moment:** Optimera och variera annonser (moment 6)
+- **Samlad AI-lämplighet:** **Medel**
+- **Notering:** Värde i förslagsledet (copyvarianter utifrån vad som
+  presterat), men driften sker i system agenten inte når och smärtan är
+  inte uttalad. Står svagt som egen agent — vägs i proposal-steget.
 
-### Kluster A: Innehållsproduktion med kundspeifik ton — prioritet 1
-- **Ingående moment:** Skriva bloggposter (moment 1), Skriva LinkedIn-poster och sociala medier-innehål (moment 2), Skriva nyhetsbrev (moment 3)
-- **Samlad AI-lämplighet:** hög
-- **Notering:** Dessa tre moment är variantioner på samma arbete: ta en idé/ämne/format → generera text i en specifik ton för en specifik kund. AI är utmärkt här. Gemensamt behov: tillgång till kundspeifika tone-of-voice-guider. En agent kan hanteras detta genom att börja med en strukturerad tone-guide per kund (se kluster B).
+#### Under ribban
+- **Veckoplaneringen** (moment 7): Mänskligt möte. Prioriteringsinnehållet
+  lyfts som VD-krok, men mötet blir aldrig en agent.
+- **Slutgranskningen** (moment 8): Uttryckligen fredad — människan granskar.
+  Det agentbara (ett facit att granska mot) täcks av kluster A.
 
-### Kluster B: Centraliserad tone-of-voice-hantering — prioritet 1b
-- **Ingående moment:** Hantera och uppdatera kundspeifika tone-of-voice-guider (moment 4)
-- **Samlad AI-lämplighet:** medel till hög
-- **Notering:** Detta är infrastrukturen för kluster A. Inte en produktion selv utan möjligheter för produktion. Om detta löses blir moment 1–3 mycket snabbare. En dedikerad agent för detta kan på kort notering konvertera en blogg eller LinkedIn-profil till en strukturerad guide.
+### Nedbrytning av toppkluster
 
-### Kluster C: Rapportgenerering — prioritet 2
-- **Ingående moment:** Generera och sammanställa månatliga rapporter (moment 6)
-- **Samlad AI-lämplighet:** hög
-- **Notering:** Enklare än kluster A (ingen ton-variation), mycket högt värde för tid (4–6h → ~20 minuter om data är strukturerat). Direkt bidrag till framgångskriterium ("rapporterna tar hälften så långt tid").
+#### Kluster A: Innehåll i rätt kundton
 
-### Kluster D: Annonsoptimering — prioritet 3
-- **Ingående moment:** Optimera och testa annonser (moment 5)
-- **Samlad AI-lämplighet:** medel
-- **Notering:** Värde finns men kräver API-åtkomst till annondsystem eller manuell export. Kan vänta till version 2 om budget är begränsat.
-
-### Under ribban
-
-**Veckoplanering (moment 7):** Låg AI-lämplighet. Mänskligt möte med taktisk planering. Inte kandidat.
-
-**Strategiutveckling (moment 9):** Låg AI-lämplighet. Kräver senior human judgment. Inte kandidat.
-
-**Client-möten (moment 10):** Låg AI-lämplighet. Ren client-management. Inte kandidat.
-
-**Quality-check (moment 11):** Medel AI-lämplighet men redan delvis löst genom innehålls-agenten. Kan integreras senare. Nedprioriterat för nu.
-
-## Nedbrytning av toppkluster
-
-### Kluster A: Innehållsproduktion
-
-#### Moment 1: Skriva bloggposter
+**Moment: Hålla reda på varje kunds ton**
 
 Delsteg:
-1. Identifiera ämne/SEO-fokus (ofta redan gjort av strateger)
-2. Samla referensmaterial från kundens tidigare bloggposter (tone samples)
-3. Generera utkast (~1000–1500 ord) med SEO-optimering
-4. Integrera interna länkar och CTA
-5. Formatera för CMS
-6. Människan: granskar, editerar, publicerar
+1. Samla 10–20 publicerade texter per kund (bloggar, poster, nyhetsbrev)
+2. Destillera tonmarkörer: ord att använda och undvika, meningsrytm,
+   formell/ledig, typiska öppningar
+3. Skriva en tonguide på 1–2 sidor per kund med gör/gör inte-exempel
+4. Uppdatera guiden när en kund tillkommer eller byter riktning
 
-→ AI-lämplighet per steg: låg för 1, medel för 2 (kräver access till kundswebbplats), **hög för 3-4**, låg för 5 (CMS-åtkomst), låg för 6
-→ Vad en agent konkret kan göra: Ge agenten kundens tone-guide (från kluster B) + tidigare bloggar som referensmaterial. Agenten tar ett ämne och genererar strukturerad utkast med SEO-keywords, internt länkade förslag, och CTA-inslag. Levererar i markdown eller lätt redigerbar format. Spar ~1–1,5h per blogginlägg.
+→ AI-lämplighet per steg: hög för 1–4 — men lärdomen från promptbanken
+  gäller: guiden måste komma till skribenten, inte tvärtom
+→ Vad en agent konkret kan göra: bygga och underhålla en tonguide per kund
+  och alltid skriva sina egna utkast mot den, så att guiden används varje
+  gång utan att någon behöver leta upp den.
 
-#### Moment 2: Skriva LinkedIn-poster
+**Moment: Skriva bloggposter / LinkedIn-poster / nyhetsbrev**
 
-Delsteg:
-1. Identifiera nyhet/tema för dagen
-2. Välj format (tips, tankeledare, case study, etc.)
-3. Skriva text för den kundens LinkedIn-ton
-4. Generera 3–5 varianter
-5. Människan: väljer favorit, publicerar eller skickar till kund
+Samma kedja för alla tre texttyperna: ämne ur content-kalendern (mänskligt
+val) → tonguide + senaste publicerade texter in → utkast med
+faktakollspunkter utmärkta → creatorn granskar, justerar och publicerar
+(fredat). AI-lämpligheten är hög i mittstegen, låg i ändarna.
+→ Vad en agent konkret kan göra: leverera granskningsklara utkast i rätt
+  kundton. Creatorn går från blankt dokument till redigering — det är där
+  30 %-målet hämtas hem.
 
-→ AI-lämplighet per steg: låg för 1, låg för 2, **hög för 3**, **hög för 4**, låg för 5
-→ Vad en agent konkret kan göra: Tar ett tema + kundens tone-guide → genererar 5 LinkedIn-post-förslag i crescendo av längd och ton-variation. Creator väljer, personaliserar på 30 sekunder, publicerar. Spar ~15 minuter per post × 10–15 posts per dag = timmar av arbete.
+#### Kluster B: Månadsrapportering
 
-#### Moment 3: Skriva nyhetsbrev
-
-Delsteg:
-1. Välja innehål (ofta redan strukturerat i content-kalendern)
-2. Skriva introduktion
-3. Sammanfatta varje nyhetsitem
-4. Skriva closing/CTA
-5. Formatera för email-klient
-6. Menneskan: granskar, skickar
-
-→ AI-lämplighet per steg: låg för 1, **medel för 2**, **hög för 3**, medel för 4, låg för 5, låg för 6
-→ Vad en agent konkret kan göra: Tar en newslist + kundens tone-guide → genererar ett publikationsklart nyhetsbrev-utkast med alla items summerade i kundens ton. Sparar ~30 minuter per nyhetsbrev.
-
----
-
-### Kluster B: Tone-of-voice-centralisering
-
-#### Moment 4: Hantera och uppdatera kundspeifika tone-of-voice-guider
+**Moment: Sammanställa månadsrapporter**
 
 Delsteg:
-1. Samla exempel från tidigare innehål för en kund
-2. Identifiera tone-dimensioner (formal/casual, technical/accessible, data-driven/story-driven, etc.)
-3. Extrahera ord/fraser som kunden använder
-4. Skriva en strukturerad guide (exempelformat: [ord att använda] / [ord att undvika] / [satstyper] / [exempel])
-5. Förvara där content creators enkelt kan hitta det
+1. Exportera månadens siffror ur de tre systemen (görs manuellt idag)
+2. Jämföra mot föregående månad och mot kundens mål: vad rörde sig, varför
+3. Skriva sammanfattning, tolkningar och rekommendationer för nästa månad
+4. Bygga presentationen i Google Slides enligt kundens rapportmall
+5. Emma granskar och skickar
 
-→ AI-lämplighet per steg: **hög för 1–4** (givet sampel från bloggposter/sociala media), låg för 5 (systemväg bortom agenten)
-→ Vad en agent konkret kan göra: Tar 10–20 tidigare inlägg från en kund → analyserar tone-markörer → producerar en 1-2 sidas tone-guide med "Do and Don't"-exempel. En guide per kund, uppdaterad varje månad eller när ny strategi lanseras. Sparar tid för strateger (som annars måste dokumentera det manuellt) och gör det möjligt för creators att självbetjäna sig utan att be strategerna.
+→ AI-lämplighet per steg: låg för 1 (systemåtkomst), hög för 2–3, medel–hög
+  för 4 (givet mall), låg för 5 (fredad granskning)
+→ Vad en agent konkret kan göra: ta emot exporterna + förra månadens
+  rapport som mall och leverera ett granskningsklart utkast —
+  sammanfattning, trendtolkning, rekommendationer, sidstruktur. Emma går
+  från byggare till granskare; 4–6 timmar blir realistiskt 1–2.
 
----
+### Kontextfaktorer
 
-### Kluster C: Rapportgenerering
+1. **AI-användningen är utbredd men privat.** Åtta personer, åtta
+   chatthistoriker, noll delad struktur. Teamets uppgift är inte att införa
+   AI — den är att göra AI-användningen *gemensam och konsekvent*.
+2. **Notion-promptbankens haveri är designfacit.** Lösningar som ligger
+   bredvid arbetsflödet dör. Agenterna måste bära sin kunskap själva.
+3. **Tonen är infrastruktur, inte produktion.** Snabbt när tonen är känd,
+   långsamt när den är okänd — tonarbetet är en förutsättning för
+   volymmålet.
+4. **Rapportdatan finns redan.** Problemet är inte att skapa data utan att
+   formulera den kundvärdigt. Ren syntesuppgift — AI:s hemmaplan.
+5. **Avgränsningen styr all agentdesign.** Mänsklig slutgranskning och
+   strategiägd kundkontakt betyder: varje agent levererar utkast och
+   underlag, ingen agent publicerar eller kommunicerar med kund.
+6. **Veckoplaneringen är byråns prioriteringsmoment.** "Fler kunder utan
+   att anställa" avgörs i praktiken där — det motiverar en operativ
+   VD-agent snarare än en strategisk.
 
-#### Moment 6: Generera och sammanställa månatliga rapporter
+### Osäkerheter och motsägelser
 
-Delsteg:
-1. Samla KPI-data från Google Analytics, sociala medier, Google Ads (troligt redan exporterat till Google Sheets)
-2. Analysera trender: vad var bra, vad var dåligt
-3. Skriva sammanfattning (exekutiv sammanfattning)
-4. Formatera grafer/data i presentation
-5. Skriva rekommendationer för nästa månad
-6. Människan: granskar, skickar till kund
-
-→ AI-lämplighet per steg: låg för 1 (datahämtning), **medel–hög för 2** (trend-analys), **hög för 3**, medel för 4 (kräver presentation-åtkomst), **medel–hög för 5**, låg för 6
-→ Vad en agent konkret kan göra: Får CSV/JSON med KPI-data för en månad + kundens tidigare rapport som mall → analyserar trender → skriver en rapport-draft med sammanfattning, data-highlights, och rekommendationer. Sparar 3–4h per rapport. Om detta är 20 rapporter per månad sparas 60 timmar per månad = mycket.
-
----
-
-## Kontextfaktorer
-
-- **Distribuerad AI-användning:** Alla använder ChatGPT men inte strukturerat. Det finns ingen systemväg för att dela prompts eller resultat. En agent-baserad lösning måste vara *friktionslös att använda* än vad Notion-banken var — troligt genom direkta integreringar eller mycket enkel CLI/chat-gränssnitt.
-- **Kundspeifik ton är infrastrukturproblem, inte bara produktion:** Innehållsproduktion är snabb om tonen är känd, långsam och felaktig om den är okänd. En tone-agent är högre värde än en innehålls-agent om den andra agenten redan har tonen.
-- **Rapportering är redan strukturerad data:** Google Analytics och Google Ads ger redan data; snarare än att skapa data är problemet att *formulera* det i ett kundvärdigt sätt. Denna är en syntes-uppgift, perfekt för AI.
-- **Remote eller colocated:** Okänt. Om fully remote bör agenter ha god kontext-hantering och väl dokumenterad output. Om colocated kan agenter förvänta sig att people hämtar resultat från en biljett-kö eller liknande.
-
----
-
-## Osäkerheter och motsägelser
-
-1. **Hur lagras kundspeifik information idag?** Intake säger "varje kund vill ha sin egen ton" men vi vet inte om det finns en centraliserad plats för tone guidelines. Om det redan finns (Notion, Google Doc) behöver agenten åtkomst. Om det inte finns behöver agenten först *bygga* den från tidigare innehål (möjligt men kräver lite AI-massagering).
-
-2. **Vad är "30% mer content"?** Framgångskriteriet är "producera 30% mer content utan att anställa fler." Vi vet inte om det betyder 30% fler bloggar, fler Instagram-posts, en helt ny kundkategori, eller bara generell volym-ökad. Olika tolkningar gör olika agenter prioriterade.
-
-3. **Google Ads/annondsystem-åtkomst:** Vi vet att de annonsoptimerar men inte hur datan flödar från Google Ads till det team använder. Om det är CMS- eller sheet-baserat kan agenten jobba. Om det är ett UI-baserat system kan agenten bara föreslå (inte implementera).
-
-4. **Vem ska *använda* agentemas output dagligen?** Intake pekar på Emma Johansson som projektägare, men de 3 content creators är de faktiska användarna för innehålls-agenten. Behöver förklar vad det gäller adoption — kommer creators att använda AI-genererade utkast eller kommer de att se det som sitt jobb att skriva från grunden?
-
-5. **Email eller innehål först?** Momentet "skriva nyhetsbrev" kan vara email-baserat eller web-baserat. Om email, vilken platform? Om web, vilken CMS? Det påverkar hur agenten kan integrera.
-
----
-
-## Sammanfattande kvalitetschecklista
-
-- [ ] Research hittar konkreta arbetsmoment (inte roller eller funktioner) — ✓ hittat 11, varav 6 över ribban
-- [ ] Olika moment motiverar *varandra* snarare än att stå ensamma — ✓ kluster A är tre varianter på samma sak; kluster B är infrastruktur för A
-- [ ] Minst ett moment är *under ribban* och motiverat avvisas — ✓ veckoplanering, strategi, client-möten
-- [ ] Smärta och AI-lämplighet är bedömt ärligt utan optimism-bias — ✓ annonsoptimering är medel-lämplighet; quality-check är nedprioriterat
-- [ ] Framgångskriteriet från intake matar in vald fokus — ✓ rapportgenerering adresserar "rapporterna tar hälften så långt tid"; innehålls-agenten adresserar "30% mer content"
+1. **Var bor tonbesluten idag?** Intake säger att man "måste komma ihåg
+   vad vi bestämt med varje kund" — men inte var besluten antecknas (mejl?
+   möten? huvuden?). Bekräfta att publicerat material speglar det man
+   bestämt innan tonguider byggs av det.
+2. **Vad betyder "30 % mer content" konkret?** Fler bloggar, fler poster,
+   fler kunder på samma bemanning? Bör preciseras innan effekten mäts.
+3. **Exportformat för rapportdatan.** De tre systemen exporterar olika. Ett
+   överenskommet format behövs (kalkylblad per system räcker) — finns en
+   exportrutin idag eller skapas den i första projektet?
+4. **Adoption hos de tre creators.** Emma äger projektet, men creators är
+   innehållsstödets dagliga användare. Utgår de från utkast, eller ser de
+   det som sitt hantverk att skriva från blankt papper? Tidigare mönster
+   ("alla ville göra sin egen grej") gör frågan verklig.
 
 ---
 
-## 3. SKALNINGSBESLUT
-
-### Steg 1: Storlekstabellen
-
-Företagsstorlek: **litet team (8 personer)**
-
-Enligt storlekstabellen: **4–7 agenter**
-
-### Steg 2: Justering för mognad
-
-Mognad: **van**
-
-Enligt mognad-justering: **hälften av normalantalet**
-
-Normalantal för "litet team": 4–7 → mittpunkt ~5,5
-Hälften: ~2,5–3,5 agenter (avrundas till **3–4 agenter**)
-
-### Steg 3: Jämför med research
-
-Research identifierade: **6 kluster över ribban** (Kluster A innehållsproduktion, Kluster B tone-of-voice, Kluster C rapporter, Kluster D annonsoptimering, + implicita).
-
-Wait — låt mig räkna om. Research säger:
-
-- Kluster A (innehållsproduktion): 3 moment
-- Kluster B (tone): 1 moment
-- Kluster C (rapporter): 1 moment
-- Kluster D (annonsoptimering): 1 moment
-
-**Det är 4 kluster över ribban.**
-
-Skalnings-regel: "Kluster inom intervallet → välj tal närmast antal kluster + 2"
-
-Antal kluster + 2 = 4 + 2 = 6 agenter
-
-Men mognad-justeringen säger vi ska välja hälften. Hälften av 6 är 3.
-
-Konflikt: storlekstabellen säger 5,5, mognad drar ner till ~3–4, research säger "minst 4 för att täcka klustrena".
-
-Avvägning: För en van-nivå-kund med enkla första projekt är 3–4 agenter rätt. Vi går för **4 agenter totalt** för att kunna ha två specialister (innehål och rapporter) plus VD och VD-assistent.
-
-### Steg 4: Output
+## 3. Skalningsbeslut
 
 ```
 Skalningsbeslut: 4 agenter (VD + VD-assistent + 2 specialister)
-
-Motivering: Litet team (8 personer) → normalantal 4–7 agenter.
-Mognad van → hälften av normalantal ≈ 3–4. Research identifierade 4 tydliga
-kluster över ribban (innehål, tone-of-voice, rapporter, annonsoptimering).
-Valde 4 för att täcka de två topprioriterade klustren (innehål + rapporter)
-plus infrastruktur (tone-of-voice som del av innehålls-agenten). Ungefär är
-annonsoptimering väntande för version 2 då det är medel-lämplighet och kräver
-system-åtkomst.
+Motivering: Litet team (8 personer) → intervall 4–7, justerat till 3–4 för
+mognadsnivå van. Research hittade 3 kluster över ribban. Valde 4 så att de
+två högst prioriterade klustren (innehåll i rätt kundton respektive
+månadsrapportering) får var sin specialist, medan annonsvariation skjuts
+till en senare version — medel lämplighet, ej uttalad smärta.
 ```
 
 ---
 
-## 4. FÖRSTA-PROJEKT-IDENTIFIERING
+## 4. Första-projekt-identifiering
 
-# Första-projekt-kandidater: Marknadsbyrå X
+Körs efter research och korskörs mot de sex kriterierna i
+`docs/first-project.md`. Alla sex måste vara uppfyllda — inte fem.
 
-## Rekommendation: Rapportgenerering-assistent
+Tre moment kvalificerade sig för prövning: månadsrapporterna (hög smärta,
+en ägare, uttalat framgångskriterium), tonguide för en pilotkund
+(infrastrukturen bakom kluster A) och LinkedIn-utkast för en creators kunder
+(högst frekvens i vardagen).
 
-### Problemet i era egna ord
+### Test mot de sex kriterierna
 
-"Rapportering är jobbigt och tar mycket tid. Vi gör det manuellt i Google Slides varje månad."
+```
+Kandidat: Månadsrapport-utkast (kluster B)
 
-"Om rapporterna tar hälften så lång tid" — detta är direkt framgångskriterium från kunden.
+1. Litet i tid?      Ja — förra månadens data finns; två testrapporter
+                     genereras och granskas inom en vecka.
+2. Ägs av en person? Ja — Emma Johansson, som gör rapporterna idag.
+3. Mätbart?          Ja — 4–6 timmar per rapport idag, mål under 2.
+4. Fallback?         Ja — rapporterna byggs för hand som förut.
+5. Underhållbart?    Ja — exporter + mallrapport in; Emma kan själv
+                     justera mall och instruktioner.
+6. Version 2?        Ja — fler kunder, sedan tonguide-projektet, sedan
+                     automatiserad datahämtning.
+```
 
-### Varför just det här projektet
+```
+Kandidat: Tonguide för en pilotkund (kluster A, infrastrukturdelen)
 
-1. **Litet i tid (vecka 1):** Kunden kan leverera två månaders värd av data (Google Analytics, sociala medier, Google Ads) på dag 1. En agent kan generera två test-rapporter på dag 1–2. Värde visas inom tre dagar, inte tre veckor.
+1. Litet i tid?      Ja — en kund, guide byggd ur publicerat material på
+                     dagar, användbar vid nästa text.
+2. Ägs av en person? Ja med reservation — naturlig ägare är en strateg,
+                     men intake pekade bara ut Emma. Behöver utses.
+3. Mätbart?          Ja, men mjukare — tonrelaterade omskrivningar
+                     före/efter, tid från utkast till godkänt.
+4. Fallback?         Ja — man fortsätter komma ihåg tonen som idag.
+5. Underhållbart?    Ja — guiden är text, uppdateras vid riktningsbyte.
+6. Version 2?        Ja — guider för alla kunder, sedan utkast skrivna
+                     direkt mot guiderna.
+```
 
-2. **Ägs av en person:** Emma Johansson (projektledare) gör rapporterna idag. Hon är naturlig ägare. Hennes framtidsvision är helt klar: "samma data, halva tiden".
+```
+Kandidat: LinkedIn-utkast för en creators kunder (kluster A, produktion)
 
-3. **Mätbart:** Idag: 4–6 timmar per rapport, 20 rapporter per månad = ca 80 timmar per månad. Framgångskriterium: hälften så långt tid = 40 timmar. Måltal: **<3 timmar per rapport**.
+1. Litet i tid?      NEJ — utan tonguide blir utkasten generisk text som
+                     creatorn ändå skriver om. Kräver infrastrukturen först.
+2. Ägs av en person? Ja — en utpekad creator.
+3. Mätbart?          Ja — poster per vecka, tid per post.
+4. Fallback?         Ja — skriva som idag.
+5. Underhållbart?    Ja, givet att tonguiderna underhålls.
+6. Version 2?        Ja — fler format, fler creators.
+```
 
-4. **Fallback finns:** Om agenten inte fungerar fortsätter de manuell Google Slides-rapportering. Ingen verksamhet bryts.
+LinkedIn-kandidaten faller på kriterium 1 och stryks: den är rätt projekt,
+men i fel ordning. Den blir naturlig version 2 efter tonguiderna.
 
-5. **Underhållbart:** Agenten behöver bara CSV-data + tidigare mall. Ingen API-integration nödvändig. Emma kan uppdatera prompten själv om output-format ändras.
+Rangordning: månadsrapport-utkastet klarar alla sex utan reservation och
+träffar framgångskriteriet ordagrant; tonguiden klarar alla sex men med
+svagare ägarskap och mjukare mätbarhet — starkt andra projekt.
 
-6. **Version 2 är uppenbar:** Efter vecka 1 kan agenten utökas till: (1) automatisk data-import från Google Analytics API, (2) kundspeifik rekommendationer baserat på historiska trend-analyser, (3) direkt export till PDF eller email-sändning.
+### Rekommendation: Månadsrapport-utkast
 
-### Vad som ska vara sant efter vecka 1
+#### Problemet i era egna ord
+"Rapporteringen är jobbig och manuell — 4–6 timmar per kund och månad i
+Google Slides." Och framgångskriteriet: "om månadsrapporterna tar halva
+tiden."
 
-- En fungerande rapport-agent som tar CSV-data + mail → producerar en rapport-utkast som E-mail-kan-publicera i samma tid som en manuell rapport tar (eller mindre)
-- Minst två test-rapporter (från två av mina befintliga kunder) är genererade och granskat av Emma
-- Emma kan köra agenten själv utan att behöva be om hjälp
-- En plan för "vad kommer sen": API-integration, automatisk scheduling, etc.
+#### Varför just det här projektet
+Ni promptar redan varje dag — det här projektet visar skillnaden mellan att
+prompta och att bygga. En chattflik hjälper den som sitter i den, just då,
+och glömmer allt till nästa gång. Det här är i stället ett system: agenten
+kan er rapportmall, era kunder och ert upplägg, månad efter månad, utan att
+någon klistrar in samma instruktioner igen. Datan finns redan, uppgiften är
+ren syntes, och det finns exakt en ägare. Ingen annan kandidat träffar ert
+framgångskriterium lika ordagrant.
 
-### Vem äger det
+#### Vad som ska vara sant efter vecka 1
+- Två testrapporter (två olika kunder, förra månadens data) är genererade,
+  granskade av Emma och bedömda mot de riktiga rapporterna
+- Emma kan köra agenten själv, från export till utkast, utan hjälp
+- Tiden per rapport är mätt, så att nästa månads siffra går att jämföra
 
-**Emma Johansson, projektledare**
+#### Vem äger det
+Emma Johansson, projektledare. Hon gör rapporterna idag, känner igen
+problemet och kan avgöra själv om utkasten håller.
 
-Hon gör rapporterna idag och är investerad i att spara tid. Hon är också bro mellan teknik (agenten) och användare (alla kunder).
+#### Hur vi mäter framgång
+- **Tid per rapport:** 4–6 timmar idag → under 2 timmar inklusive granskning
+- **Månadsvolym:** alla kunders rapporter klara utan kvälls- eller
+  helgarbete vid månadsskiftet
+- **Kvalitet:** utkastet kräver justering, inte omskrivning — under 30
+  minuters redigering per rapport
 
-### Hur vi mäter framgång
+#### Om det inte fungerar
+Rapporterna byggs för hand i Google Slides, precis som idag. Ingen kund
+märker något, ingenting i verksamheten står stilla.
 
-- **Tid per rapport:** Idag 4–6h → mål <2h (inklusive granskning)
-- **Volym:** Kan Emma generera 20 rapporter per månad utan att det tar mer än 40 timmar totalt?
-- **Kvalitet:** Är rapport-utkasten publicerbara med minimal redigering (<15 minuter)?
-- **Adoption:** Använder Emma agenten utan att fråga teknik-support?
+#### Vad som kommer sen (version 2)
+Först fler kunder in i samma flöde. Sedan tonguide-projektet (alternativet
+nedan), som låser upp innehållsutkasten. Längre fram: automatiserad
+datahämtning i stället för manuella exporter.
 
-### Om det inte fungerar
+### Alternativ: Tonguide för en pilotkund
 
-Fallback är helt enkelt: fortsätta manuell Google Slides-rapportering. Verksamheten är inte beroende. Men vi förväntar oss att det *funkar* eftersom vi bara gör syntesen av data som redan finns strukturerat.
+**Problemet i era egna ord:** "Det som tar mest tid är att varje kund vill
+ha sin egen ton och vi måste komma ihåg vad vi bestämt med varje kund."
 
-### Vad som kommer sen (version 2)
-
-1. **Automatisk data-import:** API-koppling till Google Analytics och Google Ads så att agenten kan köra schemalagd rapport-generation varje månad (helt hands-off).
-2. **Kundspeifik rekommendationer:** Baserat på historiska trender för den här kunden kan agenten ge förebyggande rekommendationer ("Er engagement är ner 15% YoY — vi rekommenderar att fokusera på LinkedIn framför Twitter nästa månad").
-3. **Distribution:** Direkta PDF-exporter och/eller email-sändning till kund utan manuell steg.
+Välj en kund med mycket publicerat material, destillera en tonguide på 1–2
+sidor, och låt alla tre creators skriva mot den i två veckor. Mät antalet
+tonrelaterade omskrivningar. Klarar alla sex kriterierna, men ägarskapet
+(en strateg) behöver utses och mätbarheten är mjukare än rapportprojektets.
+Rekommenderas som projekt två — det är förutsättningen för att
+innehållsutkasten ska ge verklig effekt.
 
 ---
 
-## Alternativ: Innehållsproduktion med kundspeifik ton
+## 5. Agentförslag: Marknadsbyrå X
 
-### Problemet i era egna ord
+Fyra agenter: en operativ VD byggd kring måndagsprioriteringen, en
+VD-assistent som daglig arbetspartner, och två specialister mot de två
+dyraste klustren.
 
-"Det som tar mest tid är att varje kund vill ha sin egen ton och vi måste komma ihåg vad vi bestämt med varje kund."
+En sak innan agenterna, eftersom ni redan är vana ChatGPT-användare: idag
+promptar åtta personer var för sig. Det ni får här är byggda agenter — var
+och en bär sin egen kunskap (er rapportmall, era kunders tonguider, er
+veckorytm) så att ingen behöver återuppfinna sin prompt varje morgon. Er
+Notion-promptbank dog för att den låg bredvid arbetet; agenterna är gjorda
+för att ligga *i* arbetet.
 
-"Kvaliteten blir jämnare — just nu varierar det beroende på vem som skriver."
+### VD – Beläggningschefen
 
-### Varför det här projektet
+**Jobb:** Förbereder måndagens prioritering: vilka kunder får vems timmar
+den här veckan, och var spricker "fler kunder utan att anställa" först.
 
-1. **Litet i tid?** Ja — men bara om vi först bygger ton-guider för varje kund. Det tar en vecka att göra det första projektet för en kund, sen är det enkelt.
-2. **Ägs av en person?** Ja — Emma eller en av de 3 content creators. Men det finns risk för "blir mina guidelines eller används vi en delt version?"
-3. **Mätbart?** Ja — "30% mer content" eller "samma tid för 30% fler bloggar/posts".
-4. **Fallback?** Ja — de skriver utan agenten som idag.
-5. **Underhållbart?** Kanske. Agenten kräver uppdaterad tone-guide per kund; om tone-guiden inte uppdateras blir output dålig.
-6. **Version 2?** Ja — integrera direkt med CMS eller publicerings-system.
+**Motivering:** "Ta fler kunder utan att anställa fler" är byråns uttalade
+mål, och research flaggade veckoplaneringen som momentet där det målet
+avgörs i praktiken — tre creators timmar ska räcka till 7–9 kunder, varje
+vecka. För ett företag med åtta anställda måste VD-agenten vara operativ:
+den förbereder verkliga beslut om verkliga timmar.
 
-### Varför vi rekommenderar Rapportering framför Innehål för version 1
+**Triggas av:** Måndagsmorgon inför veckoplaneringen, när en ny kund är på
+väg in och kapaciteten ska bedömas, eller när två kunders deadlines krockar
+om samma creators tid.
 
-- **Infrastrukturberoende:** Innehål kräver första att tone-guiderna existerar och är uppdaterade. Rapportering är självständigt.
-- **Direkthet:** Rapportering är pure syntés av befintlig data. Innehål är skapandet av något nytt (utkast) som behöver mänsklig granskning och personalisering.
-- **Risk:** Om ton-guiden är dålig blir innehål dåligt. Om rapport-templaten är dålig är rapporteten fortfarande läsbar.
-- **Mognaden:** En van-kund förstår värdet av "automatisera rapportering" omedelbar. Värdet av "agenten skriver utkast" kräver mer förtroendebyggning.
-
-**Men:** Efter Rapportering är körning funkar, är Innehål nästa naturliga projekt.
-
----
-
-## Alternativ: Centraliserad tone-of-voice-hantering
-
-### Problemet i era egna ord
-
-"Vi använder ChatGPT dagligen men det finns inget gemensamt system. Alla har sin egen chatthistorik."
-
-"Vi provade en Notion-promptbank men ingen använde den efter första veckan."
-
-### Varför det här projektet inte är version 1
-
-Tone-of-voice-agenten löser ett infrastrukturproblem men inte ett "gör jag något nytt" problem. Den är viktigt för version 2 (innehåls-agenten), men kan vänta. Dessutom är tonen för abstrakt för en van-kund att förstå värdet av direkt.
-
-**Men:** Efter rapportering är körd, börja här innan innehål. En tone-agent gör innehåls-agenten mycket bättre.
-
----
-
-## Sammanfattning
-
-**Rekommenderat första projekt:** Rapportgenererings-assistent ägs av Emma Johansson
-**Tidslinje:** Vecka 1 värde, fullt operativ vecka 2
-**Framgångsmål:** Rapporter från 4–6h till <2h, 20 rapporter/månad möjlig på <40h totalt
-**Fallback:** Återgå till manuell Google Slides (verksamheten fortsätter)
-**Version 2:** Automatisk data-import, API-integration, kundspeifik rekommendationer
-
----
-
-## 5. TEAM-FÖRSLAG
-
-# Agent-förslag: Marknadsbyrå X
-
-## VD: Emma Johansson (Operativ projektledare)
-
-**Jobb:** Hålla veckoplanering på plats, eskalera flaskhalsar mellan content-creators och annonsörer, prioritera vilka kunder som får mest AI-stöd varje vecka.
-
-**Motivering:** Intake säger "veckoplanering varje måndag" och "vi har åt projektledare som har bäst koll på var det skaver." Emma är redan i denna roll. VD-arbetet här är operativt: se till att de tre content creators inte stoppar varandra, och att AI-agentamen används.
-
-**Triggas av:** Måndagsmorgon (innan veckovplaneringen), eller när en content-creator rapporterar "jag sitter fast på en ton" eller "en rapport behöver göras men jag har inte tid".
-
-**Rör inte:** Kundkommunikation (det gör strategerna). Inte strategiarbete. Inte teknikproblem (det är Claude Code-administratörs jobb).
+**Rör inte:** Strategiarbetet och kundkontakten (strategernas, enligt
+avgränsningen). Fattar inte besluten — förbereder dem; måndagsmötet är
+människornas.
 
 **Kapaciteter:**
-- Samlar veckovplaning: kolla content-kalendrar, identifiera vilka kunder som behöver rapporter denna vecka
-- Ber agenter om output: "Rapport för kund X, data är här, leverera senaste x"
-- Mäter agentanvändning: vet vem som använder agenter och vem som skriver från grunden
-- Prioriterar vilka tone-guider som finns uppdaterade (tills tone-agenten är automatisk)
+- Sammanställer ett veckounderlag: beläggning per creator, leveranser per
+  kund, var det är trångt
+- Flaggar när en ny kund inte ryms i befintlig kapacitet — innan offerten
+  skrivs, inte efter
+- Föreslår omprioriteringar när deadlines krockar, med synliga avvägningar
+- Följer "fler kunder utan att anställa"-målet över tid: hur många kunder
+  per creator klarar byrån nu jämfört med i våras?
 
-**Föreslagna skills:** Inga
+**Föreslagna skills:** Inga.
 
-**Skalningsnot:** I ett team på 8 är Emma redan här. Agenten är inte ny person utan ny *ansvar* för Emma. Agenten hjälper Emma genom att skapa struktur kring AI-användarandet.
+**Skalningsnot:** Bär både kapacitetsplanering och måluppföljning — två
+hattar som i en större byrå vore en produktionschef och en controller. Här
+är det medvetet en operativ VD.
 
 ---
 
-## VD-assistent: AI-operation-assistent
+### VD-assistent – Trafikledaren
 
-**Jobb:** Vara operativ brygga mellan agenter och content-creators. Se till att ageterna blir körda, ge feedback på output, uppdatera tone-guider när nya kunder kommer in.
+**Jobb:** Den agent byrån pratar med dagligen: vad är läget, vad är nästa
+steg, och vilken agent ska ta vilken uppgift.
 
-**Motivering:** Intake säger "vi använder ChatGPT men det finns inget gemensamt system." VD-assistenten *är* systemet. Hon är den person som ser till att agenten-output når rätt person och att output är tillräckligt bra för att använda.
+**Motivering:** "Alla använder ChatGPT dagligen men var för sig, utan
+gemensamt system." VD-assistenten är det gemensamma systemet i praktiken —
+en enda ingång som vet vilka agenter som finns och vem som bör göra vad. På
+en byrå heter den rollen trafikledare: dirigerar flödet utan att själv
+producera.
 
-**Triggas av:** Varje gång en content-creator har en uppgift som en agent kan hjälpa med. "Jag ska skriva 5 LinkedIn-poster för kund X" → VD-assistenten vet vilka tone-guide som finns och kan köra innehålls-agenten.
+**Triggas av:** Daglig avstämning, veckans check-in, när någon i teamet
+inte vet vilken agent som ska ta en uppgift, eller när något är på väg att
+falla mellan stolarna vid ett månadsskifte.
 
-**Rör inte:** Inte innehållsgranskning (det gör creators). Inte rapportgenererering själv (det gör rapport-agenten). Inte strategiarbete.
+**Rör inte:** Producerar inte innehåll och bygger inte rapporter (det gör
+specialisterna). Fattar inte prioriteringsbeslut (VD förbereder,
+människorna beslutar). Kommunicerar aldrig med kund.
 
 **Kapaciteter:**
-- Kör innehålls-agenter och lämnar output till creators
-- Uppdaterar tone-guider när nya kunder kommer in eller befintliga ändrar brand voice
-- Samlar feedback från creators på "agenten missade X, nästa gång behöver jag…"
-- Rapporterar till Emma om agenter inte fungerar bra
-- Dokumenterar de agenter som fungerar så att de kan reproduceras för nästa kund
+- Kör check-ins och håller en leverans-checklista per kund
+  (kalender → utkast → granskat → publicerat)
+- Pekar rätt: "det där är en fråga för Månadsrapportören" — så att teamet
+  slipper hålla reda på vem som gör vad
+- Bevakar månadsskiftet: påminner om exporter och rapporter innan Emma
+  behöver jaga dem
+- Samlar teamets feedback på agentutkasten ("Kundröstaren missade att kund
+  X aldrig använder utropstecken") och för in den där den hör hemma
+- Äger mötesfunktionen och kallar bara till möte när en enskild agent inte
+  räcker
 
-**Föreslagna skills:** Inga specifika (använder bare Claude Code chat)
+**Föreslagna skills:** Inga.
 
-**Skalningsnot:** En ny roll för ett befintligt team. Troligt en halvtidsjobb som delas med någon annan rollen (t.ex. en av strategerna) för nu, full-time senare om volymen växer.
+**Skalningsnot:** Bär också adoptionsbevakningen — ser vilka agenter som
+faktiskt används och föreslår justeringar när mönstret är tydligt. I ett
+större team vore det en egen utvärderingsroll.
 
 ---
 
-## Specialist: Rapport-AI
+### Kundröstaren
 
-**Jobb:** Ta månatlig KPI-data och generera publikerbara rapport-utkast med trend-analys och rekommendationer.
+**Jobb:** Håller en tonguide per kund, byggd ur kundens publicerade
+material, och skriver innehållsutkast — blogg, LinkedIn, nyhetsbrev — som
+alltid går genom rätt guide.
 
-**Motivering:** "Rapportering är jobbigt och tar mycket tid. Vi gör det manuellt i Google Slides varje månad." Intake säger att det är en smärtpunkt och framgångskriteriet säger "rapporterna tar hälften så långt tid." Research identifierade att rapportering är en välavgränsad uppgift med tydlig input (KPI-data i CSV) och output (strukturerad rapport). AI-lämplighet är hög.
+**Motivering:** "Det som tar mest tid är att varje kund vill ha sin egen
+ton och vi måste komma ihåg vad vi bestämt med varje kund" — plus
+"kvaliteten varierar beroende på vem som skriver". Tonen är infrastrukturen
+bakom hela kluster A: dokumenteras den blir alla tre texttyperna både
+snabbare och jämnare. Guiden och utkasten ligger i samma agent med avsikt —
+det var separationen som dödade promptbanken.
 
-**Triggas av:** VD-assistenten eller Emma säger "Det är tid för månadens rapporter för kund X" och skickar CSV-data för månaden.
+**Triggas av:** När en creator ska skriva åt en kund ("blogg för kund X om
+deras nya integration"), när en ny kund tas in och guiden ska byggas, eller
+när en kund byter riktning och guiden ska uppdateras.
 
-**Rör inte:** Inte data-inhämtning från Google Analytics (det görs manuellt för nu). Inte PDF-genering eller email-sändning (det är ett nästa-steg-projekt). Inte publicering till kund (Emma granskar först).
+**Rör inte:** Publicerar aldrig — allt är utkast tills en människa har
+granskat (avgränsningen). Väljer inte ämnen (content-kalendern är teamets).
+Skriver inget som går direkt till kund.
 
 **Kapaciteter:**
-- Analyserar KPI-trender: vad ökade, vad minskade, trendbreak-identifiering
-- Skriver exekutiv sammanfattning (ett stycke om vad som hände denna månad)
-- Föreslår grafik/data-presentationer: "detta bör visualiseras som en linjegraf"
-- Genererar rekommendationer för nästa månad baserat på trender
-- Använder kundspeifik mall om det finns (annars standardmall)
-- Levererar utkast i markdown eller Google Docs-format
+- Destillerar en tonguide per kund ur 10–20 publicerade texter: ord att
+  använda och undvika, meningsrytm, gör/gör inte-exempel
+- Skriver bloggutkast (1 000–1 500 ord) i kundens ton, med
+  faktakollspunkter utmärkta för creatorn
+- Genererar 3–5 LinkedIn-varianter per ämne att välja bland och justera
+- Skriver nyhetsbrevsutkast enligt kundens Mailchimp-mall
+- Flaggar tondrift: "kund X:s tre senaste poster är märkbart ledigare än
+  guiden — medvetet eller dags att uppdatera?"
 
-**Föreslagna skills:** Inga
+**Exempel**
 
-**Skalningsnot:** En helt ny agent (inte en befintlig person). Körbar helt automatiserad eller semi-automatiserad (Emma eller VD-assistenten startar den).
+> **Creator:** "LinkedIn-post för kund X om deras nya Fortnox-integration."
+>
+> **Kundröstaren:** "Tre varianter i X:s ton — saklig, inga utropstecken,
+> alltid kundnytta före funktion. Variant 2 är kortast och passar deras
+> mönster bäst. Faktakoll: jag har antagit att integrationen är dubbelriktad
+> — stäm av det innan publicering."
+
+**Föreslagna skills:** Inga — allt arbete är text, och källmaterialet är
+redan publicerat innehåll.
+
+**Skalningsnot:** Bär två hattar — tonbibliotekarie och utkastskribent —
+som i ett större team vore en brand manager och flera copywriters.
+Ihopslagna för att mognadstaket kräver det, och för att kombinationen är
+poängen: guiden används automatiskt varje gång.
 
 ---
 
-## Specialist: Innehålls-guide (Tone-of-Voice-assistent)
+### Månadsrapportören
 
-**Jobb:** Bygga och uppdatera kundspeifik tone-of-voice-guider från tidigare innehål, så att content-creators kan skriva konsistent utan att be om varje gång.
+**Jobb:** Tar månadens KPI-exporter och en tidigare rapport som mall, och
+levererar granskningsklara rapportutkast med sammanfattning, trendtolkning
+och rekommendationer.
 
-**Motivering:** "Det som tar mest tijd är att varje kund vill ha sin egen ton och vi måste komma ihåg vad vi bestämt med varje kund." Research identifierade att ton-konsistensen är en infrastruktur-blockad för innehåldsproduktion. En tone-guide-agent löser detta genom att ta tidigare innehål → extrahera tone-mönster → leverera en guide som creators kan använda.
+**Motivering:** "Rapporteringen är jobbig och manuell — 4–6 timmar per
+kund och månad i Google Slides", och framgångskriteriet säger halva tiden.
+Välavgränsat med hög AI-lämplighet: datan finns redan i de tre systemen,
+uppgiften är att formulera och paketera den. Detta är också det
+rekommenderade första projektet, med Emma som ägare.
 
-**Triggas av:** (1) En ny kund onboards, (2) En befintlig kund säger "vi byter brand voice", (3) Varje månad för befintliga kunder (för att uppdatera guide baserat på nytt innehål).
+**Triggas av:** Månadsskiftet — Emma eller Trafikledaren lämnar över
+månadens exporter per kund, agenten levererar utkast kund för kund.
 
-**Rör inte:** Inte själva innehålsproduktionen (det gör innehålls-agenten). Inte client-möten om brand voice (det gör strategerna).
+**Rör inte:** Hämtar inte data själv (exporterna görs manuellt tills vidare
+— medveten version 2). Skickar aldrig något till kund; Emma granskar varje
+rapport (avgränsningen). Sätter inte kundens mål eller strategi.
 
 **Kapaciteter:**
-- Analyserar 10–20 tidigare bloggar/posts från en kund och extraherar tone-markörer
-- Skriver strukturerad tone-guide: [ord att använda] / [ord att undvika] / [satstyper] / [exempel]
-- Uppdaterar guide när ny innehål publiceras
-- Serverar guiden till content-creators i ett format de kan läsa snabbt ("se guid för kund X")
-- Flaggar om tone-driften märker (t.ex. "denna månad skriver de mer casual än vanligt — är det ett A/B-test eller en drift?")
+- Läser månadens exporter och jämför mot föregående månad och kundens mål
+- Skriver sammanfattningen: vad rörde sig, varför, och vad det betyder för
+  kunden
+- Formulerar rekommendationer för nästa månad utifrån trenderna
+- Bygger rapportutkastet enligt kundens befintliga rapportmall, sida för
+  sida
+- Flaggar avvikelser som förtjänar ett samtal snarare än en slide ("kund Y:s
+  konverteringar föll 40 % — det bör strategen ringa om, inte rapportera")
 
-**Föreslagna skills:** Inga
+**Föreslagna skills:**
+- **xlsx** — KPI-exporterna landar som kalkylblad; agenten behöver läsa och
+  räkna på dem direkt. Motiverat av rapportmomentets delsteg 1–2.
+- **pptx** — rapporterna lever i Google Slides idag; pptx-utkast kan öppnas
+  och färdigställas direkt där, så att Emma redigerar i stället för att
+  bygga om. Motiverat av "manuellt i Google Slides varje månad".
 
-**Skalningsnot:** En helt ny agent. Möjlig att köra fullt automatiserad varje månad för alla kunder, eller on-demand när en creator frågar.
-
----
-
-## Avvisade
-
-### Annonsoptimering (Google Ads, LinkedIn Ads, etc.)
-**Varför inte:** Research bedömde AI-lämplighet som medel. Momentet kräver antingen CMS-åtkomst (om datan är exporterad) eller UI-automation (om den är ej exporterad). För ett första projekt är det allt för komplext för en van-kund. Lägg till version 2 när rapport-agenten är stabil.
-
-### Veckoplanering
-**Varför inte:** Låg AI-lämplighet. Det är ett mänskligt möte med taktisk prioritering och diskussion. En agent kan höjda data men inte ersätta mötet.
-
-### Strategiutveckling
-**Varför inte:** Låg AI-lämplighet. Strategiarbete kräver senior human judgment och kunskap om kundens långfristiga mål. Inte kandidat.
-
-### Client-möten
-**Varför inte:** Låg AI-lämplighet. Ren client-management och relation-byggnng. Inte automaterbar.
+**Skalningsnot:** Medvetet smal — gör en sak (rapportsyntes) hela vägen. Det
+är första projektet, och ett smalt, mätbart uppdrag är vad som bygger
+förtroendet resten av teamet ska stå på.
 
 ---
 
-## Flaggat för användaren
+## 6. Avvisade
 
-1. **Data-lagring för tone-guides:** Var ska de 4 tone-guider lagras så att alla 3 content-creators kan nå dem? Förslag: en shared Google Doc per kund, eller en Notion-databas med tone-guides. VD-assistenten behöver tillgång till uppdatera dem.
+### Annonsvariations-agent
+**Varför inte:** Seriöst påtänkt som tredje specialist — annonsarbetet
+återkommer varje vecka och copyvarianter är en rimlig AI-uppgift. Den föll
+på två saker: mognadstaket (van → 4 agenter totalt) rymmer bara de två
+högst prioriterade klustren, och driften sker i annonssystem agenten inte
+når, så värdet stannar i förslagsledet. Intake flaggade heller aldrig
+annonserna som en kläm. Naturlig kandidat när teamet utvärderas.
 
-2. **Rapport-data-format:** Google Analytics, sociala medier och Google Ads ger data i olika format. Innan rapport-agenten kan köras måste Emma eller VD-assistenten exportera till ett standardformat (CSV, JSON, etc.). Är detta redan en process, eller behöver vi bygga den?
+### Egen agent per texttyp (blogg / LinkedIn / nyhetsbrev)
+**Varför inte:** Tre texttyper kunde blivit tre agenter, men de delar exakt
+samma förutsättning — kundens tonguide — och att splittra dem hade
+återskapat dagens problem (samma kund, olika röster) fast mellan agenter i
+stället för mellan människor. Ihopslagna i Kundröstaren.
 
-3. **Vilken tool för rapport-utskrift?** Vi föreslog "markdown eller Google Docs." Kunder ser rapporter oftast i PDF eller Google Slides. Vi behöver avgöra: levererar agenten markdown som redigeras i Google Docs, sedan exporteras till PDF? Eller direkt till Google Slides (knepigare)?
+### Veckoplanerings-agent
+**Varför inte:** Mötet är människornas — taktisk prioritering och
+diskussion. Underlaget är däremot VD-agentens jobb, så funktionen finns
+kvar utan att mötet automatiseras.
 
-4. **Vilken content-platform för LinkedIn/bloggar?** Vi sa inte vad creators använder för att publicera. Om de publicerar direkt i varje plattform (LinkedIn web UI, blog CMS, etc.) kan agenten inte publicera själv — bara leverera utkast. Det är OK för version 1, men bra att veta.
+### Slutgransknings-agent
+**Varför inte:** Uttryckligen fredat i intake: inget går till kund utan
+mänsklig granskning. Det agentbara — ett facit att granska mot — levereras
+redan av Kundröstarens tonguider. Listas för att visa att avgränsningen
+respekterats.
 
 ---
 
-## Sammanfattning av agent-teamet
+## 7. Flaggat för användaren
 
-| Agent | Typ | Primär ägare | Primär uppgift | Version 1 eller 2 |
-|-------|-----|---|---|---|
-| Emma (VD) | Människa + struktur | Emma Johansson | Veckoplanering, eskalering, agentöversikt | V1 (redan här) |
-| VD-assistent | Ny människa-roll | Halvtid (senare full) | Driva agenter, uppdatera tone-guides, ge feedback | V1 |
-| Rapport-AI | Ny agent | VD-assistent / Emma | Månatliga rapport-utkast från KPI-data | V1 |
-| Innehålls-guide | Ny agent | VD-assistent | Tone-of-voice-guider per kund | V1 |
-| (Innehålls-AI) | Ny agent | Content-creators | Blogg/LinkedIn/nyhetsbrev-utkast med ton | V2 |
-| (Annonsoptimering) | Ny agent | Ads-specialist | Annonstext-varianter och bid-förslag | V2 |
-
-**Totalt: 4 agent-slots för version 1 (VD + VD-assistent + 2 specialister), motsvarar skalningsbeslutet.**
+- **Var bor tonbesluten idag?** → Rekommendation: bekräfta att publicerat
+  material speglar det ni faktiskt bestämt med varje kund, innan
+  Kundröstaren bygger guider av det. Om viktiga tonbeslut bara finns i
+  mejl eller huvuden — samla dem först.
+- **"30 % mer content" behöver preciseras** → Rekommendation: bestäm om det
+  betyder fler leveranser per kund eller fler kunder på samma bemanning.
+  Det avgör hur effekten ska mätas och vilken agent som bär målet.
+- **Exportrutin för rapportdatan** → Rekommendation: enas om ett format
+  (ett kalkylblad per system räcker) som del av första projektets vecka 1.
+- **Adoption hos creators** → Rekommendation: låt en creator vara med och
+  forma Kundröstarens första tonguide. Er promptbank dog för att den
+  infördes uppifrån — låt den som ska använda agenten äga en bit av den.
 
 ---
 
-## Slut på team-förslag
+## 8. Divergens-självtest
 
+Skulle den här uppsättningen kunna klistras in hos en annan marknadsbyrå
+och fortfarande passa? Nej:
+
+- **Kundröstaren** är byggd kring den här byråns specifika problem — en
+  röst per kund, buren i huvudet på tre olika skribenter — och kring
+  lärdomen från deras havererade Notion-promptbank. En byrå som marknadsför
+  sitt *eget* varumärke har en enda röst och skulle aldrig få den agenten.
+- **Månadsrapportören** utgår från exakt deras rapportrutin: Google Slides,
+  4–6 timmar per kund, Emma som ägare, och ett framgångskriterium som
+  ordagrant säger halva tiden.
+- **VD:n** är byggd kring "fler kunder utan att anställa" och
+  måndagsplaneringens kapacitetsklämma — inte en generisk strateg.
+- Jämfört med de andra konsult-exemplen: bokföringsbyrån fick
+  verifikationsklassificering och mejltriage, designstudion fick
+  onboarding-paket och designrationale. Samma pipeline, tre företag, tre
+  team som inte går att byta med varandra.
+
+Teamet är knutet till Marknadsbyrå X:s egna fynd och ska vara omöjligt att
+förväxla med ett annat företags — även en annan byrås.
+
+---
+
+**Genererad:** 2026-07-15 (simulerad körning, regenererad mot promptversion 2026-07-15)
+**Företag:** Marknadsbyrå X (fiktivt)
+**Pipeline:** ai-consultant — full körning (intake → research → skalning → första projekt → förslag)
+**Status:** Alla steg genomförda för kvalitetsverifiering

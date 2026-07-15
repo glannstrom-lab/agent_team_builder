@@ -1,622 +1,683 @@
-# AI-Consultant Pipeline Test: Liten bokföringsbyrå
+# Ai-consultant pipeline-test: Lindgren Bokföring
 
-Test body för att verifiera ai-consultant-pipelinen producerar meningsfullt olika output för en AI-nybörjarkund.
+Testkörning för att verifiera att ai-consultant-pipelinen producerar ett
+team och ett första projekt som är specifika för en enskild nybörjarkund
+(en liten bokföringsbyrå), inte en generisk konsultmall. Körning i
+konsult-läget, storlek litet, mognad nybörjare.
+
+**Regenererad 2026-07-15 mot promptversion 2026-07-15.**
 
 ---
 
 ## 1. Mognadsintake-sammanställning
 
+```
 företagsnamn:       Lindgren Bokföring
-bransch:            Bokföring & redovisning
-storlek:            Mikro
+bransch:            Bokföring och redovisning
+storlek:            litet
 antal_personer:     3
-källa:              intervju (simulerad)
-mognad:             Nybörjare
+källa:              intervju
+mognad:             nybörjare
 
-### Vad företaget gör
-Vi är en liten bokföringsbyrå. Vi gör bokföring, skattedeklarationer och lönehantering åt småföretag i regionen.
+## Vad företaget gör
+En liten bokföringsbyrå med tre personer. Gör bokföring,
+skattedeklarationer och lönehantering åt småföretag i regionen.
 
-### Återkommande moment
-Måndag-tisdag: bokför föregående veckas verifikationer för alla kunder. Det tar nästan två hela dagar. Onsdag: lönehantering om det är lönevecka, annars kundmöten och rådgivning. Torsdag: skattedeklarationer och momsrapporter. Fredag: administration, fakturering, arkivering, svara på mejl.
+## Återkommande moment
+Måndag–tisdag: bokför föregående veckas verifikationer för alla kunder —
+tar nästan två hela dagar. Onsdag: lönehantering om det är lönevecka,
+annars kundmöten och rådgivning. Torsdag: skattedeklarationer och
+momsrapporter. Fredag: administration, fakturering, arkivering och mejl.
 
-### Var det klämmer
-Verifikationerna — vi sitter och klassificerar kvitton och transaktioner manuellt i Fortnox timme efter timme. Och mejlen — kunderna frågar samma saker om och om igen.
+## Var det klämmer
+Verifikationerna — "vi sitter och klassificerar kvitton och transaktioner
+manuellt i Fortnox timme efter timme". Och mejlen — "kunderna frågar
+samma saker om och om igen".
 
-### Befintliga verktyg och vanor
-Fortnox (bokföringssystem), mejl, manuell klassificering av verifikationer, telefon- och mejlkontakt med kunder.
+## Befintliga verktyg och vanor
+Fortnox (bokföring och lön), Outlook för mejl, telefon, Excel för
+avstämningar. Kunderna skickar kvitton och fakturor som PDF eller
+mobilfoto. Banktransaktioner hämtas som filexport (CSV/Excel) från
+bankerna. Deklarationer lämnas via Skatteverkets e-tjänster.
 
-### Mål och ambition
-Slippa en del av det repetitiva. Vi gör samma sak om och om igen för varje kund varje månad. Om vi kunde spara en hel dag i veckan på det repetitiva skulle det vara fantastiskt.
+## Mål och ambition
+Slippa en del av det repetitiva — "vi gör samma sak om och om igen för
+varje kund varje månad". Värt det = en sparad dag i veckan.
 
-### Mognadsbedömning
-**Nivå:** Nybörjare
+## Mognadsbedömning
+Nivå: nybörjare
+Motivering: Ingen i teamet har byggt något med AI. En person provade
+ChatGPT en gång för att formulera ett kundmejl, men resultatet blev för
+allmänt hållet och användes inte. Skillnaden mellan "provat i en
+chattflik" och "byggt något andra använder" är tydlig här: inget har
+byggts. Detta är första kontakten med AI som arbetsverktyg.
 
-**Motivering:** Företaget har aldrig byggt något med AI, har knappt provat (chatGPT visades en gång men förväxlades inte fullt ut). Ingen i teamet har erfarenhet av att sätta upp eller underhålla automatiserade verktyg. Detta är första kontakten med AI-agent-utveckling.
+## Projektägare
+Anna Lindgren, ägare. Sköter kundkontakt, deklarationer och en stor del
+av verifikationsarbetet. Utpekad utan tvekan: "det blir jag".
 
-### Projektägare
-Anna Lindgren, ägare av Lindgren Bokföring. Ansvarig för övergripande verksamhet och direktkontakt med kunder.
+## Tidigare försök
+Ett: ChatGPT-testet ovan. Det övergavs för att svaret lät som en broschyr,
+inte som byrån.
 
-### Tidigare försök
-Inga.
+## Framgångskriterium
+"Om vi kunde spara en hel dag i veckan på det repetitiva skulle det
+vara fantastiskt."
 
-### Framgångskriterium
-Om vi kunde spara en hel dag i veckan på det repetitiva skulle det vara fantastiskt.
+## Avgränsningar
+Det som skickas till Skatteverket — deklarationer och momsrapporter —
+skriver och skickar byrån själv. Inget AI-genererat får gå direkt till
+myndigheter. Inga mejl skickas till kunder utan att en människa läst dem.
+```
 
-### Avgränsningar
-Inga uttryckliga avgränsningar. Systemintegration till Fortnox är en möjlig utmaning men inte blockerad.
+*Ser det rätt ut? → Bekräftat, vi går vidare till research.*
 
 ---
 
 ## 2. Research: Lindgren Bokföring
 
 ### Körningsmetadata
-- **Antal identifierade moment:** 8
-- **Över ribban:** 4  |  **Under ribban:** 3
-- **Källa intervju:** 8  |  **Implicita:** 0  |  **Hypoteser:** 0
-- **Okänd smärta:** 0 moment
+- **Antal identifierade moment:** 7
+- **Över ribban:** 2  |  **Under ribban:** 4
+- **Källa intervju:** 6  |  **Implicita:** 1  |  **Hypoteser:** 0
+- **Okänd smärta:** 3 moment
 - **Språk:** Svenska
 
 ### Sammanfattning
-Lindgren Bokföring är en trepersonsbyrå som utför bokföring, skattedeklarationer och lönehantering för småföretag. Företagets största smärtpunkt är manuell klassificering av verifikationer två hela dagar i veckan, följd av repetitiva kundfrågor via mejl. Research identifierar fyra arbetsmoment som är lämpliga för AI-automation: verifikationsklassificering (högt värde, hög frekvens, stark AI-lämplighet), kunskapsbas för repetitiva frågor, lönehantering-stöd (lägre komplexitet), och månadsstängning-checklista. Eftersom detta är en nybörjarkund föreslås ett fokuserat team på 2–3 agenter för att undvika överskridning.
+Lindgren Bokföring är en trepersonsbyrå där veckan har en fast rytm:
+verifikationer i början, lön eller kundmöten i mitten, deklarationer på
+torsdagar och administration på fredagar. Två moment pekas uttryckligen
+ut som smärta: den manuella konteringen av verifikationer (nästan två
+hela dagar varje vecka) och kundmejlen där samma frågor återkommer.
+Research hittar två kluster över ribban — verifikationshantering och
+återkommande kundfrågor — och fyra moment under ribban där en agent
+antingen vore teater (Fortnox-inmatning, fakturering) eller där
+resultatet måste vara exakt rätt varje gång (lön, deklarationer).
+Deklarationerna är dessutom uttryckligen undantagna i intake.
 
 ### Identifierade arbetsmoment
 
-#### Moment 1: Klassificering och kategorisering av verifikationer
+#### Moment 1: Kontera och bokföra veckans verifikationer
 - **Källa:** intervju
-- **Frekvens:** Två hela dagar varje vecka (måndag–tisdag)
-- **Tidsåtgång:** ~16 timmar/vecka (≈40 % av veckans arbetstid)
-- **Smärta:** Hög (upprepade ord: "sitter och klassificerar... timme efter timme")
-- **Felbenägenhet:** Medel (manuell klassificering riskerar felklassificering, påverkar redovisning)
+- **Frekvens:** Veckovis (måndag–tisdag, varje vecka)
+- **Tidsåtgång:** Nästan två hela dagar — den enskilt största posten i veckan
+- **Smärta:** Hög ("timme efter timme", "samma sak om och om igen")
+- **Felbenägenhet:** Medel (felkontering upptäcks ofta först vid avstämning
+  eller bokslut)
 - **Ägare:** Delas mellan Anna och den anställda bokföraren
-- **AI-lämplighet:** **Hög**
+- **AI-lämplighet:** **Hög** — för förslagsdelen, inte inmatningen
 - **Kontextprofil:** Välavgränsat
-- **Notering:** Klassificering är strukturerad textanalys med tydliga regler (kontoplan). Claude kan tränas på kundens kontoplan och välavgränsade klassifikationsregler. Input (verifikationer) och output (klassamhörighet) är väl definierade. Människan granskar innan Fortnox-inmatning. Detta är idealt för en AI-agent.
+- **Notering:** Kärnan i momentet är att läsa en verifikation (kvitto,
+  faktura, banktransaktion) och avgöra vilket konto den hör till enligt
+  kundens kontoplan. Det är strukturerad texttolkning mot kända regler —
+  precis vad en agent gör bra. Input finns redan i format Claude kan läsa
+  (PDF, foto, CSV-exporter). Själva inmatningen i Fortnox förblir manuell
+  och mänskligt granskad, vilket är rätt i en reglerad bransch.
 
-#### Moment 2: Svar på repetitiva kundfrågor via mejl
+#### Moment 2: Svara på återkommande kundfrågor via mejl
 - **Källa:** intervju
-- **Frekvens:** Dagligen/flera gånger per vecka
-- **Tidsåtgång:** ~3–4 timmar/vecka (grov uppskattning från "svara på mejl")
-- **Smärta:** Hög (upprepade ord: "kunderna frågar samma saker om och om igen")
-- **Felbenägenhet:** Låg (FAQ-svar är faktabaserade)
-- **Ägare:** Anna (enligt intake: "jag svarar på mejlen")
+- **Frekvens:** Dagligen
+- **Tidsåtgång:** Del av fredagarna plus löpande insprängt under veckan
+- **Smärta:** Hög ("kunderna frågar samma saker om och om igen")
+- **Felbenägenhet:** Medel (ett slarvigt svar om moms eller frister kan
+  ställa till det för kunden)
+- **Ägare:** Anna
 - **AI-lämplighet:** **Medel–Hög**
-- **Kontextprofil:** Välavgränsat
-- **Notering:** Kan implementeras som en kunskapsbas-agent eller mejl-triage-agent. Kräver att Anna definierar de "samma saker" — FAQ eller kunskapssamling. Agenten kan generera förslag som Anna granskar innan svar. Risk: Kundkommunikation är ofta juridiskt känslig (skatteutredningsmejl, lönedeklarationer) — kräver noga avgränsning. Låta agenten *förlåga* svar för granskning är låg-risk; låta den skicka direkt är högrisk.
+- **Kontextprofil:** Välavgränsat för rutinfrågorna, bredare för
+  rådgivningsfrågor
+- **Notering:** Frågorna som återkommer (frister, milersättning, vad som
+  är avdragsgillt, hur kvitton ska skickas in) har stabila svar och passar
+  utkastsförslag — aldrig autosvar, per intake-avgränsningen. Haken: ingen
+  har skrivit ner vilka frågorna och de rätta svaren är. Se moment 7.
 
-#### Moment 3: Lönehantering och lönedeklaration
+#### Moment 3: Lönehantering
 - **Källa:** intervju
-- **Frekvens:** En gång i veckan (när det är lönevecka), varje månad + månadsbokslut
-- **Tidsåtgång:** ~2–3 timmar/vecka (intermittent)
-- **Smärta:** Medel (moment nämns men inte explicit flaggat som problem)
-- **Felbenägenhet:** Hög (lönehantering är juridiskt och skattemässigt känslig)
-- **Ägare:** Oklar (intake nämner "lönehantering om det är lönevecka")
-- **AI-lämplighet:** **Låg–Medel**
-- **Kontextprofil:** Välavgränsat
-- **Notering:** Lönehantering är höggradigt regulerat (SFO, SKV, arbetslagstiftning). En agent kan assistera med *kontroll* (granskning av redan inmatad data, checklist-följning) men inte med första-passage-inmatning. Risk för felklassificering är högt. För en nybörjarkund kan en checklist-assistent ha värde, men inte en generativ agent. Möjlig för version 2.
+- **Frekvens:** Vissa onsdagar (lönevecka) + månadsvis deklaration
+- **Tidsåtgång:** En dag de veckor det är aktuellt
+- **Smärta:** **Okänd** (nämns neutralt, flaggas inte som kläm)
+- **Felbenägenhet:** Hög (fel lön eller fel arbetsgivardeklaration slår
+  direkt mot kundens anställda och mot Skatteverket)
+- **Ägare:** Oklart — intake säger inte om Anna eller bokföraren äger det
+- **AI-lämplighet:** **Låg**
+- **Kontextprofil:** Välavgränsat men känsligt
+- **Notering:** Resultatet måste vara exakt rätt varje gång, och Fortnox
+  Lön sköter redan beräkningarna. Det en agent möjligen kan bidra med är
+  en kontrollchecklista — men smärtan är okänd och ägaren oklar.
+  **Under ribban.**
 
-#### Moment 4: Månadsstängning och rapportförberedelse
+#### Moment 4: Skattedeklarationer och momsrapporter
 - **Källa:** intervju
-- **Frekvens:** Månatligt (impliceras från "skattedeklarationer och momsrapporter")
-- **Tidsåtgång:** ~4–6 timmar/månad (≈1–1,5 timmar/vecka i snitt)
-- **Smärta:** Medel–låg (nämns men inte som toppkläm)
-- **Felbenägenhet:** Medel (datasammanställning är fel-/omissions-benägen)
-- **Ägare:** Anna (CVD, övergripande ansvar)
-- **AI-lämplighet:** **Medel**
-- **Kontextprofil:** Bred (kräver insyn i många kundkonton)
-- **Notering:** En checklist-agent som säkerställer att alla kundkonton är granskade, att momsrapporter är klara och att inget förbisett kan ha nytta. Kräver att Anna definierar stegen. Mindre kritisk än verifikationsklassificering men ändå värdefullt för en liten byrå som växer.
+- **Frekvens:** Veckovis (torsdagar) med månadstoppar
+- **Tidsåtgång:** Ungefär en dag i veckan
+- **Smärta:** **Okänd** (nämns neutralt)
+- **Felbenägenhet:** Hög (myndighetskommunikation)
+- **Ägare:** Anna
+- **AI-lämplighet:** **Låg**
+- **Kontextprofil:** Välavgränsat men undantaget
+- **Notering:** Uttryckligen avgränsat i intake: inget AI-genererat får gå
+  till myndigheter. Dessutom ett moment där resultatet måste vara exakt
+  rätt varje gång. **Under ribban** — och ska så förbli oavsett vad en
+  framtida körning hittar.
 
 #### Moment 5: Kundmöten och rådgivning
 - **Källa:** intervju
-- **Frekvens:** En dag i veckan (onsdag, när det inte är lönevecka)
-- **Tidsåtgång:** ~4–6 timmar/vecka
-- **Smärta:** Låg–medel (nämns neutralt)
-- **Felbenägenhet:** Låg (möten är dialogiska)
+- **Frekvens:** Onsdagar (när det inte är lönevecka)
+- **Tidsåtgång:** Ungefär en dag varannan vecka
+- **Smärta:** **Okänd** (nämns neutralt)
+- **Felbenägenhet:** Låg
 - **Ägare:** Anna
 - **AI-lämplighet:** **Låg**
-- **Kontextprofil:** Bred
-- **Notering:** Kundmöten är mänskligt resonemang och rådgivning. AI kan förberedelse-material (sammanfattning av kundens redovisning, flaggor) men inte ersätta mötet. **Under ribban** — ingen agent.
+- **Kontextprofil:** Brett
+- **Notering:** Mötet är mänskligt omdöme och relation. En agent kan på
+  sikt förbereda underlag, men smärtan är inte flaggad och värdet
+  spekulativt. **Under ribban.**
 
-#### Moment 6: Administration, fakturering och arkivering
+#### Moment 6: Fakturering, administration och arkivering
 - **Källa:** intervju
 - **Frekvens:** Fredagar + löpande
-- **Tidsåtgång:** ~3–4 timmar/vecka
-- **Smärta:** Låg (nämns tillsammans med mejl men inte explicit flaggat)
-- **Felbenägenhet:** Låg–medel
-- **Ägare:** Deltidsadministratören (delvis), Anna (delvis)
+- **Tidsåtgång:** Del av fredagen
+- **Smärta:** Låg (nämns i förbifarten; deltidsadministratören bär det
+  mesta)
+- **Felbenägenhet:** Låg
+- **Ägare:** Deltidsadministratören, delvis Anna
 - **AI-lämplighet:** **Låg**
-- **Kontextprofil:** Bred
-- **Notering:** Arkivering är filhantering. Fakturering av Lindgrens egna kundtjänster är standardiserad men inte en smärtpunkt. Dessa moment är för små eller redan tillräckligt automatiserade. **Under ribban** — ingen agent.
+- **Kontextprofil:** Brett
+- **Notering:** Byråns egen fakturering är standardiserad i Fortnox och
+  arkiveringen är filhantering. Inget här motiverar en agent.
+  **Under ribban.**
 
-#### Moment 7: Systematisering av kunddata/kunskapssamling
-- **Källa:** implicit
-- **Frekvens:** Pågående
-- **Tidsåtgång:** Okänd (inte explicit nämnd, men implicit i "samma saker om och om igen")
-- **Smärta:** Medel (impliceras från upprepade frågor)
-- **Felbenägenhet:** N/A
+#### Moment 7: Dokumentera de återkommande kundfrågorna `[implicit]`
+- **Källa:** implicit (följer av moment 2: "samma saker om och om igen"
+  finns i huvudet på Anna, inte på papper)
+- **Frekvens:** Engångsinsats + löpande påfyllning
+- **Tidsåtgång:** Ett par timmar initialt
+- **Smärta:** Medel (indirekt — det är frånvaron av listan som gör att
+  mejlen tar tid)
+- **Felbenägenhet:** Låg
 - **Ägare:** Anna
-- **AI-lämplighet:** **Medel–Hög**
+- **AI-lämplighet:** **Medel–Hög** (agenten kan bygga listan ur exempel)
 - **Kontextprofil:** Välavgränsat
-- **Notering:** För att en agent ska kunna svara på repetitiva frågor måste Anna (eller teamet) först dokumentera vad dessa frågor är och vilka är rätta svar. Detta är inte ett moment i sig men är ett förutsättningsmoment för moment 2. Flagga för användaren i proposal-steget.
-
-#### Moment 8: Systemkontakt med Fortnox
-- **Källa:** implicit
-- **Frekvens:** Varje dag (klassificering, inmatning, rapporter)
-- **Tidsåtgång:** Inbäddat i andra moment
-- **Smärta:** Låg (Fortnox är redan valt, fungerande verktyg)
-- **Felbenägenhet:** Låg (klassificering-felbenägenhet är redan räknad ovan)
-- **Ägare:** Bokförare, Anna
-- **AI-lämplighet:** **Låg** (kräver API-integration som inte är del av baseline)
-- **Kontextprofil:** N/A
-- **Notering:** Fortnox-integration är möjlig i framtiden (v2) men inte kritisk för första projektet. En agent kan föreslå klassificering; människan matar in i Fortnox. **Under ribban** för MVP.
+- **Notering:** Förutsättningsmoment för moment 2. Ingen svarsbank utan
+  att någon först skriver ner frågorna och byråns svar. Klustras med
+  moment 2.
 
 ### Kluster
 
-#### Kluster A: Verifikationshantering — Prioritet 1
-- **Ingående moment:** Klassificering och kategorisering av verifikationer (moment 1)
+#### Kluster A: Verifikationshantering — prioritet 1
+- **Ingående moment:** Kontera veckans verifikationer (1)
 - **Samlad AI-lämplighet:** **Hög**
-- **Notering:** Detta är det enskilt viktigaste momentet för Lindgren. Det tar 40 % av veckans arbetstid och är den explicita toppklämen ("sitter och klassificerar... timme efter timme"). AI-lämpligheten är hög eftersom klassificering är strukturerad analys av text mot en känd kontoplan. En agent kan tränas på Lindgrens kontostruktur och klassificeringsregler, producera förslag, som Anna granskar innan inmatning i Fortnox. Idealt första-projekt-kandidat.
+- **Notering:** Den uttalade toppsmärtan och den största tidsposten:
+  nästan två dagar varje vecka, "timme efter timme". Konteringen är
+  regeltolkning mot en känd kontoplan — en agent kan föreslå konto med
+  motivering, människan granskar och bokför i Fortnox. Direkt kopplat
+  till framgångskriteriet "spara en hel dag i veckan".
 
-#### Kluster B: Kunskapsbas & kundkommunikation — Prioritet 2
-- **Ingående moment:** Svar på repetitiva kundfrågor via mejl (moment 2), Systematisering av kunddata/kunskapssamling (moment 7)
+#### Kluster B: Återkommande kundfrågor — prioritet 2
+- **Ingående moment:** Svara på kundfrågor (2), Dokumentera frågorna (7)
 - **Samlad AI-lämplighet:** **Medel–Hög**
-- **Notering:** Andra största smärtpunkten. Kräver två steg: (1) Anna dokumenterar FAQ och svar, (2) agent använder detta för att föreslå mejl-svar eller triage-prioritering. Kan implementeras utan Fortnox-integration. Risk: kundkommunikation kan vara juridiskt känslig — agenten ska aldrig skicka direkt, bara föreslå. Bra för version 2 av första projektet eller eget projekt senare.
-
-#### Kluster C: Checklista-assistans — Prioritet 3
-- **Ingående moment:** Lönehantering (moment 3), Månadsstängning (moment 4)
-- **Samlad AI-lämplighet:** **Låg–Medel**
-- **Notering:** Båda är regelstyrda processer. Kan implementeras som en *granskar-agent* eller *checklist-agent* som säkerställer att stegen är följda, inte som en generativ agent. För en nybörjarkund är detta för avancerat för MVP. Möjlig för version 2 efter att första projektet är etablerat.
+- **Notering:** Den andra uttalade klämman. Kräver två steg: först en
+  nedskriven svarsbank (moment 7), sedan utkastsförslag på inkommande
+  mejl. Per intake-avgränsningen skickas inget utan mänsklig läsning.
+  Hänger ihop som kluster eftersom svarsbanken är råmaterialet till
+  utkasten.
 
 #### Under ribban
-- **Kundmöten och rådgivning** (moment 5): Kräver mänskligt omdöme och kundrelation. AI kan stödja med förberedelse-material men inte ersätta. Smärtan är låg.
-- **Administration, fakturering, arkivering** (moment 6): Redan löst, eller för standardiserat för att motivera en agent. Deltidsadministratören hanterar det. Smärta låg.
-- **Systemkontakt med Fortnox** (moment 8): Skulle kräva API-integration som inte är del av MVP. Framtida möjlighet.
+- **Lönehantering (moment 3):** Måste vara exakt rätt varje gång, okänd
+  smärta, oklar ägare. Fortnox Lön räknar redan.
+- **Deklarationer och moms (moment 4):** Uttryckligen undantaget i intake
+  plus myndighetskommunikation.
+- **Kundmöten (moment 5):** Mänskligt omdöme, okänd smärta.
+- **Fakturering/administration (moment 6):** Låg smärta, redan löst av
+  deltidsadministratören och Fortnox.
 
 ### Nedbrytning av toppkluster
 
 #### Kluster A: Verifikationshantering
 
-**Moment: Klassificering och kategorisering av verifikationer**
+**Moment: Kontera veckans verifikationer för en kund**
 
 Delsteg:
-1. Mottagning av verifikation (kvitto, faktura, banktransaktionsdeklaration) från kund eller bank
-2. Läsning och förståelse av vad transaktionen är (utgift, inkomst, överföring, etc.)
-3. Klassificering enligt kundens kontoplan (konto 1200, 1500, 4000, etc.)
-4. Eventuell notering av projektgruppering eller kostnadsställe
-5. Lagring/inmatning i Fortnox (manuell, eller via upload om systemet tillåter)
+1. Samla ihop underlaget: kvitton/fakturor (PDF eller foto från kunden)
+   och bankens transaktionsexport (CSV/Excel)
+2. Tolka varje post: vad är det för transaktion, vem är motparten,
+   vad avser den?
+3. Välja konto enligt kundens kontoplan (t.ex. 5810 biljetter,
+   5910 annonsering, 4010 varuinköp)
+4. Notera eventuellt kostnadsställe eller projekt
+5. Mata in i Fortnox och stämma av mot bankkontot
 
-→ AI-lämplighet per steg:
-  - Steg 1: Låg (fysisk insamling, systemintegration)
-  - Steg 2–4: **Högt** — textanalys, regelapplikation, strukturering
-  - Steg 5: Lågt–medel (API-integration framtida, manuell inmatning idag)
+→ AI-lämplighet per steg: låg för 1 (fysisk insamling), hög för 2–4
+  (tolkning och regeltillämpning), låg för 5 (kräver Fortnox-åtkomst
+  och mänskligt ansvar)
+→ Vad en agent konkret kan göra: ta emot underlaget, gå igenom post för
+  post och leverera en färdig konteringslista med föreslaget konto och
+  en kort motivering per post — plus en flaggad lista över de poster den
+  är osäker på. Människan granskar, rättar och bokför. Varje rättelse
+  skrivs in i byråns regelbok så att samma fråga inte återkommer.
 
-→ Vad en agent konkret kan göra:
-Motta en text eller bild av verifikation (eller en transkriberad lista), analysera den enligt Lindgrens definierande regler ("detta är ett personutgiftskonto, detta är ett kontorkonto", etc.), och föreslå rätt klassificering med motivering. Anna granskar och godkänner innan inmatning. Agenten sparar klassificeringen så att liknande framtida verifikationer kan hanteras snabbare.
+#### Kluster B: Återkommande kundfrågor
 
-#### Kluster B: Kunskapsbas & kundkommunikation
-
-**Moment: Svar på repetitiva kundfrågor**
+**Moment: Besvara ett återkommande kundmejl**
 
 Delsteg:
-1. Mottagning av kundmejl
-2. Identifikation av fråga-typ (t.ex. "Vilken är tidsfristen för bokföring?", "Hur minskar jag min skattebelastning?", etc.)
-3. Sökning i kunskapsbasen (eller eget minne)
-4. Formulering av svar
-5. Granskning av svar för juridisk riktighet
-6. Sändning till kund
+1. Läsa mejlet och avgöra frågetyp (frist, avdrag, milersättning,
+   "hur skickar jag in kvitton", övrigt)
+2. Slå upp byråns svar i svarsbanken
+3. Formulera ett svarsutkast i byråns ton
+4. Anna läser, justerar och skickar
 
-→ AI-lämplighet per steg:
-  - Steg 1–2: Högt — e-post-triage
-  - Steg 3: Högt — sökning i kunskapssamling
-  - Steg 4: Högt — textgenerering
-  - Steg 5: Medel — kräver expertkontroll
-  - Steg 6: Lågt — Anna måste skicka eller godkänna
-
-→ Vad en agent konkret kan göra:
-Motta ett kundmejl, klassificera det enligt frågetyp, hämta rätt svar från Annas kunskapsbas, och generera ett förslaget mejl-svar. Anna läser, granskar för riktighet och juridisk säkerhet, redigerar vid behov, och skickar. Agenten kan också prioritera mejl enligt brådskande ("detta är en skattestyrelsen-deadline-fråga") för att hjälpa Anna fokusera.
+→ AI-lämplighet per steg: hög för 1–3, låg för 4 (mänsklig läsning är
+  ett intake-krav)
+→ Vad en agent konkret kan göra: förvandla "samma fråga för femtionde
+  gången" till ett färdigt utkast på trettio sekunder. Förutsätter att
+  svarsbanken byggts först (moment 7).
 
 ### Kontextfaktorer
 
-1. **Liten, enkel verksamhet:** Trepersonsbyrå betyder att alla moment är små i volym men stora i andel av arbetstid. Inte automatisering-på-skala utan fokusering.
-
-2. **Redan etablerade verktyg:** Fortnox används redan. Kunden är inte teknisk, men accepterar att AI-löst integreras gradvis.
-
-3. **Regelstyrning:** Bokföring är höggradigt reglerad (SFO, SKV). En agent måste kunna motivera varje beslut enligt regler.
-
-4. **Kundberoende:** Mycket av arbetet är reaktivt (kundernas verifikationer anländer när de anländer). En agent behöver kunna hantera variation.
-
-5. **Mognadsfaktor:** Denna är en nybörjarkund. Första projektet måste vara enkelt nog att Anna kan underhålla det själv utan stöd.
+1. **Reglerad bransch.** Varje kontering måste kunna motiveras. En agent
+   som föreslår utan motivering är oanvändbar här — motiveringen är en
+   del av leveransen, inte en bonus.
+2. **Tre personer, tre olika roller.** Anna (ägare/kundkontakt),
+   en bokförare, en deltidsadministratör. Det som byggs måste passa in i
+   den befintliga arbetsdelningen, inte rita om den.
+3. **Underlaget kommer i blandade format.** Kvitton som PDF och mobilfoto,
+   bankdata som CSV/Excel. Agenten måste klara båda vägarna in.
+4. **Nybörjarmognad.** Allt som byggs måste kunna underhållas av Anna
+   själv efter uppdraget. Ingen del av lösningen får kräva en tekniker.
 
 ### Osäkerheter och motsägelser
 
-1. **FAQ-innehål:** Fråga 7 säger "kunderna frågar samma saker om och om igen" men namnger inte dessa frågor. För att implementera en kunskapsbas-agent (kluster B) måste Anna först dokumentera de faktiska frågorna och rätta svar. Detta är ej blockerat men är ett förutsättningsmoment.
-
-2. **Juridisk ansvar:** Bokföring är juridiskt känslig (skattedeklarationen är myndighetskommunikation). Intake-svaren signalerar inte uttryckligt hur risk hanteras — t.ex. "får agenten föreslå skatteminskning-råd eller bara fakta-svar?". Proposal-steget bör flagga detta.
-
-3. **Fortnox-integration:** Klassificering-agenten kan föreslå klassificering, men inmatning i Fortnox är idag manuell. En framtida integration kan automatisera det, men det är inte del av MVP. Markera som en möjlig version 2.
-
-4. **Deltagarnas roller:** Intake nämner "Anna, en anställd bokförare och en deltidsadministratör" men ägare av första projektet är Anna. Oklar om den anställda bokföraren kan eller ska underhålla agenten senare. Proposal bör klargöra detta för handoff-delen.
+1. **Vem äger lönehanteringen?** Intake säger "lönehantering om det är
+   lönevecka" utan ägare. Spelar ingen roll för första projektet men
+   behöver klargöras innan något byggs nära lön.
+2. **De återkommande frågorna är odokumenterade.** Kluster B förutsätter
+   att Anna kan lista de vanligaste frågorna och byråns svar. Inte
+   bekräftat i intake. Proposal bör flagga.
+3. **Volym per kund okänd.** "Nästan två dagar" totalt — men inte hur
+   många kunder eller verifikationer det fördelas på. Påverkar hur
+   mätningen av sparad tid läggs upp.
+4. **Inga uttryckliga prioriteringsmoment i intake.** Veckan har fast
+   rytm och Anna fördelar arbetet, men inget riktningsmoment flaggades.
+   Noteras för VD-utformningen i proposal i stället för att hittas på.
 
 ---
 
 ## 3. Skalningsbeslut
 
-**Storlek:** Mikro (3 personer)
-**Mognad:** Nybörjare
-**Kluster över ribban:** 3 (Verifikationshantering, Kunskapsbas, Checklista-assistans)
-
-### Steg 1: Storlekstabell
-Mikro (1–2 personer) → 2–4 agenter normalt.
-Men Lindgren är faktiskt 3 personer, så närmaste kategori är "Litet team (3–10)" → 4–7 agenter normalt.
-
-Rättelse: Lindgren är 3 personer, så vi använder gränsen mellan mikro och litet: **2–4 agenter normalintervall, kan sträcka till 4–5 för litet team**.
-
-### Steg 2: Mognadsjustering
-Nybörjare → 2–3 agenter oavsett företagsstorlek.
-
-**Regel:** "Dra inte upp en nybörjare för att det 'känns snålt'. Två skarpa agenter som används varje dag slår sju som glöms bort."
-
-**Justering:** Max 2–3 agenter för denna kund, trots att research hittade 3 kluster. Vi väljer fokus över bredd.
-
-### Steg 3: Jämför med research
-- **Kluster över ribban:** 3
-- **Tabellintervall (mikro justerat):** 2–3 agenter (exklusive VD + VD-assistent)
-- **Gränsfynd:** 3 kluster passar inte perfekt i 2–3 agent-slots. Måste slå ihop eller avvisa en.
-
-Vi väljer: **VD + VD-assistent + 1 specialist = 3 agenter totalt**.
-
-Anledning: Nybörjarkund. En fokuserad agent på verifikationsklassificering (högsta värde) är mer värd än tre spreadade agenter. Kunskapsbas kan integreras senare som version 2. Checklista-assistans är låg-prioritet för MVP.
-
-### Steg 4: Output
-
 ```
 Skalningsbeslut: 3 agenter (VD + VD-assistent + 1 specialist)
-
-Motivering: Lindgren är en 3-personersbyrå på nybörjar-nivå. Normt
-skulle en sådan stag få 2–4 agenter, men mognadsjustningen för
-nybörjare säger 2–3. Research hittade 3 kluster över ribban, men vi
-prioriterar fokus över bredd för en nybörjarkund — en skarp agent som
-används varje dag slår tre som glöms bort. Valde 3 för att: (1) Hålla
-VD-assistenten operativ (nödvändig för liten byrå), (2) Fokusera första
-specialisten helt på verifikationsklassificering (högsta värde), (3)
-Spara kunskapsbas och checklista-assistans för version 2. Denna fokusering
-matchar Annas framgångskriterium: spara en dag i veckan på repetitiv
-arbete, inte på allt på en gång.
+Motivering: Litet team (3 personer) ger normalt 4–7 agenter, men
+nybörjarnivån sätter ett hårt tak på 2–3 — och taket vinner. Research
+hittade 2 kluster över ribban; verifikationsklustret får den enda
+specialistplatsen medan kundfrågeklustret skjuts till en framtida
+version i stället för att pressas in i ett nybörjarteam.
 ```
 
 ---
 
 ## 4. Första-projekt-identifiering
 
-### Lista kandidater
+Tre kandidater prövades mot de sex kriterierna i `docs/first-project.md`.
+Alla sex måste vara uppfyllda — inte fem.
 
-Från research och mognadsbeslut, kandidater för första-projekt:
+### Kandidat 1: Konteringshjälp för verifikationerna
 
-**Kandidat 1: Verifikationsklassificering-agent**
-- Kluster: Verifikationshantering (prioritet 1)
-- Moment: Klassificering och kategorisering av verifikationer
-- Frekvens: 2 dagar/vecka
-- Smärta: Hög (explicit kläm)
-- AI-lämplighet: Hög
-- Ägare: Anna + anställd bokförare
-- Framgångskriteria: Sparar tid
-- Notering: Stark kandidat.
+```
+Kandidat: Verifikationshantering (kluster A)
 
-**Kandidat 2: Kunskapsbas & mejl-triage**
-- Kluster: Kunskapsbas & kundkommunikation (prioritet 2)
-- Moment: Svar på repetitiva kundfrågor
-- Frekvens: Dagligen
-- Smärta: Hög (explicit kläm: "samma saker om och om igen")
-- AI-lämplighet: Medel–Hög
-- Ägare: Anna
-- Framgångskriteria: Sparar tid på mejlsvar
-- Notering: Kräver att Anna först dokumenterar FAQ. Möjlig, men med förutsättning.
+1. Litet i tid?      ja — Anna lämnar kontoplan och en bunt exempel
+                     dag 1; agenten ger konteringsförslag på riktiga
+                     verifikationer redan samma vecka
+2. Ägs av en person? ja — Anna, utpekad projektägare, gör själv
+                     momentet varje måndag
+3. Mätbart?          ja — timmar på måndag–tisdag före och efter, mot
+                     kriteriet "spara en hel dag i veckan"
+4. Fallback?         ja — agenten föreslår bara; slutar den fungera
+                     konterar byrån manuellt precis som idag
+5. Underhållbart?    ja — underhållet är att fylla på regelboken när
+                     ett förslag rättas, vilket Anna gör i klartext
+6. Version 2?        ja — fler kunder, historikjämförelser, och på
+                     sikt Fortnox-koppling
+```
 
-**Kandidat 3: Checklista-assistans (Lönehantering/Månadsstängning)**
-- Kluster: Checklista-assistans (prioritet 3)
-- Moment: Lönehantering + Månadsstängning
-- Frekvens: Veckovis/månatligt
-- Smärta: Medel–låg (inte explicit kläm)
-- AI-lämplighet: Låg–Medel
-- Ägare: Anna (oklar för lönehantering)
-- Framgångskriteria: Minskar felrisker
-- Notering: Låg prioritet, kan avvisas.
+**Klarar alla sex.**
 
-### Test mot de sex kriterierna
+### Kandidat 2: Svarsbank för kundmejlen
 
-#### Kandidat 1: Verifikationsklassificering-agent
+```
+Kandidat: Återkommande kundfrågor (kluster B)
 
-1. **Litet i tid?**
-   **JA.** Agenten kan börja leverera värde inom en vecka: Anna tränar agenten på hennes kontoplan (1–2 timmar), agenten börjar ge klassificeringsförslag på måndagen vecka två. Snabbt första värde.
+1. Litet i tid?      ja, med förbehåll — Anna måste först skriva ner
+                     de vanligaste frågorna och svaren (ett par
+                     timmar); värde inom en vecka är möjligt men
+                     inte lika omedelbart
+2. Ägs av en person? ja — Anna äger mejlen
+3. Mätbart?          ja — tid per besvarat rutinmejl
+4. Fallback?         ja — Anna svarar själv som idag
+5. Underhållbart?    ja — svarsbanken är en lista Anna fyller på
+6. Version 2?        ja — sortering av inkorgen, fler frågetyper
+```
 
-2. **Ägs av en person?**
-   **JA.** Anna. Hon identifierar problemet ("vi sitter och klassificerar... timme efter timme"), hon äger klassificeringsprocessen tillsammans med bokföraren. Anna kan säga "det här var värt det" efter vecka 1.
+**Klarar alla sex, men svagare på kriterium 1** — setup-steget gör
+första värdet långsammare än kandidat 1.
 
-3. **Mäter något konkret?**
-   **JA.** Framgångskriterium från intake: "spara en hel dag i veckan på repetitiv arbete". Klassificering är ~16 timmar/vecka idag. Om agenten sparar 8 timmar, är målet nått. Mätbar: tid sparad + antal klassificeringar per dag.
+### Kandidat 3: Kontrollchecklista för lön och månadsavslut
 
-4. **Fallback existerar?**
-   **JA.** Om agenten slutar fungera fortsätter Lindgren att klassificera manuellt som idag. Ingen ny process är beroende av agenten — Anna granskar förslag, men klassificerar själv om agenten inte funkar. Noll operativ risk.
+```
+Kandidat: Lönehantering + månadsmoment (under ribban i research)
 
-5. **Kan underhållas av kunden?**
-   **JA.** Anna kan enkelt underhålla: om klassificeringsreglerna ändras, kan hon updatera agenten med nya regler (eller be om hjälp från konsulten). Agenten är en single-task-agent utan komplex infrastruktur. Nybörjare-passande.
+1. Litet i tid?      ja — en checklista är snabb att bygga
+2. Ägs av en person? NEJ — intake kunde inte klargöra om Anna eller
+                     bokföraren äger lönehanteringen
+3. Mätbart?          nej — "färre missar" saknar baslinje; ingen vet
+                     hur många missar som görs idag
+4. Fallback?         ja
+5. Underhållbart?    ja
+6. Version 2?        ja
+```
 
-6. **Har en naturlig version 2?**
-   **JA.**
-   - Version 1: Agent föreslår klassificering, Anna granskar innan inmatning.
-   - Version 2a: Fortnox-integration — agenten matar in direkt (kräver API, högre risk).
-   - Version 2b: Historik-läring — agenten lär sig från Lindgrens historiska klassificeringar för bättre förslag.
-   - Version 2c: Multi-kundgenealogi — agenten lär sig att olika kunder ofta har samma klassificeringsmönster.
-
-**Resultat: GODKÄND.** Kandidat 1 uppfyller alla sex kriteria.
-
----
-
-#### Kandidat 2: Kunskapsbas & mejl-triage
-
-1. **Litet i tid?**
-   **BEGRÄNSAT.** Agenten kan börja ge värde, men det krävs förberedelse. Anna måste först samla de "samma saker" hon får tillfrågad om och dokumentera rätta svar. Detta kan ta 2–4 timmar (eller mer, om Anna är osäker på vad frågorna är). Första värde inom vecka två möjligt, men med setup-tid.
-
-2. **Ägs av en person?**
-   **JA.** Anna äger kundfrågor och mejlkommunikation.
-
-3. **Mäter något konkret?**
-   **JA, VILLKORAT.** Om "minska tid på mejlsvar": mätbar. Om "minska felaktiga svar": kräver granskning. Går att mäta, men mer komplext än klassificering.
-
-4. **Fallback existerar?**
-   **JA.** Om agenten inte funkar, svarar Anna som idag.
-
-5. **Kan underhållas av kunden?**
-   **BEGRÄNSAT.** Anna kan uppdatera FAQ-basen, men att träna/justera agenten på nya frågetyper kan kräva expert-hjälp initialt. Nybörjar-nivå.
-
-6. **Har en naturlig version 2?**
-   **JA.**
-   - Version 1: Mejl-triage och förslag på svar (Anna granskar).
-   - Version 2: Automatisk sändning av enkla FAQ-svar (t.ex. "vilken är deadline för månadsrapport?").
-   - Version 3: Multi-agent — en triage-agent som sorterar mejl, en kunskapsbas-agent som svara, en eskalering-agent för juridiska frågor.
-
-**Resultat: GODKÄND.** Kandidat 2 uppfyller alla sex, men med högre setup-komplexitet än Kandidat 1.
-
----
-
-#### Kandidat 3: Checklista-assistans
-
-1. **Litet i tid?**
-   **JA.** Agenten kan leverera värde inom vecka 1–2 (sådan en checklist är enkel att bygga).
-
-2. **Ägs av en person?**
-   **OKLAR.** Intake nämner lönehantering som momenten men säger inte tydligt vem som är ägare. "Om det är lönevecka" — är det Anna eller bokföraren? Månadsstängning är Annas ansvar. Splittrad ägande.
-
-3. **Mäter något konkret?**
-   **SVAGT.** "Minskar felrisker" eller "säkerställer att inget missas" är svårare att mäta än "sparar X timmar". Möjlig mätning: "Antal gånger agenten flaggade något som Anna misse" — men detta är en proxy.
-
-4. **Fallback existerar?**
-   **JA.** Om agenten slutar funka gör Anna checklistans steg manuellt som idag.
-
-5. **Kan underhållas av kunden?**
-   **JA.** Checklist är simpel.
-
-6. **Har en naturlig version 2?**
-   **JA.** Från checklist till automatisk kontroll (t.ex. "har alla kundkonton granskats för moms-fel?").
-
-**Resultat: GODKÄND MEN SVAGARE.** Kandidat 3 klarar alla sex, men kriterium 2 (ägare) och 3 (mätbar) är svagare. Lägre prioritet än 1 och 2.
+**Faller på kriterium 2 och 3 — inte en kandidat.** Stryks utan
+rangordning.
 
 ### Rangordning
 
-1. **Primär rekommendation: Verifikationsklassificering-agent**
-   - Starkaste på alla sex kriteria
-   - Direktast kopplad till Annas #1-smärtpunkt
-   - Snabbast first-value
-   - Bäst för nybörjar-lycka
-
-2. **Alternativ: Kunskapsbas & mejl-triage**
-   - Uppfyller alla sex kriteria
-   - Högre komplexitet, längre setup
-   - Bäst för version 2
-   - Kan startas efter att klassificering-agenten är etablerad
-
-3. **Alternativ (låg prioritet): Checklista-assistans**
-   - Uppfyller sex kriteria
-   - Men svagare ägande och mätbarhet
-   - Lågt värde för nybörjar
-   - Spara för senare
+1. **Konteringshjälpen** — starkast på alla sex, direkt kopplad till
+   toppsmärtan och till framgångskriteriet, och momentet ligger mitt i
+   Annas egen vecka.
+2. **Svarsbanken** — godkänd men med setup-tröskel. Bättre som version 2,
+   när Anna redan sett hur en agent fungerar i vardagen.
 
 ---
 
-## 5. Första-projekt-rekommendation
+## 5. Första-projekt-rekommendation: Lindgren Bokföring
 
-# Första-projekt-kandidater: Lindgren Bokföring
-
-## Rekommendation: Verifikationsklassificering-agent
+## Rekommendation: Konteringshjälpen
 
 ### Problemet i era egna ord
-"Vi sitter och klassificerar kvitton och transaktioner manuellt i Fortnox timme efter timme... det tar nästan två hela dagar. Och det är samma sak om och om igen för varje kund varje månad."
+"Vi sitter och klassificerar kvitton och transaktioner manuellt i
+Fortnox timme efter timme. Vi gör samma sak om och om igen för varje
+kund varje månad."
 
 ### Varför just det här projektet
-Den här är både er toppsmärtpunkt (40% av veckans arbetstid) och perfekt för ett första AI-projekt:
-- **Konkret och avgränsat:** Klassificering är regelstyrning text-till-kategori. Ingen gissning.
-- **Snabbt första värde:** Inom vecka 1 kan agenten börja föreslå klassificeringar på era kvitton.
-- **Noll risk:** Anna granskar varje förslag innan inmatning. Om agenten slutar fungera klassificerar ni som idag.
-- **Lätt att underhålla:** Agenten är en fokuserad uppgift — om klassificeringsreglerna ändras kan Anna uppdatera den.
-- **Liten team + nybörjar:** Den här projektet är enkelt nog att ni kan driva det själva efter att vi sätter igång.
+Det är er största tidspost — nästan två dagar varje vecka — och samtidigt
+den enklaste sortens uppgift att lämna över: att titta på en transaktion
+och avgöra vilket konto den hör till, enligt regler ni redan kan utantill.
+Agenten gör grovjobbet och motiverar varje förslag; ni behåller
+granskningen och bokföringen. Ingenting i er process behöver ändras för
+att prova.
 
 ### Vad som ska vara sant efter vecka 1
-- Agenten är tränad på er kontoplan och klassificeringsregler
-- Anna får förslag på klassificering när hon matar in en verifikation
-- Anna granskar förslaget, säger ja/nej, och agenten lär sig av feedback
-- Första dagen: agenten ger rätta förslag på ~70–80 % av klassificeringarna
+- Byråns kontoplan och era vanligaste konteringsregler finns nedskrivna
+  i en regelbok som agenten arbetar utifrån
+- Anna har kört minst en riktig kundbunt genom agenten och fått en
+  konteringslista med motiveringar att granska
+- De förslag Anna rättade har skrivits in i regelboken, så att samma
+  fel inte kommer tillbaka
+
+### Exempel — så ser det ut i praktiken
+
+Du: "Här är förra veckans bankexport för Bergs Måleri plus tolv kvitton.
+    Kontera."
+
+Agenten: "Klart — 34 poster konterade med motivering, se listan. Tre
+         poster är jag osäker på: Swish-insättningen på 4 200 kr saknar
+         underlag, och två kvitton från Biltema kan vara antingen
+         förbrukningsmaterial (5460) eller reparation (5170) beroende
+         på vad de avser. Vill du avgöra?"
 
 ### Vem äger det
-Anna Lindgren, ägare och huvudbokförare.
+Anna Lindgren, ägare. Hon gör momentet själv varje måndag och märker
+direkt om agenten sparar tid eller inte.
 
 ### Hur vi mäter framgång
-Efter vecka 1:
-- Agenten löser minst 60–70 % av klassificeringarna rätt (med Annas granskning)
-- Anna sparar minst 2–3 timmar på klassificering (motsvarar drygt en dag i något fall) i vecka två
-
-Efter månad 1:
-- Agenten löser 80+ % rätt
-- Anna har sparat totalt 8+ timmar (närmare på vägen till en dag i veckan)
+Måndag–tisdag är idag nästan två hela dagar. Vi klockar
+verifikationsarbetet en vanlig vecka före start, och sedan varje vecka
+under första månaden. Målet är ert eget kriterium: en sparad dag i
+veckan på det repetitiva. Delmål efter månad 1: konteringen tar högst
+en dag i stället för två.
 
 ### Om det inte fungerar
-Ni klassificerar som idag — helt manuellt. Agenten är ett tillägg, inte en ändring av processen. Noll operativ risk.
+Ni konterar manuellt precis som idag. Agenten föreslår bara — den rör
+aldrig Fortnox — så det finns ingen process som går sönder när den
+stängs av.
 
 ### Vad som kommer sen (version 2)
-- **Direktintegrering till Fortnox:** Agenten kan skicka klassificeringen direkt (istället för bara förslag) om godkänd av Anna
-- **Historik-inlärning:** Agenten lär sig från er gamla klassificeringar för ännu bättre förslag
-- **Multi-kundmönster:** Agenten ser att vissa kunder alltid klassificerar utgifter på samma sätt och kan förlågga snabbare
-- **Kunskapsbas fase:** När denna agenten är stabil kan ni bygga en kunskapsbas-agent för repetitiva mejlfrågor
+- **Svarsbanken för kundmejlen** — er andra kläm ("samma saker om och
+  om igen") byggs när konteringen sitter och frågelistan är nedskriven
+- **Historikjämförelse** — agenten jämför mot hur samma motpart
+  konterats tidigare hos samma kund
+- **Fortnox-koppling** — längre fram kan förslagen föras in direkt,
+  fortfarande med er granskning. Den här delen är mer avancerad; den
+  gör vi i så fall tillsammans.
 
 ---
 
-## Alternativ: Kunskapsbas & mejl-triage
+## Alternativ: Svarsbank för kundmejlen
 
 ### Problemet i era egna ord
-"Kunderna frågar samma saker om och om igen... det tar mycket tid att svara på samma frågor varje dag."
+"Kunderna frågar samma saker om och om igen."
 
-### Varför det här projektet
-Nästa största smärtpunkten, men kräver ett setup-steg:
-- Anna måste först dokumentera vad de "samma sakerna" är och rätta svar
-- Agenten kan sedan automatisera mejl-svar (med Annas granskning)
-- Långsiktig tidsbesparingspotential är större än klassificering (mejl är daglig)
-
-### Varför det är alternativ, inte primär
-- Högre setup-komplexitet (Anna måste dokumentera FAQ först)
-- Lagre nybörjar-lämpning än klassificering
-- Juridisk försiktighet behövs (kundkommunikation kan vara känslig)
-- **Bättre som version 2 efter klassificering-agenten är etablerad**
+### Varför det är alternativ, inte primärt
+Projektet klarar alla sex kriterier men kräver ett setup-steg:
+frågorna och byråns svar finns idag bara i Annas huvud och måste
+skrivas ner innan agenten kan göra nytta. Det gör första värdet
+långsammare än konteringshjälpen. Rätt läge att bygga det är när
+konteringshjälpen rullar och känns självklar — då finns både vanan
+och frågelistan.
 
 ---
 
-## Alternativ: Checklista-assistans (låg prioritet)
+## 6. Team-förslag: Lindgren Bokföring
 
-### Problemet
-Lönehantering och månadsstängning är regelstyrda processer som skulle dra nytta av en checklist-agent.
+Tre agenter — nybörjartaket är ett hårt tak, och två skarpa agenter som
+används varje måndag slår sju som glöms bort. VD:n har ett operativt
+jobb, inte en strategiroll.
 
-### Varför det är låg prioritet
-- Inte en explicit smärtpunkt i era svar
-- Svagare ägande (ej helt klart vem som äger lönehantering)
-- Mindre tidsbesparingspotential
-- **Spara för senare när klassificering-agenten är mogen**
+### Byråchefen (VD)
 
----
+**Jobb:** Äger byråns konteringsregelbok — avgör de regelfrågor
+Konteringshjälpen flaggar som osäkra, skriver in besluten så att de
+gäller nästa gång, och prioriterar veckans kundbuntar när allt inte
+hinns med.
 
-## 6. Team-förslag
+**Motivering:** "Vi gör samma sak om och om igen för varje kund varje
+månad" → research-kluster A. Det som gör konteringen långsam är inte
+bara volymen utan att samma bedömningar görs om från början varje gång.
+Regelboken är byråns samlade omdöme i skriven form, och någon måste äga
+den. Intake innehöll inga uttryckliga prioriteringsmoment (flaggat i
+research), så VD:n får ett konkret operativt jobb i stället för en
+påhittad strategiroll — för en trepersonsbyrå vore abstrakt strategi
+ren teater.
 
-# Team-förslag: Lindgren Bokföring
+**Triggas av:** När Konteringshjälpen flaggar en osäker post, när en ny
+kund med ny kontoplan tas in, i veckostarten när kundbuntarna ska
+prioriteras, och när en rättelse ska bli en regel.
 
-Baserat på research, mognadsnivå (nybörjare), och första-projektvalet föreslår vi ett fokuserat team på 3 agenter.
-
-## VD-agent: Anna
-
-**Jobb:** Prioritera veckans klassificerings- och kundbokslut-uppgifter, fatta beslut om klassificeringsregler när agenten är osäker, granskar föreslagna klassificeringar innan inmatning i Fortnox.
-
-**Motivering:** Intake: "Det är mitt företag" (projektägare), och Anna är operativ ägare av klassificeringsprocessen. Research identifierade att klassificering är #1 smärtpunkt (40 % av tid). VD-rollen för en trepersonersbyrå är operativ, inte strategisk — Anna måste ha ett konkret dagligt jobb, annars blir agenter bare teater. Hennar jobb är att se till att klassificerings-agenten fungerar och att teamets veckovärde maximeras.
-
-**Triggas av:** Varje måndag (klassificerings-vecka börjar), när en ny batch verifikationer anländer från kunder eller bank, när klassificerings-agenten signalerar osäkerhet om en regel.
-
-**Rör inte:** Fortnox API-integration (framtida), generering av skatterådgivning (juridiskt känslig), direkt kundmejl-svar (delegeras till kunskapsbas-agenten senare).
+**Rör inte:** Deklarationer, momsrapporter och all myndighetskontakt
+(uttryckligen undantaget i intake). Ger ingen skatterådgivning. Skriver
+inte kundmejl.
 
 **Kapaciteter:**
-- Prioriterar veckans klassificerings-arbetsomfattning och identifierar topp-3-uppgifter
-- Granskar klassificerings-förslag från agenten innan inmatning i Fortnox
-- Definierar och uppdaterar klassificeringsregler när nya transaktionstyper dyker upp
-- Fattar prioritets-beslut när två moment konkurrerar om tid (t.ex. lönehantering vs. kundmöte)
-- Uppdaterar agenten med nya kunders kontostrukturer eller regeländringar
+- Avgör flaggade konteringsfrågor och formulerar beslutet som en regel
+  i regelboken
+- Håller regelboken per kund: kontoplan, återkommande motparter,
+  specialfall
+- Prioriterar veckans kundbuntar när måndag–tisdag inte räcker
+- Fångar upp mönster i rättelserna ("den här regeln missförstås ofta —
+  skriv om den")
 
 **Föreslagna skills:**
-- Inga (VD-agenten arbetar nära klassificerings-agenten och behöver ingen extern skill än)
+- Inga (regelboken är klartext i markdown; inget filformat eller
+  integration krävs).
 
-**Skalningsnot:** För en mikro-verksamhet är VD operativ — Anna använder sin tid på klassificering-granskning och regeluppdateringar, inte på "strategi". Det är rätt.
+**Skalningsnot:** I en större byrå hade regelboken varit en egen
+kvalitetsfunktion. Här är den VD:ns operativa jobb — det är fyndet som
+räddar VD-agenten från att bli teater.
 
 ---
 
-## VD-assistent-agent: Bokföringsstöd & Processöversikt
+### Veckolotsen (VD-assistent)
 
-**Jobb:** Övervaka klassificerings-agentens output, flagga mönster eller fel, påminn Anna om månadsstängning-checklista, stöd bokföraren med processuella frågor.
+**Jobb:** Annas dagliga arbetspartner — håller ordning på var varje
+kund befinner sig i veckorytmen, skickar rätt uppgift till rätt agent,
+och bär checklistorna för de sällsynta momenten (lönevecka,
+månadsavslut) som inte motiverar egna agenter.
 
-**Motivering:** I en trepersonersbyrå behövs en agent som kan "se systemet utifrån" — att klassificerings-agenten fungerar, att ingenting förbisetts, att vecko- och månadscykeln följs. Research identifierade att månadsstängning är ett implicit moment som ofta missas. VD-assistent är den naturliga ägaren av denna "övervakning av övervakningen" för en liten team.
+**Motivering:** Byråns vecka har fast rytm (måndag–tisdag verifikationer,
+onsdag lön eller möten, torsdag deklarationer, fredag administration)
+och tre personer som delar på den. Det som behövs är inte fler händer
+utan överblick: vilka kundbuntar är klara, vad väntar, vad är på väg att
+missas. Veckolotsen är den agent Anna pratar med först.
 
-**Triggas av:** Dagligen (rapportering), när klassificerings-agenten slutför en batch, före vecka-slut (checklist), före månadsbokslut.
+**Triggas av:** "Var står vi?", när en ny uppgift dyker upp och det är
+oklart vem som äger den, inför lönevecka och månadsavslut
+(checklisthattarna), och när Anna vill stämma av läget.
 
-**Rör inte:** Direkt klassificering (det är klassificerings-agentens jobb), kundkommunikation (delegeras senare), juridiska tolking av regler.
+**Rör inte:** Konterar inte själv (Konteringshjälpens jobb), fattar inga
+regelbeslut (Byråchefens), skriver inget som går till kunder eller
+myndigheter.
 
 **Kapaciteter:**
-- Summerar klassificerings-resultat varje dag och flaggar outliers eller fel-mönster
-- Påminn Anna om månadsstängning-steg (momsrapport, lönedeklaration, kundbokslut-granskning)
-- Spårar vilka kunder vars klassificering är klar och vilka väntande
-- Ger bokföraren en daglig status på klassificerings-arbetet ("Idag: 45 klassificeringar, 2 felklassificeringar, 1 regel-update behövdes")
-- Identifierar upprepad osäkerhet från klassificerings-agenten (signalerar att en regel behöver clarifieras)
+- Håller status per kund: väntar på underlag / hos Konteringshjälpen /
+  granskad / bokförd
+- Föreslår dagens ordning utifrån vad som är mest akut
+- Bär checklistan för lönevecka och månadsavslut som en hatt — utan att
+  röra själva lönekörningen
+- Märker när veckan glider ("torsdag och två kundbuntar kvar — vill du
+  omprioritera?")
+- Äger mötesfunktionen och vägrar kalla till möte när en fråga hör
+  hemma hos en enskild agent
 
 **Föreslagna skills:**
-- Inga (assistanten arbetar inom redan-etablerade processer utan behov av extern API eller integration)
+- Inga (orientering och triage; ingen integration krävs).
 
-**Skalningsnot:** En två-agenter-byrå behövde inte denna assistenten. En sextio-personersbyrå skulle behöva flera. För tre personer är en assistent rätt nivå.
+**Skalningsnot:** Checklisthattarna fångar värdet ur två moment under
+ribban (lön, månadsavslut) utan att de blir egna agenter.
+Klargörs ägarfrågan för lönehanteringen kan hatten växa vid en
+framtida `/update-team`.
 
 ---
 
-## Specialist-agent: Verifikationsklassificering-assistent
+### Konteringshjälpen (specialist)
 
-**Jobb:** Analysera verifikationer (kvitton, fakturor, banktransaktioner) och föreslå rätt klassificering enligt kundens kontoplan. Lär sig från Annas feedback för att förbättra.
+**Jobb:** Läser kundens underlag — kvitton och fakturor som PDF eller
+foto, bankexporter som CSV/Excel — och levererar en konteringslista med
+föreslaget konto och motivering per post, plus en flaggad lista över
+osäkra poster.
 
-**Motivering:** Intake: "Vi sitter och klassificerar kvitton och transaktioner manuellt i Fortnox timme efter timme." Research: Klassificering tar 40 % av veckans arbetstid och är flaggat som toppsmärtpunkt. AI-lämplighet är hög (regelstyrning, strukturerad text). Denna agent är kärnan i hela första-projektet.
+**Motivering:** "Vi sitter och klassificerar kvitton och transaktioner
+manuellt i Fortnox timme efter timme" → research-kluster A, toppsmärtan
+och nästan två dagar i veckan. Hög AI-lämplighet: tolkning av
+transaktioner mot en känd kontoplan, med granskningsbara förslag i
+stället för egna beslut. Kärnan i första projektet.
 
-**Triggas av:** När Anna eller bokföraren presenterar en ny verifikation för klassificering, när en ny kundrelation börjar (ny kontoplan), när bokföringen för en vecka börjar.
+**Triggas av:** När en kundbunt är komplett och ska konteras, när en
+enstaka krånglig verifikation behöver ett andra öga, och när Byråchefen
+uppdaterat regelboken och gamla flaggor ska omprövas.
 
-**Rör inte:** Lönehantering (juridiskt känslig), momsrapportering (saknas ofta kontexten), direkt inmatning i Fortnox (kräver API, framtida), rådgivning till kunder (juridiska domän).
+**Rör inte:** Matar aldrig in något i Fortnox. Rör inte lön,
+deklarationer eller moms. Gissar inte när regelboken tiger — osäkra
+poster flaggas till Byråchefen i stället.
 
 **Kapaciteter:**
-- Läser och tolkar kvitton/fakturor/banktransaktioner från text eller bild
-- Klassificerar enligt kundens kontoplan och angivna regler (t.ex. "denna typ av kostnad hör till konto 5000 — kontorsvaror")
-- Ger motivering för varje klassificering ("Detta är en kontorsutgift enligt din kontoplan, konto 5110")
-- Lär sig från Annas feedback ("rätt" eller "fel, det bör vara 5120 istället") och justerar framtida klassificeringar
-- Flaggar verifikationer som är tvetydiga eller utanför kända regler för mänsklig granskning
+- Tolkar kvitton och fakturor ur PDF och mobilfoton
+- Läser bankens transaktionsexporter och matchar poster mot underlag
+- Föreslår konto per post enligt kundens kontoplan och regelboken, med
+  en rads motivering ("Biltema, skruv och lim → 5460
+  förbrukningsmaterial enligt regel R14")
+- Flaggar poster utan underlag eller utan träff i regelboken
+- Sammanställer allt till en granskningsklar konteringslista per kund
 
 **Föreslagna skills:**
-- Inga för MVP (Verifikationsanalys kan göras med grundläggande Claude-förmågorna; Fortnox-integration är en skill för version 2)
+- **pdf-reading** — kunderna skickar kvitton och fakturor som PDF och
+  mobilfoto (intake, fråga 8); agenten måste kunna läsa ut belopp,
+  motpart och innehåll ur dem, även skannade.
+- **xlsx** — bankernas transaktionsexporter kommer som CSV/Excel
+  (intake, fråga 8); agenten läser dem och lämnar konteringslistan i
+  samma format så att den är lätt att pricka av mot Fortnox.
 
-**Skalningsnot:** En trepersonersbyrå har inte kapacitet för specialisering ofta, men denna agent tar så mycket tid (40 %) att den motiverar en helt egen agent. När Lindgren växer kan denna agent tränas på mer komplext arbete (multi-währung, multi-jurisdiktion) utan att lägga till agenter.
-
----
-
-## Avvisade kluster/moment
-
-### Kunskapsbas & mejl-triage
-**Varför inte:** Kräver setup-arbete från Anna innan agenten kan användas (dokumentering av FAQ). För en nybörjarkund är detta för komplext för MVP. Bättre som version 2 av första projektet, efter att klassificering-agenten är körd in och Anna förstår hur agenter fungerar.
-
-### Checklista-assistans (Lönehantering + Månadsstängning)
-**Varför inte:** Lägre AI-lämplighet än klassificering (dessa är redan regelstyrda checklist-processer), lägre smärta (inte explicit flaggat av Anna), inte explicit framgångskriterium kopplat till sparad tid. VD-assistenten kan hantera checklistor utan att den behöver en egen agent för detta.
+**Skalningsnot:** Bär hela verifikationsflödet ensam. I en större byrå
+hade tolkningen (läsa underlag) och konteringen (välja konto) kunnat
+delas på två agenter; för tre personer är en rätt, så länge den håller
+sig till förslag.
 
 ---
 
-## Flaggat för användaren
+## 7. Avvisade
 
-- **FAQ-dokumentering (för future):** När Lindgren är redo för kunskapsbas-agenten behöver Anna dokumentera de "samma saker" kunderna frågar och rätta svar. Det här är möjligt setup-arbete; vi kan helpa guida det.
+### Svarsbanken (seriöst påtänkt som egen agent)
+**Varför inte:** Kluster B klarade sex-kriterietestet och var en stark
+kandidat till egen agent — men nybörjartaket är 2–3 agenter totalt, och
+taket vinner. Konteringen sparar mer tid per vecka och kräver ingen
+setup, så den fick specialistplatsen. Svarsbanken är utpekad version 2:
+när konteringshjälpen sitter och Anna skrivit ner frågelistan byggs den
+via `/update-team`. Värdet är inte struket, bara köat.
 
-- **Fortnox-API (för version 2):** Klassificering-agenten kan idag bara föreslå. En framtida integration kan låta agenten mata in direkt (med granskning). Detta krävs inte för MVP men är naturlig nästa steg.
+### Kontrollchecklista för lön och månadsavslut
+**Varför inte:** Föll redan i första-projekt-testet på kriterium 2
+(ingen klar ägare) och 3 (ingen mätbar baslinje), och lön är dessutom
+ett moment där resultatet måste vara exakt rätt varje gång. Det
+checklistevärde som finns bär Veckolotsen som en hatt.
 
-- **Juridisk avgränsning:** Klassificering-agenten får aldrig generera skatterådgivning. Den kan bara klassificera enligt bekant regel. Om reglerna ändras måste Anna uppdatera agenten. Detta är viktigt för juridisk compliance.
+### Deklarations- och momsagent
+**Varför inte:** Uttryckligen undantaget i intake — inget AI-genererat
+går till myndigheter. Avvisas oavsett research-fynd; avgränsningen är
+absolut.
 
-- **Ägare av lönehantering:** Research kunde inte klargöra om bokföraren eller Anna äger lönehanteringen. För checklista-assistans senare behövs detta klargöras. För MVP är det inte kritiskt.
+### Fortnox-inmatare
+**Varför inte:** Kräver systemåtkomst som inte finns i baslinjen. En
+agent som "sköter Fortnox" utan att kunna nå Fortnox vore teater.
+Möjlig i en senare version, då tillsammans och med bibehållen
+granskning.
 
 ---
 
-## Sammanfattning: Varför detta team passar Lindgren
+## 8. Flaggat för användaren
 
-- **Fokuserat (3 agenter):** Nybörjarkunder behöver fokus, inte bredd. En skarp klassificerings-agent slår tre glömda agenter.
-
-- **Operativt (VD har verkligt jobb):** Anna är inte abstrakt strategist utan klassificerings-chef. Det matchar hennes roll och får hennes vardag bättre.
-
-- **Underhållbart:** Klassificerings-agenten är enkel för Anna att uppdatera själv när reglerna ändras. VD-assistent är en stöd-agent, inte en ny process.
-
-- **Värdefullt:** Klassificering sparar en dag i veckan — Annas explicit framgångskriterium. Det är mätbart från dag 1.
-
-- **Utbyggbart:** Versioner två är tydliga (direktintegration, FAQ-agent, historik-inlärning). Ingen dead-end.
+- **Bankexporterna** → Bekräfta att ni kan ta ut transaktionerna som
+  CSV/Excel från era kunders banker. Konteringshjälpens xlsx-flöde
+  hänger på det.
+- **Vem äger lönehanteringen?** → Klargör om det är Anna eller
+  bokföraren innan Veckolotsens lönecheckhatt börjar användas.
+- **Börja samla kundfrågorna redan nu** → Varje gång en fråga känns
+  igen: skriv upp den och svaret på en lista. Det är hela förarbetet
+  för svarsbanken i version 2, och det kostar en minut i taget.
+- **Volym per kund** → Räkna antal verifikationer en typisk måndag
+  innan start, så att mätningen av sparad tid får en riktig baslinje.
 
 ---
 
-## End of Test Output
+## 9. Divergens-självtest
 
-**Generated:** 2026-04-06 (simulated)
-**Customer:** Lindgren Bokföring (fictional)
-**Pipeline:** ai-consultant (full simulation)
-**Status:** All stages completed for quality verification
+Skulle den här uppsättningen kunna klistras in hos en annan liten
+bokföringsbyrå och fortfarande passa? Nej:
+
+- **Byråchefens** operativa jobb är regelboken — vald för att intake
+  visade att smärtan sitter i återupprepade bedömningar ("samma sak om
+  och om igen för varje kund varje månad") och för att intake saknade
+  prioriteringsmoment att bygga på. En byrå med andra klämmor hade gett
+  VD:n ett annat jobb.
+- **Konteringshjälpen** är byggd runt exakt Lindgrens väg in: kvitton
+  som PDF och mobilfoto plus bankexporter i CSV/Excel — därav just
+  pdf-reading och xlsx. En byrå där underlaget redan flödar digitalt
+  genom Fortnox hade inte fått de skillsen, kanske inte ens agenten.
+- **Svarsbanken avvisades** — hos en byrå på van- eller byggarnivå hade
+  den fått plats i teamet direkt. Här sköt nybörjartaket den till
+  version 2. Mognaden, inte bara branschen, formade teamet.
+- **Deklarationerna är orörbara** per Lindgrens uttryckliga avgränsning
+  — en byrå utan den avgränsningen hade åtminstone fått ett
+  underlagsförslag prövat mot ribban.
+- **Veckolotsens hattar** (lönevecka, månadsavslut) speglar Lindgrens
+  faktiska veckorytm måndag–fredag, inte en generisk byråkalender.
+
+Teamet är format efter Lindgrens vecka och mognad. Det är svårt att
+förväxla med någon annans.
+
+---
+
+## Slut på testkörning
+
+**Genererad:** 2026-07-15 (simulerad; regenererad mot promptversion 2026-07-15)
+**Företag:** Lindgren Bokföring (fiktivt)
+**Pipeline:** ai-consultant (mognadsintake → research → skalning → första projekt → förslag), litet, nybörjare
+**Status:** Alla steg körda för kvalitetsverifiering
