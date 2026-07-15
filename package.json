@@ -8,6 +8,9 @@
     "build": "node build-dist.mjs",
     "serve": "node build-dist.mjs && npx --yes http-server dist -p 8420 -c-1",
     "dev": "npx --yes http-server . -p 8420 -c-1",
+    "dev:cf": "node build-dist.mjs && npx --yes wrangler pages dev dist",
+    "db:migrate:local": "npx --yes wrangler d1 migrations apply agent-team-builder --local",
+    "db:migrate": "npx --yes wrangler d1 migrations apply agent-team-builder --remote",
     "deploy": "node build-dist.mjs && npx --yes wrangler pages deploy dist --project-name agent-team-builder"
   }
 }
