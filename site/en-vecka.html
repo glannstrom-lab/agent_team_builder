@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<script>document.documentElement.classList.add('js')</script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>En vecka med teamet · Mitt AI-team</title>
+<meta name="description" content="Följ Anna på Lindgren Bokföring genom en arbetsvecka med sitt AI-team — och se skillnaden mot att sitta ensam med ChatGPT." />
+<meta property="og:title" content="En vecka med teamet · Mitt AI-team" />
+<meta property="og:description" content="Måndagens veckostart, onsdagens teammöte, fredagens avslut — en konkret vecka med ett skräddarsytt AI-team, jämfört med ChatGPT." />
+<meta property="og:type" content="website" />
+<meta property="og:locale" content="sv_SE" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="showcase.css" />
+<style>
+  /* Sidspecifikt: dagsflöde, chattutdrag, jämförelsetabell, CTA */
+  .day-tag { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.4px; color: #818cf8; margin-bottom: 10px; }
+  .day-tag .tid { color: #9a9ab5; font-weight: 600; letter-spacing: 0.4px; text-transform: none; }
+  .convo { display: flex; flex-direction: column; gap: 10px; margin: 18px 0 6px; }
+  .cmsg { max-width: 620px; padding: 13px 16px; border-radius: 14px; font-size: 14.5px; line-height: 1.6; border: 1px solid #2a2a3a; }
+  .cmsg.user { align-self: flex-end; background: rgba(99,102,241,0.12); border-color: rgba(99,102,241,0.35); }
+  .cmsg.agent { align-self: flex-start; background: #13131a; }
+  .cmsg .vem { display: block; font-size: 11.5px; font-weight: 700; color: #818cf8; margin-bottom: 5px; }
+  .cmsg.user .vem { color: #9a9ab5; }
+  .cmsg ul { margin: 6px 0 0 18px; display: flex; flex-direction: column; gap: 4px; }
+  .cmsg .knapp { display: inline-block; margin-top: 8px; font-size: 12px; color: #9a9ab5; border: 1px solid #2a2a3a; border-radius: 7px; padding: 3px 10px; }
+  .resultat { font-size: 13.5px; color: #9a9ab5; border-left: 2px solid rgba(99,102,241,0.5); padding: 2px 0 2px 14px; margin-top: 14px; }
+  .resultat b { color: #e8e8f0; }
+  .cmp { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 20px; }
+  .cmp th, .cmp td { text-align: left; padding: 12px 14px; border: 1px solid #2a2a3a; vertical-align: top; line-height: 1.55; }
+  .cmp th { background: #13131a; font-size: 12.5px; text-transform: uppercase; letter-spacing: 0.8px; }
+  .cmp th:nth-child(2) { color: #818cf8; }
+  .cmp td:first-child { color: #9a9ab5; font-weight: 600; white-space: nowrap; }
+  .cmp tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
+  .cmp-wrap { overflow-x: auto; }
+  .cta-row { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-top: 26px; }
+  .cta-btn { display: inline-block; padding: 13px 24px; border-radius: 10px; font-weight: 700; font-size: 15px; text-decoration: none; }
+  .cta-btn.primary { background: linear-gradient(110deg, #6366f1, #818cf8); color: #fff; }
+  .cta-btn.ghost { border: 1px solid #2a2a3a; color: #e8e8f0; }
+  .cta-btn.ghost:hover { border-color: rgba(99,102,241,0.5); }
+  .fine { text-align: center; color: #9a9ab5; font-size: 12px; margin-top: 30px; }
+</style>
+</head>
+<body data-team="Lindgren Bokföring">
+
+<!-- ===== STEP NAV ===== -->
+<div class="stepnav">
+  <div class="inner">
+    <a class="home" href="index.html"><span class="dot"></span> Mitt AI-team</a>
+    <a class="step" href="#mandag">Måndag</a>
+    <a class="step" href="#tisdag">Tisdag</a>
+    <a class="step" href="#onsdag">Onsdag</a>
+    <a class="step" href="#fredag">Fredag</a>
+    <a class="step" href="#jamforelse">Mot ChatGPT</a>
+  </div>
+</div>
+
+<!-- ===== HERO ===== -->
+<section class="hero">
+  <div class="wrap">
+    <a class="badge" href="accountant.html"><span class="dot"></span> Fortsättningen på Lindgren Bokföring-caset</a>
+    <h1>En vecka<br /><span class="grad">med teamet</span></h1>
+    <p class="sub">Teamet är byggt och portalen är igång — men vad händer sen? Följ Anna på Lindgren Bokföring genom en vanlig arbetsvecka, och se varför ett team med rutiner, minne och möten är något annat än en tom chattruta.</p>
+    <div class="meta-pills">
+      <span class="meta-pill"><b>Byrå:</b> 3 personer, Fortnox</span>
+      <span class="meta-pill"><b>Team:</b> 3 agenter</span>
+      <span class="meta-pill"><b>AI-vana:</b> Nybörjare</span>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="num">1 klick</div><div class="lbl">till måndagens veckostart</div></div>
+      <div class="stat"><div class="num">16 h</div><div class="lbl">veckans verifikationsjobb — nu granskning i stället för görande</div></div>
+      <div class="stat"><div class="num">0</div><div class="lbl">tomma chattrutor att stirra i</div></div>
+    </div>
+  </div>
+  <div class="scroll-hint">↓</div>
+</section>
+
+<!-- ===== MÅNDAG ===== -->
+<section id="mandag">
+  <div class="wrap narrow">
+    <div class="section-head">
+      <div class="day-tag">Måndag <span class="tid">08.10</span></div>
+      <h2 class="section-title">Veckan börjar med ett klick — inte en tom ruta</h2>
+      <p class="section-lead">Anna öppnar portalen och klickar <b>⭐ Veckostart</b>. Hon skriver ingenting. Teamet vet redan vad byrån gör, vilka rutiner som finns och vilken dag det är.</p>
+    </div>
+    <div class="convo reveal">
+      <div class="cmsg agent"><span class="vem">🧭 VD-assistenten</span>
+        Ny vecka! Tre saker att fokusera på:
+        <ul>
+          <li><b>Verifikationerna för juni</b> — störst tidspost. Kör rutinen med Verifikationsassistenten idag eller imorgon.</li>
+          <li><b>Två kunder har inte lämnat underlag</b> — vill du att jag skriver påminnelserna?</li>
+          <li><b>Månadsrapporterna</b> ska ut på fredag — checklistan ligger i er mapp.</li>
+        </ul>
+        Vad jag behöver från dig: vilka två kunder som saknar underlag.
+      </div>
+    </div>
+    <div class="day-tag reveal" style="margin-top:34px">Måndag <span class="tid">09.00</span></div>
+    <div class="convo reveal">
+      <div class="cmsg user"><span class="vem">Anna → Verifikationsassistenten (rutinen "Veckans verifikationer" lyser <em>idag</em>)</span>
+        Här är fredagens transaktioner för Kund AB: [inklistrad lista]. Föreslå kontering enligt våra principer.
+      </div>
+      <div class="cmsg agent"><span class="vem">📒 Verifikationsassistenten</span>
+        Förslag för 23 transaktioner enligt era konteringsprinciper (ur underlaget <em>konteringsprinciper.md</em>): 19 säkra, 4 markerade för din bedömning — bland annat parkeringskvittot som kan vara både 5800 och 6991 beroende på resans syfte. Vill du ha listan som tabell att klistra in i Fortnox?
+        <span class="knapp">Kopiera</span> <span class="knapp">Spara i mappen</span>
+      </div>
+    </div>
+    <p class="resultat reveal"><b>Skillnaden:</b> assistenten kan byråns egna konteringsprinciper — de ligger som en fil i Annas mapp. I en vanlig chatt hade hon fått förklara dem igen. Varje gång.</p>
+  </div>
+</section>
+
+<!-- ===== TISDAG ===== -->
+<section id="tisdag">
+  <div class="wrap narrow">
+    <div class="section-head">
+      <div class="day-tag">Tisdag <span class="tid">16.40</span></div>
+      <h2 class="section-title">Materialet bor i en vanlig mapp — inte i ett chattfönster</h2>
+      <p class="section-lead">Byråns kunskap ligger i <b>Dokument\Mitt AI-team\</b> som Anna la i OneDrive: konteringsprinciper, prislista, tonguide och <em>minne.md</em> med det som alltid gäller. Alla tre på byrån ser samma mapp.</p>
+    </div>
+    <div class="quotes">
+      <div class="quote reveal">
+        "Jag sparade en fil som heter prislista-2026.md i mappen. Sen kunde alla agenter den. Det var hela integrationen."
+        <span class="who">— så läggs nytt material in</span>
+      </div>
+      <div class="quote reveal d1">
+        "Svaren vi vill behålla trycker vi 'Spara i mappen' på — de hamnar i från-teamet/ och kollegorna ser dem via OneDrive."
+        <span class="who">— så kommer output ut ur chatten</span>
+      </div>
+    </div>
+    <p class="resultat reveal"><b>Skillnaden:</b> mappen är byråns — läsbar, redigerbar och delad via deras egen OneDrive. Ingen inlåsning i ett chattverktygs historik.</p>
+  </div>
+</section>
+
+<!-- ===== ONSDAG ===== -->
+<section id="onsdag">
+  <div class="wrap narrow">
+    <div class="section-head">
+      <div class="day-tag">Onsdag <span class="tid">11.30</span></div>
+      <h2 class="section-title">Ett riktigt teammöte — perspektiv som kan krocka</h2>
+      <p class="section-lead">Kundmejlen tar fortfarande tid, och Anna minns att momentet fanns med i researchen men valdes bort. Hon klickar <b>🤝 Håll ett möte</b> → "Vad gör vi härnäst?" → <em>"Ska vi lägga till en mejlagent för de repetitiva kundfrågorna?"</em> Varje agent svarar oberoende, utifrån sin egen roll — sen sammanställer VD-assistenten.</p>
+    </div>
+    <div class="convo reveal">
+      <div class="cmsg agent"><span class="vem">🧭 VD-assistenten — Mötesanteckning: Vad gör vi härnäst?</span>
+        <b>1. Behåll fokus på verifikationsflödet två veckor till.</b> VD:s perspektiv: ni är mitt i att få hem den största vinsten — splittra inte. <br /><br />
+        <b>2. Förbered mejlagenten genom att bygga kunskapsbasen nu.</b> Här krockade perspektiven: VD ville vänta helt, Verifikationsassistenten påpekade att svaren på de vanligaste kundfrågorna redan går att samla medan ni ändå granskar verifikationer. Jag tar ställning: börja samla frågor/svar i mappen (<em>kundfragor.md</em>) — det kostar minuter och gör mejlagenten möjlig.<br /><br />
+        <b>3. Mejlagenten läggs till om tre veckor</b> — om kunskapsbasen då täcker de tio vanligaste frågorna. Vad som medvetet får vänta: Fortnox-integration.
+        <span class="knapp">Kopiera</span> <span class="knapp">Spara i mappen</span>
+      </div>
+    </div>
+    <p class="resultat reveal"><b>Skillnaden:</b> perspektiven genereras i separata anrop med olika roller — de kan faktiskt tycka olika, och krocken lyfts öppet. En ensam chatt som "lajvar möte" argumenterar med sig själv ur samma tankegång. Anna lägger en rad i minnet: <em>"Beslut v29: kunskapsbas först, mejlagent om 3 veckor."</em> Nu minns hela teamet det.</p>
+  </div>
+</section>
+
+<!-- ===== FREDAG ===== -->
+<section id="fredag">
+  <div class="wrap narrow">
+    <div class="section-head">
+      <div class="day-tag">Fredag <span class="tid">15.30</span></div>
+      <h2 class="section-title">Veckoavslut — och ett team som blir bättre</h2>
+      <p class="section-lead">Rutinen "Veckoavslut" lyser <em>idag</em>. Anna skriver tre rader om vad som blev gjort. VD-assistenten sammanfattar, och efter några veckor börjar den se mönster.</p>
+    </div>
+    <div class="convo reveal">
+      <div class="cmsg agent"><span class="vem">🧭 VD-assistenten</span>
+        Bra vecka: verifikationerna för 9 av 12 kunder klara (mot 6 förra veckan), rapporterna ute i tid. Mönster jag ser: måndagens transaktionsklistring tar er längst tid — överväg att göra den till en stående tisdagsrutin i stället, efter att bankfilerna kommit. Och kunskapsbasen har fått 4 frågor hittills — 6 kvar till mejlagent-tröskeln från onsdagens möte.
+      </div>
+    </div>
+    <p class="resultat reveal"><b>Skillnaden:</b> teamet vecka 4 är bättre än teamet vecka 1 — minnet växer, rutinerna slipas, och nästa agent läggs till när <em>underlaget</em> finns, inte när hypen säger det. En vanlig chatt är exakt likadan för alltid.</p>
+  </div>
+</section>
+
+<!-- ===== JÄMFÖRELSEN ===== -->
+<section id="jamforelse">
+  <div class="wrap narrow">
+    <div class="section-head">
+      <div class="eyebrow"><span class="dot"></span> Ärlig jämförelse</div>
+      <h2 class="section-title">Samma vecka med ChatGPT</h2>
+      <p class="section-lead">ChatGPT är ett utmärkt verktyg — Anna använder det fortfarande privat. Skillnaden är inte intelligensen. Det är allt runt omkring.</p>
+    </div>
+    <div class="cmp-wrap reveal">
+      <table class="cmp">
+        <tr><th></th><th>Mitt AI-team</th><th>ChatGPT (Plus)</th></tr>
+        <tr><td>Måndagsstarten</td><td>Ett klick — teamet kan byrån, rutinerna och veckodagen</td><td>Tom ruta. Anna måste veta vad hon ska be om, och formulera det</td></tr>
+        <tr><td>Byråns kunskap</td><td>Mapp på datorn + delat minne — alltid med, delat via OneDrive</td><td>Projects kan hålla filer — men Anna bygger och underhåller strukturen själv</td></tr>
+        <tr><td>Roller</td><td>Specialister med avgränsningar ("ger aldrig skatteråd") byggda ur byråns faktiska moment</td><td>En generalist. "Agera som…" fungerar, tills samma chatt glider mellan rollerna</td></tr>
+        <tr><td>Beslut</td><td>Möten: oberoende perspektiv som kan krocka, sammanställda med tvingat format</td><td>En modell som spelar diskussion med sig själv — sällan äkta motstånd</td></tr>
+        <tr><td>Rutiner</td><td>Ligger i portalen med veckodag, förifyllda och klickbara</td><td>Finns inte — Anna måste minnas och återskapa prompten varje vecka</td></tr>
+        <tr><td>Output</td><td>"Spara i mappen" → byråns arkiv, synligt för kollegorna</td><td>Kopiera för hand; historiken bor hos OpenAI</td></tr>
+        <tr><td>Motor &amp; kostnad</td><td>Valfri modell (Claude, DeepSeek m.fl.) via egen nyckel — betala per användning, ofta tior per månad</td><td>OpenAI:s modeller, fast pris per person och månad</td></tr>
+        <tr><td>Där ChatGPT vinner</td><td>—</td><td>Mobilapp, röst, bildanalys, webbsökning, ingen nyckel att skapa. För spontana frågor på språng: bättre idag</td></tr>
+      </table>
+    </div>
+    <div class="section-head center" style="margin-top:54px">
+      <h2 class="section-title" style="font-size:clamp(22px,3vw,30px)">Skillnaden i en mening</h2>
+      <p class="section-lead">ChatGPT ger dig en smart medarbetare utan arbetsbeskrivning. Mitt AI-team ger dig en <b>organisation</b> — roller, rutiner, minne och möten som redan är byggda runt just er vecka, så att värdet finns kvar när nyhetens behag har släppt.</p>
+    </div>
+    <div class="cta-row">
+      <a class="cta-btn primary" href="../portal/?team=accountant&amp;demo=1">Kliv in i Lindgrens portal — demo utan nyckel →</a>
+      <a class="cta-btn ghost" href="accountant.html">Se hur teamet byggdes</a>
+      <a class="cta-btn ghost" href="../#priser">Priser</a>
+    </div>
+    <p class="fine">Lindgren Bokföring är ett fiktivt exempel ur verktygets case-bibliotek; veckan ovan är ett illustrativt scenario av hur portalens funktioner används.</p>
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer>
+  <div class="wrap">
+    <div class="built"><span class="dot"></span> Byggt med Mitt AI-team · AI-konsult-läge</div>
+  </div>
+</footer>
+
+<script>
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.reveal').forEach((n) => io.observe(n));
+</script>
+</body>
+</html>
