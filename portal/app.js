@@ -1,5 +1,5 @@
 /* ============================================================
-   Agent Team Builder — Kundportal
+   Mitt AI-team — Kundportal
    Statisk app. Kundens egen Anthropic-nyckel lagras lokalt i
    webbläsaren och anropar Claude direkt. Ingen backend.
 
@@ -12,6 +12,10 @@ const KEY_STORAGE = "atb_api_key";
 const MODEL_STORAGE = "atb_model";
 const HIST_PREFIX = "atb_hist_"; // + team-slug → sparad chatthistorik
 const DEFAULT_MODEL = "claude-sonnet-4-6"; // billig default för BYO-kund; kan höjas till Opus i UI
+// OpenRouter-nycklar (sk-or-) har eget modellval — sparas separat så det
+// aldrig krockar med Anthropic-valet när man byter nyckel fram och tillbaka.
+const OR_MODEL_STORAGE = "atb_model_or";
+const DEFAULT_OR_MODEL = "deepseek/deepseek-v4-flash"; // billigast som klarar jobbet bra
 // API-URL, anthropic-version och själva strömningen ligger i ../atb-claude.js
 // (window.ATBClaude) — delat med Buildern så de inte kan glida isär.
 
@@ -20,6 +24,14 @@ const MODELS = [
   { id: "claude-opus-4-8", label: "Opus 4.8 — mest kapabel" },
   { id: "claude-haiku-4-5", label: "Haiku 4.5 — billigast" },
 ];
+
+function isOpenRouter() { return window.ATBClaude.providerFor(state.apiKey) === "openrouter"; }
+// Läs rätt sparat modellval för nyckelns leverantör (anropas vid boot och nyckelbyte).
+function syncModelForProvider() {
+  state.model = isOpenRouter()
+    ? (localStorage.getItem(OR_MODEL_STORAGE) || DEFAULT_OR_MODEL)
+    : (localStorage.getItem(MODEL_STORAGE) || DEFAULT_MODEL);
+}
 
 let team = null; // sätts när ett team laddats
 const state = {
@@ -114,7 +126,7 @@ function agentIcon(agent, cls) {
 }
 
 function hubLink(cls) {
-  const a = el("a", cls || "hublink", "← Agent Team Builder");
+  const a = el("a", cls || "hublink", "← Mitt AI-team");
   a.href = "../";
   return a;
 }
@@ -165,12 +177,14 @@ async function loadTeam(slug) {
   state.slug = slug;
   state.history = loadHistory(slug);
   state.activeAgentId = agentById(team.entryAgent) ? team.entryAgent : team.agents[0].id;
-  if (!localStorage.getItem(MODEL_STORAGE) && team.defaultModel) state.model = team.defaultModel;
+  // Teamets defaultModel är ett Anthropic-id — gäller inte OpenRouter-nycklar.
+  if (!isOpenRouter() && !localStorage.getItem(MODEL_STORAGE) && team.defaultModel) state.model = team.defaultModel;
 }
 
 // ---------- boot ----------
 async function boot() {
   if (!state.apiKey && !state.demo) { renderKeySetup(); return; }
+  syncModelForProvider(); // nyckelns leverantör avgör vilket modellval som gäller
   const slug = getSlug();
   if (!slug) { renderPicker(); return; }
   try {
@@ -191,13 +205,13 @@ function renderKeySetup() {
   const h = el("h1");
   h.innerHTML = `Koppla in ert <span class="grad">AI-team</span>`;
   wrap.appendChild(h);
-  wrap.appendChild(el("p", "setup-lead", "Klistra in er egen Anthropic API-nyckel. Den sparas bara här i er webbläsare och skickas direkt till Claude — aldrig till någon annan server. Tips: använd en nyckel med begränsad budget."));
+  wrap.appendChild(el("p", "setup-lead", "Klistra in er egen API-nyckel — Anthropic (sk-ant-…) eller OpenRouter (sk-or-…). Den sparas bara här i er webbläsare och skickas direkt till leverantören — aldrig till någon annan server. Tips: använd en nyckel med begränsad budget."));
 
   const field = el("div", "setup-field");
   const input = el("input");
-  input.type = "password"; input.id = "api-key-input"; input.placeholder = "sk-ant-...";
+  input.type = "password"; input.id = "api-key-input"; input.placeholder = "sk-ant-... eller sk-or-...";
   input.autocomplete = "off"; input.spellcheck = false;
-  input.setAttribute("aria-label", "Anthropic API-nyckel");
+  input.setAttribute("aria-label", "API-nyckel (Anthropic eller OpenRouter)");
   field.appendChild(input);
   wrap.appendChild(field);
 
@@ -206,8 +220,8 @@ function renderKeySetup() {
   const btn = el("button", "btn-primary", "Anslut");
   btn.onclick = () => {
     const val = input.value.trim();
-    if (!val.startsWith("sk-ant-")) {
-      err.textContent = "Det ser inte ut som en Anthropic-nyckel (börjar med sk-ant-).";
+    if (!val.startsWith("sk-ant-") && !val.startsWith("sk-or-")) {
+      err.textContent = "Det ser inte ut som en giltig nyckel (Anthropic börjar med sk-ant-, OpenRouter med sk-or-).";
       err.style.display = "block";
       return;
     }
@@ -219,7 +233,7 @@ function renderKeySetup() {
   wrap.appendChild(btn);
 
   const help = el("div", "setup-help");
-  help.innerHTML = 'Har ni ingen nyckel än? Skapa en på <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noreferrer">console.anthropic.com</a> — det tar någon minut.';
+  help.innerHTML = 'Har ni ingen nyckel än? Skapa en på <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noreferrer">console.anthropic.com</a> eller <a href="https://openrouter.ai/settings/keys" target="_blank" rel="noreferrer">openrouter.ai</a> — det tar någon minut. Med OpenRouter kan ni välja bland fler modeller än Claude.';
   wrap.appendChild(help);
 
   const demoBtn = el("button", "demo-link", "Eller utforska i demoläge utan nyckel →");
@@ -337,12 +351,31 @@ function renderSidebar() {
   const sl = el("label", "side-label", "Modell"); sl.setAttribute("for", "model-select");
   foot.appendChild(sl);
   const sel = el("select", "model-select"); sel.id = "model-select";
-  MODELS.forEach((m) => {
-    const o = el("option", null, m.label); o.value = m.id;
-    if (m.id === state.model) o.selected = true;
-    sel.appendChild(o);
-  });
-  sel.onchange = () => { state.model = sel.value; localStorage.setItem(MODEL_STORAGE, sel.value); };
+  const fillOptions = (list) => {
+    sel.innerHTML = "";
+    list.forEach((m) => {
+      const o = el("option", null, m.label || m.name || m.id); o.value = m.id;
+      if (m.id === state.model) o.selected = true;
+      sel.appendChild(o);
+    });
+  };
+  if (!state.demo && isOpenRouter()) {
+    // OpenRouter: hämta katalogen live (kurerad i atb-claude.js). Tills den
+    // laddats visas bara nuvarande val — dropdownen fungerar hela tiden.
+    fillOptions([{ id: state.model, name: state.model }]);
+    window.ATBClaude.openrouterModels()
+      .then((models) => {
+        const extra = models.some((m) => m.id === state.model) ? [] : [{ id: state.model, name: state.model }];
+        fillOptions(extra.concat(models));
+      })
+      .catch(() => { /* offline/fel — behåll nuvarande val */ });
+  } else {
+    fillOptions(MODELS);
+  }
+  sel.onchange = () => {
+    state.model = sel.value;
+    localStorage.setItem(isOpenRouter() ? OR_MODEL_STORAGE : MODEL_STORAGE, sel.value);
+  };
   foot.appendChild(sel);
 
   const reset = el("button", "link-btn", state.demo ? "Koppla in din nyckel" : "Byt API-nyckel");

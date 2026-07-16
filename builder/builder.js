@@ -1,5 +1,5 @@
 /* ============================================================
-   Agent Team Builder — Builder-UI (djup körning)
+   Mitt AI-team — Builder-UI (djup körning)
    Kör den RIKTIGA pipelinen i webbläsaren mot kundens nyckel.
    Varje steg använder den faktiska prompt-filen som systemprompt:
    research.md → scale.md → proposal.md → (first-project.md) → sammanställning.
@@ -9,6 +9,10 @@ const KEY_STORAGE = "atb_api_key";
 const MODEL_STORAGE = "atb_model";
 const DRAFT_STORAGE = "atb_draft_team";
 const DEFAULT_MODEL = "claude-opus-4-8";
+// OpenRouter-nycklar (sk-or-) har eget modellval, sparat separat — samma
+// mönster som portalen så valen inte krockar vid nyckelbyte.
+const OR_MODEL_STORAGE = "atb_model_or";
+const DEFAULT_OR_MODEL = "deepseek/deepseek-v4-flash"; // billigast som klarar jobbet bra
 // API-URL, anthropic-version och strömningen ligger i ../atb-claude.js
 // (window.ATBClaude) — delat med Portalen så de inte kan glida isär.
 
@@ -16,6 +20,13 @@ const MODELS = [
   { id: "claude-opus-4-8", label: "Opus 4.8 — mest kapabel (djupast analys)" },
   { id: "claude-sonnet-4-6", label: "Sonnet 4.6 — snabbare & billigare" },
 ];
+
+function isOpenRouter() { return window.ATBClaude.providerFor(state.apiKey) === "openrouter"; }
+function syncModelForProvider() {
+  state.model = isOpenRouter()
+    ? (localStorage.getItem(OR_MODEL_STORAGE) || DEFAULT_OR_MODEL)
+    : (localStorage.getItem(MODEL_STORAGE) || DEFAULT_MODEL);
+}
 
 // Regler för hur en agent blir en portal-systemprompt (speglar templates/shared/portal-team.md).
 const PORTAL_RULES = `Bygg varje agents "system" som en komplett systemprompt SKRIVEN FÖR AGENTEN (inte för användaren):
@@ -52,7 +63,7 @@ async function fetchPrompt(path) {
   return txt;
 }
 
-function hubLink() { const a = el("a", "hublink", "← Agent Team Builder"); a.href = "../"; return a; }
+function hubLink() { const a = el("a", "hublink", "← Mitt AI-team"); a.href = "../"; return a; }
 
 // PNG:erna ligger i portal/avatars/ — refereras härifrån med detta prefix.
 const AVATAR_BASE = "../portal/avatars/";
@@ -77,7 +88,7 @@ function fillIcon(box, a) {
 }
 
 // ---------- boot ----------
-function boot() { (state.apiKey || state.demo) ? renderForm() : renderKeySetup(); }
+function boot() { if (state.apiKey) syncModelForProvider(); (state.apiKey || state.demo) ? renderForm() : renderKeySetup(); }
 
 // Liten banner som visas i demoläget.
 function demoBanner() {
@@ -107,24 +118,24 @@ function renderKeySetup() {
   const wrap = el("main", "setup");
   wrap.appendChild(hubLink());
   wrap.appendChild(el("div", "setup-badge", "🔑 Engångsuppkoppling"));
-  const h = el("h1"); h.innerHTML = `Bygg ett team med <span class="grad">Agent Team Builder</span>`;
+  const h = el("h1"); h.innerHTML = `Bygg ditt <span class="grad">AI-team</span>`;
   wrap.appendChild(h);
-  wrap.appendChild(el("p", "setup-lead", "Klistra in din Anthropic API-nyckel. Den sparas bara här i den här webbläsaren och skickas direkt till Claude — aldrig till någon annan server. Tips: använd en nyckel med begränsad budget."));
+  wrap.appendChild(el("p", "setup-lead", "Klistra in din API-nyckel — Anthropic (sk-ant-…) eller OpenRouter (sk-or-…). Den sparas bara här i den här webbläsaren och skickas direkt till leverantören — aldrig till någon annan server. Tips: använd en nyckel med begränsad budget."));
   const field = el("div", "setup-field");
-  const input = el("input"); input.type = "password"; input.id = "api-key-input"; input.placeholder = "sk-ant-..."; input.spellcheck = false;
-  input.setAttribute("aria-label", "Anthropic API-nyckel");
+  const input = el("input"); input.type = "password"; input.id = "api-key-input"; input.placeholder = "sk-ant-... eller sk-or-..."; input.spellcheck = false;
+  input.setAttribute("aria-label", "API-nyckel (Anthropic eller OpenRouter)");
   field.appendChild(input); wrap.appendChild(field);
   const err = el("div", "setup-err"); err.style.display = "none"; wrap.appendChild(err);
   const btn = el("button", "btn-primary", "Anslut");
   btn.onclick = () => {
     const v = input.value.trim();
-    if (!v.startsWith("sk-ant-")) { err.textContent = "Det ser inte ut som en Anthropic-nyckel (sk-ant-...)."; err.style.display = "block"; return; }
-    state.apiKey = v; localStorage.setItem(KEY_STORAGE, v); renderForm();
+    if (!v.startsWith("sk-ant-") && !v.startsWith("sk-or-")) { err.textContent = "Det ser inte ut som en giltig nyckel (Anthropic: sk-ant-…, OpenRouter: sk-or-…)."; err.style.display = "block"; return; }
+    state.apiKey = v; localStorage.setItem(KEY_STORAGE, v); syncModelForProvider(); renderForm();
   };
   input.addEventListener("keydown", (e) => { if (e.key === "Enter") btn.click(); });
   wrap.appendChild(btn);
   const help = el("div", "setup-help");
-  help.innerHTML = 'Skapa en nyckel på <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noreferrer">console.anthropic.com</a>.';
+  help.innerHTML = 'Skapa en nyckel på <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noreferrer">console.anthropic.com</a> eller <a href="https://openrouter.ai/settings/keys" target="_blank" rel="noreferrer">openrouter.ai</a>.';
   wrap.appendChild(help);
   const demoBtn = el("button", "demo-link", "Eller utforska i demoläge utan nyckel →");
   demoBtn.onclick = () => {
@@ -161,9 +172,27 @@ function renderForm() {
   matRow.style.display = "none"; form.appendChild(matRow);
   modeSel.onchange = () => { matRow.style.display = modeSel.value === "ai-consultant" ? "" : "none"; };
 
-  const modelSel = selectEl("model", "model", MODELS.map((m) => [m.id, m.label]));
+  let modelSel;
+  if (!state.demo && isOpenRouter()) {
+    // OpenRouter: hämta katalogen live (kurerad i atb-claude.js); tills dess
+    // visas bara nuvarande val så formuläret fungerar direkt.
+    modelSel = selectEl("model", "model", [[state.model, state.model]]);
+    window.ATBClaude.openrouterModels()
+      .then((models) => {
+        const list = models.some((m) => m.id === state.model) ? models : [{ id: state.model, name: state.model }].concat(models);
+        modelSel.innerHTML = "";
+        list.forEach((m) => { const o = el("option", null, m.name || m.id); o.value = m.id; modelSel.appendChild(o); });
+        modelSel.value = state.model;
+      })
+      .catch(() => { /* offline/fel — behåll nuvarande val */ });
+  } else {
+    modelSel = selectEl("model", "model", MODELS.map((m) => [m.id, m.label]));
+  }
   modelSel.value = state.model;
-  modelSel.onchange = () => { state.model = modelSel.value; localStorage.setItem(MODEL_STORAGE, modelSel.value); };
+  modelSel.onchange = () => {
+    state.model = modelSel.value;
+    localStorage.setItem(isOpenRouter() ? OR_MODEL_STORAGE : MODEL_STORAGE, modelSel.value);
+  };
   form.appendChild(fieldRow("Modell", modelSel));
 
   // Strukturerat frågeformulär istället för en tom textruta — kunden vet vad

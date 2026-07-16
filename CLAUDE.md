@@ -1,5 +1,8 @@
 # Agent Team Builder
 
+> **Publikt namn:** webblagret heter utåt **Mitt AI-team** (mittaiteam.se,
+> beslutat 2026-07-16). "Agent Team Builder" är repots/kärnans arbetsnamn.
+
 Ett Claude Code-projekt för att generera skräddarsydda team av subagents åt
 företag och projekt. Verktyget har två lägen:
 
@@ -89,8 +92,11 @@ regeln.
 
 Fyra statiska webbappar + en hub gör verktyget demobart och användbart för
 icke-tekniska kunder. De delar designsystem (`site/showcase.css`) och kör i
-webbläsaren — i BYO-läget anger kunden sin egen Anthropic-nyckel (lagras lokalt,
-anropar `api.anthropic.com` direkt via `anthropic-dangerous-direct-browser-access`).
+webbläsaren — i BYO-läget anger kunden sin egen nyckel: Anthropic (`sk-ant-`,
+anropar `api.anthropic.com` direkt via `anthropic-dangerous-direct-browser-access`)
+eller OpenRouter (`sk-or-`, OpenAI-kompatibelt API mot `openrouter.ai`, modellista
+hämtas live från deras publika katalog). Leverantör detekteras på nyckelprefixet i
+`atb-claude.js`; modellval sparas separat per leverantör.
 Det finns ett valfritt, tunt köp/leverans-lager (Cloudflare Pages Functions + D1,
 se `docs/m2-backend-spec.md`) för moln-sparade team — annars ingen backend.
 Demolägen (`?demo=1`) låter både portal och builder visas helt utan nyckel.

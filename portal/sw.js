@@ -6,7 +6,7 @@
 
 // Bumpa versionen vid varje ändring i SHELL-filerna nedan — annars precachar
 // inte service workern om skalet och offline-användare fastnar på gammal kod.
-const CACHE = "atb-portal-v3";
+const CACHE = "atb-portal-v5";
 // De delade rot-skripten (avatars/atb-claude) MÅSTE precachas — utan dem
 // kraschar en offline-öppnad PWA med "ATBClaude is undefined".
 const SHELL = ["./", "./index.html", "./app.js", "./portal.css", "./teams/index.js", "./manifest.webmanifest", "./icon.svg", "../avatars.js", "../atb-claude.js"];
