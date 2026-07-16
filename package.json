@@ -2,7 +2,7 @@
   "name": "agent-team-builder-web",
   "private": true,
   "version": "0.1.0",
-  "description": "Statiskt webblager (hub/builder/galleri/portal) för Agent Team Builder.",
+  "description": "Statiskt webblager (hub/builder/galleri/portal) för Mitt AI-team (mittaiteam.se).",
   "type": "module",
   "scripts": {
     "build": "node build-dist.mjs",

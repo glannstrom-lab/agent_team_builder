@@ -1,5 +1,5 @@
 /* ============================================================
-   Agent Team Builder — delad avatar-tilldelning
+   Mitt AI-team — delad avatar-tilldelning
    Ett porträtt per agent över ALLA webbytor (portal, builder,
    verticals, galleri). De 25 färdiga porträtten ligger i
    portal/avatars/avatar-01.png … avatar-25.png.

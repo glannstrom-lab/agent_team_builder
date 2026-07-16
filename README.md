@@ -1,4 +1,7 @@
-# Agent Team Builder
+# Mitt AI-team (agent-team-builder)
+
+Publikt namn: **Mitt AI-team** — [mittaiteam.se](https://mittaiteam.se). Repot
+och kärnverktyget behåller arbetsnamnet *agent-team-builder*.
 
 Generera skräddarsydda team av Claude Code-subagents åt företag och projekt.
 Ett verktyg för dig som bygger egna projekt, och ett verktyg för dig som

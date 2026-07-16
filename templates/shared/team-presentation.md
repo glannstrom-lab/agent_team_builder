@@ -21,7 +21,7 @@ externa beroenden förutom Google Fonts.
 
 ### 1. Hero
 
-- Badge: "Agent Team Builder" med grön blink-prick
+- Badge: "Mitt AI-team" med grön blink-prick
 - Rubrik: "Ert AI-team," + företagsnamn i gradient
 - Undertitel: en mening som sammanfattar teamet med branschreferens
 - Tre nyckeltal: antal agenter, antal analyserade moment, antal avvisade
@@ -71,7 +71,7 @@ Varje kort: namn + en mening om vad mötet gör.
 
 ### 6. Footer
 
-- "Byggt med Agent Team Builder"
+- "Byggt med Mitt AI-team"
 - Research-statistik: antal moment, kluster, avvisade
 - Om källa = externt: hypotes-varning
 

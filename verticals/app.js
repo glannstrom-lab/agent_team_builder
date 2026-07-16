@@ -18,7 +18,7 @@ const bySlug = (slug) => VERTS.find((v) => v.slug === slug);
 
 function nav() {
   return `<div class="hubnav"><div class="inner">
-    <a class="home" href="../"><span class="dot"></span> Agent Team Builder</a>
+    <a class="home" href="../"><span class="dot"></span> Mitt AI-team</a>
     <a class="np" href="./">Branscher</a>
     <a class="np" href="../site/">Exempel</a>
     <a class="nav-cta" href="../index.html#priser">Priser</a>
@@ -177,7 +177,7 @@ function agentSystem(v, a, i) {
 
 function footer() {
   return `<footer><div class="wrap">
-    <div class="built"><span class="dot"></span> Agent Team Builder</div>
+    <div class="built"><span class="dot"></span> Mitt AI-team</div>
     <div class="fstats">Skräddarsydda AI-team för små och medelstora företag.</div>
   </div></footer>`;
 }
