@@ -11,6 +11,9 @@
 const KEY_STORAGE = "atb_api_key";
 const MODEL_STORAGE = "atb_model";
 const HIST_PREFIX = "atb_hist_"; // + team-slug → sparad chatthistorik
+const MEM_PREFIX = "atb_mem_";   // + team-slug → delat företagsminne (instruktioner)
+const DOCS_PREFIX = "atb_docs_"; // + team-slug → inklistrade underlag [{title,text,on}]
+const DOCSON_PREFIX = "atb_docson_"; // + team-slug → { filnamn: bool } på/av för mapp-underlag
 const DEFAULT_MODEL = "claude-sonnet-4-6"; // billig default för BYO-kund; kan höjas till Opus i UI
 // OpenRouter-nycklar (sk-or-) har eget modellval — sparas separat så det
 // aldrig krockar med Anthropic-valet när man byter nyckel fram och tillbaka.
@@ -41,6 +44,7 @@ const state = {
   // Aktiveras via knapp eller ?demo=1 (delbar demolänk).
   demo: new URLSearchParams(location.search).get("demo") === "1",
   slug: null, // aktivt teams slug — nyckel för sparad historik
+  folder: null, // kopplad mapp: { handle, name, docs, memory, needsPermission }
   activeAgentId: null,
   history: {}, // { [agentId]: [{role, content}] }
   streaming: false,
@@ -66,6 +70,187 @@ function saveHistory() {
     for (const [id, msgs] of Object.entries(state.history)) capped[id] = msgs.slice(-60);
     localStorage.setItem(HIST_PREFIX + state.slug, JSON.stringify(capped));
   } catch (_) { /* full/blockerad storage får aldrig krascha chatten */ }
+}
+
+// ---------- minne & underlag ----------
+// Det som gör portalen till en arbetsyta i stil med ett "projekt" (à la
+// ChatGPT Projects): teamet delar instruktioner och material, i stället för
+// att varje chatt börjar tom. Allt lagras per team i localStorage och
+// injiceras i varje agents systemprompt via systemFor().
+function loadMemory() {
+  if (folderActive() && state.folder.memory != null) return state.folder.memory;
+  return localStorage.getItem(MEM_PREFIX + state.slug) || "";
+}
+function saveMemory(text) {
+  // Mapp kopplad → minne.md är sanningen (redigerbar i valfritt program).
+  // localStorage skrivs alltid som reserv så inget tappas om mappen försvinner.
+  if (folderActive()) {
+    state.folder.memory = text;
+    writeFolderFile("minne.md", text).catch(() => { /* skrivfel — reserven finns */ });
+  }
+  try { localStorage.setItem(MEM_PREFIX + state.slug, text); } catch (_) { /* full storage */ }
+}
+function loadLocalDocs() {
+  try { const d = JSON.parse(localStorage.getItem(DOCS_PREFIX + state.slug) || "[]"); return Array.isArray(d) ? d : []; }
+  catch (_) { return []; }
+}
+function saveDocs(docs) { try { localStorage.setItem(DOCS_PREFIX + state.slug, JSON.stringify(docs)); } catch (_) { /* full storage */ } }
+function loadDocToggles() {
+  try { return JSON.parse(localStorage.getItem(DOCSON_PREFIX + state.slug) || "{}") || {}; }
+  catch (_) { return {}; }
+}
+function saveDocToggles(t) { try { localStorage.setItem(DOCSON_PREFIX + state.slug, JSON.stringify(t)); } catch (_) { /* full storage */ } }
+// Alla underlag agenterna ser: mappens filer (om kopplad) + inklistrade.
+function loadDocs() {
+  const local = loadLocalDocs();
+  if (!folderActive()) return local;
+  const t = loadDocToggles();
+  return state.folder.docs
+    .map((d) => ({ title: d.title, text: d.text, on: t[d.title] !== false, file: true }))
+    .concat(local);
+}
+
+// ---------- mapp på datorn (File System Access API) ----------
+// BYO-lägets "pro-läge": kunden kopplar en vanlig mapp — .md/.txt blir
+// underlag, minne.md blir företagsminnet, och svar kan sparas tillbaka till
+// från-teamet/. Större än webblagringen, överlever rensad webbdata, och läggs
+// mappen i OneDrive/Dropbox får kunden synk + delning via sin egen infra.
+// Kräver Chrome/Edge på desktop; annars förblir localStorage-läget som idag.
+const FOLDER_SUPPORTED = typeof window.showDirectoryPicker === "function";
+
+// Litet IndexedDB-lager — mapphandtag kan inte ligga i localStorage.
+function idbOpen() {
+  return new Promise((res, rej) => {
+    const rq = indexedDB.open("atb-fs", 1);
+    rq.onupgradeneeded = () => rq.result.createObjectStore("kv");
+    rq.onsuccess = () => res(rq.result);
+    rq.onerror = () => rej(rq.error);
+  });
+}
+async function idbSet(k, v) {
+  const db = await idbOpen();
+  return new Promise((res, rej) => {
+    const tx = db.transaction("kv", "readwrite");
+    tx.objectStore("kv").put(v, k);
+    tx.oncomplete = () => res();
+    tx.onerror = () => rej(tx.error);
+  });
+}
+async function idbGet(k) {
+  const db = await idbOpen();
+  return new Promise((res, rej) => {
+    const rq = db.transaction("kv", "readonly").objectStore("kv").get(k);
+    rq.onsuccess = () => res(rq.result);
+    rq.onerror = () => rej(rq.error);
+  });
+}
+async function idbDel(k) {
+  const db = await idbOpen();
+  return new Promise((res, rej) => {
+    const tx = db.transaction("kv", "readwrite");
+    tx.objectStore("kv").delete(k);
+    tx.oncomplete = () => res();
+    tx.onerror = () => rej(tx.error);
+  });
+}
+
+function folderActive() { return !!(state.folder && state.folder.handle && !state.folder.needsPermission); }
+
+// Läser om mappens innehåll till cachen. ask=true får bara komma från en
+// användargest (klick/enter) — annars vägrar webbläsaren visa tillståndsfrågan.
+async function refreshFolder(opts) {
+  const f = state.folder;
+  if (!f || !f.handle) return;
+  try {
+    let perm = await f.handle.queryPermission({ mode: "readwrite" });
+    if (perm === "prompt" && opts && opts.ask) perm = await f.handle.requestPermission({ mode: "readwrite" });
+    if (perm !== "granted") { f.needsPermission = true; return; }
+    f.needsPermission = false;
+    const docs = [];
+    let memory = null;
+    for await (const [name, h] of f.handle.entries()) {
+      if (h.kind !== "file" || !/\.(md|txt)$/i.test(name)) continue;
+      const file = await h.getFile();
+      if (file.size > 400000) continue; // hoppa jättefiler — de skulle ändå kapas av budgeten
+      const text = await file.text();
+      if (name.toLowerCase() === "minne.md") memory = text;
+      else docs.push({ title: name, text });
+    }
+    docs.sort((a, b) => a.title.localeCompare(b.title, "sv"));
+    f.docs = docs;
+    f.memory = memory;
+  } catch (_) { /* mappen flyttad/borta — behåll senaste cache */ }
+}
+
+async function connectFolder() {
+  try {
+    const handle = await window.showDirectoryPicker({ mode: "readwrite" });
+    state.folder = { handle, name: handle.name, docs: [], memory: null, needsPermission: false };
+    await idbSet("dir_" + state.slug, handle);
+    await refreshFolder({ ask: true });
+    updateFolderBanner();
+  } catch (_) { /* avbruten dialog */ }
+}
+async function disconnectFolder() {
+  state.folder = null;
+  await idbDel("dir_" + state.slug).catch(() => {});
+  updateFolderBanner();
+}
+
+// Vid sidladdning: återanslut sparat mapphandtag. Tillstånd kan inte begäras
+// utan gest — då visas en banner som återansluter med ett klick.
+async function initFolder() {
+  if (state.demo || !FOLDER_SUPPORTED || !state.slug) return;
+  try {
+    const handle = await idbGet("dir_" + state.slug);
+    if (!handle) return;
+    state.folder = { handle, name: handle.name, docs: [], memory: null, needsPermission: false };
+    await refreshFolder();
+    updateFolderBanner();
+  } catch (_) { /* ingen mapp */ }
+}
+
+async function writeFolderFile(name, text, sub) {
+  let dir = state.folder.handle;
+  if (sub) dir = await dir.getDirectoryHandle(sub, { create: true });
+  const fh = await dir.getFileHandle(name, { create: true });
+  const w = await fh.createWritable();
+  await w.write(text);
+  await w.close();
+}
+
+function updateFolderBanner() {
+  const old = $("#folder-banner");
+  if (old) old.remove();
+  if (!(state.folder && state.folder.handle && state.folder.needsPermission)) return;
+  const main = document.querySelector(".main");
+  if (!main) return;
+  const b = el("button", "folder-banner");
+  b.id = "folder-banner"; b.type = "button";
+  b.textContent = `📁 Mappen "${state.folder.name}" väntar på tillstånd — klicka för att återansluta`;
+  b.onclick = async () => { await refreshFolder({ ask: true }); updateFolderBanner(); };
+  main.insertBefore(b, $("#chat-header"));
+}
+
+const DOC_BUDGET = 12000; // tecken underlag totalt per anrop — skydd mot tokensvällning
+function systemFor(agent) {
+  let sys = agent.system || "";
+  const mem = loadMemory().trim();
+  if (mem) sys += `\n\nFÖRETAGSMINNE (delat för hela teamet, skrivet av användaren — följ det):\n${mem}`;
+  const active = loadDocs().filter((d) => d && d.on && d.text);
+  if (active.length) {
+    let used = 0;
+    const parts = [];
+    for (const d of active) {
+      const left = DOC_BUDGET - used;
+      if (left <= 0) break;
+      const t = d.text.length > left ? d.text.slice(0, left) + "\n[…avkortat]" : d.text;
+      used += t.length;
+      parts.push(`--- UNDERLAG: ${d.title} ---\n${t}`);
+    }
+    sys += `\n\nUNDERLAG (material användaren lagt in — använd som källa när det är relevant):\n${parts.join("\n\n")}`;
+  }
+  return sys;
 }
 
 // ---------- helpers ----------
@@ -190,6 +375,7 @@ async function boot() {
   try {
     await loadTeam(slug);
     renderPortal();
+    initFolder(); // async — banner/underlag dyker upp när mappen lästs
   } catch (err) {
     renderPicker(err.message);
   }
@@ -345,6 +531,36 @@ function renderSidebar() {
   });
   side.appendChild(list);
 
+  // ---- Arbetsyta: det som gör portalen till mer än en chatt ----
+  const ws = el("div", "ws");
+  ws.appendChild(el("div", "side-label ws-head", "Arbetsyta"));
+  const wsBtn = (icon, label, fn, title) => {
+    const b = el("button", "ws-btn"); b.type = "button"; if (title) b.title = title;
+    b.appendChild(el("span", "ws-ico", icon)); b.appendChild(el("span", "ws-txt", label));
+    b.onclick = fn; ws.appendChild(b); return b;
+  };
+  const entryName = (agentById(team.entryAgent) || {}).name || "VD-assistenten";
+  wsBtn("⭐", "Veckostart", startWeek, `${entryName} föreslår veckans fokus utifrån teamet och era rutiner`);
+  wsBtn("🤝", "Håll ett möte", openMeeting, "Samla flera agenters perspektiv och landa i ett beslut");
+  wsBtn("🧠", "Minne & underlag", openMemory, "Delade instruktioner och material som alla agenter ser");
+  if (team.firstProject) wsBtn("🎯", "Första projektet", openFirstProject, "Ert första AI-projekt — planen och första steget");
+
+  const routines = Array.isArray(team.routines) ? team.routines : [];
+  if (routines.length) {
+    ws.appendChild(el("div", "side-label ws-head", "Veckans rutiner"));
+    const today = ((new Date().getDay() + 6) % 7) + 1; // 1=mån … 7=sön
+    routines.forEach((rt) => {
+      const due = rt.day === today;
+      const b = el("button", "routine-item" + (due ? " due" : "")); b.type = "button";
+      b.appendChild(el("span", "routine-label", rt.label));
+      b.appendChild(el("span", "routine-day", due ? "idag" : dayName(rt.day)));
+      b.title = rt.prompt || "";
+      b.onclick = () => runRoutine(rt);
+      ws.appendChild(b);
+    });
+  }
+  side.appendChild(ws);
+
   const foot = el("div", "side-foot");
   const hub = el("a", "hub-foot", "← Till hubben"); hub.href = "../";
   foot.appendChild(hub);
@@ -394,14 +610,15 @@ function renderSidebar() {
 }
 
 function wipeAll() {
-  if (!confirm("Ta bort ALLT sparat från den här webbläsaren?\n\n• API-nyckeln\n• All chatthistorik (alla team)\n• Team-utkast från Builder och branschsidorna")) return;
+  if (!confirm("Ta bort ALLT sparat från den här webbläsaren?\n\n• API-nyckeln\n• All chatthistorik (alla team)\n• Företagsminne och underlag\n• Mappkopplingen (filerna i mappen rörs INTE)\n• Team-utkast från Builder och branschsidorna")) return;
   const doomed = [];
   for (let i = 0; i < localStorage.length; i++) {
     const k = localStorage.key(i);
-    if (k && (k === KEY_STORAGE || k === MODEL_STORAGE || k === "atb_draft_team" || k === "atb_vertical_demo_team" || k.startsWith(HIST_PREFIX))) doomed.push(k);
+    if (k && (k === KEY_STORAGE || k === MODEL_STORAGE || k === OR_MODEL_STORAGE || k === "atb_draft_team" || k === "atb_vertical_demo_team" || k.startsWith(HIST_PREFIX) || k.startsWith(MEM_PREFIX) || k.startsWith(DOCS_PREFIX) || k.startsWith(DOCSON_PREFIX))) doomed.push(k);
   }
   doomed.forEach((k) => localStorage.removeItem(k));
-  state.apiKey = ""; state.history = {};
+  try { indexedDB.deleteDatabase("atb-fs"); } catch (_) { /* inga mapphandtag */ }
+  state.apiKey = ""; state.history = {}; state.folder = null;
   renderKeySetup();
 }
 
@@ -417,6 +634,9 @@ function renderMain() {
   team.agents.forEach((a) => { const o = el("option", null, `${a.icon} ${a.name}`); o.value = a.id; msel.appendChild(o); });
   msel.onchange = () => selectAgent(msel.value);
   mbar.appendChild(msel);
+  const mws = el("button", "mb-reset", "⭐"); mws.title = "Veckostart";
+  mws.onclick = startWeek;
+  mbar.appendChild(mws);
   const mreset = el("button", "mb-reset", state.demo ? "Anslut" : "Nyckel");
   mreset.onclick = state.demo ? connectKey : resetKey;
   mbar.appendChild(mreset);
@@ -553,11 +773,49 @@ function bubble(role, text) {
   if (role === "assistant") {
     b.setAttribute("aria-label", "Svar");
     renderMarkdown(b, text); // agenterna svarar med rubriker/listor/fetstil
+    if (text) addActions(row, () => text); // färdiga svar får kopiera/ladda ner
   } else {
     b.textContent = text;
   }
   row.appendChild(b);
   return row;
+}
+
+// Kopiera/ladda ner per svar — svaret ska vidare in i mail och dokument,
+// inte dö i chatten. Rå markdown kopieras (klistras fint i de flesta verktyg).
+function addActions(row, getText) {
+  if (row.querySelector(".msg-actions")) return;
+  const acts = el("div", "msg-actions");
+  const copy = el("button", "act-btn", "Kopiera"); copy.type = "button";
+  copy.onclick = async () => {
+    try { await navigator.clipboard.writeText(getText()); copy.textContent = "Kopierat ✓"; setTimeout(() => (copy.textContent = "Kopiera"), 1400); }
+    catch (_) { copy.textContent = "Kunde inte kopiera"; setTimeout(() => (copy.textContent = "Kopiera"), 1400); }
+  };
+  const dl = el("button", "act-btn", "Ladda ner"); dl.type = "button"; dl.title = "Spara som markdown-fil";
+  dl.onclick = () => {
+    const blob = new Blob([getText()], { type: "text/markdown" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `${state.slug || "team"}-${new Date().toISOString().slice(0, 10)}.md`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  };
+  acts.appendChild(copy); acts.appendChild(dl);
+  if (!state.demo && FOLDER_SUPPORTED) {
+    const sf = el("button", "act-btn", "Spara i mappen"); sf.type = "button";
+    sf.title = "Sparar svaret som markdown-fil i från-teamet/ i er kopplade mapp";
+    sf.onclick = async () => {
+      if (!folderActive()) { openMemory(); return; } // ingen mapp än → visa panelen där man kopplar
+      try {
+        const name = `svar-${new Date().toISOString().slice(0, 10)}-${String(Date.now() % 100000)}.md`;
+        await writeFolderFile(name, getText(), "från-teamet");
+        sf.textContent = "Sparat ✓ från-teamet/";
+      } catch (_) { sf.textContent = "Kunde inte spara"; }
+      setTimeout(() => (sf.textContent = "Spara i mappen"), 2200);
+    };
+    acts.appendChild(sf);
+  }
+  row.appendChild(acts);
 }
 
 // ---------- minimal markdown ----------
@@ -602,6 +860,344 @@ function renderMarkdown(container, text) {
   }
 }
 
+// ============================================================
+// ARBETSYTAN — veckostart, rutiner, möten, minne, första projektet.
+// Det här skiktet är portalens svar på "hur är det mer än en chatt?":
+// stående rutiner i stället för frågor, delat minne i stället för amnesi,
+// riktiga multi-agent-möten i stället för en modell som lajvar roller.
+// ============================================================
+
+const DAY_NAMES = [null, "mån", "tis", "ons", "tors", "fre", "lör", "sön"];
+const dayName = (d) => DAY_NAMES[d] || "";
+
+// Rutin-klick: hoppa till rätt agent med uppgiften förifylld — användaren
+// fyller i luckorna ([fyll i]) och skickar. Kontrollen ligger kvar hos människan.
+function runRoutine(rt) {
+  const target = agentById(rt.agentId) ? rt.agentId : team.entryAgent;
+  selectAgent(target);
+  const ta = $("#composer-input");
+  if (ta) {
+    ta.value = rt.prompt || rt.label;
+    ta.style.height = "auto"; ta.style.height = Math.min(ta.scrollHeight, 200) + "px";
+    ta.focus();
+  }
+}
+
+// Veckostart: ett klick → ingångsagenten föreslår veckans fokus. Skickas
+// direkt (ingen förifyllning) — hela poängen är noll friktion på måndagsmorgonen.
+function startWeek() {
+  if (state.streaming) return;
+  selectAgent(team.entryAgent);
+  const now = new Date();
+  const days = ["söndag", "måndag", "tisdag", "onsdag", "torsdag", "fredag", "lördag"];
+  const rlist = (team.routines || []).map((r) => `- ${r.label}${r.day ? ` (${dayName(r.day)})` : ""}`).join("\n");
+  const text = `Veckostart! Det är ${days[now.getDay()]} den ${now.toLocaleDateString("sv-SE")}.` +
+    (rlist ? `\nVåra stående rutiner:\n${rlist}` : "") +
+    `\n\nGe mig en kort veckostart: 1) de tre viktigaste sakerna att fokusera på, med motivering, 2) vilken agent i teamet som hjälper mig med varje, 3) vad du behöver veta från mig. Kort och konkret.`;
+  submitMessage(text);
+}
+
+// ---------- overlay ----------
+function openOverlay(title) {
+  closeOverlay();
+  const ovl = el("div", "ovl"); ovl.id = "ovl";
+  ovl.onclick = (e) => { if (e.target === ovl) closeOverlay(); };
+  const box = el("div", "ovl-box");
+  const head = el("div", "ovl-head");
+  head.appendChild(el("div", "ovl-title", title));
+  const x = el("button", "ovl-close", "✕"); x.type = "button"; x.setAttribute("aria-label", "Stäng");
+  x.onclick = closeOverlay;
+  head.appendChild(x);
+  box.appendChild(head);
+  ovl.appendChild(box);
+  document.body.appendChild(ovl);
+  return box;
+}
+function closeOverlay() { const o = $("#ovl"); if (o) o.remove(); }
+
+// ---------- minne & underlag (UI) ----------
+function openMemory() {
+  const box = openOverlay("🧠 Minne & underlag");
+  box.appendChild(el("p", "ovl-lead", "Det här ser alla agenter i varje samtal — teamets delade projektminne. Skriv hur ni jobbar och vad ni beslutat; klistra in material teamet ska kunna använda. Allt sparas lokalt i den här webbläsaren."));
+
+  box.appendChild(el("div", "ovl-label", "Företagsminne — korta, viktiga instruktioner"));
+  const ta = el("textarea", "ovl-ta"); ta.rows = 7; ta.value = loadMemory();
+  ta.placeholder = "T.ex:\n• Vi skriver alltid på svenska, du-form, inga utropstecken.\n• Våra kunder är småföretag i Bergslagen.\n• Beslut juli 2026: vi säljer månadspaket, inte timmar.";
+  box.appendChild(ta);
+  const save = el("button", "btn-primary ovl-save", "Spara minnet");
+  save.type = "button";
+  save.onclick = () => { saveMemory(ta.value); save.textContent = "Sparat ✓"; setTimeout(() => (save.textContent = "Spara minnet"), 1400); };
+  box.appendChild(save);
+
+  // ---- Mapp på datorn (Chrome/Edge) ----
+  const listBox = el("div", "doc-list"); // deklareras före mappsektionen — dess knappar ritar om listan
+  let renderDocs = () => {};
+  if (!state.demo && FOLDER_SUPPORTED) {
+    box.appendChild(el("div", "ovl-label", "Mapp på datorn"));
+    const fWrap = el("div", "folder-box");
+    const renderFolder = () => {
+      fWrap.innerHTML = "";
+      if (state.folder && state.folder.handle) {
+        const row = el("div", "doc-row");
+        row.appendChild(el("span", "doc-title", `📁 ${state.folder.name}` + (state.folder.needsPermission ? " — väntar på tillstånd" : ` · ${state.folder.docs.length} filer${state.folder.memory != null ? " + minne.md" : ""}`)));
+        if (state.folder.needsPermission) {
+          const rb = el("button", "act-btn", "Återanslut"); rb.type = "button";
+          rb.onclick = async () => { await refreshFolder({ ask: true }); updateFolderBanner(); renderFolder(); renderDocs(); };
+          row.appendChild(rb);
+        } else {
+          const ub = el("button", "act-btn", "Läs om"); ub.type = "button"; ub.title = "Läs in mappens filer på nytt";
+          ub.onclick = async () => { await refreshFolder(); renderFolder(); renderDocs(); };
+          row.appendChild(ub);
+        }
+        const db = el("button", "doc-del", "✕"); db.type = "button"; db.title = "Koppla bort mappen (raderar inga filer)";
+        db.onclick = async () => { await disconnectFolder(); renderFolder(); renderDocs(); };
+        row.appendChild(db);
+        fWrap.appendChild(row);
+        fWrap.appendChild(el("p", "ovl-note", "Alla .md/.txt i mappen blir underlag; minne.md är företagsminnet; svar kan sparas till från-teamet/. Tips: lägg mappen i OneDrive/Dropbox så får ni synk och delning på köpet."));
+      } else {
+        const cb = el("button", "btn-primary ovl-save", "📁 Koppla en mapp på datorn"); cb.type = "button";
+        cb.onclick = async () => { await connectFolder(); renderFolder(); renderDocs(); };
+        fWrap.appendChild(cb);
+        fWrap.appendChild(el("p", "ovl-note", "Underlag som vanliga filer: större än webblagringen, överlever rensad webbdata och kan redigeras i valfritt program."));
+      }
+    };
+    renderFolder();
+    box.appendChild(fWrap);
+  }
+
+  box.appendChild(el("div", "ovl-label", "Underlag — dokument och material"));
+  renderDocs = () => {
+    listBox.innerHTML = "";
+    const toggles = loadDocToggles();
+    const fdocs = folderActive() ? state.folder.docs : [];
+    const local = loadLocalDocs();
+    if (!fdocs.length && !local.length) { listBox.appendChild(el("div", "doc-empty", "Inga underlag än — klistra in ert första nedan.")); return; }
+    fdocs.forEach((d) => {
+      const rowEl = el("div", "doc-row");
+      const chk = el("input"); chk.type = "checkbox"; chk.checked = toggles[d.title] !== false;
+      chk.title = "Aktivt = skickas med till agenterna";
+      chk.onchange = () => { const t = loadDocToggles(); t[d.title] = chk.checked; saveDocToggles(t); };
+      rowEl.appendChild(chk);
+      rowEl.appendChild(el("span", "doc-title", `📄 ${d.title} · ${Math.max(1, Math.round((d.text || "").length / 1000))}k tecken`));
+      listBox.appendChild(rowEl); // mappfiler tas bort i Utforskaren, inte här
+    });
+    local.forEach((d, i) => {
+      const rowEl = el("div", "doc-row");
+      const chk = el("input"); chk.type = "checkbox"; chk.checked = !!d.on;
+      chk.title = "Aktivt = skickas med till agenterna";
+      chk.onchange = () => { const ds = loadLocalDocs(); if (ds[i]) { ds[i].on = chk.checked; saveDocs(ds); } };
+      rowEl.appendChild(chk);
+      rowEl.appendChild(el("span", "doc-title", `${d.title} · ${Math.max(1, Math.round((d.text || "").length / 1000))}k tecken`));
+      const del = el("button", "doc-del", "✕"); del.type = "button"; del.title = "Ta bort underlaget";
+      del.onclick = () => { const ds = loadLocalDocs(); ds.splice(i, 1); saveDocs(ds); renderDocs(); };
+      rowEl.appendChild(del);
+      listBox.appendChild(rowEl);
+    });
+  };
+  renderDocs();
+  box.appendChild(listBox);
+
+  const dt = el("input", "ovl-input"); dt.placeholder = "Namn, t.ex. Prislista 2026 eller Mötesanteckning 14 juli";
+  const dta = el("textarea", "ovl-ta"); dta.rows = 5; dta.placeholder = "Klistra in texten här…";
+  const add = el("button", "btn-primary ovl-save", "Lägg till underlag"); add.type = "button";
+  add.onclick = async () => {
+    const text = dta.value.trim();
+    if (!text) return;
+    const title = dt.value.trim();
+    if (folderActive()) {
+      // Mapp kopplad → underlaget blir en riktig fil i mappen.
+      const safe = (title || "underlag-" + Date.now()).replace(/[\\/:*?"<>|]/g, "-").slice(0, 60);
+      try { await writeFolderFile(safe + ".md", text); await refreshFolder(); }
+      catch (_) { const docs = loadLocalDocs(); docs.push({ title: title || safe, text, on: true }); saveDocs(docs); }
+    } else {
+      const docs = loadLocalDocs();
+      docs.push({ title: title || "Underlag " + (docs.length + 1), text, on: true });
+      saveDocs(docs);
+    }
+    dt.value = ""; dta.value = "";
+    renderDocs();
+  };
+  box.appendChild(dt); box.appendChild(dta); box.appendChild(add);
+  box.appendChild(el("p", "ovl-note", `Aktiva underlag följer med i varje anrop (max ~${Math.round(DOC_BUDGET / 1000)}000 tecken totalt) — fler aktiva = högre kostnad per fråga. Slå av det som inte behövs just nu, och håll minnet kort och kurerat.`));
+}
+
+// ---------- första projektet ----------
+function openFirstProject() {
+  const fp = team.firstProject;
+  if (!fp) return;
+  const box = openOverlay("🎯 Första projektet");
+  box.appendChild(el("div", "fp-name", fp.name || "Ert första projekt"));
+  if (fp.problem) { box.appendChild(el("div", "ovl-label", "Problemet vi löser")); const p = el("div", "fp-text"); renderMarkdown(p, fp.problem); box.appendChild(p); }
+  if (fp.week1) { box.appendChild(el("div", "ovl-label", "Första veckan")); const w = el("div", "fp-text"); renderMarkdown(w, fp.week1); box.appendChild(w); }
+  if (fp.owner) box.appendChild(el("p", "ovl-note", "Ansvarig i teamet: " + fp.owner));
+  const go = el("button", "btn-primary ovl-save", "Be teamet ta första steget →"); go.type = "button";
+  go.onclick = () => {
+    closeOverlay();
+    selectAgent(team.entryAgent);
+    const ta = $("#composer-input");
+    if (ta) {
+      ta.value = `Vi kör igång första projektet: "${fp.name}". Vad är det allra första konkreta steget idag, och vad behöver du från mig?`;
+      ta.style.height = "auto"; ta.style.height = Math.min(ta.scrollHeight, 200) + "px";
+      ta.focus();
+    }
+  };
+  box.appendChild(go);
+}
+
+// ---------- möten ----------
+// Riktiga multi-agent-möten: varje deltagare svarar utifrån SIN systemprompt
+// (ett anrop per agent), sedan sammanställer ingångsagenten. Skillnaden mot
+// att be en chatt "lajva flera roller" är att perspektiven genereras oberoende
+// — de kan faktiskt krocka, och krocken syns i sammanställningen.
+const MEETING_TYPES = [
+  { id: "whats-next", icon: "🧭", label: "Vad gör vi härnäst?", desc: "Prioriteringsmöte — landar i max tre motiverade prioriteringar.",
+    output: "En rangordnad lista med MAX TRE prioriteringar. För varje: vad, varför just nu, första konkreta steg och vilken agent som äger det. Avsluta med vad som medvetet får vänta." },
+  { id: "review", icon: "🔍", label: "Projektgranskning", desc: "Bred genomlysning — var står vi och vad är viktigast att åtgärda?",
+    output: "En rangordnad lista över de viktigaste fynden (max fem), vart och ett med konsekvens och rekommenderad åtgärd. Avsluta med en samlad rekommendation i 2–3 meningar." },
+  { id: "improve", icon: "🔧", label: "Förbättra något specifikt", desc: "Smalt fokus på en sak — konkreta förslag som kan påbörjas direkt.",
+    output: "Numrerade, handlingsbara förbättringsförslag (max fem). Varje förslag ska kunna påbörjas idag och ange första steget. Ingen filosofi, inga abstraktioner." },
+];
+
+function openMeeting() {
+  const entryName = (agentById(team.entryAgent) || {}).name || "VD-assistenten";
+  if (state.demo) {
+    const box = openOverlay("🤝 Håll ett möte");
+    box.appendChild(el("p", "ovl-lead", `Möten körs mot riktiga modellen — koppla in en nyckel för att prova. Så funkar det: du väljer fråga och deltagare, varje agent ger sitt perspektiv utifrån sin roll, och ${entryName} sammanställer till ett beslut med tydligt format.`));
+    const c = el("button", "btn-primary ovl-save", "Koppla in din nyckel →"); c.type = "button";
+    c.onclick = () => { closeOverlay(); connectKey(); };
+    box.appendChild(c);
+    return;
+  }
+  if (state.streaming) return;
+  const box = openOverlay("🤝 Håll ett möte");
+  box.appendChild(el("p", "ovl-lead", `Flera agenter ger sitt perspektiv utifrån sin roll — sen sammanställer ${entryName} till ett tydligt beslut.`));
+
+  let chosen = MEETING_TYPES[0];
+  const typeWrap = el("div", "meet-types");
+  MEETING_TYPES.forEach((t, i) => {
+    const b = el("button", "meet-type" + (i === 0 ? " sel" : "")); b.type = "button";
+    b.appendChild(el("div", "meet-type-label", `${t.icon} ${t.label}`));
+    b.appendChild(el("div", "meet-type-desc", t.desc));
+    b.onclick = () => { chosen = t; typeWrap.querySelectorAll(".meet-type").forEach((n) => n.classList.remove("sel")); b.classList.add("sel"); };
+    typeWrap.appendChild(b);
+  });
+  box.appendChild(typeWrap);
+
+  box.appendChild(el("div", "ovl-label", "Vad gäller mötet?"));
+  const focus = el("textarea", "ovl-ta"); focus.rows = 2;
+  focus.placeholder = "T.ex: Ska vi satsa på nyhetsbrevet eller Instagram i höst?";
+  box.appendChild(focus);
+
+  box.appendChild(el("div", "ovl-label", "Deltagare (minst två)"));
+  const parts = el("div", "meet-parts");
+  const checks = [];
+  team.agents.filter((a) => a.id !== team.entryAgent).forEach((a) => {
+    const lab = el("label", "meet-part");
+    const c = el("input"); c.type = "checkbox"; c.checked = true; c.value = a.id;
+    checks.push(c);
+    lab.appendChild(c);
+    lab.appendChild(el("span", null, `${a.icon || "•"} ${a.name}`));
+    parts.appendChild(lab);
+  });
+  box.appendChild(parts);
+
+  const errEl = el("div", "setup-err"); errEl.style.display = "none"; box.appendChild(errEl);
+  const run = el("button", "btn-primary ovl-save", "Starta mötet"); run.type = "button";
+  run.onclick = () => {
+    const ids = checks.filter((c) => c.checked).map((c) => c.value);
+    const q = focus.value.trim();
+    if (!q) { errEl.textContent = "Skriv vad mötet gäller."; errEl.style.display = "block"; return; }
+    if (ids.length < 2) { errEl.textContent = "Välj minst två deltagare — med en enda räcker det att fråga agenten direkt."; errEl.style.display = "block"; return; }
+    closeOverlay();
+    runMeeting(chosen, q, ids);
+  };
+  box.appendChild(run);
+  box.appendChild(el("p", "ovl-note", "Ett möte gör ett anrop per deltagare plus ett för sammanställningen."));
+}
+
+async function runMeeting(type, focus, ids) {
+  if (state.streaming) return;
+  if (state.folder) { await refreshFolder(state.folder.needsPermission ? { ask: true } : undefined); updateFolderBanner(); }
+  selectAgent(team.entryAgent);
+  const entry = agentById(team.entryAgent);
+  const agentId = team.entryAgent;
+  const userText = `🤝 Möte — ${type.label}: ${focus}`;
+  if (!state.history[agentId]) state.history[agentId] = [];
+  state.history[agentId].push({ role: "user", content: userText });
+  saveHistory();
+
+  const log = $("#chat-log");
+  if (state.history[agentId].length === 1) log.innerHTML = "";
+  log.appendChild(bubble("user", userText));
+  const row = bubble("assistant", "");
+  const bub = row.querySelector(".bubble");
+  bub.classList.add("typing");
+  log.appendChild(row);
+  log.scrollTop = log.scrollHeight;
+
+  const send = $("#composer-send");
+  state.streaming = true;
+  state.chatAbort = new AbortController();
+  const signal = state.chatAbort.signal;
+  if (send) { send.textContent = "■"; send.setAttribute("aria-label", "Stoppa mötet"); send.classList.add("stop"); }
+
+  let acc = "";
+  try {
+    // 1) Oberoende perspektiv, ett anrop per deltagare.
+    const perspectives = [];
+    for (let i = 0; i < ids.length; i++) {
+      const a = agentById(ids[i]);
+      if (!a) continue;
+      if (bub.isConnected) bub.textContent = `🤝 Hämtar perspektiv från ${a.name}… (${i + 1}/${ids.length})`;
+      const p = await window.ATBClaude.collect({
+        apiKey: state.apiKey, model: state.model,
+        system: systemFor(a),
+        messages: [{ role: "user", content: `MÖTE — ${type.label}.\nFråga/fokus: ${focus}\n\nGe DITT perspektiv utifrån din roll. Max 120 ord. Var konkret och våga ha en åsikt — vad är viktigast och varför, och vad kan vänta? Ingen artighetsprosa.` }],
+        maxTokens: 600, signal,
+      });
+      perspectives.push(`### ${a.name}${a.tagline ? ` (${a.tagline})` : ""}\n${p}`);
+    }
+    // 2) Sammanställning av ingångsagenten, strömmad.
+    if (bub.isConnected) bub.textContent = `🧭 ${entry.name} sammanställer…`;
+    let started = false;
+    await window.ATBClaude.stream({
+      apiKey: state.apiKey, model: state.model,
+      system: systemFor(entry),
+      messages: [{ role: "user", content: `Du leder ett möte av typen "${type.label}".\nFråga/fokus: ${focus}\n\nDeltagarnas oberoende perspektiv:\n\n${perspectives.join("\n\n")}\n\nSAMMANSTÄLL TILL EN MÖTESANTECKNING. Börja med raden "## 🤝 Mötesanteckning — ${type.label}". Format därefter:\n${type.output}\n\nOm perspektiven krockar: lyft krocken öppet och ta ställning. Om frågan egentligen inte behövde ett möte, säg det ärligt.` }],
+      maxTokens: 2000, signal,
+      onDelta: (d) => {
+        if (!started && bub.isConnected) { bub.textContent = ""; bub.classList.remove("typing"); started = true; }
+        acc += d;
+        if (bub.isConnected) { bub.textContent = acc; log.scrollTop = log.scrollHeight; }
+      },
+    });
+    state.history[agentId].push({ role: "assistant", content: acc });
+    saveHistory();
+    const finalText = acc;
+    if (bub.isConnected) { renderMarkdown(bub, finalText); addActions(row, () => finalText); }
+    else if (state.activeAgentId === agentId) renderLog();
+  } catch (err) {
+    if (err && err.name === "AbortError" && acc) {
+      // Stoppad mitt i sammanställningen — behåll det som kom; det är betald output.
+      state.history[agentId].push({ role: "assistant", content: acc });
+      saveHistory();
+      if (bub.isConnected) { renderMarkdown(bub, acc); addActions(row, () => acc); }
+    } else {
+      state.history[agentId].pop(); // ta bort mötesraden — inget svar kom
+      saveHistory();
+      if (bub.isConnected) {
+        bub.classList.remove("typing");
+        if (err && err.name === "AbortError") bub.textContent = "⏹ Mötet avbröts.";
+        else { bub.classList.add("error"); bub.textContent = "⚠️ " + ((err && err.message) || "Mötet misslyckades."); }
+      }
+    }
+  } finally {
+    state.streaming = false;
+    state.chatAbort = null;
+    if (send) { send.textContent = "↑"; send.setAttribute("aria-label", "Skicka"); send.classList.remove("stop"); }
+  }
+}
+
 // ---------- chat ----------
 async function sendMessage() {
   if (state.streaming) return;
@@ -609,7 +1205,16 @@ async function sendMessage() {
   const text = ta.value.trim();
   if (!text) return;
   ta.value = ""; ta.style.height = "auto";
+  await submitMessage(text);
+}
 
+// Kärnan i att skicka — separat från composern så arbetsytan (veckostart,
+// rutiner) kan skicka programmatiskt till den aktiva agenten.
+async function submitMessage(text) {
+  if (state.streaming) return;
+  // Färska underlag från mappen inför varje anrop (vi är i en användargest,
+  // så ett ev. tillståndsprompt är tillåtet här).
+  if (state.folder) { await refreshFolder(state.folder.needsPermission ? { ask: true } : undefined); updateFolderBanner(); }
   const agentId = state.activeAgentId;
   const agent = agentById(agentId);
   if (!state.history[agentId]) state.history[agentId] = [];
@@ -643,12 +1248,13 @@ async function sendMessage() {
   };
   try {
     if (state.demo) await streamDemo(agent, state.history[agentId], onDelta);
-    else await streamClaude(agent.system, state.history[agentId], onDelta);
+    else await streamClaude(systemFor(agent), state.history[agentId], onDelta);
     state.history[agentId].push({ role: "assistant", content: acc });
     saveHistory();
     // Rendera det färdiga svaret som markdown (strömningen skrev råtext),
     // och rita om från historiken om bubblan detachats av ett agentbyte.
-    if (assistantBubble.isConnected) renderMarkdown(assistantBubble, acc);
+    const finalText = acc;
+    if (assistantBubble.isConnected) { renderMarkdown(assistantBubble, finalText); addActions(assistantRow, () => finalText); }
     else if (state.activeAgentId === agentId) renderLog();
   } catch (err) {
     if (err && err.name === "AbortError" && acc) {

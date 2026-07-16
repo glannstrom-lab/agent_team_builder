@@ -120,7 +120,20 @@ Demolägen (`?demo=1`) låter både portal och builder visas helt utan nyckel.
   agentkort ("det här kan jag hjälpa dig med" + klickbara startförslag,
   `starters` i teamkonfigen), markdown-renderade svar, persistent
   chatthistorik per team (localStorage, "Rensa samtal"/"Töm allt"),
-  stoppknapp för strömning. Multi-tenant via `?team=<slug>` →
+  stoppknapp för strömning. **Arbetsytan** (det som skiljer portalen från en
+  vanlig AI-chatt): *Veckostart* (ett klick → ingångsagenten föreslår veckans
+  fokus), *Veckans rutiner* (`routines` i teamkonfigen — stående uppgifter med
+  dagmarkering, öppnar rätt agent förifylld), *Håll ett möte* (oberoende
+  perspektiv från valda agenter → ingångsagenten sammanställer till
+  mötesanteckning; tre mötestyper speglar `templates/shared/meetings/`),
+  *Minne & underlag* (delat företagsminne + inklistrade dokument med på/av
+  per underlag, injiceras i alla agenters systemprompt — projekt-metaforen à
+  la ChatGPT Projects), *Första projektet* (`firstProject` i konfigen,
+  konsult-läget) samt kopiera/ladda ner-knappar per svar. **Mapp på datorn**
+  (M1.5, Chrome/Edge): kunden kopplar en lokal mapp via File System Access —
+  `.md`/`.txt` blir underlag, `minne.md` är företagsminnet, svar sparas till
+  `från-teamet/`; handtag i IndexedDB, localStorage förblir fallback. Mapp i
+  OneDrive/Dropbox ger kunden synk/delning via egen infra. Multi-tenant via `?team=<slug>` →
   `portal/teams/<slug>.js`; utan parameter visas en kundväljare;
   `?team=__draft` öppnar ett Builder-utkast, `?team=__vertical` en
   branschdemo (egen localStorage-nyckel — kan inte skriva över utkast).

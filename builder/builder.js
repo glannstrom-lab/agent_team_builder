@@ -407,6 +407,7 @@ async function structureTeam(intake, r) {
   "scaling": string,
   "firstProject": ${intake.mode === "ai-consultant" ? '{ "name": string, "problem": string, "week1": string, "owner": string }' : "null"},
   "rejected": [{ "name": string, "why": string }],
+  "routines": [{ "label": string, "agentId": string, "day": number|null, "prompt": string }],
   "agents": [{
     "id": string, "name": string, "icon": string, "role": string, "tagline": string,
     "always": boolean, "job": string, "capabilities": [string], "triggers": [string],
@@ -420,6 +421,8 @@ HÄMTA ALLT INNEHÅLL FRÅN FÖRSLAGET OCH RESEARCHEN NEDAN. Fabricera inget, l�
 ${PORTAL_RULES}
 
 VD-assistenten ska ha id "vd-assistent" och vara först i listan, sedan VD (id "vd"), sedan specialister i prioritetsordning. always=true för VD och VD-assistent. VD ⚡, VD-assistent 🧭, domän-emoji för specialister. Avvisade moment kommer från researchen/förslaget (minst ett).
+
+RUTINER: 3–5 stående rutiner hämtade ur kundens faktiska veckomoment (inte påhittade). label = kort namn; agentId = agenten som äger momentet; day = veckodag 1–7 (1=måndag) om momentet är dagbundet, annars null; prompt = uppgiften i du-form med [fyll i]-luckor för det agenten behöver av användaren, konkret nog att skicka direkt.
 
 Returnera ENBART giltig JSON enligt schemat (ingen text runt, inga markdown-staket):
 ${schema}`;
@@ -654,7 +657,10 @@ function agentCard(a) {
 function stripTeam(team) {
   // job/capabilities/starters följer med till portalen — de driver agentkortet
   // ("det här kan jag hjälpa dig med" + klickbara exempeluppgifter).
+  // routines + firstProject driver arbetsytan (rutinlistan och 🎯-panelen).
   return { company: team.company, tagline: team.tagline, language: "sv", defaultModel: state.model, entryAgent: team.entryAgent,
+    routines: Array.isArray(team.routines) ? team.routines : [],
+    firstProject: team.firstProject || null,
     agents: team.agents.map((a) => ({ id: a.id, name: a.name, icon: a.icon, avatarN: a.avatarN, role: a.role, tagline: a.tagline, always: !!a.always,
       job: a.job, capabilities: a.capabilities, starters: a.starters, system: a.system })) };
 }

@@ -25,9 +25,27 @@ window.TEAM = {
   language: "sv",            // följ output-språket
   defaultModel: "claude-opus-4-8",
   entryAgent: "<VD-assistentens id>",   // alltid den primära arbetspartnern
+  routines: [ /* se nedan — driver "Veckans rutiner" i portalens arbetsyta */ ],
+  firstProject: null,        // ai-consultant-läget: { name, problem, week1, owner } → 🎯-panelen
   agents: [ /* se nedan, VD-assistent först, sedan VD, sedan specialister */ ]
 };
 ```
+
+### Rutiner (`routines`)
+
+3–5 stående rutiner hämtade ur kundens **faktiska veckomoment** i researchen
+(inte påhittade). De visas i portalens arbetsyta och öppnar rätt agent med
+uppgiften förifylld:
+
+```js
+{ label: "Nyhetsbrevet",           // kort namn, visas i sidebaren
+  agentId: "innehallsskribent",    // agenten som äger momentet
+  day: 4,                          // 1=måndag … 7=söndag, null = närhelst
+  prompt: "Dags för veckans nyhetsbrev. Tema: [fyll i]. Skriv ett utkast i min ton." }
+```
+
+`prompt` skrivs i du-form med `[fyll i]`-luckor för det agenten behöver av
+användaren — konkret nog att skicka direkt.
 
 ### Varje agent-objekt
 

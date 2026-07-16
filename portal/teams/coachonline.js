@@ -9,6 +9,15 @@ window.TEAM = {
   // Default-modell. Kunden kan byta till billigare i gränssnittet.
   defaultModel: "claude-opus-4-8",
   entryAgent: "vd-assistent",
+  // Veckans rutiner — stående uppgifter med klickväg rakt in i rätt agent.
+  // day: 1=måndag … 7=söndag, null = närhelst. Prompten förifylls i composern
+  // med [fyll i]-luckor för det agenten behöver av användaren.
+  routines: [
+    { label: "Veckoplan med VD", agentId: "vd", day: 1, prompt: "Ny vecka! Hjälp mig prioritera. Bokade sessioner och deadlines den här veckan: [fyll i]. Vad fokuserar vi på, och i vilken ordning?" },
+    { label: "Nyhetsbrevet", agentId: "innehallsskribent", day: 4, prompt: "Dags för veckans nyhetsbrev. Tema: [fyll i, eller föreslå utifrån vad som engagerat på sistone]. Skriv ett komplett utkast i min ton." },
+    { label: "Gå igenom nya leads", agentId: "lead-agent", day: null, prompt: "Här är veckans inkommande intresse: [klistra in mail/DM]. Klassificera per lead och skriv utkast på första svar till de varma." },
+    { label: "Veckoavslut", agentId: "vd-assistent", day: 5, prompt: "Veckoavslut! Det här blev gjort: [fyll i kort]. Sammanfatta läget, lyft mönster och föreslå nästa veckas fokus." },
+  ],
   agents: [
     {
       id: "vd-assistent",
