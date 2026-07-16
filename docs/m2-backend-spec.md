@@ -217,7 +217,50 @@ Stripe **testläge** utan att en krona rör sig.
 
 ---
 
-## 11. Öppna frågor (svara när de blir aktuella)
+## 11. Kontext: M1.5 "Mapp på datorn" flyttar M2b:s mål (2026-07-16)
+
+Portalen har numera en **arbetsyta** (veckostart, rutiner, möten, minne &
+underlag, export) och **mappkoppling** via File System Access (Chrome/Edge):
+kundens material bor i en vanlig mapp (`minne.md` + `.md`/`.txt`-underlag,
+svar skrivs till `från-teamet/`). Det tar bort localStorage-taken utan backend,
+och en mapp i OneDrive/Dropbox ger kunden synk + delning själv.
+
+**Konsekvens för M2b:** kvarvarande värde = *mobil, slippa nyckel, riktig
+fleranvändare med behörigheter, RAG i stor skala* — inte grundlagring.
+
+## 12. M2b — nedbrytning (managed, materiallagring, RAG-trappa)
+
+> Ordningen förutsätter M2a-2…4 (Stripe) — ingen managed utan prenumeration.
+
+- **M2b-1 — Proxy + mätning** (§4:s `/api/chat`, `/api/usage`): streama mot
+  modell-API:t med Mikaels nyckel; tokens → `usage`; hårt kostnadstak per
+  kund/period; Cloudflare rate limiting. **Överväg OpenRouter som backend:**
+  ett konto, inbyggda spend-limits, alla modeller, och billiga defaulter
+  (deepseek-v4-flash) som gör prenumerationsmarginalen hållbar. Frontenden
+  finns redan förberedd: `atb-claude.js` väljer redan endpoint per läge.
+- **M2b-2 — Identitet + fleranvändare:** magisk länk via e-post (engångskod;
+  MailChannels är gratis från Workers, annars Resend), sessions-token i D1,
+  `customers`-tabell. Sen inbjudningar: fler e-postadresser per tenant →
+  fempersonersbyrån delar team, minne och historik på riktigt.
+- **M2b-3 — Materiallagring i molnet:** `materials`-tabell i D1
+  (`team, id, title, text, active, updated_at`) + företagsminne + historik.
+  Portalens "Minne & underlag"-UI behålls oförändrat — bara lagringsbackend
+  byts (`/api/materials` i stället för localStorage/mapp). Filer (PDF/Word):
+  R2 + textextraktion → `materials`; kan vänta till v2.
+- **M2b-4 — RAG-trappan** (när materialet överstiger kontextbudgeten):
+  1. *Destillat:* generera ~500-teckens sammanfattning per underlag vid
+     uppladdning; sammanfattningarna alltid i kontexten, fulltext på begäran.
+     Billigt, inget nytt system.
+  2. *Riktig RAG:* Cloudflare Vectorize + Workers AI-embeddings — chunka,
+     embedda, hämta top-k per fråga. GDPR-utredning krävs: D1 ligger i EU
+     (EEUR), men Workers AI/Vectorize kör globalt — jurisdiktionsval eller
+     EU-baserad embedding kan behövas.
+
+Kostnadssida: D1/R2/Vectorize har generösa gratisnivåer; Workers-betalplan
+~5 USD/mån. Marginalen på managed äts av modellkostnaden — därav
+OpenRouter-poängen i M2b-1.
+
+## 13. Öppna frågor (svara när de blir aktuella)
 
 - Ska moln-team kunna **redigeras** efter köp, eller är de frysta tills nästa körning?
 - Vad händer om kunden vill ha **flera team** (capability-URL per team räcker, men

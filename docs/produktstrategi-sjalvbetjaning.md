@@ -57,7 +57,16 @@ Notera: detta bryter medvetet projektets princip "noll infrastruktur" för
 är bara köp/leverans/proxy-lagret som får en tunn backend.
 
 - **Fas 0 (idag):** statiska filer på Cloudflare Pages, BYO-nyckel, portal-demo
-  utan nyckel. Inget köp, ingen provisionering.
+  utan nyckel. Inget köp, ingen provisionering. **Uppgraderad 2026-07-16 med
+  arbetsytan** (veckostart, rutiner, möten, minne & underlag, export) — det som
+  gör portalen till mer än en chatt.
+- **Fas 0.5 — "Mapp på datorn" (M1.5, ✅ byggd 2026-07-16):** File System
+  Access i portalen (Chrome/Edge): kundens material bor som `.md`/`.txt` i en
+  vanlig mapp — `minne.md` är företagsminnet, svar sparas till `från-teamet/`.
+  Tar bort localStorage-taken (5 MB, dataförlust) utan en rad backend, och en
+  mapp i OneDrive/Dropbox ger kunden synk + delning via egen infrastruktur.
+  Konsekvens: M2b:s kvarvarande pitch blir *mobil + slippa nyckel + riktig
+  fleranvändare*, inte lagring.
 - **Fas 1 — Tunn backend för självbetjäning (BYO):**
   - Cloudflare Worker (samma plattform som Pages redan kör på).
   - Stripe Checkout för engångsköp.
@@ -65,9 +74,13 @@ Notera: detta bryter medvetet projektets princip "noll infrastruktur" för
   - Flöde: kund betalar → får sin egen portal (`?team=<slug>`) → kopplar in sin
     egen nyckel i portalen. Noll handpåläggning från Mikael.
 - **Fas 2 — Managed-nivå (proxy + metering):**
-  - Worker proxar `api.anthropic.com` med Mikaels nyckel.
+  - Worker proxar modell-API:t med Mikaels nyckel — **överväg OpenRouter som
+    managed-backend** (spend-limits inbyggt, alla modeller, billiga defaulter
+    som deepseek-v4-flash gör en månadsprenumeration lönsam).
   - Förbrukningsmätning + påslag, prenumerationsfakturering via Stripe.
   - Här uppstår modellkostnad och driftansvar — prissätt med marginal.
+  - Nedbrytning M2b-1…4 (proxy → identitet → materiallagring → RAG-trappa):
+    se `m2-backend-spec.md` §12.
 - **Fas 3 — Integrationer (B, långsiktig vallgrav):** koppla agenter till kundens
   riktiga verktyg (bokföring, CRM, inkorg, filer). Störst bytkostnad, dyrast att
   bygga. Vänta tills efterfrågan drar dit.
