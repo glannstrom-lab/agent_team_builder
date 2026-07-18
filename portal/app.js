@@ -250,11 +250,19 @@ function systemFor(agent) {
     }
     sys += `\n\nUNDERLAG (material användaren lagt in — använd som källa när det är relevant):\n${parts.join("\n\n")}`;
   }
+  // Källhänvisning: när ett underlag används ska det synas varifrån uppgiften
+  // kommer — det gör svaren granskningsbara och underlagen begripliga.
+  if (mem || active.length) {
+    sys += `\n\nNär du använder företagsminnet eller ett underlag i ett svar: hänvisa kort till källan vid namn (t.ex. "enligt er prislista"). Påstå aldrig att ett underlag innehåller något det inte gör — saknas uppgiften, säg det och be om den.`;
+  }
   return sys;
 }
 
 // ---------- helpers ----------
 const $ = (sel) => document.querySelector(sel);
+// Pekskärm: Enter ska göra radbrytning (skicka-knappen finns), och autofokus
+// ska inte poppa upp tangentbordet över svaret man just fått.
+const COARSE = typeof matchMedia === "function" && matchMedia("(pointer: coarse)").matches;
 const el = (tag, cls, txt) => {
   const e = document.createElement(tag);
   if (cls) e.className = cls;
@@ -340,6 +348,16 @@ async function loadTeam(slug) {
     } catch (_) {
       throw new Error("Utkastet i webbläsaren är skadat — bygg ett nytt i Builder.");
     }
+    // Nytt utkast för ett annat företag? Rensa förra utkastets historik,
+    // minne och underlag — annars "minns" företag B företag A:s samtal
+    // (förvirrande och pinsamt i kundmöten).
+    const ownerKey = "atb_owner_" + slug;
+    const owner = (window.TEAM && window.TEAM.company) || "";
+    const prevOwner = localStorage.getItem(ownerKey);
+    if (prevOwner !== null && prevOwner !== owner) {
+      [HIST_PREFIX, MEM_PREFIX, DOCS_PREFIX, DOCSON_PREFIX].forEach((p) => localStorage.removeItem(p + slug));
+    }
+    try { localStorage.setItem(ownerKey, owner); } catch (_) { /* full storage */ }
   } else {
     try {
       await loadScript(`teams/${slug}.js`);
@@ -404,13 +422,24 @@ function renderKeySetup() {
   const err = el("div", "setup-err"); err.style.display = "none"; wrap.appendChild(err);
 
   const btn = el("button", "btn-primary", "Anslut");
-  btn.onclick = () => {
+  btn.onclick = async () => {
     const val = input.value.trim();
     if (!val.startsWith("sk-ant-") && !val.startsWith("sk-or-")) {
       err.textContent = "Det ser inte ut som en giltig nyckel (Anthropic börjar med sk-ant-, OpenRouter med sk-or-).";
       err.style.display = "block";
       return;
     }
+    // Testa nyckeln direkt (gratis anrop) — en felklistrad nyckel ska ge
+    // besked nu, medan användaren har nyckelsidan öppen, inte mitt i
+    // första frågan till teamet.
+    btn.disabled = true; btn.textContent = "Testar nyckeln…"; err.style.display = "none";
+    try {
+      await window.ATBClaude.validateKey(val);
+    } catch (e) {
+      err.textContent = e.message; err.style.display = "block";
+      btn.disabled = false; btn.textContent = "Anslut"; return;
+    }
+    btn.disabled = false; btn.textContent = "Anslut";
     state.apiKey = val;
     localStorage.setItem(KEY_STORAGE, val);
     boot();
@@ -495,9 +524,14 @@ function resetKey() {
 function renderPortal() {
   const root = $("#root");
   root.innerHTML = "";
+  ensureOrPrices(); // OpenRouter-priser till kostnadsvisningen (async, tyst)
   const app = el("div", "app");
   app.appendChild(renderSidebar());
   app.appendChild(renderMain());
+  // Backdrop för mobil-drawern — klick utanför stänger.
+  const backdrop = el("div", "drawer-backdrop");
+  backdrop.onclick = () => document.body.classList.remove("drawer-open");
+  app.appendChild(backdrop);
   root.appendChild(app);
   selectAgent(state.activeAgentId);
 }
@@ -514,6 +548,10 @@ function renderSidebar() {
   bt.appendChild(el("div", "brand-sub", "AI-team"));
   brand.appendChild(bt);
   side.appendChild(brand);
+
+  // Kom igång-kortet (döljs när allt är gjort eller kunden klickat bort det).
+  const intro = renderIntroCard();
+  if (intro) side.appendChild(intro);
 
   const list = el("nav", "agent-list");
   list.setAttribute("aria-label", "Agenter");
@@ -614,7 +652,7 @@ function wipeAll() {
   const doomed = [];
   for (let i = 0; i < localStorage.length; i++) {
     const k = localStorage.key(i);
-    if (k && (k === KEY_STORAGE || k === MODEL_STORAGE || k === OR_MODEL_STORAGE || k === "atb_draft_team" || k === "atb_vertical_demo_team" || k.startsWith(HIST_PREFIX) || k.startsWith(MEM_PREFIX) || k.startsWith(DOCS_PREFIX) || k.startsWith(DOCSON_PREFIX))) doomed.push(k);
+    if (k && (k === KEY_STORAGE || k === MODEL_STORAGE || k === OR_MODEL_STORAGE || k === "atb_draft_team" || k === "atb_vertical_demo_team" || k === "atb_last_run" || k.startsWith(HIST_PREFIX) || k.startsWith(MEM_PREFIX) || k.startsWith(DOCS_PREFIX) || k.startsWith(DOCSON_PREFIX) || k.startsWith("atb_owner_") || k.startsWith("atb_cost_") || k.startsWith("atb_intro_"))) doomed.push(k);
   }
   doomed.forEach((k) => localStorage.removeItem(k));
   try { indexedDB.deleteDatabase("atb-fs"); } catch (_) { /* inga mapphandtag */ }
@@ -625,9 +663,13 @@ function wipeAll() {
 function renderMain() {
   const main = el("main", "main");
 
-  // mobil-rad (visas < 720px när sidebaren är gömd)
+  // mobil-rad (visas < 720px när sidebaren är gömd). ☰ öppnar sidebaren som
+  // drawer — hela arbetsytan (rutiner, möten, minne) ska finnas på mobil,
+  // annars är portalen exakt den AI-chatt den inte ska vara.
   const mbar = el("div", "mobile-bar");
-  const mhome = el("a", "mb-home", "☰"); mhome.href = withDemo("./"); mhome.title = "Byt team";
+  const mhome = el("button", "mb-home", "☰"); mhome.type = "button"; mhome.title = "Meny — agenter, rutiner, möten, minne";
+  mhome.setAttribute("aria-label", "Öppna menyn");
+  mhome.onclick = () => document.body.classList.toggle("drawer-open");
   mbar.appendChild(mhome);
   const msel = el("select", "mb-agent"); msel.id = "mb-agent";
   msel.setAttribute("aria-label", "Välj agent");
@@ -664,7 +706,7 @@ function renderMain() {
   const ta = el("textarea", "composer-input"); ta.id = "composer-input"; ta.rows = 1;
   ta.placeholder = "Skriv ett meddelande…"; ta.setAttribute("aria-label", "Meddelande");
   ta.addEventListener("input", () => { ta.style.height = "auto"; ta.style.height = Math.min(ta.scrollHeight, 200) + "px"; });
-  ta.addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); composer.requestSubmit(); } });
+  ta.addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey && !COARSE) { e.preventDefault(); composer.requestSubmit(); } });
   const send = el("button", "composer-send", "↑"); send.type = "submit"; send.id = "composer-send";
   send.setAttribute("aria-label", "Skicka");
   composer.appendChild(ta); composer.appendChild(send);
@@ -709,8 +751,9 @@ function selectAgent(id) {
   };
   header.appendChild(clear);
 
+  document.body.classList.remove("drawer-open"); // stäng mobil-drawern vid val
   renderLog();
-  setTimeout(() => $("#composer-input")?.focus(), 30);
+  if (!COARSE) setTimeout(() => $("#composer-input")?.focus(), 30);
 }
 
 function renderLog() {
@@ -763,22 +806,165 @@ function renderLog() {
     log.appendChild(empty);
     return;
   }
-  msgs.forEach((m) => log.appendChild(bubble(m.role, m.content)));
+  msgs.forEach((m) => log.appendChild(bubble(m.role, m.content, m)));
   log.scrollTop = log.scrollHeight;
 }
 
-function bubble(role, text) {
+function bubble(role, text, msg) {
   const row = el("div", `msg msg-${role}`);
   const b = el("div", "bubble");
   if (role === "assistant") {
     b.setAttribute("aria-label", "Svar");
     renderMarkdown(b, text); // agenterna svarar med rubriker/listor/fetstil
     if (text) addActions(row, () => text); // färdiga svar får kopiera/ladda ner
+    // Mötesanteckningar bär deltagarnas oberoende perspektiv — produktens
+    // bevis för att mötet inte är en modell som lajvar roller. Visa dem.
+    if (msg && Array.isArray(msg.perspectives) && msg.perspectives.length) row.appendChild(perspToggle(msg.perspectives));
   } else {
     b.textContent = text;
   }
   row.appendChild(b);
   return row;
+}
+
+// Utfällbara deltagarperspektiv under en mötesanteckning.
+function perspToggle(perspectives) {
+  const wrap = el("div", "persp-wrap");
+  const btn = el("button", "act-btn persp-btn", `Visa deltagarnas perspektiv (${perspectives.length}) ▾`);
+  btn.type = "button";
+  const box = el("div", "persp-box"); box.style.display = "none";
+  perspectives.forEach((p) => {
+    const item = el("div", "persp-item");
+    item.appendChild(el("div", "persp-name", p.name + (p.tagline ? ` — ${p.tagline}` : "")));
+    const t = el("div", "persp-text"); renderMarkdown(t, p.text);
+    item.appendChild(t);
+    box.appendChild(item);
+  });
+  btn.onclick = () => {
+    const open = box.style.display !== "none";
+    box.style.display = open ? "none" : "";
+    btn.textContent = `${open ? "Visa" : "Dölj"} deltagarnas perspektiv (${perspectives.length}) ${open ? "▾" : "▴"}`;
+  };
+  wrap.appendChild(btn); wrap.appendChild(box);
+  return wrap;
+}
+
+// ---------- kostnadsvisning ----------
+// BYO-kundens största oro är "vad kostar det här?" — svaret är öre, och det
+// ska synas. Tokenpriser är uppskattningar (USD/miljon tokens) och visas som
+// "≈"; veckosumman ackumuleras per ISO-vecka i localStorage.
+const SEK_PER_USD = 10.5;
+const CLAUDE_PRICES = { // model-id-prefix → [input, output] USD per miljon tokens
+  "claude-opus": [15, 75],
+  "claude-sonnet": [3, 15],
+  "claude-haiku": [1, 5],
+};
+let orPriceMap = null; // fylls från OpenRouters katalog (USD per token)
+function ensureOrPrices() {
+  if (orPriceMap || !isOpenRouter() || state.demo) return;
+  orPriceMap = {};
+  window.ATBClaude.openrouterModels().then((models) => {
+    models.forEach((m) => { if (m.pricing) orPriceMap[m.id] = m.pricing; });
+  }).catch(() => { orPriceMap = null; });
+}
+function costSek(used) {
+  if (!used || (!used.input && !used.output)) return null;
+  if (isOpenRouter()) {
+    const p = orPriceMap && orPriceMap[state.model];
+    if (!p || (!p.prompt && !p.completion)) return null;
+    return (used.input * (p.prompt || 0) + used.output * (p.completion || 0)) * SEK_PER_USD;
+  }
+  const key = Object.keys(CLAUDE_PRICES).find((k) => state.model.startsWith(k));
+  if (!key) return null;
+  const [inP, outP] = CLAUDE_PRICES[key];
+  return ((used.input * inP + used.output * outP) / 1e6) * SEK_PER_USD;
+}
+function isoWeek() {
+  const d = new Date();
+  const day = (d.getDay() + 6) % 7;
+  d.setDate(d.getDate() - day + 3); // torsdagen i samma vecka
+  const jan4 = new Date(d.getFullYear(), 0, 4);
+  const week = 1 + Math.round(((d - jan4) / 86400000 - 3 + ((jan4.getDay() + 6) % 7)) / 7);
+  return `${d.getFullYear()}-W${week}`;
+}
+// Senaste anropskedjans kostnad (nollställs i submitMessage/runMeeting-start
+// implicit genom att läsas och visas direkt efter svaret).
+let lastCallCost = 0;
+function costAdd(used) {
+  const c = costSek(used);
+  if (c == null) return;
+  lastCallCost += c;
+  try {
+    const key = "atb_cost_" + (state.slug || "team");
+    const cur = JSON.parse(localStorage.getItem(key) || "null");
+    const wk = isoWeek();
+    const rec = cur && cur.week === wk ? cur : { week: wk, sek: 0 };
+    rec.sek += c;
+    localStorage.setItem(key, JSON.stringify(rec));
+  } catch (_) { /* full storage — visningen är nice-to-have */ }
+}
+function costWeekSek() {
+  try {
+    const rec = JSON.parse(localStorage.getItem("atb_cost_" + (state.slug || "team")) || "null");
+    return rec && rec.week === isoWeek() ? rec.sek : 0;
+  } catch (_) { return 0; }
+}
+const fmtSek = (v) => (v >= 1 ? v.toFixed(2) : v.toFixed(2)).replace(".", ",") + " kr";
+// Liten kostnadsrad under ett svar: "≈ 0,04 kr · den här veckan: 3,20 kr".
+function appendCost(row) {
+  if (state.demo || lastCallCost <= 0) { lastCallCost = 0; return; }
+  const c = el("div", "msg-cost", `≈ ${fmtSek(lastCallCost)} · den här veckan: ${fmtSek(costWeekSek())}`);
+  c.title = "Uppskattad API-kostnad via din egen nyckel (tokenpris × förbrukning). Ingen avgift till Mitt AI-team.";
+  row.appendChild(c);
+  lastCallCost = 0;
+}
+
+// ---------- kom igång-checklista ----------
+// Fem steg där de två första ger omedelbart värde och de sista bygger
+// investerat värde (minne, möte, mapp). Läge härleds ur riktig användning +
+// små flaggor i localStorage; kortet försvinner när allt är gjort.
+function introState() {
+  try { return JSON.parse(localStorage.getItem("atb_intro_" + state.slug) || "{}") || {}; }
+  catch (_) { return {}; }
+}
+function introMark(key) {
+  try {
+    const s = introState(); if (s[key]) return;
+    s[key] = true;
+    localStorage.setItem("atb_intro_" + state.slug, JSON.stringify(s));
+  } catch (_) { /* full storage */ }
+}
+function renderIntroCard() {
+  if (state.demo) return null;
+  const s = introState();
+  if (s.dismissed) return null;
+  const entry = agentById(team.entryAgent) || team.agents[0];
+  const anyChat = Object.values(state.history).some((m) => m && m.length);
+  const hasMaterial = !!(loadMemory().trim() || loadDocs().length);
+  const steps = [
+    { done: anyChat, label: `Ställ en riktig fråga till ${entry.name}`, act: () => selectAgent(team.entryAgent) },
+    { done: !!s.week, label: "Kör din första Veckostart", act: startWeek },
+    { done: hasMaterial, label: "Lägg in ett underlag eller minne", act: openMemory },
+    { done: !!s.meeting, label: "Håll ditt första möte", act: openMeeting },
+  ];
+  if (FOLDER_SUPPORTED) steps.push({ done: folderActive(), label: "Koppla en mapp på datorn", act: openMemory });
+  const doneCount = steps.filter((x) => x.done).length;
+  if (doneCount === steps.length) return null;
+  const card = el("div", "intro-card");
+  const head = el("div", "intro-head");
+  head.appendChild(el("span", "side-label", `Kom igång · ${doneCount} av ${steps.length}`));
+  const x = el("button", "intro-x", "✕"); x.type = "button"; x.title = "Dölj checklistan";
+  x.onclick = () => { introMark("dismissed"); card.remove(); };
+  head.appendChild(x);
+  card.appendChild(head);
+  steps.forEach((st) => {
+    const b = el("button", "intro-step" + (st.done ? " done" : "")); b.type = "button";
+    b.appendChild(el("span", "intro-tick", st.done ? "✓" : "○"));
+    b.appendChild(el("span", "intro-label", st.label));
+    if (st.done) b.disabled = true; else b.onclick = st.act;
+    card.appendChild(b);
+  });
+  return card;
 }
 
 // Kopiera/ladda ner per svar — svaret ska vidare in i mail och dokument,
@@ -894,12 +1080,14 @@ function startWeek() {
   const text = `Veckostart! Det är ${days[now.getDay()]} den ${now.toLocaleDateString("sv-SE")}.` +
     (rlist ? `\nVåra stående rutiner:\n${rlist}` : "") +
     `\n\nGe mig en kort veckostart: 1) de tre viktigaste sakerna att fokusera på, med motivering, 2) vilken agent i teamet som hjälper mig med varje, 3) vad du behöver veta från mig. Kort och konkret.`;
+  introMark("week");
   submitMessage(text);
 }
 
 // ---------- overlay ----------
 function openOverlay(title) {
   closeOverlay();
+  document.body.classList.remove("drawer-open"); // overlay ska inte hamna bakom mobil-drawern
   const ovl = el("div", "ovl"); ovl.id = "ovl";
   ovl.onclick = (e) => { if (e.target === ovl) closeOverlay(); };
   const box = el("div", "ovl-box");
@@ -971,13 +1159,37 @@ function openMemory() {
     const toggles = loadDocToggles();
     const fdocs = folderActive() ? state.folder.docs : [];
     const local = loadLocalDocs();
-    if (!fdocs.length && !local.length) { listBox.appendChild(el("div", "doc-empty", "Inga underlag än — klistra in ert första nedan.")); return; }
+    if (!fdocs.length && !local.length) { listBox.appendChild(el("div", "doc-empty", "Inga underlag än. Klistra in er prislista, en typisk offert eller er \"om oss\"-text nedan — teamet blir märkbart vassare med riktigt material.")); return; }
+    // Budgetsimulering i samma ordning som systemFor() skickar underlagen —
+    // så kunden ser vilka aktiva underlag som faktiskt ryms (grön), kapas
+    // (halv) eller inte kommer med alls, i stället för att de klipps tyst.
+    let budgetUsed = 0;
+    const fitOf = (text, on) => {
+      if (!on) return null;
+      const left = DOC_BUDGET - budgetUsed;
+      if (left <= 0) return "out";
+      budgetUsed += Math.min((text || "").length, left);
+      return (text || "").length > left ? "cut" : "in";
+    };
+    const fitDot = (fit) => {
+      if (!fit) return null;
+      const map = {
+        in: ["fit-in", "●", "Ryms — hela underlaget skickas med"],
+        cut: ["fit-cut", "◐", "Ryms delvis — slutet kapas. Slå av något annat om hela behövs."],
+        out: ["fit-out", "○", "Ryms inte — budgeten är full. Slå av något annat underlag."],
+      };
+      const [cls, ch, tip] = map[fit];
+      const s = el("span", "doc-fit " + cls, ch); s.title = tip;
+      return s;
+    };
     fdocs.forEach((d) => {
       const rowEl = el("div", "doc-row");
-      const chk = el("input"); chk.type = "checkbox"; chk.checked = toggles[d.title] !== false;
+      const on = toggles[d.title] !== false;
+      const chk = el("input"); chk.type = "checkbox"; chk.checked = on;
       chk.title = "Aktivt = skickas med till agenterna";
-      chk.onchange = () => { const t = loadDocToggles(); t[d.title] = chk.checked; saveDocToggles(t); };
+      chk.onchange = () => { const t = loadDocToggles(); t[d.title] = chk.checked; saveDocToggles(t); renderDocs(); };
       rowEl.appendChild(chk);
+      const dot = fitDot(fitOf(d.text, on)); if (dot) rowEl.appendChild(dot);
       rowEl.appendChild(el("span", "doc-title", `📄 ${d.title} · ${Math.max(1, Math.round((d.text || "").length / 1000))}k tecken`));
       listBox.appendChild(rowEl); // mappfiler tas bort i Utforskaren, inte här
     });
@@ -985,8 +1197,9 @@ function openMemory() {
       const rowEl = el("div", "doc-row");
       const chk = el("input"); chk.type = "checkbox"; chk.checked = !!d.on;
       chk.title = "Aktivt = skickas med till agenterna";
-      chk.onchange = () => { const ds = loadLocalDocs(); if (ds[i]) { ds[i].on = chk.checked; saveDocs(ds); } };
+      chk.onchange = () => { const ds = loadLocalDocs(); if (ds[i]) { ds[i].on = chk.checked; saveDocs(ds); } renderDocs(); };
       rowEl.appendChild(chk);
+      const dot = fitDot(fitOf(d.text, !!d.on)); if (dot) rowEl.appendChild(dot);
       rowEl.appendChild(el("span", "doc-title", `${d.title} · ${Math.max(1, Math.round((d.text || "").length / 1000))}k tecken`));
       const del = el("button", "doc-del", "✕"); del.type = "button"; del.title = "Ta bort underlaget";
       del.onclick = () => { const ds = loadLocalDocs(); ds.splice(i, 1); saveDocs(ds); renderDocs(); };
@@ -1141,47 +1354,65 @@ async function runMeeting(type, focus, ids) {
   const signal = state.chatAbort.signal;
   if (send) { send.textContent = "■"; send.setAttribute("aria-label", "Stoppa mötet"); send.classList.add("stop"); }
 
+  lastCallCost = 0; // mötets kostnad = summan av alla anrop i kedjan
   let acc = "";
+  const perspectives = []; // { name, tagline, text } — sparas med anteckningen
   try {
-    // 1) Oberoende perspektiv, ett anrop per deltagare.
-    const perspectives = [];
+    // 1) Oberoende perspektiv, ett anrop per deltagare. Ett delfel kastar
+    // ALDRIG redan hämtade (betalda) perspektiv — mötet fortsätter med de
+    // som kom in, och sammanställningen nämner vilka som saknades.
+    const failed = [];
     for (let i = 0; i < ids.length; i++) {
       const a = agentById(ids[i]);
       if (!a) continue;
       if (bub.isConnected) bub.textContent = `🤝 Hämtar perspektiv från ${a.name}… (${i + 1}/${ids.length})`;
-      const p = await window.ATBClaude.collect({
-        apiKey: state.apiKey, model: state.model,
-        system: systemFor(a),
-        messages: [{ role: "user", content: `MÖTE — ${type.label}.\nFråga/fokus: ${focus}\n\nGe DITT perspektiv utifrån din roll. Max 120 ord. Var konkret och våga ha en åsikt — vad är viktigast och varför, och vad kan vänta? Ingen artighetsprosa.` }],
-        maxTokens: 600, signal,
-      });
-      perspectives.push(`### ${a.name}${a.tagline ? ` (${a.tagline})` : ""}\n${p}`);
+      try {
+        const p = await window.ATBClaude.collect({
+          apiKey: state.apiKey, model: state.model,
+          system: systemFor(a),
+          messages: [{ role: "user", content: `MÖTE — ${type.label}.\nFråga/fokus: ${focus}\n\nGe DITT perspektiv utifrån din roll. Max 120 ord. Var konkret och våga ha en åsikt — vad är viktigast och varför, och vad kan vänta? Ingen artighetsprosa.` }],
+          maxTokens: 600, signal, onUsage: costAdd,
+        });
+        perspectives.push({ name: a.name, tagline: a.tagline || "", text: p });
+      } catch (e) {
+        if (e && e.name === "AbortError") throw e;
+        failed.push(a.name);
+      }
     }
+    if (!perspectives.length) throw new Error("Inget perspektiv kunde hämtas — mötet gick inte att genomföra. Försök igen om en stund.");
+    const perspBlockText = perspectives.map((p) => `### ${p.name}${p.tagline ? ` (${p.tagline})` : ""}\n${p.text}`).join("\n\n");
+    const failedNote = failed.length ? `\n\nOBS: Perspektiv från ${failed.join(", ")} kunde inte hämtas (tekniskt fel). Nämn kort i anteckningen att mötet hölls utan dem.` : "";
     // 2) Sammanställning av ingångsagenten, strömmad.
     if (bub.isConnected) bub.textContent = `🧭 ${entry.name} sammanställer…`;
     let started = false;
     await window.ATBClaude.stream({
       apiKey: state.apiKey, model: state.model,
       system: systemFor(entry),
-      messages: [{ role: "user", content: `Du leder ett möte av typen "${type.label}".\nFråga/fokus: ${focus}\n\nDeltagarnas oberoende perspektiv:\n\n${perspectives.join("\n\n")}\n\nSAMMANSTÄLL TILL EN MÖTESANTECKNING. Börja med raden "## 🤝 Mötesanteckning — ${type.label}". Format därefter:\n${type.output}\n\nOm perspektiven krockar: lyft krocken öppet och ta ställning. Om frågan egentligen inte behövde ett möte, säg det ärligt.` }],
-      maxTokens: 2000, signal,
+      messages: [{ role: "user", content: `Du leder ett möte av typen "${type.label}".\nFråga/fokus: ${focus}\n\nDeltagarnas oberoende perspektiv:\n\n${perspBlockText}${failedNote}\n\nSAMMANSTÄLL TILL EN MÖTESANTECKNING. Börja med raden "## 🤝 Mötesanteckning — ${type.label}". Format därefter:\n${type.output}\n\nOm perspektiven krockar: lyft krocken öppet och ta ställning. Om frågan egentligen inte behövde ett möte, säg det ärligt.` }],
+      maxTokens: 2000, signal, onUsage: costAdd,
       onDelta: (d) => {
         if (!started && bub.isConnected) { bub.textContent = ""; bub.classList.remove("typing"); started = true; }
         acc += d;
-        if (bub.isConnected) { bub.textContent = acc; log.scrollTop = log.scrollHeight; }
+        if (bub.isConnected) {
+          const atBottom = log.scrollHeight - log.scrollTop - log.clientHeight < 90;
+          bub.textContent = acc;
+          if (atBottom) log.scrollTop = log.scrollHeight;
+        }
       },
     });
-    state.history[agentId].push({ role: "assistant", content: acc });
+    const msg = { role: "assistant", content: acc, perspectives };
+    state.history[agentId].push(msg);
     saveHistory();
+    introMark("meeting");
     const finalText = acc;
-    if (bub.isConnected) { renderMarkdown(bub, finalText); addActions(row, () => finalText); }
+    if (bub.isConnected) { renderMarkdown(bub, finalText); addActions(row, () => finalText); row.appendChild(perspToggle(perspectives)); appendCost(row); }
     else if (state.activeAgentId === agentId) renderLog();
   } catch (err) {
     if (err && err.name === "AbortError" && acc) {
       // Stoppad mitt i sammanställningen — behåll det som kom; det är betald output.
-      state.history[agentId].push({ role: "assistant", content: acc });
+      state.history[agentId].push({ role: "assistant", content: acc, perspectives });
       saveHistory();
-      if (bub.isConnected) { renderMarkdown(bub, acc); addActions(row, () => acc); }
+      if (bub.isConnected) { renderMarkdown(bub, acc); addActions(row, () => acc); if (perspectives.length) row.appendChild(perspToggle(perspectives)); }
     } else {
       state.history[agentId].pop(); // ta bort mötesraden — inget svar kom
       saveHistory();
@@ -1236,6 +1467,7 @@ async function submitMessage(text) {
   state.streaming = true;
   state.chatAbort = new AbortController();
   if (send) { send.textContent = "■"; send.setAttribute("aria-label", "Stoppa svaret"); send.classList.add("stop"); }
+  lastCallCost = 0; // nollställ inför den här svarskedjan
   let acc = "";
   const onDelta = (delta) => {
     acc += delta;
@@ -1243,8 +1475,11 @@ async function submitMessage(text) {
     // (renderLog tömmer loggen) — skriv bara om den fortfarande sitter i DOM:en.
     if (!assistantBubble.isConnected) return;
     assistantBubble.classList.remove("typing");
+    // Auto-scrolla bara om användaren redan är nära botten — den som scrollat
+    // upp för att läsa början av svaret ska inte ryckas ner igen.
+    const atBottom = log.scrollHeight - log.scrollTop - log.clientHeight < 90;
     assistantBubble.textContent = acc;
-    log.scrollTop = log.scrollHeight;
+    if (atBottom) log.scrollTop = log.scrollHeight;
   };
   try {
     if (state.demo) await streamDemo(agent, state.history[agentId], onDelta);
@@ -1254,7 +1489,7 @@ async function submitMessage(text) {
     // Rendera det färdiga svaret som markdown (strömningen skrev råtext),
     // och rita om från historiken om bubblan detachats av ett agentbyte.
     const finalText = acc;
-    if (assistantBubble.isConnected) { renderMarkdown(assistantBubble, finalText); addActions(assistantRow, () => finalText); }
+    if (assistantBubble.isConnected) { renderMarkdown(assistantBubble, finalText); addActions(assistantRow, () => finalText); appendCost(assistantRow); }
     else if (state.activeAgentId === agentId) renderLog();
   } catch (err) {
     if (err && err.name === "AbortError" && acc) {
@@ -1278,7 +1513,7 @@ async function submitMessage(text) {
     state.streaming = false;
     state.chatAbort = null;
     if (send) { send.textContent = "↑"; send.setAttribute("aria-label", "Skicka"); send.classList.remove("stop"); }
-    $("#composer-input")?.focus();
+    if (!COARSE) $("#composer-input")?.focus();
   }
 }
 
@@ -1326,6 +1561,7 @@ async function streamClaude(system, messages, onDelta) {
     messages: messages.map((m) => ({ role: m.role, content: m.content })),
     maxTokens: 4096,
     onDelta,
+    onUsage: costAdd,
     signal: state.chatAbort ? state.chatAbort.signal : undefined,
   });
 }

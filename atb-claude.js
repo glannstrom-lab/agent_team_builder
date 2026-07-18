@@ -34,9 +34,35 @@
       msg = "Serverfel hos modell-API:t — försök igen om en stund.";
     }
     if (res.status === 401) msg = "Ogiltig API-nyckel. Kontrollera nyckeln under „Byt API-nyckel”.";
-    if (res.status === 429) msg = "För många anrop just nu — vänta en stund och försök igen.";
+    if (res.status === 429) msg = "För många anrop just nu — det gick inte ens efter automatiska omförsök. Vänta en minut och försök igen.";
     return msg;
   }
+
+  // Paus som respekterar Avbryt-knappen — annars skulle en backoff-väntan
+  // ignorera att användaren tryckt avbryt.
+  function wait(ms, signal) {
+    return new Promise((resolve, reject) => {
+      if (signal && signal.aborted) { reject(new DOMException("Avbruten", "AbortError")); return; }
+      const t = setTimeout(resolve, ms);
+      if (signal) signal.addEventListener("abort", () => { clearTimeout(t); reject(new DOMException("Avbruten", "AbortError")); }, { once: true });
+    });
+  }
+
+  // fetch där ett nätverksfel (tappat wifi, DNS, adblockare) blir ett
+  // begripligt svenskt meddelande i stället för rått "Failed to fetch" —
+  // det vanligaste felet en icke-teknisk användare möter. Abort passerar orört.
+  async function netFetch(url, init) {
+    try {
+      return await fetch(url, init);
+    } catch (e) {
+      if (e && e.name === "AbortError") throw e;
+      throw new Error("Ingen kontakt med AI-tjänsten. Kontrollera internetuppkopplingen och försök igen om en stund.");
+    }
+  }
+
+  // Backoff-schema för automatiska omförsök på 429/överlastning/serverfel.
+  // Kör bara om strömningen inte hunnit börja — då har inga tokens förbrukats.
+  const RETRY_DELAYS = [2000, 5000];
 
   // Strömmar ett svar och anropar onDelta(text) för varje textbit.
   // Väljer Anthropic- eller OpenRouter-format utifrån nyckelns prefix.
@@ -45,11 +71,12 @@
     const { apiKey, model, system, messages, maxTokens, signal, onDelta } = opts;
     const openrouter = providerFor(apiKey) === "openrouter";
 
-    let res;
+    let url, init;
     if (openrouter) {
       // OpenAI-kompatibelt format: system som första message, Bearer-auth.
       const orMessages = system ? [{ role: "system", content: system }].concat(messages) : messages;
-      res = await fetch(OPENROUTER_URL, {
+      url = OPENROUTER_URL;
+      init = {
         method: "POST",
         signal: signal || undefined,
         headers: {
@@ -58,10 +85,11 @@
           "HTTP-Referer": location.origin, // visas i OpenRouters statistik
           "X-Title": "Mitt AI-team",
         },
-        body: JSON.stringify({ model, max_tokens: maxTokens || 4096, stream: true, messages: orMessages }),
-      });
+        body: JSON.stringify({ model, max_tokens: maxTokens || 4096, stream: true, stream_options: { include_usage: true }, messages: orMessages }),
+      };
     } else {
-      res = await fetch(API_URL, {
+      url = API_URL;
+      init = {
         method: "POST",
         signal: signal || undefined,
         headers: {
@@ -71,14 +99,28 @@
           "anthropic-dangerous-direct-browser-access": "true",
         },
         body: JSON.stringify({ model, max_tokens: maxTokens || 4096, stream: true, system, messages }),
-      });
+      };
     }
 
-    if (!res.ok) throw new Error(await errorMessage(res));
+    // Automatiska omförsök på 429/529/5xx innan strömningen börjat — de
+    // flesta rate limit-blippar blir därmed osynliga för användaren.
+    let res;
+    for (let attempt = 0; ; attempt++) {
+      res = await netFetch(url, init);
+      if (res.ok) break;
+      const retryable = res.status === 429 || res.status >= 500;
+      if (retryable && attempt < RETRY_DELAYS.length) {
+        await wait(RETRY_DELAYS[attempt], signal);
+        continue;
+      }
+      throw new Error(await errorMessage(res));
+    }
 
     const reader = res.body.getReader();
     const decoder = new TextDecoder();
     let buffer = "";
+    // Tokenförbrukning ur strömmen — driver kostnadsvisningen i portalen.
+    const used = { input: 0, output: 0 };
     const handleLine = (line) => {
       const trimmed = line.trim();
       if (!trimmed.startsWith("data:")) return;
@@ -91,9 +133,12 @@
           const delta = evt.choices && evt.choices[0] && evt.choices[0].delta;
           if (delta && typeof delta.content === "string" && delta.content) onDelta(delta.content);
           else if (evt.error) throw new Error(evt.error.message || "Strömningsfel");
+          if (evt.usage) { used.input = evt.usage.prompt_tokens || 0; used.output = evt.usage.completion_tokens || 0; }
         } else {
           if (evt.type === "content_block_delta" && evt.delta && evt.delta.type === "text_delta") onDelta(evt.delta.text);
           else if (evt.type === "error") throw new Error((evt.error && evt.error.message) || "Strömningsfel");
+          else if (evt.type === "message_start" && evt.message && evt.message.usage) used.input = evt.message.usage.input_tokens || 0;
+          else if (evt.type === "message_delta" && evt.usage) used.output = evt.usage.output_tokens || used.output;
         }
       } catch (e) {
         if (e instanceof SyntaxError) return; // ofullständig rad — vänta på nästa chunk
@@ -109,6 +154,33 @@
       for (const line of lines) handleLine(line);
     }
     if (buffer) handleLine(buffer); // ev. sista rad utan avslutande radbrytning
+    if (opts.onUsage && (used.input || used.output)) {
+      try { opts.onUsage(used); } catch (_) { /* kostnadsvisning får aldrig fälla ett lyckat svar */ }
+    }
+  }
+
+  // Testar en nyckel med ett gratis anrop (modellista/nyckelinfo — inga
+  // tokens förbrukas). Kastar ett begripligt svenskt fel om nyckeln är
+  // ogiltig eller tjänsten onåbar; returnerar true annars.
+  async function validateKey(apiKey) {
+    const openrouter = providerFor(apiKey) === "openrouter";
+    const url = openrouter ? "https://openrouter.ai/api/v1/auth/key" : "https://api.anthropic.com/v1/models";
+    const headers = openrouter
+      ? { authorization: "Bearer " + apiKey }
+      : { "x-api-key": apiKey, "anthropic-version": ANTHROPIC_VERSION, "anthropic-dangerous-direct-browser-access": "true" };
+    let res;
+    try {
+      res = await fetchWithTimeout(url, { headers }, 8000);
+    } catch (_) {
+      // Kunde inte testa (nät/CORS/timeout) ≠ ogiltig nyckel — blockera aldrig
+      // en giltig nyckel på grund av ett misslyckat test. Riktiga fel visas
+      // ändå på svenska vid första anropet.
+      return true;
+    }
+    if (res.status === 401 || res.status === 403) {
+      throw new Error(`Nyckeln avvisades av ${openrouter ? "OpenRouter" : "Anthropic"}. Kontrollera att hela nyckeln är kopierad och att den inte är återkallad.`);
+    }
+    return true; // andra statusar (429, 5xx …) säger inget om nyckeln
   }
 
   // Hämtar OpenRouters modellkatalog (publik endpoint, ingen nyckel krävs)
@@ -119,7 +191,7 @@
   async function openrouterModels() {
     if (orModelsPromise) return orModelsPromise;
     orModelsPromise = (async () => {
-      const CACHE_KEY = "atb_or_models_v1";
+      const CACHE_KEY = "atb_or_models_v2"; // v2: inkluderar pricing (kostnadsvisningen)
       try {
         const cached = JSON.parse(sessionStorage.getItem(CACHE_KEY) || "null");
         if (cached && Date.now() - cached.at < 24 * 3600 * 1000) return cached.models;
@@ -134,9 +206,14 @@
       const flagships = all
         .filter((m) => /^(openai|google|mistralai|meta-llama|deepseek|x-ai)\//.test(m.id))
         .sort(byId);
-      const models = [{ id: "openrouter/auto", name: "Auto — OpenRouter väljer modell" }]
-        .concat(anthropic.map((m) => ({ id: m.id, name: m.name || m.id })))
-        .concat(flagships.map((m) => ({ id: m.id, name: m.name || m.id })));
+      // pricing (USD per token) följer med så portalen kan visa ~kr per svar.
+      const slim = (m) => ({
+        id: m.id, name: m.name || m.id,
+        pricing: m.pricing ? { prompt: +m.pricing.prompt || 0, completion: +m.pricing.completion || 0 } : null,
+      });
+      const models = [{ id: "openrouter/auto", name: "Auto — OpenRouter väljer modell", pricing: null }]
+        .concat(anthropic.map(slim))
+        .concat(flagships.map(slim));
       try { sessionStorage.setItem(CACHE_KEY, JSON.stringify({ at: Date.now(), models })); } catch (_) { /* full storage — strunta i cache */ }
       return models;
     })();
@@ -163,5 +240,5 @@
     }
   }
 
-  window.ATBClaude = { stream, collect, fetchWithTimeout, providerFor, openrouterModels, API_URL, ANTHROPIC_VERSION };
+  window.ATBClaude = { stream, collect, fetchWithTimeout, providerFor, openrouterModels, validateKey, API_URL, ANTHROPIC_VERSION };
 })();

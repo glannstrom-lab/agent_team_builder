@@ -109,7 +109,11 @@ Demolägen (`?demo=1`) låter både portal och builder visas helt utan nyckel.
   formaterar förslaget till render-JSON + portal-systemprompter (ändrar inget
   innehåll). Intaget är ett strukturerat frågeformulär (mappar till
   intake-kontraktet i `research.md`, inkl. Avgränsningar) följt av max två
-  AI-följdfrågor — hybrid av formulär och intervju. Eftersom den hämtar
+  AI-följdfrågor — hybrid av formulär och intervju. Dessutom en **valbar
+  förvalsenkät** (`builder/survey-data.js`): bransch, kunder, arbetsmoment
+  (tvåklick = tidstjuv ⏱), verktyg, mål m.m. som rena kryssval — den som har
+  svårt att formulera sin verksamhet kan bygga helt utan fritext. Körningar
+  persisteras per steg (`atb_last_run`) och kan återupptas efter fel/F5. Eftersom den hämtar
   filerna live följer den alltid de underhållna prompterna — Builder och
   `/build-team` kan inte glida isär.
 - **Galleri** (`site/`) — `index.html` + scroll-stories (fem i dagsläget;
@@ -306,6 +310,9 @@ vidare till fas 3 förrän fas 2 gör det.
 - [ ] Solo-team och enterprise-team är uppenbart olika i *struktur*
 - [ ] Varje agent kan motiveras med ett konkret fynd
 - [ ] Varje föreslagen skill kan motiveras med ett konkret fynd
+- [ ] Varje agent har en Leverans med "Klart när"-punkter som går att
+      svara ja/nej på
+- [ ] Två agenter i samma team delar inte perspektiv
 - [ ] VD-agenten i ett solo-projekt har ett operativt jobb
 - [ ] VD-assistenten vägrar kalla till möte när en enskild agent räcker
 - [ ] Varje möte landar i sitt definierade output-format

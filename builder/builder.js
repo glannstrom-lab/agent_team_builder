@@ -8,6 +8,10 @@
 const KEY_STORAGE = "atb_api_key";
 const MODEL_STORAGE = "atb_model";
 const DRAFT_STORAGE = "atb_draft_team";
+// Pågående/senaste körning ({intake, r, team?, at}) — persisteras efter varje
+// avklarat pipeline-steg så att ett fel eller en F5 aldrig kastar bort betalda
+// steg. Utan detta är en refresh mitt i produktens dyraste operation = börja om.
+const RUN_STORAGE = "atb_last_run";
 const DEFAULT_MODEL = "claude-opus-4-8";
 // OpenRouter-nycklar (sk-or-) har eget modellval, sparat separat — samma
 // mönster som portalen så valen inte krockar vid nyckelbyte.
@@ -31,12 +35,14 @@ function syncModelForProvider() {
 // Regler för hur en agent blir en portal-systemprompt (speglar templates/shared/portal-team.md).
 const PORTAL_RULES = `Bygg varje agents "system" som en komplett systemprompt SKRIVEN FÖR AGENTEN (inte för användaren):
 1. Kontext om företaget + agentens jobb (jobb-meningen ur proposalen).
-2. DINA KAPACITETER — punktlista ur proposalen.
-3. (Bara VD-assistenten) DITT TEAM — lista övriga agenter och vad de gör, så den kan hänvisa rätt.
-4. ARBETSSÄTT — be om data agenten saknar istället för att gissa.
-5. TON — kort; nybörjarkund → pedagogisk/klarspråk, van/byggare → rakare. Avsluta med "Svara på <språk>."
-6. VIKTIGT — vad agenten INTE gör (proposalens "Rör inte"); slutbeslut/juridik ligger hos människan.
-7. STARTERS — per agent: 2–4 korta exempeluppgifter i du-form ("Skriv ett utkast till …", "Gå igenom …"), hämtade ur agentens kapaciteter och kundens veckomoment. De blir klickbara startförslag i portalen — konkreta nog att skicka direkt.`;
+2. DITT PERSPEKTIV — proposalens Perspektiv: blicken agenten resonerar från, vad den alltid letar efter/varnar för. Det som gör att två agenter med närliggande uppgifter svarar olika.
+3. DINA KAPACITETER — punktlista ur proposalen.
+4. (Bara VD-assistenten) DITT TEAM — lista övriga agenter och vad de gör, så den kan hänvisa rätt. VD-assistenten granskar dessutom mötesbidrag mot varje agents "Klart när"-punkter innan sammanställning.
+5. LEVERANS — proposalens Leverans + "Klart när"-punkter: hur ett färdigt svar ser ut, så agenten levererar mot det istället för att resonera fritt.
+6. ARBETSSÄTT — be om data agenten saknar istället för att gissa.
+7. TON — kort; nybörjarkund → pedagogisk/klarspråk, van/byggare → rakare. Avsluta med "Svara på <språk>."
+8. VIKTIGT — vad agenten INTE gör (proposalens "Rör inte"); slutbeslut/juridik ligger hos människan.
+9. STARTERS — per agent: 2–4 korta exempeluppgifter i du-form ("Skriv ett utkast till …", "Gå igenom …"), hämtade ur agentens kapaciteter och kundens veckomoment. De blir klickbara startförslag i portalen — konkreta nog att skicka direkt.`;
 
 const PROMPTS = {}; // cache av hämtade prompt-filer
 const state = {
@@ -127,9 +133,19 @@ function renderKeySetup() {
   field.appendChild(input); wrap.appendChild(field);
   const err = el("div", "setup-err"); err.style.display = "none"; wrap.appendChild(err);
   const btn = el("button", "btn-primary", "Anslut");
-  btn.onclick = () => {
+  btn.onclick = async () => {
     const v = input.value.trim();
     if (!v.startsWith("sk-ant-") && !v.startsWith("sk-or-")) { err.textContent = "Det ser inte ut som en giltig nyckel (Anthropic: sk-ant-…, OpenRouter: sk-or-…)."; err.style.display = "block"; return; }
+    // Testa nyckeln direkt (gratis anrop) — felet ska komma nu, medan
+    // användaren har nyckelsidan öppen, inte mitt i första körningen.
+    btn.disabled = true; btn.textContent = "Testar nyckeln…"; err.style.display = "none";
+    try {
+      await window.ATBClaude.validateKey(v);
+    } catch (e) {
+      err.textContent = e.message; err.style.display = "block";
+      btn.disabled = false; btn.textContent = "Anslut"; return;
+    }
+    btn.disabled = false; btn.textContent = "Anslut";
     state.apiKey = v; localStorage.setItem(KEY_STORAGE, v); syncModelForProvider(); renderForm();
   };
   input.addEventListener("keydown", (e) => { if (e.key === "Enter") btn.click(); });
@@ -161,6 +177,26 @@ function renderForm() {
   head.appendChild(h);
   head.appendChild(el("p", "form-lead", "Fyll i, tryck Bygg, och se hela den riktiga analysen växa fram live. Det tar ett par minuter — och resultatet blir korrekt."));
   wrap.appendChild(head);
+
+  // Sparad körning? Erbjud återupptagning — de klara stegen är redan betalda.
+  const saved = state.demo ? null : loadRun();
+  if (saved && saved.intake && (saved.team || (saved.r && Object.keys(saved.r).length))) {
+    const box = el("div", "resume-box");
+    box.appendChild(el("div", "clarify-title", saved.team
+      ? `Din senaste körning (${saved.intake.company}) är klar och finns kvar.`
+      : `Du har en oavslutad körning för ${saved.intake.company} — de avklarade stegen finns kvar.`));
+    const row = el("div", "clarify-actions");
+    const go = el("button", "btn-primary", saved.team ? "Visa teamet igen" : "↻ Återuppta körningen"); go.type = "button";
+    go.onclick = () => {
+      state.lastRun = { intake: saved.intake, intakeBlock: buildIntakeBlock(saved.intake), r: saved.r || {} };
+      if (saved.team) { state.team = saved.team; renderResult(saved.team); }
+      else runBuild(saved.intake, saved.r || {});
+    };
+    const drop = el("button", "link-btn", "Släng den"); drop.type = "button";
+    drop.onclick = () => { clearRun(); box.remove(); };
+    row.append(go, drop); box.appendChild(row);
+    wrap.appendChild(box);
+  }
 
   const form = el("form", "intake");
   form.appendChild(fieldRow("Företag / projekt", inputEl("company", "company", "T.ex. CoachOnline")));
@@ -195,11 +231,15 @@ function renderForm() {
   };
   form.appendChild(fieldRow("Modell", modelSel));
 
+  // Valbar förvalsenkät — för den som tycker det är svårt att formulera sin
+  // verksamhet i fritext. Allt går att kryssa, inget kräver text.
+  form.appendChild(renderSurvey());
+
   // Strukturerat frågeformulär istället för en tom textruta — kunden vet vad
   // den ska svara på, och research-steget får jämnt råmaterial i exakt det
   // format intake-kontraktet (prompts/shared/research.md) kräver.
   const taEl = (name, rows, ph) => { const t = el("textarea", "intake-text"); t.name = name; t.id = "f-" + name; t.rows = rows; t.placeholder = ph || ""; return t; };
-  form.appendChild(fieldRow("Vad gör företaget?", taEl("what", 2, "1–2 meningar. T.ex: Livs- och karriärcoach som säljer 1-on-1-sessioner online.")));
+  form.appendChild(fieldRow("Vad gör företaget?", taEl("what", 2, "1–2 meningar. T.ex: Livs- och karriärcoach som säljer 1-on-1-sessioner online. Har du fyllt i enkäten räcker det att komplettera med det den inte fångar.")));
   form.appendChild(fieldRow("Veckans återkommande moment — vad tar mest tid?", taEl("moments", 4, "De 2–4 moment som återkommer varje vecka, gärna med ungefärlig tid.\nT.ex: 1) Nyhetsbrev och blogg, 5–7 h. 2) Svara på inkommande leads (mail, DM).")));
   form.appendChild(fieldRow("Var klämmer skon?", taEl("pains", 2, "Det som är frustrerande eller blir liggande. Valfritt men gör analysen skarpare.")));
   form.appendChild(fieldRow("Program & system ni använder dagligen", inputEl("tools", "tools", "T.ex. Fortnox, Outlook, Shopify, Google Kalender")));
@@ -211,14 +251,38 @@ function renderForm() {
 
   const btn = el("button", "btn-primary build-btn", "⚡ Bygg teamet"); btn.type = "submit";
   form.appendChild(btn);
+
+  // Grov kostnadsbild vid knappen — ovisshet om pris är den största bromsen
+  // för BYO-användare. Uppskattning, inte löfte; uppdateras med modellvalet.
+  const costHint = el("div", "cost-hint");
+  const paintCost = () => {
+    if (state.demo) { costHint.textContent = "I demoläget anropas inget API — att bygga på riktigt kostar bara dina egna API-ören."; return; }
+    costHint.textContent = isOpenRouter()
+      ? "En körning gör 4–6 anrop via din OpenRouter-nyckel. Kostnaden beror på modellen — billiga modeller bygger ett team för under en krona."
+      : (state.model.includes("opus")
+        ? "En körning gör 4–6 anrop via din egen nyckel — med Opus typiskt ca 10–20 kr."
+        : "En körning gör 4–6 anrop via din egen nyckel — med Sonnet typiskt ca 2–4 kr.");
+  };
+  paintCost();
+  modelSel.addEventListener("change", paintCost);
+  form.appendChild(costHint);
   form.onsubmit = (e) => {
     e.preventDefault();
     const intake = collect(form);
-    if (!intake.company || !intake.what || intake.what.trim().length < 10) {
-      err.textContent = "Fyll i företag och vad företaget gör (minst en mening)."; err.style.display = "block"; return;
+    intake.survey = surveyCollect();
+    const sv = intake.survey || {};
+    // Enkäten kan ersätta fritexten: bransch + kundbild räcker som "vad
+    // företaget gör", och ≥3 ikryssade moment räcker som veckomoment.
+    const surveyProfile = sv.industry && ((sv.customers || []).length || (sv.sales || []).length);
+    const surveyMoments = (sv.moments || []).length + (sv.tidstjuvar || []).length;
+    if (!intake.company) {
+      err.textContent = "Fyll i företagets eller projektets namn."; err.style.display = "block"; return;
     }
-    if (!intake.moments || intake.moments.trim().length < 20) {
-      err.textContent = "Veckans moment är det viktigaste fältet — beskriv minst ett par moment."; err.style.display = "block"; return;
+    if ((!intake.what || intake.what.trim().length < 10) && !surveyProfile) {
+      err.textContent = "Beskriv vad företaget gör med en mening — eller öppna enkäten och välj bransch + kunder."; err.style.display = "block"; return;
+    }
+    if ((!intake.moments || intake.moments.trim().length < 20) && surveyMoments < 3) {
+      err.textContent = "Veckans moment är det viktigaste underlaget — beskriv ett par moment i fritext eller kryssa i minst tre i enkäten."; err.style.display = "block"; return;
     }
     err.style.display = "none";
     if (state.demo) runBuild(intake);
@@ -255,37 +319,211 @@ function inputEl(name, id, ph) { const i = el("input", "fin"); i.name = name; i.
 function selectEl(name, id, opts) { const s = el("select", "fin"); s.name = name; s.id = "f-" + id; opts.forEach(([v, l]) => { const o = el("option", null, l); o.value = v; s.appendChild(o); }); return s; }
 function collect(form) { const d = Object.fromEntries(new FormData(form).entries()); if (d.mode !== "ai-consultant") delete d.maturity; return d; }
 
+// ---------- förvalsenkät ----------
+// UI för window.BUILDER_SURVEY (builder/survey-data.js). Helt valbar: chips
+// som togglas med klick, inga textfält. Moments-sektionen har tre lägen:
+// av → ingår i vardagen → stor tidstjuv (⏱) → av.
+let surveyState = null;
+function newSurveyState() {
+  const s = { single: {}, multi: {}, momSel: new Set(), momHot: new Set() };
+  (window.BUILDER_SURVEY?.sections || []).forEach((sec) => {
+    if (sec.type === "multi") s.multi[sec.key] = new Set();
+    if (sec.type === "single") s.single[sec.key] = null;
+  });
+  return s;
+}
+function surveyCount() {
+  if (!surveyState) return 0;
+  let n = surveyState.momSel.size + surveyState.momHot.size;
+  Object.values(surveyState.single).forEach((v) => { if (v) n++; });
+  Object.values(surveyState.multi).forEach((set) => { n += set.size; });
+  return n;
+}
+function surveyCollect() {
+  if (!surveyState) return null;
+  const out = {
+    industry: surveyState.single.industry || null,
+    rhythm: surveyState.single.rhythm || null,
+    customers: [...(surveyState.multi.customers || [])],
+    sales: [...(surveyState.multi.sales || [])],
+    tools: [...(surveyState.multi.tools || [])],
+    channels: [...(surveyState.multi.channels || [])],
+    goals: [...(surveyState.multi.goals || [])],
+    nogo: [...(surveyState.multi.nogo || [])],
+    moments: [...surveyState.momSel],
+    tidstjuvar: [...surveyState.momHot],
+  };
+  return surveyCount() ? out : null;
+}
+
+function renderSurvey() {
+  surveyState = newSurveyState();
+  const data = window.BUILDER_SURVEY;
+  const wrap = el("div", "survey-wrap");
+  if (!data || !Array.isArray(data.sections)) return wrap; // datafilen saknas — formuläret funkar ändå
+
+  const toggle = el("button", "survey-toggle"); toggle.type = "button";
+  const tLabel = el("span", "survey-toggle-label", "📋 Svårt att sätta ord på verksamheten? Öppna enkäten och kryssa i stället");
+  const tBadge = el("span", "survey-badge"); tBadge.style.display = "none";
+  const tChev = el("span", "survey-chev", "▾");
+  toggle.append(tLabel, tBadge, tChev);
+  wrap.appendChild(toggle);
+
+  const body = el("div", "survey-body");
+  body.appendChild(el("p", "survey-lead", "Allt är valfritt och går att kryssa utan att skriva något. Dina val vävs in i analysen tillsammans med det du eventuellt skriver i fälten nedanför."));
+
+  const updateBadge = () => {
+    const n = surveyCount();
+    tBadge.textContent = n ? `${n} val` : "";
+    tBadge.style.display = n ? "" : "none";
+  };
+
+  const chip = (label, getState, cycle) => {
+    const b = el("button", "schip", label); b.type = "button";
+    const paint = () => {
+      const st = getState();
+      b.classList.toggle("sel", st === 1 || st === 2);
+      b.classList.toggle("hot", st === 2);
+    };
+    b.onclick = () => { cycle(); paint(); updateBadge(); };
+    paint();
+    return b;
+  };
+
+  data.sections.forEach((sec) => {
+    const box = el("div", "survey-sec");
+    box.appendChild(el("div", "survey-sec-title", sec.title));
+    if (sec.hint) box.appendChild(el("div", "survey-hint", sec.hint));
+
+    if (sec.type === "moments") {
+      (sec.groups || []).forEach((g) => {
+        box.appendChild(el("div", "survey-group-label", g.label));
+        const row = el("div", "survey-chips");
+        g.items.forEach((item) => {
+          row.appendChild(chip(item,
+            () => surveyState.momHot.has(item) ? 2 : surveyState.momSel.has(item) ? 1 : 0,
+            () => {
+              if (surveyState.momHot.has(item)) surveyState.momHot.delete(item);
+              else if (surveyState.momSel.has(item)) { surveyState.momSel.delete(item); surveyState.momHot.add(item); }
+              else surveyState.momSel.add(item);
+            }));
+        });
+        box.appendChild(row);
+      });
+    } else if (sec.type === "single") {
+      const row = el("div", "survey-chips");
+      sec.options.forEach((opt) => {
+        row.appendChild(chip(opt,
+          () => surveyState.single[sec.key] === opt ? 1 : 0,
+          () => { surveyState.single[sec.key] = surveyState.single[sec.key] === opt ? null : opt; }));
+      });
+      box.appendChild(row);
+      // Radio-beteende: måla om alla chips i sektionen när ett val görs.
+      row.addEventListener("click", () => {
+        [...row.children].forEach((c) => c.classList.toggle("sel", surveyState.single[sec.key] === c.textContent));
+      });
+    } else {
+      const row = el("div", "survey-chips");
+      sec.options.forEach((opt) => {
+        row.appendChild(chip(opt,
+          () => surveyState.multi[sec.key].has(opt) ? 1 : 0,
+          () => { surveyState.multi[sec.key].has(opt) ? surveyState.multi[sec.key].delete(opt) : surveyState.multi[sec.key].add(opt); }));
+      });
+      box.appendChild(row);
+    }
+    body.appendChild(box);
+  });
+
+  wrap.appendChild(body);
+  toggle.onclick = () => {
+    const open = wrap.classList.toggle("open");
+    tChev.textContent = open ? "▴" : "▾";
+  };
+  return wrap;
+}
+
 // ---------- intake block ----------
 // Mappar formuläret till intake-kontraktet i prompts/shared/research.md —
 // samma sektioner (inkl. ## Avgränsningar) som intervju-prompterna levererar.
+// Enkätsvaren (intake.survey) vävs in i respektive sektion: fritext först
+// (användarens egna ord väger tyngst i research), förval som komplement.
 function buildIntakeBlock(intake) {
   const val = (v, alt) => (v && v.trim() ? v.trim() : alt);
+  const sv = intake.survey || {};
+  const list = (a) => (Array.isArray(a) && a.length ? a.join(", ") : "");
+
+  // Fritext + enkätrader kombinerat; alt används bara om båda saknas.
+  const merge = (free, surveyLines, alt) => {
+    const parts = [];
+    if (free && free.trim()) parts.push(free.trim());
+    surveyLines.forEach((l) => { if (l) parts.push(l); });
+    return parts.length ? parts.join("\n") : alt;
+  };
+
+  const what = merge(intake.what, [
+    !intake.what?.trim() && sv.industry
+      ? `(Fri beskrivning saknas — ur enkäten: ${sv.industry}${list(sv.customers) ? ", säljer till " + list(sv.customers).toLowerCase() : ""}${list(sv.sales) ? ", via " + list(sv.sales).toLowerCase() : ""}.)`
+      : null,
+  ], "(saknas)");
+
+  const moments = merge(intake.moments, [
+    list(sv.moments) ? `Ur enkäten — ingår i vardagen: ${list(sv.moments)}.` : null,
+    list(sv.tidstjuvar) ? `Ur enkäten — markerade som STORA TIDSTJUVAR: ${list(sv.tidstjuvar)}. Väg dessa tyngst.` : null,
+  ], "(saknas)");
+
+  const pains = merge(intake.pains, [
+    list(sv.tidstjuvar) ? `Tidstjuvarna ur enkäten (${list(sv.tidstjuvar)}) är sannolikt där det klämmer.` : null,
+  ], "Framgår inte uttryckligen — härled försiktigt ur momenten.");
+
+  const tools = merge(intake.tools, [
+    list(sv.tools) ? `Ur enkäten: ${list(sv.tools)}.` : null,
+  ], "Okänt.");
+
+  const goals = merge(intake.goals, [
+    list(sv.goals) ? `Ur enkäten: ${list(sv.goals)}.` : null,
+  ], "Frigöra tid från de mest återkommande momenten.");
+
+  // "Inget särskilt …" är ett aktivt icke-svar, inte en avgränsning.
+  const nogoChoices = (sv.nogo || []).filter((x) => !/^inget särskilt/i.test(x));
+  const nogo = merge(intake.nogo, [
+    nogoChoices.length ? `Ur enkäten: ${nogoChoices.join(", ")}.` : null,
+  ], "Inga uttryckliga avgränsningar.");
+
+  // Profilrader som saknar egen sektion i kontraktet — extra kontext för research.
+  const profile = [
+    list(sv.customers) ? `kunder:         ${list(sv.customers)}` : null,
+    list(sv.sales) ? `försäljning:    ${list(sv.sales)}` : null,
+    list(sv.channels) ? `kanaler:        ${list(sv.channels)}` : null,
+    sv.rhythm ? `årsrytm:        ${sv.rhythm}` : null,
+  ].filter(Boolean);
+
   return [
     "```",
     `företagsnamn:   ${intake.company}`,
-    `bransch:        (härled ur beskrivningen)`,
+    `bransch:        ${sv.industry || "(härled ur beskrivningen)"}`,
     `storlek:        ${intake.size}`,
     `läge:           ${intake.mode}`,
     intake.maturity ? `ai_mognad:      ${intake.maturity}` : null,
     `källa:          intervju`,
+    ...profile,
     "",
     "## Vad företaget gör",
-    val(intake.what, "(saknas)"),
+    what,
     "",
     "## Återkommande moment",
-    val(intake.moments, "(saknas)"),
+    moments,
     "",
     "## Var det klämmer",
-    val(intake.pains, "Framgår inte uttryckligen — härled försiktigt ur momenten."),
+    pains,
     "",
     "## Befintliga verktyg och vanor",
-    val(intake.tools, "Okänt."),
+    tools,
     "",
     "## Mål och ambition",
-    val(intake.goals, "Frigöra tid från de mest återkommande momenten."),
+    goals,
     "",
     "## Avgränsningar",
-    val(intake.nogo, "Inga uttryckliga avgränsningar."),
+    nogo,
     intake.extra ? "\n## Kompletterande svar (följdfrågor)\n" + intake.extra : null,
     "```",
   ].filter((x) => x !== null).join("\n");
@@ -344,14 +582,28 @@ function renderClarify(form, intake, qs) {
   inputs[0]?.t.focus();
 }
 
+// ---------- körnings-persistens ----------
+// Varje avklarat steg skrivs till localStorage så att fel, F5 eller en stängd
+// flik aldrig kostar redan betalda API-anrop. team följer med när det är klart.
+function saveRun(team) {
+  if (!state.lastRun) return;
+  try {
+    localStorage.setItem(RUN_STORAGE, JSON.stringify({ intake: state.lastRun.intake, r: state.lastRun.r, team: team || null, at: Date.now() }));
+  } catch (_) { /* full storage — körningen fungerar ändå, bara utan skyddsnät */ }
+}
+function loadRun() { try { return JSON.parse(localStorage.getItem(RUN_STORAGE) || "null"); } catch (_) { return null; } }
+function clearRun() { localStorage.removeItem(RUN_STORAGE); }
+
 // ---------- pipeline ----------
-async function runBuild(intake) {
+// prevR: redan avklarade stegresultat (från en avbruten körning) — steg med
+// resultat hoppas över, så en återupptagning bara betalar för det som saknas.
+async function runBuild(intake, prevR) {
   if (state.demo) return runDemoBuild(intake);
   if (state.busy) return;
   state.busy = true;
   state.abort = new AbortController();
   const intakeBlock = buildIntakeBlock(intake);
-  const r = {};
+  const r = prevR || {};
   state.lastRun = { intake, intakeBlock, r };
 
   const stages = [
@@ -366,16 +618,20 @@ async function runBuild(intake) {
 
   renderProgress(intake, stages);
 
+  let current = null;
   try {
     for (const stg of stages) {
+      current = stg;
       setStage(stg.key);
       if (stg.key === "structure") {
-        const teamObj = await structureTeam(intake, r);
+        const teamObj = await structureWithStatus(intake, r);
         markDone(stg.key);
         state.team = teamObj;
+        saveRun(teamObj);
         renderResult(teamObj);
         return;
       }
+      if (stg.store && r[stg.store]) { markDone(stg.key); continue; } // klar sedan tidigare — betala inte igen
       const sys = await fetchPrompt(stg.file);
       const panel = $("#analysis-text"); panel.textContent = "";
       let acc = "";
@@ -388,13 +644,36 @@ async function runBuild(intake) {
         panel.textContent = acc;
       }
       r[stg.store] = acc;
+      saveRun();
       markDone(stg.key);
     }
   } catch (err) {
     if (err.name === "AbortError") { renderForm(); }
-    else renderError(err.message, err.stage === "structure");
+    else {
+      if (!err.stage && current) err.stage = current.key;
+      renderError(err.message, err.stage === "structure", err.stage !== "structure");
+    }
   } finally {
     state.busy = false;
+  }
+}
+
+// Sammanställningssteget är långt (upp till 16k tokens, icke-strömmat) och
+// kom precis vid klimaxet — utan livstecken ser det ut som en hängning.
+// Töm panelen och visa förfluten tid tills svaret landar.
+async function structureWithStatus(intake, r) {
+  const panel = $("#analysis-text");
+  const started = Date.now();
+  const paint = () => {
+    const s = Math.round((Date.now() - started) / 1000);
+    if (panel) panel.textContent = `Formaterar teamet för portalen — alla beslut är redan fattade, inget innehåll ändras.\n\nDet här brukar ta 1–2 minuter. (${s} s)`;
+  };
+  paint();
+  const timer = setInterval(paint, 1000);
+  try {
+    return await structureTeam(intake, r);
+  } finally {
+    clearInterval(timer);
   }
 }
 
@@ -475,8 +754,9 @@ async function retryStructure() {
   renderProgress(state.lastRun.intake, [{ key: "structure", label: "Sammanställer teamet" }]);
   setStage("structure");
   try {
-    const teamObj = await structureTeam(state.lastRun.intake, state.lastRun.r);
+    const teamObj = await structureWithStatus(state.lastRun.intake, state.lastRun.r);
     state.team = teamObj;
+    saveRun(teamObj);
     renderResult(teamObj);
   } catch (err) {
     renderError(err.message, true);
@@ -566,6 +846,9 @@ function markDone(key) { document.querySelectorAll(".prog-step").forEach((n) => 
 // ---------- result view ----------
 function renderResult(team) {
   if (window.ATBAvatars) window.ATBAvatars.assign(team); // ge varje agent ett porträtt
+  // Autospara utkastet direkt — ett färdigt team ska aldrig kunna försvinna
+  // för att användaren råkade ladda om innan den tryckte "Prova teamet live".
+  if (!state.demo) { try { localStorage.setItem(DRAFT_STORAGE, JSON.stringify(stripTeam(team))); } catch (_) { /* full storage */ } }
   const root = $("#root"); root.innerHTML = "";
   const wrap = el("main", "result-wrap");
   wrap.appendChild(hubLink());
@@ -670,7 +953,7 @@ function downloadConfig(team) {
   const a = el("a"); a.href = url; a.download = `${team.slug}.js`; a.click(); URL.revokeObjectURL(url);
 }
 
-function renderError(msg, canRetryStructure) {
+function renderError(msg, canRetryStructure, canResume) {
   const root = $("#root"); root.innerHTML = "";
   const wrap = el("main", "result-wrap");
   wrap.appendChild(hubLink());
@@ -681,6 +964,13 @@ function renderError(msg, canRetryStructure) {
     const retry = el("button", "btn-primary", "↻ Sammanställ igen");
     retry.onclick = () => retryStructure();
     actions.appendChild(retry);
+  }
+  if (canResume && state.lastRun) {
+    // Färdiga steg ligger i state.lastRun.r (och i localStorage) — kör vidare
+    // därifrån i stället för att börja om och betala om researchen.
+    const resume = el("button", "btn-primary", "↻ Fortsätt från steget som misslyckades");
+    resume.onclick = () => runBuild(state.lastRun.intake, state.lastRun.r);
+    actions.appendChild(resume);
   }
   const back = el("button", "btn-ghost", "↺ Till formuläret");
   back.onclick = () => renderForm();

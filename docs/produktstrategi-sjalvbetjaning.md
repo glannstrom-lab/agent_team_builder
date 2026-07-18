@@ -110,6 +110,10 @@ Notera: detta bryter medvetet projektets princip "noll infrastruktur" för
 4. **M4:** Fas 2 managed-nivå (proxy + metering) när efterfrågan finns.
 5. **Senare:** Fas 3 integrationer.
 
+Parallellt med M-sekvensen (särskilt medan M2a-2+ väntar på Stripe): UX-,
+retention- och positioneringsarbetet i `roadmap-anvandarvarde-2026-07-17.md`
+(etapp 0–4, byggd på intern UX-granskning + `omvarldsresearch-2026-07-17.md`).
+
 ## 9. Öppna frågor / risker
 
 - **Modellkostnad i managed:** måste prissättas med marginal och tak, annars

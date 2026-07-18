@@ -104,6 +104,38 @@ select.fin { cursor: pointer; }
 .prog-cancel { margin-top: 22px; }
 .btn-ghost:disabled { opacity: 0.5; cursor: default; transform: none; }
 
+/* ---------- förvalsenkät ---------- */
+.survey-wrap { border: 1px solid var(--border); border-radius: 14px; background: var(--surface); overflow: hidden; }
+.survey-toggle {
+  width: 100%; display: flex; align-items: center; gap: 10px; text-align: left;
+  background: none; border: none; cursor: pointer; font-family: inherit;
+  padding: 15px 18px; color: var(--text); font-size: 14.5px; font-weight: 600;
+}
+.survey-toggle:hover { color: var(--accent-2); }
+.survey-toggle-label { flex: 1; min-width: 0; }
+.survey-badge {
+  background: var(--accent); color: #fff; border-radius: 100px;
+  font-size: 12px; font-weight: 700; padding: 3px 10px; white-space: nowrap;
+}
+.survey-chev { color: var(--text-dim); font-size: 13px; }
+.survey-body { display: none; padding: 4px 18px 20px; border-top: 1px solid var(--border); }
+.survey-wrap.open .survey-body { display: block; }
+.survey-lead { color: var(--text-dim); font-size: 13.5px; margin: 12px 0 4px; }
+.survey-sec { margin-top: 20px; }
+.survey-sec-title { font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-dim); }
+.survey-hint { font-size: 12.5px; color: var(--text-dim); margin-top: 4px; opacity: 0.85; }
+.survey-group-label { font-size: 13px; font-weight: 600; color: var(--text); margin: 12px 0 0; }
+.survey-chips { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 8px; }
+.schip {
+  background: none; border: 1px solid var(--border); border-radius: 100px;
+  padding: 7px 13px; font-size: 13px; color: var(--text-dim); cursor: pointer;
+  font-family: inherit; transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+.schip:hover { border-color: var(--accent); color: var(--text); }
+.schip.sel { background: rgba(99,102,241,0.14); border-color: var(--accent); color: var(--text); font-weight: 600; }
+.schip.hot { background: rgba(99,102,241,0.28); box-shadow: 0 0 0 1px var(--accent); }
+.schip.hot::after { content: " ⏱"; }
+
 /* ---------- följdfrågor (hybrid-intake) ---------- */
 .clarify-box {
   margin-top: 18px; padding: 18px; border-radius: 14px;
@@ -114,3 +146,13 @@ select.fin { cursor: pointer; }
 @keyframes clarifyIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 .clarify-title { font-weight: 700; font-size: 14px; color: var(--accent-2); }
 .clarify-actions { display: flex; align-items: center; gap: 16px; }
+
+/* ---------- återuppta sparad körning ---------- */
+.resume-box {
+  margin-bottom: 22px; padding: 16px 18px; border-radius: 14px;
+  background: var(--surface); border: 1px solid var(--accent);
+  display: flex; flex-direction: column; gap: 12px;
+}
+
+/* ---------- kostnadshint vid Bygg-knappen ---------- */
+.cost-hint { font-size: 12.5px; color: var(--text-dim); margin-top: 2px; max-width: 520px; }
