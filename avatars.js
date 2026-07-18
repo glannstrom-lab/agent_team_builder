@@ -1,3 +1,10 @@
+/* Kanonisk domän: produktions-aliaset på pages.dev skickas vidare till
+   mittaiteam.se med sökväg/query/fragment intakta. Previews
+   (<hash>.agent-team-builder-2xy.pages.dev) och localhost lämnas ifred. */
+if (location.hostname === "agent-team-builder-2xy.pages.dev") {
+  location.replace("https://mittaiteam.se" + location.pathname + location.search + location.hash);
+}
+
 /* ============================================================
    Mitt AI-team — delad avatar-tilldelning
    Ett porträtt per agent över ALLA webbytor (portal, builder,
