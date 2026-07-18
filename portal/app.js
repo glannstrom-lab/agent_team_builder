@@ -46,7 +46,8 @@ const state = {
   slug: null, // aktivt teams slug — nyckel för sparad historik
   folder: null, // kopplad mapp: { handle, name, docs, memory, needsPermission }
   activeAgentId: null,
-  history: {}, // { [agentId]: [{role, content}] }
+  history: {}, // { [agentId]: [{role, content, at?, auto?, perspectives?}] }
+  pendingRoutine: null, // rutin-label som väntar på att dess prompt skickas (avbockning)
   streaming: false,
   chatAbort: null, // AbortController för pågående svar (stoppknappen)
 };
@@ -534,6 +535,8 @@ function renderPortal() {
   app.appendChild(backdrop);
   root.appendChild(app);
   selectAgent(state.activeAgentId);
+  renderPulse();       // lokala puls-kort — portalen har alltid något att säga
+  runAutoRoutines();   // async: auto-rutiner som ska ligga klara idag
 }
 
 function renderSidebar() {
@@ -577,21 +580,36 @@ function renderSidebar() {
     b.appendChild(el("span", "ws-ico", icon)); b.appendChild(el("span", "ws-txt", label));
     b.onclick = fn; ws.appendChild(b); return b;
   };
+  // Streak-badge: veckor i rad med aktivitet — förlustaversion på rätt enhet.
+  const streak = state.demo ? 0 : streakCount();
+  if (streak >= 2) ws.appendChild(el("div", "streak-badge", `🔥 ${streak} veckor i rad med teamet`));
+
   const entryName = (agentById(team.entryAgent) || {}).name || "VD-assistenten";
   wsBtn("⭐", "Veckostart", startWeek, `${entryName} föreslår veckans fokus utifrån teamet och era rutiner`);
   wsBtn("🤝", "Håll ett möte", openMeeting, "Samla flera agenters perspektiv och landa i ett beslut");
   wsBtn("🧠", "Minne & underlag", openMemory, "Delade instruktioner och material som alla agenter ser");
+  wsBtn("📈", "Veckans arbete", openWeekWork, "Vad du och teamet gjort den här veckan — och tid tillbaka");
   if (team.firstProject) wsBtn("🎯", "Första projektet", openFirstProject, "Ert första AI-projekt — planen och första steget");
+
+  // Synlig inlärning: minnet som växande investering, inte gömd inställning.
+  if (!state.demo) {
+    const fc = el("button", "fact-count", factLabel()); fc.id = "fact-count"; fc.type = "button";
+    fc.title = "Teamets delade minne — klicka för att se och fylla på";
+    fc.onclick = openMemory;
+    ws.appendChild(fc);
+  }
 
   const routines = Array.isArray(team.routines) ? team.routines : [];
   if (routines.length) {
     ws.appendChild(el("div", "side-label ws-head", "Veckans rutiner"));
-    const today = ((new Date().getDay() + 6) % 7) + 1; // 1=mån … 7=sön
+    const today = todayDayNo();
     routines.forEach((rt) => {
       const due = rt.day === today;
-      const b = el("button", "routine-item" + (due ? " due" : "")); b.type = "button";
+      const done = !state.demo && routineDone(rt.label);
+      const b = el("button", "routine-item" + (due ? " due" : "") + (done ? " done" : "")); b.type = "button";
+      b.dataset.label = rt.label;
       b.appendChild(el("span", "routine-label", rt.label));
-      b.appendChild(el("span", "routine-day", due ? "idag" : dayName(rt.day)));
+      b.appendChild(el("span", "routine-day", done ? "klar ✓" : due ? "idag" : dayName(rt.day)));
       b.title = rt.prompt || "";
       b.onclick = () => runRoutine(rt);
       ws.appendChild(b);
@@ -652,7 +670,9 @@ function wipeAll() {
   const doomed = [];
   for (let i = 0; i < localStorage.length; i++) {
     const k = localStorage.key(i);
-    if (k && (k === KEY_STORAGE || k === MODEL_STORAGE || k === OR_MODEL_STORAGE || k === "atb_draft_team" || k === "atb_vertical_demo_team" || k === "atb_last_run" || k.startsWith(HIST_PREFIX) || k.startsWith(MEM_PREFIX) || k.startsWith(DOCS_PREFIX) || k.startsWith(DOCSON_PREFIX) || k.startsWith("atb_owner_") || k.startsWith("atb_cost_") || k.startsWith("atb_intro_"))) doomed.push(k);
+    // Alla portalens nycklar delar atb_-prefixet — svep allt, inklusive
+    // framtida tillägg (rutinlogg, streak, puls, kostnad, checklista …).
+    if (k && k.startsWith("atb_")) doomed.push(k);
   }
   doomed.forEach((k) => localStorage.removeItem(k));
   try { indexedDB.deleteDatabase("atb-fs"); } catch (_) { /* inga mapphandtag */ }
@@ -967,6 +987,290 @@ function renderIntroCard() {
   return card;
 }
 
+// ============================================================
+// ACKUMULERING & PROAKTIVITET (etapp 2 i roadmap-anvandarvarde)
+// Sidöppningen är portalens enda trigger — varje öppning ska mötas av
+// något som redan är gjort eller räknat: avbockade rutiner, streak,
+// puls-kort, auto-körda rutiner och ett minne som synligt växer.
+// ============================================================
+
+// ---------- veckoräkning ----------
+function weekStartMs(ms) { // torsdagen kl 12 i ISO-veckan — stabil bas för veckodiff
+  const d = new Date(ms);
+  const day = (d.getDay() + 6) % 7;
+  d.setHours(12, 0, 0, 0);
+  d.setDate(d.getDate() - day + 3);
+  return d.getTime();
+}
+const weeksBetween = (a, b) => Math.round((weekStartMs(b) - weekStartMs(a)) / (7 * 86400000));
+function mondayMs() { const d = new Date(); const day = (d.getDay() + 6) % 7; d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - day); return d.getTime(); }
+const quarterOf = (ms) => { const d = new Date(ms); return `${d.getFullYear()}-Q${Math.floor(d.getMonth() / 3) + 1}`; };
+const todayDayNo = () => ((new Date().getDay() + 6) % 7) + 1; // 1=mån … 7=sön
+
+// ---------- rutinlogg (avbockning per ISO-vecka) ----------
+function routLoad() {
+  try { const r = JSON.parse(localStorage.getItem("atb_rout_" + state.slug) || "null"); if (r && r.week === isoWeek() && Array.isArray(r.done)) return r; } catch (_) { /* trasig — börja om */ }
+  return { week: isoWeek(), done: [] };
+}
+function routSave(r) { try { localStorage.setItem("atb_rout_" + state.slug, JSON.stringify(r)); } catch (_) { /* full storage */ } }
+function routineDone(label) { return routLoad().done.some((d) => (d.label || d) === label); }
+function routineMarkDone(label) {
+  if (state.demo) return;
+  const r = routLoad();
+  if (r.done.some((d) => (d.label || d) === label)) return;
+  r.done.push({ label, at: Date.now() });
+  routSave(r);
+  touchStreak();
+  // Uppdatera sidopanelens rutinknapp utan full omritning.
+  document.querySelectorAll(".routine-item").forEach((n) => {
+    if (n.dataset.label === label) { n.classList.add("done"); const dEl = n.querySelector(".routine-day"); if (dEl) dEl.textContent = "klar ✓"; }
+  });
+}
+
+// ---------- vecko-streak (med semester-freeze, en per kvartal) ----------
+// Rätt enhet för en småföretagare är veckor, inte dagar. En missad vecka per
+// kvartal förlåts tyst — annars nollställer semestern och demotiverar.
+function touchStreak() {
+  if (state.demo) return;
+  try {
+    const key = "atb_streak_" + state.slug;
+    const s = JSON.parse(localStorage.getItem(key) || "null") || { lastAt: 0, count: 0, freezeQ: "" };
+    if (!s.lastAt) s.count = 1;
+    else {
+      const gap = weeksBetween(s.lastAt, Date.now());
+      if (gap === 1) s.count += 1;
+      else if (gap === 2 && s.freezeQ !== quarterOf(Date.now())) { s.count += 1; s.freezeQ = quarterOf(Date.now()); }
+      else if (gap > 1) s.count = 1;
+      // gap === 0 → samma vecka, räknaren står kvar
+    }
+    s.lastAt = Date.now();
+    localStorage.setItem(key, JSON.stringify(s));
+  } catch (_) { /* full storage */ }
+}
+function streakCount() {
+  try {
+    const s = JSON.parse(localStorage.getItem("atb_streak_" + state.slug) || "null");
+    if (!s || !s.lastAt) return 0;
+    return weeksBetween(s.lastAt, Date.now()) > 2 ? 0 : s.count;
+  } catch (_) { return 0; }
+}
+
+// ---------- minnesräknaren ----------
+function memoryFactCount() { return loadMemory().split("\n").map((s) => s.trim()).filter((s) => s.length > 2).length; }
+function factLabel() {
+  const c = memoryFactCount();
+  return c ? `🧠 Teamet känner till ${c} ${c === 1 ? "sak" : "saker"} om er verksamhet` : "🧠 Lär teamet er verksamhet";
+}
+function paintFactCount() { const n = $("#fact-count"); if (n) n.textContent = factLabel(); }
+
+// ---------- minnesförslag med godkännande ----------
+// Klibbighetsmotorn: teamet blir märkbart smartare vecka för vecka, och
+// kunden ser investeringen växa. Automatiskt förslag, manuell grind —
+// ingenting skrivs till minnet utan ett aktivt ja.
+const MEM_SUGGEST_PROMPT = `Du hjälper ett företags AI-team att bygga sitt delade minne.
+Läs samtalsutdraget och föreslå 0–3 KORTA rader med stabila fakta om företaget som är värda att spara: beslut, preferenser, siffror, arbetssätt. Inte tillfälligheter, inte AI:ns egna förslag — bara sådant ANVÄNDAREN själv sagt eller bekräftat.
+Upprepa inget som redan står i minnet. Returnera EN rad per faktum, varje rad börjar med "- ". Finns inget nytt att spara: svara exakt "INGA".`;
+async function suggestMemory(agentId) {
+  if (state.demo || !state.apiKey || state.streaming) return;
+  const msgs = (state.history[agentId] || []).slice(-8);
+  if (!msgs.length) return;
+  const convo = msgs.map((m) => `${m.role === "user" ? "ANVÄNDAREN" : "AGENTEN"}: ${(m.content || "").slice(0, 1500)}`).join("\n\n");
+  const box = openOverlay("🧠 Förslag till minnet");
+  const status = el("p", "ovl-lead", "Läser samtalet och letar efter fakta värda att spara…");
+  box.appendChild(status);
+  let out = "";
+  try {
+    out = await window.ATBClaude.collect({
+      apiKey: state.apiKey, model: state.model, system: MEM_SUGGEST_PROMPT,
+      messages: [{ role: "user", content: `BEFINTLIGT MINNE:\n${loadMemory().trim() || "(tomt)"}\n\nSAMTAL:\n${convo}` }],
+      maxTokens: 400, onUsage: costAdd,
+    });
+  } catch (e) { status.textContent = "⚠️ " + ((e && e.message) || "Gick inte att hämta förslag — försök igen."); return; }
+  const lines = out.split("\n").map((s) => s.replace(/^[-•\s]+/, "").trim()).filter((s) => s && !/^INGA\b/i.test(s)).slice(0, 3);
+  if (!lines.length) { status.textContent = "Inget nytt att spara ur det här samtalet — minnet är redan uppdaterat."; return; }
+  status.textContent = "Bocka i det som stämmer — det sparas i teamets delade minne som alla agenter ser:";
+  const checks = lines.map((l) => {
+    const lab = el("label", "meet-part");
+    const c = el("input"); c.type = "checkbox"; c.checked = true;
+    lab.appendChild(c); lab.appendChild(el("span", null, l));
+    box.appendChild(lab);
+    return { c, l };
+  });
+  const save = el("button", "btn-primary ovl-save", "Spara i minnet"); save.type = "button";
+  save.onclick = () => {
+    const picked = checks.filter((x) => x.c.checked).map((x) => "• " + x.l);
+    if (picked.length) {
+      const mem = loadMemory();
+      saveMemory((mem.trim() ? mem.replace(/\s+$/, "") + "\n" : "") + picked.join("\n"));
+      paintFactCount();
+    }
+    closeOverlay();
+  };
+  box.appendChild(save);
+}
+
+// ---------- puls-kort ----------
+// 2–3 lokalt beräknade kort ovanför chatten — ingen AI-kostnad, alltid
+// färska. Portalen har alltid något att säga när den öppnas.
+let pulseNewWeek = null;   // beräknas en gång per sidladdning
+const autoDelivered = [];  // auto-körda rutiner denna sidladdning → "ligger klar"-kort
+function renderPulse() {
+  const old = $("#pulse-strip"); if (old) old.remove();
+  if (state.demo) return;
+  const main = document.querySelector(".main"); if (!main) return;
+  const today = new Date().toISOString().slice(0, 10);
+  try { if (localStorage.getItem("atb_pulse_snooze_" + state.slug) === today) return; } catch (_) { /* läsfel — visa ändå */ }
+
+  if (pulseNewWeek === null) {
+    let lastVisit = null;
+    try { lastVisit = localStorage.getItem("atb_visit_" + state.slug); } catch (_) { /* läsfel */ }
+    const anyHistory = Object.values(state.history).some((m) => m && m.length);
+    pulseNewWeek = !!(anyHistory && lastVisit && lastVisit !== isoWeek());
+    try { localStorage.setItem("atb_visit_" + state.slug, isoWeek()); } catch (_) { /* full storage */ }
+  }
+
+  const cards = [];
+  autoDelivered.forEach((d) => {
+    const a = agentById(d.agentId);
+    cards.push({ icon: "✅", label: `${d.label} ligger klar hos ${a ? a.name : "teamet"} — läs`, act: () => selectAgent(d.agentId) });
+  });
+  if (pulseNewWeek) cards.push({ icon: "☀️", label: "Ny vecka — få \"Veckan som gick\" + förslag på veckans fokus", act: () => { pulseNewWeek = false; weekReview(); } });
+  (team.routines || []).forEach((rt) => {
+    if (rt.day === todayDayNo() && !routineDone(rt.label)) cards.push({ icon: "📌", label: `Idag: ${rt.label}`, act: () => runRoutine(rt) });
+  });
+  if (team.firstProject) {
+    let last = 0;
+    try { last = +localStorage.getItem("atb_fp_" + state.slug) || 0; } catch (_) { /* läsfel */ }
+    const days = last ? Math.floor((Date.now() - last) / 86400000) : null;
+    if (days === null) cards.push({ icon: "🎯", label: "Första projektet väntar på sitt första steg", act: openFirstProject });
+    else if (days >= 7) cards.push({ icon: "🎯", label: `${days} dagar sedan ni rörde första projektet`, act: openFirstProject });
+  }
+  if (!loadMemory().trim() && !loadDocs().length) cards.push({ icon: "🧠", label: "Teamet känner er inte än — lägg in ett underlag eller minne", act: openMemory });
+  if (!cards.length) return;
+
+  const strip = el("div", "pulse-strip"); strip.id = "pulse-strip";
+  cards.slice(0, 3).forEach((c) => {
+    const b = el("button", "pulse-card"); b.type = "button";
+    b.appendChild(el("span", "pulse-ico", c.icon));
+    b.appendChild(el("span", "pulse-txt", c.label));
+    b.onclick = c.act;
+    strip.appendChild(b);
+  });
+  const x = el("button", "pulse-x", "✕"); x.type = "button"; x.title = "Dölj för idag";
+  x.onclick = () => { try { localStorage.setItem("atb_pulse_snooze_" + state.slug, today); } catch (_) { /* full storage */ } strip.remove(); };
+  strip.appendChild(x);
+  main.insertBefore(strip, $("#chat-header"));
+}
+
+// ---------- veckan som gick ----------
+// Grammarly/Strava-mönstret fast i produkten: kvantifiera värdet varje vecka.
+// Metadatan är lokal (tidsstämplar, rutinlogg, minnesräknare) — ett enda
+// anrop, och bara när kunden klickar på kortet.
+function weekReview() {
+  if (state.streaming) return;
+  const since = Date.now() - 7 * 86400000;
+  const perAgent = [];
+  team.agents.forEach((a) => {
+    const q = (state.history[a.id] || []).filter((m) => m.at && m.at >= since && m.role === "user").length;
+    if (q) perAgent.push(`- ${a.name}: ${q} frågor/uppgifter`);
+  });
+  const meetings = Object.values(state.history).flat().filter((m) => m && m.at && m.at >= since && m.role === "user" && /^🤝 Möte/.test(m.content || "")).length;
+  const doneR = routLoad().done.map((d) => d.label || d);
+  const facts = memoryFactCount();
+  const meta = [
+    perAgent.length ? `Aktivitet per agent senaste 7 dagarna:\n${perAgent.join("\n")}` : "Ingen loggad aktivitet senaste 7 dagarna.",
+    meetings ? `Antal möten: ${meetings}` : null,
+    doneR.length ? `Avklarade rutiner denna vecka: ${doneR.join(", ")}` : null,
+    facts ? `Teamets delade minne: ${facts} rader.` : null,
+  ].filter(Boolean).join("\n");
+  selectAgent(team.entryAgent);
+  touchStreak();
+  submitMessage(`Ny vecka! Teamets aktivitetsdata:\n${meta}\n\nGe mig: 1) en kort återblick — vad vi ägnade oss åt (utgå från datan ovan, gissa inga detaljer), 2) förslag på veckans tre fokus med motivering, 3) vilken rutin eller agent jag borde börja med idag. Kort och konkret.`);
+}
+
+// ---------- auto-körda rutiner ----------
+// Rutiner med auto:true i teamkonfigen genereras klart i bakgrunden när
+// portalen öppnas på rätt dag — skillnaden mellan "teamet väntar på order"
+// och "teamet har redan jobbat". Kräver komplett prompt (inga [fyll i]),
+// körs max en gång per vecka och rutin, och får aldrig störa vid fel.
+async function runAutoRoutines() {
+  if (state.demo || !state.apiKey || state.streaming) return;
+  const due = (team.routines || []).filter((rt) =>
+    rt.auto === true && rt.day === todayDayNo() && rt.prompt && !rt.prompt.includes("[fyll i]") && !routineDone(rt.label));
+  for (const rt of due) {
+    const agent = agentById(rt.agentId) || agentById(team.entryAgent);
+    if (!agent) continue;
+    try {
+      lastCallCost = 0;
+      const userMsg = { role: "user", content: `${rt.prompt}\n\n(Stående rutin, körd automatiskt av portalen. Leverera ett färdigt utkast — lista i slutet vad du vill ha kompletterat om något saknas.)`, at: Date.now() };
+      const reply = await window.ATBClaude.collect({
+        apiKey: state.apiKey, model: state.model, system: systemFor(agent),
+        messages: (state.history[agent.id] || []).map((m) => ({ role: m.role, content: m.content })).concat([{ role: "user", content: userMsg.content }]),
+        maxTokens: 4096, onUsage: costAdd,
+      });
+      if (!state.history[agent.id]) state.history[agent.id] = [];
+      state.history[agent.id].push(userMsg, { role: "assistant", content: reply, at: Date.now(), auto: true });
+      saveHistory();
+      routineMarkDone(rt.label);
+      autoDelivered.push({ label: rt.label, agentId: agent.id });
+      if (state.activeAgentId === agent.id) renderLog();
+      renderPulse();
+    } catch (_) { /* auto får aldrig störa — rutinen går att köra manuellt */ }
+  }
+}
+
+// ---------- veckans arbete (tidslinje) ----------
+// Marblism-mönstret: rendera veckan som en berättelse ur portalens egen
+// logg — rutiner, möten, svar per agent, och tid tillbaka via rutinernas
+// timeEstimate. Ren frontend, ingen AI-kostnad.
+function openWeekWork() {
+  const box = openOverlay("📈 Veckans arbete");
+  const start = mondayMs();
+  const idx = (at) => Math.floor((at - start) / 86400000);
+  const dayEvents = Array.from({ length: 7 }, () => ({ agents: {}, meetings: [], routines: [], auto: [] }));
+  team.agents.forEach((a) => {
+    (state.history[a.id] || []).forEach((m) => {
+      if (!m || !m.at) return;
+      const i = idx(m.at); if (i < 0 || i > 6) return;
+      const d = dayEvents[i];
+      if (m.role === "user" && /^🤝 Möte/.test(m.content || "")) d.meetings.push((m.content || "").replace(/^🤝\s*/, "").slice(0, 70));
+      else if (m.role === "assistant") { if (m.auto) d.auto.push(a.name); else d.agents[a.name] = (d.agents[a.name] || 0) + 1; }
+    });
+  });
+  let savedMin = 0;
+  routLoad().done.forEach((d) => {
+    const label = d.label || d;
+    const rt = (team.routines || []).find((r) => r.label === label);
+    if (rt && rt.timeEstimate) savedMin += rt.timeEstimate;
+    const i = d.at ? idx(d.at) : -1;
+    if (i >= 0 && i <= 6) dayEvents[i].routines.push(label);
+  });
+  box.appendChild(el("p", "ovl-lead", "Det du och teamet gjort den här veckan — ur portalens egen logg, inget hämtas någonstans ifrån."));
+  if (savedMin) {
+    const h = savedMin >= 90 ? `≈ ${(Math.round(savedMin / 30) / 2).toString().replace(".", ",")} timmar` : `≈ ${savedMin} minuter`;
+    box.appendChild(el("div", "week-saved", `⏱ Avklarade rutiner motsvarar ${h} manuellt arbete`));
+  }
+  const DAY_FULL = ["Måndag", "Tisdag", "Onsdag", "Torsdag", "Fredag", "Lördag", "Söndag"];
+  const todayI = Math.min(idx(Date.now()), 6);
+  let any = false;
+  for (let i = 0; i <= todayI; i++) {
+    const d = dayEvents[i];
+    const items = [];
+    d.routines.forEach((r) => items.push(`✓ Rutin avklarad: ${r}`));
+    d.auto.forEach((n) => items.push(`🤖 ${n} körde sin rutin automatiskt`));
+    d.meetings.forEach((m) => items.push(`🤝 ${m}`));
+    Object.entries(d.agents).forEach(([n, c]) => items.push(`💬 ${n}: ${c} svar`));
+    if (!items.length) continue;
+    any = true;
+    box.appendChild(el("div", "ovl-label", DAY_FULL[i] + (i === todayI ? " · idag" : "")));
+    const ul = el("ul", "week-list");
+    items.forEach((t) => ul.appendChild(el("li", null, t)));
+    box.appendChild(ul);
+  }
+  if (!any) box.appendChild(el("p", "ovl-note", "Inget loggat än den här veckan — kör en rutin eller ställ en fråga så börjar tidslinjen fyllas."));
+  else box.appendChild(el("p", "ovl-note", "Samtal från före den här funktionen saknar tidsstämplar och syns inte i tidslinjen."));
+}
+
 // Kopiera/ladda ner per svar — svaret ska vidare in i mail och dokument,
 // inte dö i chatten. Rå markdown kopieras (klistras fint i de flesta verktyg).
 function addActions(row, getText) {
@@ -987,6 +1291,13 @@ function addActions(row, getText) {
     setTimeout(() => URL.revokeObjectURL(a.href), 5000);
   };
   acts.appendChild(copy); acts.appendChild(dl);
+  if (!state.demo) {
+    // Minnesförslag med grind: agenten föreslår, användaren godkänner.
+    const mb = el("button", "act-btn", "🧠 Spara lärdomar"); mb.type = "button";
+    mb.title = "Låt teamet föreslå rader till det delade minnet ur det här samtalet (ett litet anrop)";
+    mb.onclick = () => suggestMemory(state.activeAgentId);
+    acts.appendChild(mb);
+  }
   if (!state.demo && FOLDER_SUPPORTED) {
     const sf = el("button", "act-btn", "Spara i mappen"); sf.type = "button";
     sf.title = "Sparar svaret som markdown-fil i från-teamet/ i er kopplade mapp";
@@ -1061,6 +1372,7 @@ const dayName = (d) => DAY_NAMES[d] || "";
 function runRoutine(rt) {
   const target = agentById(rt.agentId) ? rt.agentId : team.entryAgent;
   selectAgent(target);
+  state.pendingRoutine = rt.label; // bockas av när prompten faktiskt skickas
   const ta = $("#composer-input");
   if (ta) {
     ta.value = rt.prompt || rt.label;
@@ -1081,6 +1393,7 @@ function startWeek() {
     (rlist ? `\nVåra stående rutiner:\n${rlist}` : "") +
     `\n\nGe mig en kort veckostart: 1) de tre viktigaste sakerna att fokusera på, med motivering, 2) vilken agent i teamet som hjälper mig med varje, 3) vad du behöver veta från mig. Kort och konkret.`;
   introMark("week");
+  touchStreak();
   submitMessage(text);
 }
 
@@ -1238,6 +1551,7 @@ function openMemory() {
 function openFirstProject() {
   const fp = team.firstProject;
   if (!fp) return;
+  try { localStorage.setItem("atb_fp_" + state.slug, String(Date.now())); } catch (_) { /* full storage */ }
   const box = openOverlay("🎯 Första projektet");
   box.appendChild(el("div", "fp-name", fp.name || "Ert första projekt"));
   if (fp.problem) { box.appendChild(el("div", "ovl-label", "Problemet vi löser")); const p = el("div", "fp-text"); renderMarkdown(p, fp.problem); box.appendChild(p); }
@@ -1336,7 +1650,7 @@ async function runMeeting(type, focus, ids) {
   const agentId = team.entryAgent;
   const userText = `🤝 Möte — ${type.label}: ${focus}`;
   if (!state.history[agentId]) state.history[agentId] = [];
-  state.history[agentId].push({ role: "user", content: userText });
+  state.history[agentId].push({ role: "user", content: userText, at: Date.now() });
   saveHistory();
 
   const log = $("#chat-log");
@@ -1400,17 +1714,18 @@ async function runMeeting(type, focus, ids) {
         }
       },
     });
-    const msg = { role: "assistant", content: acc, perspectives };
+    const msg = { role: "assistant", content: acc, perspectives, at: Date.now() };
     state.history[agentId].push(msg);
     saveHistory();
     introMark("meeting");
+    touchStreak();
     const finalText = acc;
     if (bub.isConnected) { renderMarkdown(bub, finalText); addActions(row, () => finalText); row.appendChild(perspToggle(perspectives)); appendCost(row); }
     else if (state.activeAgentId === agentId) renderLog();
   } catch (err) {
     if (err && err.name === "AbortError" && acc) {
       // Stoppad mitt i sammanställningen — behåll det som kom; det är betald output.
-      state.history[agentId].push({ role: "assistant", content: acc, perspectives });
+      state.history[agentId].push({ role: "assistant", content: acc, perspectives, at: Date.now() });
       saveHistory();
       if (bub.isConnected) { renderMarkdown(bub, acc); addActions(row, () => acc); if (perspectives.length) row.appendChild(perspToggle(perspectives)); }
     } else {
@@ -1449,7 +1764,7 @@ async function submitMessage(text) {
   const agentId = state.activeAgentId;
   const agent = agentById(agentId);
   if (!state.history[agentId]) state.history[agentId] = [];
-  state.history[agentId].push({ role: "user", content: text });
+  state.history[agentId].push({ role: "user", content: text, at: Date.now() });
   saveHistory();
 
   const log = $("#chat-log");
@@ -1484,8 +1799,10 @@ async function submitMessage(text) {
   try {
     if (state.demo) await streamDemo(agent, state.history[agentId], onDelta);
     else await streamClaude(systemFor(agent), state.history[agentId], onDelta);
-    state.history[agentId].push({ role: "assistant", content: acc });
+    state.history[agentId].push({ role: "assistant", content: acc, at: Date.now() });
     saveHistory();
+    // Skickades en rutin-prompt? Bocka av den för veckan (+ streak + puls).
+    if (state.pendingRoutine) { routineMarkDone(state.pendingRoutine); state.pendingRoutine = null; renderPulse(); }
     // Rendera det färdiga svaret som markdown (strömningen skrev råtext),
     // och rita om från historiken om bubblan detachats av ett agentbyte.
     const finalText = acc;
@@ -1494,7 +1811,7 @@ async function submitMessage(text) {
   } catch (err) {
     if (err && err.name === "AbortError" && acc) {
       // Stoppad mitt i — behåll det som hann komma; det är betald output.
-      state.history[agentId].push({ role: "assistant", content: acc });
+      state.history[agentId].push({ role: "assistant", content: acc, at: Date.now() });
       saveHistory();
       if (assistantBubble.isConnected) renderMarkdown(assistantBubble, acc);
     } else {

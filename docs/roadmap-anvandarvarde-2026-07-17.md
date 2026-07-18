@@ -21,11 +21,13 @@ Storlek: **S** ≈ timmar, **M** ≈ en dag, **L** ≈ flera dagar.
 
 ---
 
-> **Status 2026-07-17 (kväll):** Etapp 0 och 1 är BYGGDA (0.1–0.7, 1.1–1.4),
-> plus en valbar förvalsenkät i Builder-intaget (bransch/kunder/arbetsmoment/
-> verktyg/mål som kryssval, `builder/survey-data.js`) — utanför ursprungliga
-> roadmappen men i samma anda ("lätt för användaren"). Otestat i webbläsare —
-> kör `npm run dev` och gå igenom "Klart när"-punkterna innan deploy.
+> **Status 2026-07-18:** Etapp 0, 1 OCH 2 är byggda och deployade (+ valbar
+> förvalsenkät i Builder-intaget, `builder/survey-data.js`). Etapp 2-noter:
+> puls-korten (2.4) beräknas helt lokalt utan AI-kostnad; "Veckan som gick"
+> (2.3) genereras först vid klick på ny vecka-kortet (BYO-kostnadsrespekt);
+> minnesförslag (2.1) är en "🧠 Spara lärdomar"-knapp per svar; tidsstämplar
+> (`at`) sätts på alla nya meddelanden — tidslinjen (2.6) fylls framåt.
+> Manuell webbläsargenomgång av "Klart när"-punkterna återstår.
 
 ## Etapp 0 — Skyddsnät (gör först, i ordning) ✅ byggd 2026-07-17
 
@@ -108,7 +110,7 @@ inom 12k-budgeten just nu (i dag klipps de sista tyst).
 
 ---
 
-## Etapp 2 — Ackumulering & proaktivitet ("teamet jobbar")
+## Etapp 2 — Ackumulering & proaktivitet ("teamet jobbar") ✅ byggd 2026-07-18
 
 **2.1 Minnesförslag med godkännande + "teamet har lärt sig X"** — M
 Efter avslutat samtal föreslår ingångsagenten 1–3 minnesrader ("Ska jag komma

@@ -686,7 +686,7 @@ async function structureTeam(intake, r) {
   "scaling": string,
   "firstProject": ${intake.mode === "ai-consultant" ? '{ "name": string, "problem": string, "week1": string, "owner": string }' : "null"},
   "rejected": [{ "name": string, "why": string }],
-  "routines": [{ "label": string, "agentId": string, "day": number|null, "prompt": string }],
+  "routines": [{ "label": string, "agentId": string, "day": number|null, "timeEstimate": number|null, "auto": boolean, "prompt": string }],
   "agents": [{
     "id": string, "name": string, "icon": string, "role": string, "tagline": string,
     "always": boolean, "job": string, "capabilities": [string], "triggers": [string],
@@ -701,7 +701,7 @@ ${PORTAL_RULES}
 
 VD-assistenten ska ha id "vd-assistent" och vara först i listan, sedan VD (id "vd"), sedan specialister i prioritetsordning. always=true för VD och VD-assistent. VD ⚡, VD-assistent 🧭, domän-emoji för specialister. Avvisade moment kommer från researchen/förslaget (minst ett).
 
-RUTINER: 3–5 stående rutiner hämtade ur kundens faktiska veckomoment (inte påhittade). label = kort namn; agentId = agenten som äger momentet; day = veckodag 1–7 (1=måndag) om momentet är dagbundet, annars null; prompt = uppgiften i du-form med [fyll i]-luckor för det agenten behöver av användaren, konkret nog att skicka direkt.
+RUTINER: 3–5 stående rutiner hämtade ur kundens faktiska veckomoment (inte påhittade). label = kort namn; agentId = agenten som äger momentet; day = veckodag 1–7 (1=måndag) om momentet är dagbundet, annars null; timeEstimate = minuter momentet brukar ta manuellt ENLIGT RESEARCHEN (null om researchen inte anger tid — hitta aldrig på); auto = true på HÖGST EN rutin och bara om dess prompt är komplett utan [fyll i]-luckor (portalen kör den då automatiskt på rätt dag), annars false; prompt = uppgiften i du-form med [fyll i]-luckor för det agenten behöver av användaren, konkret nog att skicka direkt.
 
 Returnera ENBART giltig JSON enligt schemat (ingen text runt, inga markdown-staket):
 ${schema}`;

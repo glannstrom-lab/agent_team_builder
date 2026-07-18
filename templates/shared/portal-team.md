@@ -41,11 +41,22 @@ uppgiften förifylld:
 { label: "Nyhetsbrevet",           // kort namn, visas i sidebaren
   agentId: "innehallsskribent",    // agenten som äger momentet
   day: 4,                          // 1=måndag … 7=söndag, null = närhelst
+  timeEstimate: 90,                // minuter momentet brukar ta manuellt (ur researchen; utelämna om okänt)
+  auto: false,                     // true = portalen kör rutinen automatiskt på rätt dag (se nedan)
   prompt: "Dags för veckans nyhetsbrev. Tema: [fyll i]. Skriv ett utkast i min ton." }
 ```
 
 `prompt` skrivs i du-form med `[fyll i]`-luckor för det agenten behöver av
 användaren — konkret nog att skicka direkt.
+
+`timeEstimate` hämtas ur researchens tidsuppskattningar (aldrig påhittad —
+utelämna hellre). Den driver portalens "Veckans arbete"-vy ("≈ X h tillbaka
+den här veckan").
+
+`auto: true` får bara sättas på **högst en** rutin, och bara när prompten är
+komplett utan `[fyll i]`-luckor (t.ex. en stående måndagsbrief). Portalen
+genererar då svaret i bakgrunden när kunden öppnar på rätt dag — "teamet har
+redan jobbat". Kostnad går på kundens nyckel, så var restriktiv.
 
 ### Varje agent-objekt
 
