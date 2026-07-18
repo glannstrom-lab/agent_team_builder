@@ -779,6 +779,14 @@ function renderSidebar() {
     ws.appendChild(fc);
   }
 
+  // ---- Verktyg: engångshjälp som bygger på portalens egen logg ----
+  if (!state.demo) {
+    ws.appendChild(el("div", "side-label ws-head", "Verktyg"));
+    wsBtn("📣", "Rapport till chefen", statusReport, "Statusuppdatering ur veckans logg — klar att klistra in i mejl eller Slack");
+    wsBtn("🏅", "Det här har jag levererat", deliveredList, "Underlag inför löne-, medarbetar- eller kundavstämningssamtal");
+    wsBtn("🎭", "Öva ett samtal", openPractice, "Rollspela ett svårt samtal — agenten spelar motparten och ger feedback");
+  }
+
   const routines = Array.isArray(team.routines) ? team.routines : [];
   if (routines.length) {
     ws.appendChild(el("div", "side-label ws-head", "Veckans rutiner"));
@@ -913,7 +921,43 @@ function renderMain() {
   ta.addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey && !COARSE) { e.preventDefault(); composer.requestSubmit(); } });
   const send = el("button", "composer-send", "↑"); send.type = "submit"; send.id = "composer-send";
   send.setAttribute("aria-label", "Skicka");
-  composer.appendChild(ta); composer.appendChild(send);
+  composer.appendChild(ta);
+  // Diktering (Web Speech API, Chrome/Edge): tala in hjärndumpen — mobilens
+  // största friktion är att skriva långt. Texten hamnar i composern för
+  // redigering innan den skickas. OBS: taligenkänningen sker via webbläsar-
+  // leverantören — därför märkt i title, och inget skickas utan aktivt val.
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (SR && !state.demo) {
+    const mic = el("button", "composer-mic", "🎙"); mic.type = "button";
+    mic.title = "Diktera (svenska). Rösten tolkas av webbläsarens taltjänst; texten hamnar här för redigering innan du skickar.";
+    mic.setAttribute("aria-label", "Diktera");
+    let rec = null;
+    mic.onclick = () => {
+      if (rec) { try { rec.stop(); } catch (_) {} return; }
+      try {
+        rec = new SR();
+        rec.lang = "sv-SE"; rec.continuous = true; rec.interimResults = true;
+        const base = ta.value ? ta.value.replace(/\s+$/, "") + " " : "";
+        let finalTxt = "";
+        rec.onresult = (e) => {
+          let interim = "";
+          for (let i = e.resultIndex; i < e.results.length; i++) {
+            const r = e.results[i];
+            if (r.isFinal) finalTxt += r[0].transcript + " ";
+            else interim += r[0].transcript;
+          }
+          ta.value = base + finalTxt + interim;
+          ta.style.height = "auto"; ta.style.height = Math.min(ta.scrollHeight, 200) + "px";
+        };
+        rec.onend = () => { rec = null; mic.classList.remove("rec"); };
+        rec.onerror = () => { rec = null; mic.classList.remove("rec"); };
+        mic.classList.add("rec");
+        rec.start();
+      } catch (_) { rec = null; mic.classList.remove("rec"); }
+    };
+    composer.appendChild(mic);
+  }
+  composer.appendChild(send);
   // Under strömning blir skicka-knappen en stoppknapp — med BYO-nyckel
   // betalar kunden för varje token, så ett långt svar måste gå att avbryta.
   composer.onsubmit = (e) => {
@@ -1356,6 +1400,41 @@ function renderPulse() {
       }
     } });
   }
+  // Svenska myndighetsdatum (valbart under Minne & underlag) — eget kort med
+  // eget fönster, så månatliga AGI:n inte tränger ut kundens egna säsonger.
+  let dlForm = null;
+  try { dlForm = localStorage.getItem("atb_dlform_" + state.slug); } catch (_) { /* läsfel */ }
+  if (dlForm && dlForm !== "off" && Array.isArray(window.ATB_DEADLINES_SE)) {
+    const base = dlForm.split("-")[0];
+    const emp = dlForm.includes("anstallda");
+    let bestDl = null;
+    window.ATB_DEADLINES_SE.forEach((d) => {
+      const match = d.forms.includes("alla") || d.forms.includes(base) || (emp && d.forms.includes("anstallda"));
+      if (!match) return;
+      let when;
+      if (d.monthly) {
+        when = new Date(now.getFullYear(), now.getMonth(), d.day);
+        if (when < now) when = new Date(now.getFullYear(), now.getMonth() + 1, d.day);
+      } else {
+        when = new Date(now.getFullYear(), (d.month || 1) - 1, d.day || 1);
+        if (when < now) when = new Date(now.getFullYear() + 1, (d.month || 1) - 1, d.day || 1);
+      }
+      const days = Math.ceil((when - now) / 86400000);
+      const win = d.monthly ? 7 : 28;
+      if (days >= 0 && days <= win && (!bestDl || days < bestDl.days)) bestDl = { d, days };
+    });
+    if (bestDl) {
+      cards.push({ icon: "🏛", label: bestDl.days === 0 ? `Idag: ${bestDl.d.label}` : `${bestDl.days} dagar: ${bestDl.d.label}`, act: () => {
+        selectAgent(team.entryAgent);
+        const ta = $("#composer-input");
+        if (ta) {
+          ta.value = `${bestDl.d.label} närmar sig (${bestDl.days} dagar kvar). Gör en kort checklista över vad jag behöver ha klart, och vad du kan hjälpa till med redan nu.`;
+          ta.style.height = "auto"; ta.style.height = Math.min(ta.scrollHeight, 200) + "px";
+          if (!COARSE) ta.focus();
+        }
+      } });
+    }
+  }
   if (!loadMemory().trim() && !loadDocs().length) cards.push({ icon: "🧠", label: "Teamet känner er inte än — lägg in ett underlag eller minne", act: openMemory });
   if (!cards.length) return;
 
@@ -1435,6 +1514,68 @@ async function runAutoRoutines() {
       renderPulse();
     } catch (_) { /* auto får aldrig störa — rutinen går att köra manuellt */ }
   }
+}
+
+// ---------- verktyg: rapport, levererat-lista, öva samtal ----------
+// Anställd-vinkeln: synlighet uppåt. Båda rapporterna bygger på portalens
+// egen logg (tidsstämplar, rutiner, minne) och sätter [fyll i]-luckor där
+// data saknas i stället för att fabricera resultat.
+function statusReport() {
+  if (state.streaming) return;
+  const since = Date.now() - 7 * 86400000;
+  const perAgent = [];
+  team.agents.forEach((a) => {
+    const n = (state.history[a.id] || []).filter((m) => m.at && m.at >= since && m.role === "assistant").length;
+    if (n) perAgent.push(`- ${a.name}: ${n} leveranser`);
+  });
+  const doneR = routLoad().done.map((d) => d.label || d);
+  selectAgent(team.entryAgent);
+  submitMessage(`Skriv en kort statusuppdatering till min chef, redo att klistras in i mejl eller Slack. Jag-form, professionell men avslappnad, svenska.\n\nDATA UR VECKANS ARBETE I PORTALEN:\n${perAgent.join("\n") || "- (ingen loggad aktivitet den här veckan)"}${doneR.length ? `\nAvklarade rutiner: ${doneR.join(", ")}` : ""}\n\nStruktur: **Levererat**, **Pågående**, **Behöver input på**. Utgå från datan och det du känner till ur våra samtal — sätt [fyll i]-luckor där du saknar detaljer i stället för att hitta på.`);
+}
+function deliveredList() {
+  if (state.streaming) return;
+  const perAgent = [];
+  let total = 0, firstAt = null;
+  team.agents.forEach((a) => {
+    const ms = (state.history[a.id] || []).filter((m) => m.at && m.role === "assistant");
+    if (ms.length) {
+      perAgent.push(`- ${a.name}: ${ms.length} leveranser`);
+      total += ms.length;
+      if (!firstAt || ms[0].at < firstAt) firstAt = ms[0].at;
+    }
+  });
+  const facts = memoryFactCount();
+  selectAgent(team.entryAgent);
+  submitMessage(`Hjälp mig bygga underlaget "Det här har jag levererat" inför ett löne-/medarbetarsamtal eller en kundavstämning. Svenska, jag-form, konkret och självsäkert utan överdrifter.\n\nDATA UR PORTALENS LOGG${firstAt ? ` (sedan ${new Date(firstAt).toLocaleDateString("sv-SE")})` : ""}:\n${perAgent.join("\n") || "- (ingen loggad aktivitet än)"}\nTotalt: ${total} leveranser.${facts ? ` Uppbyggt kunskapsminne: ${facts} rader.` : ""}\n\nGör: 1) en punktlista över leveransområden med [fyll i]-luckor för konkreta resultat och siffror jag själv fyller i, 2) tre formuleringar som knyter arbetet till verksamhetsnytta, 3) en avslutande rad om utveckling framåt. Hitta inte på specifika resultat.`);
+}
+
+const PRACTICE_SCENARIOS = [
+  "Kund som inte betalat", "Prishöjning till befintlig kund", "Reklamation / missnöjd kund",
+  "Säga nej till ett uppdrag", "Be om löneförhöjning", "Svårt besked till en medarbetare",
+];
+function openPractice() {
+  if (state.streaming) return;
+  const box = openOverlay("🎭 Öva ett samtal");
+  box.appendChild(el("p", "ovl-lead", "Agenten spelar motparten — realistiskt, med invändningar. Du övar i chatten och skriver STOPP när du vill kliva ur: då får du ärlig feedback och ett färdigt samtalsmanus."));
+  let chosen = PRACTICE_SCENARIOS[0];
+  const chipsRow = el("div", "p-chips");
+  PRACTICE_SCENARIOS.forEach((s, i) => {
+    const b = el("button", "p-chip" + (i === 0 ? " sel" : "")); b.type = "button"; b.textContent = s;
+    b.onclick = () => { chosen = s; chipsRow.querySelectorAll(".p-chip").forEach((n) => n.classList.toggle("sel", n === b)); };
+    chipsRow.appendChild(b);
+  });
+  box.appendChild(chipsRow);
+  box.appendChild(el("div", "ovl-label", "Detaljer — vem är motparten, vad står på spel?"));
+  const det = el("textarea", "ovl-ta"); det.rows = 2;
+  det.placeholder = "T.ex: Byggfirma, fakturan är 45 dagar försenad, kunden är vår största.";
+  box.appendChild(det);
+  const go = el("button", "btn-primary ovl-save", "Starta rollspelet"); go.type = "button";
+  go.onclick = () => {
+    closeOverlay();
+    selectAgent(team.entryAgent);
+    submitMessage(`ROLLSPEL — jag vill öva ett svårt samtal: "${chosen}".${det.value.trim() ? `\nKontext: ${det.value.trim()}` : ""}\n\nSpela motparten realistiskt: naturliga invändningar, känslor, inga lättköpta eftergifter. Börja med motpartens första replik. Håll dig i rollen tills jag skriver STOPP — kliv då ur rollen och ge mig: 1) ärlig feedback på hur jag förde samtalet, 2) vad jag borde ha sagt annorlunda, 3) ett färdigt samtalsmanus jag kan använda på riktigt.`);
+  };
+  box.appendChild(go);
 }
 
 // ---------- "därför ser ert team ut så här" (anställningsceremonin) ----------
@@ -2162,10 +2303,10 @@ function openMemory() {
 
   // Fil-import: PDF/Word/txt/md blir underlag utan att klistras in för hand.
   const fileRow = el("div", "file-row");
-  const fileBtn = el("button", "btn-primary ovl-save", "📎 Lägg till fil (PDF, Word, .md, .txt)…"); fileBtn.type = "button";
+  const fileBtn = el("button", "btn-primary ovl-save", "📎 Lägg till fil (PDF, Word, Excel/CSV, .md, .txt)…"); fileBtn.type = "button";
   fileBtn.onclick = () => {
     const inp = document.createElement("input");
-    inp.type = "file"; inp.accept = ".pdf,.docx,.doc,.md,.txt"; inp.multiple = true;
+    inp.type = "file"; inp.accept = ".pdf,.docx,.doc,.md,.txt,.xlsx,.xls,.csv"; inp.multiple = true;
     inp.onchange = async () => {
       const files = [...(inp.files || [])];
       for (const f of files) {
@@ -2184,7 +2325,7 @@ function openMemory() {
           alert(`${f.name}: ${(e && e.message) || "kunde inte läsas"}`);
         }
       }
-      fileBtn.disabled = false; fileBtn.textContent = "📎 Lägg till fil (PDF, Word, .md, .txt)…";
+      fileBtn.disabled = false; fileBtn.textContent = "📎 Lägg till fil (PDF, Word, Excel/CSV, .md, .txt)…";
       renderDocs();
     };
     inp.click();
@@ -2215,6 +2356,21 @@ function openMemory() {
   };
   box.appendChild(dt); box.appendChild(dta); box.appendChild(add);
   box.appendChild(el("p", "ovl-note", `Aktiva underlag följer med i varje anrop (max ~${Math.round(DOC_BUDGET / 1000)}000 tecken totalt) — fler aktiva = högre kostnad per fråga. Slå av det som inte behövs just nu, och håll minnet kort och kurerat.`));
+
+  // ---- Svenska företagsdatum (matar årshjulets puls-kort) ----
+  if (!state.demo && Array.isArray(window.ATB_DEADLINES_SE)) {
+    box.appendChild(el("div", "ovl-label", "🏛 Svenska företagsdatum i årshjulet"));
+    const dlSel = el("select", "ovl-input");
+    [["off", "Visa inte"], ["enskild", "Enskild firma"], ["enskild-anstallda", "Enskild firma med anställda"], ["ab", "Aktiebolag"], ["ab-anstallda", "Aktiebolag med anställda"]]
+      .forEach(([v, l]) => { const o = el("option", null, l); o.value = v; dlSel.appendChild(o); });
+    try { dlSel.value = localStorage.getItem("atb_dlform_" + state.slug) || "off"; } catch (_) { /* läsfel */ }
+    dlSel.onchange = () => {
+      try { localStorage.setItem("atb_dlform_" + state.slug, dlSel.value); } catch (_) { /* full storage */ }
+      renderPulse();
+    };
+    box.appendChild(dlSel);
+    box.appendChild(el("p", "ovl-note", "Påminner i förväg om moms, deklaration och AGI via korten ovanför chatten. Typiska datum (kalenderår som räkenskapsår, kvartalsmoms) — kontrollera alltid Skatteverket för era exakta datum."));
+  }
 }
 
 // ---------- filimport (PDF/Word → underlag) ----------
@@ -2247,9 +2403,24 @@ async function extractFileText(file) {
     if (!text) throw new Error("Dokumentet verkar vara tomt.");
     return text;
   }
+  if (ext === "csv") return (await file.text()).slice(0, 120000);
+  if (ext === "xlsx" || ext === "xls") {
+    // Kalkylark: Fortnox-/bokföringsexporter, Shopify-order, kundlistor —
+    // ekonomipulsen. Varje blad blir CSV-text med bladnamnet som rubrik.
+    if (!window.XLSX) await loadScript("vendor/xlsx.full.min.js");
+    const wb = window.XLSX.read(await file.arrayBuffer(), { type: "array" });
+    const parts = [];
+    wb.SheetNames.forEach((name) => {
+      const csv = window.XLSX.utils.sheet_to_csv(wb.Sheets[name]).trim();
+      if (csv) parts.push(`## Blad: ${name}\n${csv}`);
+    });
+    const text = parts.join("\n\n").slice(0, 120000);
+    if (!text) throw new Error("Kalkylarket verkar vara tomt.");
+    return text;
+  }
   throw new Error(ext === "doc"
     ? "Gamla .doc-formatet stöds inte — spara om filen som .docx eller PDF."
-    : "Filtypen stöds inte. Portalen läser PDF, .docx, .md och .txt.");
+    : "Filtypen stöds inte. Portalen läser PDF, .docx, .xlsx, .csv, .md och .txt.");
 }
 
 // ---------- första projektet ----------

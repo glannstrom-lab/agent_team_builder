@@ -310,6 +310,26 @@ body {
 .why-text { color: var(--text-dim); font-size: 13.5px; line-height: 1.6; margin-top: 5px; }
 .why-row.rej .why-name { color: var(--red); font-size: 13px; }
 
+/* ---------- diktering ---------- */
+.composer-mic {
+  background: var(--surface-2); border: 1px solid var(--border); color: var(--text-dim);
+  border-radius: 12px; width: 42px; flex-shrink: 0; font-size: 16px; cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+.composer-mic:hover { border-color: var(--accent); color: var(--text); }
+.composer-mic.rec { border-color: var(--red); color: var(--red); animation: micPulse 1.2s infinite; }
+@keyframes micPulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(248, 113, 113, 0.4); } 50% { box-shadow: 0 0 0 6px rgba(248, 113, 113, 0); } }
+
+/* ---------- öva ett samtal (scenario-chips) ---------- */
+.p-chips { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 12px; }
+.p-chip {
+  background: none; border: 1px solid var(--border); border-radius: 100px;
+  padding: 7px 13px; font-size: 13px; color: var(--text-dim); cursor: pointer; font-family: inherit;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+.p-chip:hover { border-color: var(--accent); color: var(--text); }
+.p-chip.sel { background: rgba(124, 106, 255, 0.14); border-color: var(--accent); color: var(--text); font-weight: 600; }
+
 /* ---------- sök i historiken ---------- */
 .search-res { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
 .search-hit { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 10px 14px; text-align: left; cursor: pointer; font-family: inherit; transition: border-color 0.15s; }

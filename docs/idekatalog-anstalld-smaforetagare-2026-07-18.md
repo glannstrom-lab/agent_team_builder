@@ -78,6 +78,12 @@
 
 ## Rekommenderad topp 5 (värde × byggbarhet × differentiering)
 
+> ✅ **Alla fem byggda + deployade 2026-07-18 (kvällen):** xlsx/csv i
+> filimporten (SheetJS i vendor/), `portal/deadlines-se.js` + väljare i
+> Minne & underlag + 🏛-pulskort, "Rapport till chefen" + "Det här har jag
+> levererat" + "Öva ett samtal" under nya Verktyg-gruppen i arbetsytan,
+> 🎙-diktering i composern (Web Speech, sv-SE). Webbläsartest återstår.
+
 1. **xlsx/csv-stöd + ekonomipulsen** (7) — låser upp ekonomi/e-handel för
    hela segmentet; filimporten finns redan att bygga vidare på.
 2. **Svenska deadline-kalendern** (8) — billig (ren data), unikt svensk,
