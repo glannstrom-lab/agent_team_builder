@@ -42,7 +42,8 @@ const PORTAL_RULES = `Bygg varje agents "system" som en komplett systemprompt SK
 6. ARBETSSÄTT — be om data agenten saknar istället för att gissa.
 7. TON — kort; nybörjarkund → pedagogisk/klarspråk, van/byggare → rakare. Avsluta med "Svara på <språk>."
 8. VIKTIGT — vad agenten INTE gör (proposalens "Rör inte"); slutbeslut/juridik ligger hos människan.
-9. STARTERS — per agent: 2–4 korta exempeluppgifter i du-form ("Skriv ett utkast till …", "Gå igenom …"), hämtade ur agentens kapaciteter och kundens veckomoment. De blir klickbara startförslag i portalen — konkreta nog att skicka direkt.`;
+9. STARTERS — per agent: 2–4 korta exempeluppgifter i du-form ("Skriv ett utkast till …", "Gå igenom …"), hämtade ur agentens kapaciteter och kundens veckomoment. De blir klickbara startförslag i portalen — konkreta nog att skicka direkt.
+10. WHY — per agent: EN mening som knyter agenten till kundens egna ord ur intaket/researchen, riktad till kunden: "Du sa att offerterna tar söndagskvällarna — därför finns Offertagenten." Använd kundens formuleringar, fabricera inget. Detta visas på "Därför ser ert team ut så här"-sidan i portalen.`;
 
 const PROMPTS = {}; // cache av hämtade prompt-filer
 const state = {
@@ -685,11 +686,12 @@ async function structureTeam(intake, r) {
   "tagline": string,
   "scaling": string,
   "firstProject": ${intake.mode === "ai-consultant" ? '{ "name": string, "problem": string, "week1": string, "owner": string }' : "null"},
+  "divergence": string,
   "rejected": [{ "name": string, "why": string }],
   "routines": [{ "label": string, "agentId": string, "day": number|null, "timeEstimate": number|null, "auto": boolean, "prompt": string }],
   "agents": [{
     "id": string, "name": string, "icon": string, "role": string, "tagline": string,
-    "always": boolean, "job": string, "capabilities": [string], "triggers": [string],
+    "always": boolean, "job": string, "why": string, "capabilities": [string], "triggers": [string],
     "starters": [string], "system": string
   }]
 }`;
@@ -700,6 +702,8 @@ HÄMTA ALLT INNEHÅLL FRÅN FÖRSLAGET OCH RESEARCHEN NEDAN. Fabricera inget, l�
 ${PORTAL_RULES}
 
 VD-assistenten ska ha id "vd-assistent" och vara först i listan, sedan VD (id "vd"), sedan specialister i prioritetsordning. always=true för VD och VD-assistent. VD ⚡, VD-assistent 🧭, domän-emoji för specialister. Avvisade moment kommer från researchen/förslaget (minst ett).
+
+DIVERGENCE: en mening ur proposalens/researchens divergens-check — varför just DETTA team inte skulle passa en annan aktör i samma bransch ("Skulle det passa en annan keramiker? Nej, för …"). Hämta ur underlaget; finns ingen divergens-check, härled den ur teamets mest verksamhetsspecifika val.
 
 RUTINER: 3–5 stående rutiner hämtade ur kundens faktiska veckomoment (inte påhittade). label = kort namn; agentId = agenten som äger momentet; day = veckodag 1–7 (1=måndag) om momentet är dagbundet, annars null; timeEstimate = minuter momentet brukar ta manuellt ENLIGT RESEARCHEN (null om researchen inte anger tid — hitta aldrig på); auto = true på HÖGST EN rutin och bara om dess prompt är komplett utan [fyll i]-luckor (portalen kör den då automatiskt på rätt dag), annars false; prompt = uppgiften i du-form med [fyll i]-luckor för det agenten behöver av användaren, konkret nog att skicka direkt.
 
@@ -820,11 +824,23 @@ function renderProgress(intake, stages) {
   head.appendChild(el("p", "form-lead", "Den fullständiga pipelinen körs live. Det tar ett par minuter."));
   wrap.appendChild(head);
 
+  // Undertexter som förklarar vad som händer — och lyfter att analysen även
+  // säger NEJ (avvisningarna är förtroendeargumentet, inte en bieffekt).
+  const STAGE_SUBS = {
+    research: "Letar konkreta veckomoment — och sorterar bort det som vore AI-teater. Nejen syns i texten.",
+    scale: "Hur många agenter förtjänar underlaget? Fler är inte bättre.",
+    proposal: "Varje agent måste motiveras av ett konkret fynd — annars ryker den.",
+    firstproject: "Ett första projekt som ger resultat inom en vecka.",
+    structure: "Formaterar för portalen — inga nya beslut fattas.",
+  };
   const steps = el("div", "prog-steps");
   stages.forEach((s, i) => {
     const st = el("div", "prog-step"); st.dataset.stage = s.key;
     st.appendChild(el("span", "prog-dot"));
-    st.appendChild(el("span", "prog-label", `${i + 1} · ${s.label}`));
+    const meta = el("span", "prog-meta");
+    meta.appendChild(el("span", "prog-label", `${i + 1} · ${s.label}`));
+    if (STAGE_SUBS[s.key]) meta.appendChild(el("span", "prog-sub", STAGE_SUBS[s.key]));
+    st.appendChild(meta);
     steps.appendChild(st);
   });
   wrap.appendChild(steps);
@@ -863,10 +879,30 @@ function renderResult(team) {
   live.onclick = () => { localStorage.setItem(DRAFT_STORAGE, JSON.stringify(stripTeam(team))); window.open("../portal/?team=__draft" + (state.demo ? "&demo=1" : ""), "_blank"); };
   const dl = el("button", "btn-ghost", "⬇ Ladda ner config");
   dl.onclick = () => downloadConfig(team);
+  // Delbar länk utan server: hela konfigen komprimeras in i URL-fragmentet
+  // (#cfg=…) — fragment skickas aldrig till servern. Mottagaren öppnar
+  // teamet direkt i portalen med sin egen nyckel.
+  const share = el("button", "btn-ghost", "🔗 Kopiera delningslänk");
+  share.onclick = async () => {
+    try {
+      const b64 = await window.ATBClaude.encodeTeamLink(stripTeam(team));
+      const url = new URL("../portal/", location.href).href + "#cfg=" + b64;
+      await navigator.clipboard.writeText(url);
+      share.textContent = "Kopierad ✓ — skicka länken";
+    } catch (_) { share.textContent = "Kunde inte kopiera"; }
+    setTimeout(() => (share.textContent = "🔗 Kopiera delningslänk"), 2400);
+  };
   const again = el("button", "btn-ghost", "↺ Bygg ett till");
   again.onclick = () => renderForm();
-  actions.append(live, dl, again); hero.appendChild(actions);
+  actions.append(live, dl, share, again); hero.appendChild(actions);
   wrap.appendChild(hero);
+
+  if (team.divergence) {
+    const dv = el("p", "divergence");
+    dv.textContent = "🧭 " + team.divergence;
+    dv.title = "Divergens-checken: därför skulle det här teamet inte passa en annan aktör i samma bransch";
+    wrap.appendChild(dv);
+  }
 
   const fp = team.firstProject;
   if (fp && typeof fp === "object" && fp.name) {
@@ -932,6 +968,7 @@ function agentCard(a) {
   td.appendChild(el("span", "tag " + (a.always ? "always" : "special"), a.always ? "Alltid närvarande" : "Specialist"));
   top.appendChild(td); c.appendChild(top);
   c.appendChild(el("p", "job", a.job || ""));
+  if (a.why) c.appendChild(el("p", "why", "→ " + a.why)); // kopplingen till kundens egna ord
   if (Array.isArray(a.capabilities) && a.capabilities.length) { c.appendChild(el("div", "meta-label", "Kapaciteter")); const ul = el("ul", "caps"); a.capabilities.forEach((x) => ul.appendChild(el("li", null, x))); c.appendChild(ul); }
   if (Array.isArray(a.triggers) && a.triggers.length) { c.appendChild(el("div", "meta-label", "Triggas av")); const ch = el("div", "chips"); a.triggers.forEach((x) => ch.appendChild(el("span", "chip", x))); c.appendChild(ch); }
   return c;
@@ -941,11 +978,15 @@ function stripTeam(team) {
   // job/capabilities/starters följer med till portalen — de driver agentkortet
   // ("det här kan jag hjälpa dig med" + klickbara exempeluppgifter).
   // routines + firstProject driver arbetsytan (rutinlistan och 🎯-panelen).
+  // rejected + divergence + why följer med — de driver portalens
+  // "Därför ser ert team ut så här"-sida (anställningsceremonin).
   return { company: team.company, tagline: team.tagline, language: "sv", defaultModel: state.model, entryAgent: team.entryAgent,
     routines: Array.isArray(team.routines) ? team.routines : [],
     firstProject: team.firstProject || null,
+    divergence: team.divergence || null,
+    rejected: Array.isArray(team.rejected) ? team.rejected : [],
     agents: team.agents.map((a) => ({ id: a.id, name: a.name, icon: a.icon, avatarN: a.avatarN, role: a.role, tagline: a.tagline, always: !!a.always,
-      job: a.job, capabilities: a.capabilities, starters: a.starters, system: a.system })) };
+      job: a.job, why: a.why || null, capabilities: a.capabilities, starters: a.starters, system: a.system })) };
 }
 function downloadConfig(team) {
   const js = "// Genererad av Builder. Lägg i portal/teams/ och registrera i index.js.\nwindow.TEAM = " + JSON.stringify(stripTeam(team), null, 2) + ";\n";

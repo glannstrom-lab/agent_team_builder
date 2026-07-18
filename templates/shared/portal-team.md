@@ -27,9 +27,16 @@ window.TEAM = {
   entryAgent: "<VD-assistentens id>",   // alltid den primära arbetspartnern
   routines: [ /* se nedan — driver "Veckans rutiner" i portalens arbetsyta */ ],
   firstProject: null,        // ai-consultant-läget: { name, problem, week1, owner } → 🎯-panelen
+  divergence: "<en mening ur divergens-checken: varför teamet inte skulle passa en annan aktör i samma bransch>",
+  rejected: [ { name: "<avvisat moment>", why: "<varför det inte blev en agent>" } ],
   agents: [ /* se nedan, VD-assistent först, sedan VD, sedan specialister */ ]
 };
 ```
+
+`divergence` + `rejected` (från proposalens Avvisade-sektion) driver portalens
+sida **"Därför ser ert team ut så här"** — den öppnas automatiskt vid kundens
+första besök och är produktens förtroendeargument: en AI som säger nej till
+sig själv. Utelämna aldrig `rejected` när proposalen avvisade moment.
 
 ### Rutiner (`routines`)
 
@@ -68,9 +75,14 @@ redan jobbat". Kostnad går på kundens nyckel, så var restriktiv.
   role: "Operativ arbetspartner",
   tagline: "<kort, en rad — visas i sidebaren>",
   always: true,              // true för VD och VD-assistent, utelämna/false för specialister
+  why: "<EN mening som knyter agenten till kundens egna ord: 'Du sa att offerterna tar söndagskvällarna — därför finns jag.'>",
   system: `...systemprompt...`
 }
 ```
+
+`why` visas på "Därför ser ert team ut så här"-sidan. Använd kundens egna
+formuleringar ur intaket/researchen — fabricera inget (quiz-effekten bygger
+på att kunden känner igen sina egna ord).
 
 **Avatarer:** sätt INGET `avatar`/`avatarN`-fält. Portalen tilldelar varje
 agent ett porträtt automatiskt vid inladdning (delad logik i `avatars.js` —

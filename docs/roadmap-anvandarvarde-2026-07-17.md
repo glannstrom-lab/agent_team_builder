@@ -21,13 +21,24 @@ Storlek: **S** ≈ timmar, **M** ≈ en dag, **L** ≈ flera dagar.
 
 ---
 
-> **Status 2026-07-18:** Etapp 0, 1 OCH 2 är byggda och deployade (+ valbar
-> förvalsenkät i Builder-intaget, `builder/survey-data.js`). Etapp 2-noter:
-> puls-korten (2.4) beräknas helt lokalt utan AI-kostnad; "Veckan som gick"
-> (2.3) genereras först vid klick på ny vecka-kortet (BYO-kostnadsrespekt);
-> minnesförslag (2.1) är en "🧠 Spara lärdomar"-knapp per svar; tidsstämplar
-> (`at`) sätts på alla nya meddelanden — tidslinjen (2.6) fylls framåt.
-> Manuell webbläsargenomgång av "Klart när"-punkterna återstår.
+> **Status 2026-07-18:** HELA roadmappen (etapp 0–4) är byggd och deployad,
+> plus förvalsenkäten i Builder-intaget (`builder/survey-data.js`).
+> Implementationsnoter per etapp:
+> - **2:** puls-korten (2.4) beräknas helt lokalt utan AI-kostnad; "Veckan som
+>   gick" (2.3) genereras först vid klick (BYO-kostnadsrespekt); minnesförslag
+>   (2.1) = "🧠 Spara lärdomar"-knapp per svar; tidsstämplar (`at`) sätts på
+>   alla nya meddelanden — tidslinjen (2.6) fylls framåt.
+> - **3:** delningslänken (3.1) deflate-komprimeras in i `#cfg=`-fragmentet
+>   (kodek i `atb-claude.js`); teamfil öppnas via kundväljaren, exporteras via
+>   sidfoten. "Därför"-sidan (3.2) auto-öppnas en gång (`atb_hello_`), driven
+>   av nya fälten `why` per agent + `divergence`/`rejected` i konfigen
+>   (portal-team.md + Builderns schema). 3.4 byggdes som stegundertexter +
+>   why/divergens i resultatvyn — INTE som realtidsrenderade kort (medvetet:
+>   parsning av strömmande text är skör). Kvartals-Wrapped (3.5) är en lokal
+>   sifferöverblick + delbar text, synlig sista tre veckorna av kvartalet.
+> - **4:** kärnregeln + prisankaret + GDPR/BYO-argumentet + byrå/konsult-
+>   sektionen på säljsidan. Mailto-platshållaren är KVAR (P0-1, kräver Mikael).
+> Manuell webbläsargenomgång av "Klart när"-punkterna återstår för allt.
 
 ## Etapp 0 — Skyddsnät (gör först, i ordning) ✅ byggd 2026-07-17
 
@@ -157,7 +168,7 @@ tidslinjeberättelse per agent (Marblism-mönstret) — ren frontend över data 
 
 ---
 
-## Etapp 3 — Delning, ceremoni & demo-wow
+## Etapp 3 — Delning, ceremoni & demo-wow ✅ byggd 2026-07-18
 
 **3.1 Dela team utan server** — M
 `#cfg=<base64>`-fragmentläge i portalen (fragment når aldrig servern) +
@@ -205,7 +216,7 @@ kontextfönster. Passa på: tidsstämpla meddelanden (`at`) och visa datumavdela
 
 ---
 
-## Etapp 4 — Positionering & copy (kan löpa parallellt, mest text)
+## Etapp 4 — Positionering & copy ✅ byggd 2026-07-18
 
 **4.1 Säljsidans positionering** — S
 Skriv kärnregeln ordagrant: *"Vi bygger inte samma team åt alla — ditt team

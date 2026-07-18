@@ -338,12 +338,13 @@ function loadScript(src) {
 async function loadTeam(slug) {
   window.TEAM = null;
   if (!/^[A-Za-z0-9_-]{1,64}$/.test(slug || "")) throw new Error("Ogiltig team-länk.");
-  if (slug === "__draft" || slug === "__vertical") {
-    // __draft = utkast från Builder; __vertical = branschsidornas demo-team.
-    // Separata nycklar så en branschdemo aldrig skriver över ett Builder-bygge.
-    const storageKey = slug === "__vertical" ? "atb_vertical_demo_team" : "atb_draft_team";
+  if (slug === "__draft" || slug === "__vertical" || slug === "__link") {
+    // __draft = utkast från Builder; __vertical = branschsidornas demo-team;
+    // __link = team öppnat via delningslänk (#cfg=…) eller teamfil.
+    // Separata nycklar så de aldrig skriver över varandra.
+    const storageKey = slug === "__vertical" ? "atb_vertical_demo_team" : slug === "__link" ? "atb_link_team" : "atb_draft_team";
     const raw = localStorage.getItem(storageKey);
-    if (!raw) throw new Error("Inget team-utkast hittades. Bygg ett i Builder först.");
+    if (!raw) throw new Error(slug === "__link" ? "Ingen teamlänk eller teamfil är öppnad här ännu." : "Inget team-utkast hittades. Bygg ett i Builder först.");
     try {
       window.TEAM = JSON.parse(raw);
     } catch (_) {
@@ -356,7 +357,9 @@ async function loadTeam(slug) {
     const owner = (window.TEAM && window.TEAM.company) || "";
     const prevOwner = localStorage.getItem(ownerKey);
     if (prevOwner !== null && prevOwner !== owner) {
-      [HIST_PREFIX, MEM_PREFIX, DOCS_PREFIX, DOCSON_PREFIX].forEach((p) => localStorage.removeItem(p + slug));
+      [HIST_PREFIX, MEM_PREFIX, DOCS_PREFIX, DOCSON_PREFIX,
+        "atb_hello_", "atb_intro_", "atb_rout_", "atb_streak_", "atb_visit_", "atb_fp_", "atb_cost_", "atb_pulse_snooze_"]
+        .forEach((p) => localStorage.removeItem(p + slug));
     }
     try { localStorage.setItem(ownerKey, owner); } catch (_) { /* full storage */ }
   } else {
@@ -389,6 +392,22 @@ async function loadTeam(slug) {
 async function boot() {
   if (!state.apiKey && !state.demo) { renderKeySetup(); return; }
   syncModelForProvider(); // nyckelns leverantör avgör vilket modellval som gäller
+  // Delningslänk? Fragment (#cfg=…) bär hela teamkonfigen och når aldrig
+  // servern. Packa upp, spara lokalt och öppna som __link-team.
+  const hashCfg = /^#cfg=(.+)/.exec(location.hash || "");
+  if (hashCfg) {
+    try {
+      const t = await window.ATBClaude.decodeTeamLink(hashCfg[1]);
+      try { localStorage.setItem("atb_link_team", JSON.stringify(t)); } catch (_) { /* full storage */ }
+      await loadTeam("__link");
+      renderPortal();
+      initFolder();
+      return;
+    } catch (err) {
+      renderPicker("Teamlänken kunde inte öppnas — be avsändaren om en ny. (" + ((err && err.message) || "okänt fel") + ")");
+      return;
+    }
+  }
   const slug = getSlug();
   if (!slug) { renderPicker(); return; }
   try {
@@ -505,8 +524,31 @@ function renderPicker(errMsg) {
     wrap.appendChild(grid);
   }
 
+  // Teamfil (LibreChat-preset-mönstret): backup, flytt mellan datorer och
+  // konsultflödet "jag mailar er teamet" — utan server.
+  const openFile = el("button", "link-btn", "📄 Öppna en teamfil (.js/.json)…");
+  openFile.style.marginTop = "26px";
+  openFile.onclick = () => {
+    const inp = document.createElement("input");
+    inp.type = "file"; inp.accept = ".js,.json,application/json,text/javascript";
+    inp.onchange = async () => {
+      const f = inp.files && inp.files[0];
+      if (!f) return;
+      try {
+        let txt = await f.text();
+        txt = txt.replace(/^[\s\S]*?window\.TEAM\s*=\s*/, "").trim().replace(/;\s*$/, "");
+        const t = JSON.parse(txt);
+        if (!t || !Array.isArray(t.agents) || !t.agents.length) throw new Error("filen innehåller inget team");
+        localStorage.setItem("atb_link_team", JSON.stringify(t));
+        location.href = withDemo("?team=__link");
+      } catch (e) { renderPicker("Teamfilen kunde inte läsas: " + ((e && e.message) || "okänt fel")); }
+    };
+    inp.click();
+  };
+  wrap.appendChild(openFile);
+
   const reset = el("button", "link-btn", state.demo ? "Koppla in din nyckel" : "Byt API-nyckel");
-  reset.style.marginTop = "26px";
+  reset.style.marginTop = "10px";
   reset.onclick = state.demo ? connectKey : resetKey;
   wrap.appendChild(reset);
 
@@ -537,6 +579,16 @@ function renderPortal() {
   selectAgent(state.activeAgentId);
   renderPulse();       // lokala puls-kort — portalen har alltid något att säga
   runAutoRoutines();   // async: auto-rutiner som ska ligga klara idag
+  // Anställningsceremonin: första besöket i ett team med motiveringar öppnas
+  // "Därför ser ert team ut så här" automatiskt — en gång, aldrig igen.
+  if (!state.demo && whyAvailable()) {
+    let seen = null;
+    try { seen = localStorage.getItem("atb_hello_" + state.slug); } catch (_) { /* läsfel */ }
+    if (!seen) {
+      try { localStorage.setItem("atb_hello_" + state.slug, "1"); } catch (_) { /* full storage */ }
+      setTimeout(openWhyTeam, 500);
+    }
+  }
 }
 
 function renderSidebar() {
@@ -589,6 +641,8 @@ function renderSidebar() {
   wsBtn("🤝", "Håll ett möte", openMeeting, "Samla flera agenters perspektiv och landa i ett beslut");
   wsBtn("🧠", "Minne & underlag", openMemory, "Delade instruktioner och material som alla agenter ser");
   wsBtn("📈", "Veckans arbete", openWeekWork, "Vad du och teamet gjort den här veckan — och tid tillbaka");
+  if (whyAvailable()) wsBtn("✨", "Därför detta team", openWhyTeam, "Varje agents koppling till er verksamhet — och det vi medvetet sa nej till");
+  if (!state.demo && quarterEndsSoon()) wsBtn("🏆", "Kvartalet med teamet", openQuarter, "Kvartalets siffror — delbara med en kollega");
   if (team.firstProject) wsBtn("🎯", "Första projektet", openFirstProject, "Ert första AI-projekt — planen och första steget");
 
   // Synlig inlärning: minnet som växande investering, inte gömd inställning.
@@ -649,6 +703,10 @@ function renderSidebar() {
     localStorage.setItem(isOpenRouter() ? OR_MODEL_STORAGE : MODEL_STORAGE, sel.value);
   };
   foot.appendChild(sel);
+
+  const share = el("button", "link-btn", "Dela / exportera team");
+  share.onclick = openShare;
+  foot.appendChild(share);
 
   const reset = el("button", "link-btn", state.demo ? "Koppla in din nyckel" : "Byt API-nyckel");
   reset.onclick = state.demo ? connectKey : resetKey;
@@ -1219,6 +1277,119 @@ async function runAutoRoutines() {
   }
 }
 
+// ---------- "därför ser ert team ut så här" (anställningsceremonin) ----------
+// Quiz-effekten: att se kopplingen mellan sina egna svar och teamet mer än
+// dubblar upplevd träffsäkerhet. Nejen (avvisade agenter) är produktens
+// starkaste förtroendeargument — en AI som säger nej till sig själv.
+function whyAvailable() {
+  return (team.agents || []).some((a) => a.why) || (Array.isArray(team.rejected) && team.rejected.length > 0) || !!team.divergence;
+}
+function openWhyTeam() {
+  const box = openOverlay("✨ Därför ser ert team ut så här");
+  box.appendChild(el("p", "ovl-lead", "Teamet är ingen mall — varje agent finns för att något i just er verksamhet krävde den. Här är kopplingen, byggd på det ni själva berättade."));
+  (team.agents || []).forEach((a) => {
+    if (!a.why && !a.job) return;
+    const row = el("div", "why-row");
+    const head = el("div", "why-head");
+    head.appendChild(agentIcon(a, "why-icon"));
+    head.appendChild(el("span", "why-name", a.name));
+    row.appendChild(head);
+    row.appendChild(el("div", "why-text", a.why || a.job));
+    box.appendChild(row);
+  });
+  if (Array.isArray(team.rejected) && team.rejected.length) {
+    box.appendChild(el("div", "ovl-label", "Det vi medvetet sa nej till"));
+    team.rejected.forEach((r) => {
+      const row = el("div", "why-row rej");
+      row.appendChild(el("div", "why-name", "✕ " + r.name));
+      row.appendChild(el("div", "why-text", r.why));
+      box.appendChild(row);
+    });
+    box.appendChild(el("p", "ovl-note", "En agent som inte kan motiveras av ett konkret behov blir teater. Därför är nejen lika viktiga som jaen."));
+  }
+  if (team.divergence) {
+    box.appendChild(el("div", "ovl-label", "Skulle samma team passa någon annan?"));
+    box.appendChild(el("div", "why-text", team.divergence));
+  }
+}
+
+// ---------- dela & exportera team ----------
+function openShare() {
+  const box = openOverlay("🔗 Dela & exportera teamet");
+  box.appendChild(el("p", "ovl-lead", "Teamet kan flyttas som en länk eller en fil — ingen server inblandad. Mottagaren använder sin egen nyckel. Chatthistorik, minne och underlag följer inte med."));
+  const linkBtn = el("button", "btn-primary ovl-save", "🔗 Kopiera delningslänk"); linkBtn.type = "button";
+  linkBtn.onclick = async () => {
+    try {
+      const b64 = await window.ATBClaude.encodeTeamLink(team);
+      await navigator.clipboard.writeText(new URL(location.pathname, location.href).href + "#cfg=" + b64);
+      linkBtn.textContent = "Kopierad ✓ — skicka länken";
+    } catch (_) { linkBtn.textContent = "Kunde inte kopiera"; }
+    setTimeout(() => (linkBtn.textContent = "🔗 Kopiera delningslänk"), 2400);
+  };
+  box.appendChild(linkBtn);
+  const fileBtn = el("button", "btn-primary ovl-save", "⬇ Ladda ner teamfil (.json)"); fileBtn.type = "button";
+  fileBtn.onclick = () => {
+    const name = (team.company || "team").toLowerCase().replace(/[åä]/g, "a").replace(/ö/g, "o").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "team";
+    const blob = new Blob([JSON.stringify(team, null, 2)], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = name + "-ai-team.json";
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  };
+  box.appendChild(fileBtn);
+  box.appendChild(el("p", "ovl-note", "Filen öppnas via kundväljarens \"Öppna en teamfil\" på vilken dator som helst — bra som backup och för flytt mellan datorer. Länken bär hela teamet i själva adressen (efter #) och skickas aldrig till någon server."));
+}
+
+// ---------- kvartalet med teamet ----------
+// Wrapped-mönstret, sparsamt: knappen dyker upp de sista tre veckorna av
+// kvartalet. Lokala siffror ur portalens logg + delbar textsammanfattning.
+function quarterEndsSoon() {
+  const now = new Date();
+  const qEnd = new Date(now.getFullYear(), Math.floor(now.getMonth() / 3) * 3 + 3, 1);
+  return (qEnd - now) / 86400000 <= 21;
+}
+function openQuarter() {
+  const now = new Date();
+  const qStart = new Date(now.getFullYear(), Math.floor(now.getMonth() / 3) * 3, 1).getTime();
+  let questions = 0, answers = 0, meetings = 0;
+  const perAgent = {};
+  team.agents.forEach((a) => {
+    (state.history[a.id] || []).forEach((m) => {
+      if (!m || !m.at || m.at < qStart) return;
+      if (m.role === "user") { questions++; if (/^🤝 Möte/.test(m.content || "")) meetings++; }
+      else { answers++; perAgent[a.name] = (perAgent[a.name] || 0) + 1; }
+    });
+  });
+  const top = Object.entries(perAgent).sort((x, y) => y[1] - x[1])[0];
+  const facts = memoryFactCount();
+  const streak = streakCount();
+  const box = openOverlay(`🏆 Kvartalet med teamet — ${quarterOf(Date.now())}`);
+  box.appendChild(el("p", "ovl-lead", `Så här blev kvartalet med ${team.company}s AI-team — ur portalens egen logg.`));
+  const stat = (num, lbl) => { const r = el("div", "q-stat"); r.appendChild(el("span", "q-num", String(num))); r.appendChild(el("span", "q-lbl", lbl)); return r; };
+  const grid = el("div", "q-grid");
+  grid.appendChild(stat(questions, "frågor & uppgifter"));
+  grid.appendChild(stat(answers, "leveranser från teamet"));
+  if (meetings) grid.appendChild(stat(meetings, "möten"));
+  if (facts) grid.appendChild(stat(facts, "saker teamet lärt sig om er"));
+  if (streak >= 2) grid.appendChild(stat(streak, "veckor i rad"));
+  box.appendChild(grid);
+  if (top) box.appendChild(el("p", "ovl-note", `Kvartalets arbetshäst: ${top[0]} (${top[1]} leveranser).`));
+  const copyBtn = el("button", "btn-primary ovl-save", "Kopiera som text att dela"); copyBtn.type = "button";
+  copyBtn.onclick = async () => {
+    const parts = [`Kvartalet med vårt AI-team (${quarterOf(Date.now())}):`, `• ${questions} frågor, ${answers} leveranser`];
+    if (meetings) parts.push(`• ${meetings} möten där agenterna gav oberoende perspektiv`);
+    if (facts) parts.push(`• Teamet kan nu ${facts} saker om vår verksamhet`);
+    if (top) parts.push(`• Flitigast: ${top[0]}`);
+    parts.push("Byggt med mittaiteam.se — ett AI-team skräddarsytt från vår faktiska vecka.");
+    try { await navigator.clipboard.writeText(parts.join("\n")); copyBtn.textContent = "Kopierat ✓"; }
+    catch (_) { copyBtn.textContent = "Kunde inte kopiera"; }
+    setTimeout(() => (copyBtn.textContent = "Kopiera som text att dela"), 2000);
+  };
+  box.appendChild(copyBtn);
+  box.appendChild(el("p", "ovl-note", "Siffrorna bygger på det som finns sparat lokalt (historiken har ett tak per agent) — se dem som ett golv, inte facit."));
+}
+
 // ---------- veckans arbete (tidslinje) ----------
 // Marblism-mönstret: rendera veckan som en berättelse ur portalens egen
 // logg — rutiner, möten, svar per agent, och tid tillbaka via rutinernas
@@ -1292,11 +1463,54 @@ function addActions(row, getText) {
   };
   acts.appendChild(copy); acts.appendChild(dl);
   if (!state.demo) {
+    // Fork ("fortsätt härifrån"): räddar ett urspårat samtal utan att kunden
+    // behöver förstå kontextfönster — allt efter det här svaret rensas.
+    const fk = el("button", "act-btn", "✂ Fortsätt härifrån"); fk.type = "button";
+    fk.title = "Ta bort allt som kommit efter det här svaret och fortsätt samtalet från den här punkten";
+    fk.onclick = () => {
+      const msgs = state.history[state.activeAgentId] || [];
+      const i = msgs.map((m) => m.content).lastIndexOf(getText());
+      if (i < 0) return;
+      const after = msgs.length - 1 - i;
+      if (!after) { fk.textContent = "Redan sista svaret"; setTimeout(() => (fk.textContent = "✂ Fortsätt härifrån"), 1600); return; }
+      if (!confirm(`Ta bort de ${after} meddelanden som kommit efter det här svaret? Det går inte att ångra.`)) return;
+      state.history[state.activeAgentId] = msgs.slice(0, i + 1);
+      saveHistory();
+      renderLog();
+    };
+    acts.appendChild(fk);
+  }
+  if (!state.demo) {
     // Minnesförslag med grind: agenten föreslår, användaren godkänner.
     const mb = el("button", "act-btn", "🧠 Spara lärdomar"); mb.type = "button";
     mb.title = "Låt teamet föreslå rader till det delade minnet ur det här samtalet (ett litet anrop)";
     mb.onclick = () => suggestMemory(state.activeAgentId);
     acts.appendChild(mb);
+  }
+  if (!state.demo && team.agents.length > 1) {
+    // Synlig delegering: svaret blir en brief till en kollega i teamet —
+    // researchen designar kedjorna ("X ger Y en brief"), här görs de i praktiken.
+    const hb = el("button", "act-btn", "→ Skicka vidare"); hb.type = "button";
+    hb.title = "Skicka svaret som brief till en annan agent i teamet";
+    hb.onclick = () => {
+      const openMenu = row.querySelector(".handoff-menu");
+      if (openMenu) { openMenu.remove(); return; }
+      const from = agentById(state.activeAgentId);
+      const m = el("div", "handoff-menu");
+      team.agents.filter((a) => a.id !== state.activeAgentId).forEach((a) => {
+        const b = el("button", "handoff-opt", `${a.icon || "•"} ${a.name}`); b.type = "button";
+        b.onclick = () => {
+          m.remove();
+          const brief = `📨 Brief från ${from ? from.name : "kollegan"}:\n\n${getText()}\n\nTa detta vidare utifrån din roll — vad är ditt konkreta nästa bidrag?`;
+          selectAgent(a.id);
+          const ta = $("#composer-input");
+          if (ta) { ta.value = brief; ta.style.height = "auto"; ta.style.height = Math.min(ta.scrollHeight, 200) + "px"; if (!COARSE) ta.focus(); }
+        };
+        m.appendChild(b);
+      });
+      row.appendChild(m);
+    };
+    acts.appendChild(hb);
   }
   if (!state.demo && FOLDER_SUPPORTED) {
     const sf = el("button", "act-btn", "Spara i mappen"); sf.type = "button";

@@ -228,6 +228,35 @@
     return out;
   }
 
+  // ---------- delbara teamlänkar (ingen server) ----------
+  // Teamkonfigen packas (deflate om webbläsaren kan) och base64url-kodas in i
+  // ett URL-fragment (#cfg=…). Fragment skickas aldrig till servern — länken
+  // bär hela teamet själv. Prefixet anger om innehållet är komprimerat.
+  async function encodeTeamLink(teamObj) {
+    const bytes = new TextEncoder().encode(JSON.stringify(teamObj));
+    let packed = bytes, prefix = "0.";
+    if (typeof CompressionStream === "function") {
+      const stream = new Blob([bytes]).stream().pipeThrough(new CompressionStream("deflate-raw"));
+      packed = new Uint8Array(await new Response(stream).arrayBuffer());
+      prefix = "1.";
+    }
+    let bin = "";
+    packed.forEach((b) => { bin += String.fromCharCode(b); });
+    return prefix + btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  }
+  async function decodeTeamLink(str) {
+    const m = /^([01])\.(.+)$/.exec((str || "").trim());
+    if (!m) throw new Error("Ogiltig teamlänk.");
+    const bin = atob(m[2].replace(/-/g, "+").replace(/_/g, "/"));
+    let bytes = Uint8Array.from(bin, (c) => c.charCodeAt(0));
+    if (m[1] === "1") {
+      if (typeof DecompressionStream !== "function") throw new Error("Den här webbläsaren kan inte öppna länken — prova Chrome, Edge eller Firefox.");
+      const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream("deflate-raw"));
+      bytes = new Uint8Array(await new Response(stream).arrayBuffer());
+    }
+    return JSON.parse(new TextDecoder().decode(bytes));
+  }
+
   // fetch med hård timeout — så en seg/hängande request inte låser UI:t
   // (t.ex. portalens moln-team-hämtning). Kastar AbortError vid timeout.
   async function fetchWithTimeout(url, options, ms) {
@@ -240,5 +269,5 @@
     }
   }
 
-  window.ATBClaude = { stream, collect, fetchWithTimeout, providerFor, openrouterModels, validateKey, API_URL, ANTHROPIC_VERSION };
+  window.ATBClaude = { stream, collect, fetchWithTimeout, providerFor, openrouterModels, validateKey, encodeTeamLink, decodeTeamLink, API_URL, ANTHROPIC_VERSION };
 })();
