@@ -66,11 +66,37 @@ function loadHistory(slug) {
 function saveHistory() {
   if (!state.slug) return;
   try {
-    // Tak per agent så localStorage inte växer obegränsat (äldst ryker först).
+    // Tak per agent så localStorage inte växer obegränsat. Med kopplad mapp
+    // ARKIVERAS det som faller ur (arkiv/<agent>.md) i stället för att
+    // slängas — läsrapporter och beslut ska gå att hitta månader senare.
     const capped = {};
-    for (const [id, msgs] of Object.entries(state.history)) capped[id] = msgs.slice(-60);
+    for (const id of Object.keys(state.history)) {
+      const msgs = state.history[id];
+      if (msgs.length > 60) {
+        const dropped = msgs.slice(0, msgs.length - 60);
+        state.history[id] = msgs.slice(-60);
+        if (folderActive()) archiveMessages(id, dropped); // fire & forget
+      }
+      capped[id] = state.history[id];
+    }
     localStorage.setItem(HIST_PREFIX + state.slug, JSON.stringify(capped));
   } catch (_) { /* full/blockerad storage får aldrig krascha chatten */ }
+}
+
+async function archiveMessages(agentId, dropped) {
+  try {
+    const a = agentById(agentId);
+    const dir = await state.folder.handle.getDirectoryHandle("arkiv", { create: true });
+    const fh = await dir.getFileHandle(agentId + ".md", { create: true });
+    let old = "";
+    try { old = await (await fh.getFile()).text(); } catch (_) { /* ny fil */ }
+    const add = dropped.map((m) =>
+      `\n\n---\n**${m.role === "user" ? "Du" : (a ? a.name : "Agenten")}**${m.at ? " · " + new Date(m.at).toLocaleString("sv-SE") : ""}\n\n${m.content || ""}`
+    ).join("");
+    const w = await fh.createWritable();
+    await w.write(old + add);
+    await w.close();
+  } catch (_) { /* arkivering är best effort — kapningen sker ändå */ }
 }
 
 // ---------- minne & underlag ----------
@@ -208,6 +234,7 @@ async function initFolder() {
     state.folder = { handle, name: handle.name, docs: [], memory: null, needsPermission: false };
     await refreshFolder();
     updateFolderBanner();
+    await syncStatusToFolder(); // hämta in kollegors rutinbockar/streak
   } catch (_) { /* ingen mapp */ }
 }
 
@@ -218,6 +245,59 @@ async function writeFolderFile(name, text, sub) {
   const w = await fh.createWritable();
   await w.write(text);
   await w.close();
+}
+
+// ---------- delad teamstatus via mappen ----------
+// Tre kollegor = tre webbläsare med varsin localStorage. Mappen är den delade
+// ytan: rutinlogg + streak speglas till teamstatus.json och merge:as vid
+// inläsning, så "klar ✓" och streaken blir gemensamma när mappen ligger i
+// OneDrive/Dropbox. (Chatthistorik delas inte — den är för stor och personlig.)
+async function readStatusFile() {
+  try {
+    const fh = await state.folder.handle.getFileHandle("teamstatus.json");
+    return JSON.parse(await (await fh.getFile()).text());
+  } catch (_) { return null; }
+}
+async function syncStatusToFolder() {
+  if (!folderActive()) return;
+  try {
+    const cur = (await readStatusFile()) || {};
+    // Rutiner: union av lokala + filens avklarade för innevarande vecka.
+    const local = routLoad();
+    const merged = { week: local.week, done: [...local.done] };
+    if (cur.rout && cur.rout.week === local.week && Array.isArray(cur.rout.done)) {
+      cur.rout.done.forEach((d) => {
+        const l = d.label || d;
+        if (!merged.done.some((x) => (x.label || x) === l)) merged.done.push(d);
+      });
+    }
+    // Streak: ta den mest generösa (senast aktiv + högsta räknaren).
+    let streakL = null;
+    try { streakL = JSON.parse(localStorage.getItem("atb_streak_" + state.slug) || "null"); } catch (_) { /* läsfel */ }
+    const streakF = cur.streak || null;
+    let streak = streakL || streakF;
+    if (streakL && streakF) {
+      streak = {
+        lastAt: Math.max(streakL.lastAt || 0, streakF.lastAt || 0),
+        count: Math.max(streakL.count || 0, streakF.count || 0),
+        freezeQ: streakF.freezeQ || streakL.freezeQ || "",
+      };
+    }
+    await writeFolderFile("teamstatus.json", JSON.stringify({ rout: merged, streak, at: Date.now() }, null, 2));
+    // Spegla tillbaka det merge:ade läget lokalt.
+    routSave(merged);
+    if (streak) { try { localStorage.setItem("atb_streak_" + state.slug, JSON.stringify(streak)); } catch (_) { /* full storage */ } }
+    // Måla om rutinbockar som kom in från en kollega.
+    merged.done.forEach((d) => {
+      const label = d.label || d;
+      document.querySelectorAll(".routine-item").forEach((n) => {
+        if (n.dataset.label === label && !n.classList.contains("done")) {
+          n.classList.add("done");
+          const dEl = n.querySelector(".routine-day"); if (dEl) dEl.textContent = "klar ✓";
+        }
+      });
+    });
+  } catch (_) { /* status-synk är best effort — lokalt läge gäller ändå */ }
 }
 
 function updateFolderBanner() {
@@ -358,7 +438,7 @@ async function loadTeam(slug) {
     const prevOwner = localStorage.getItem(ownerKey);
     if (prevOwner !== null && prevOwner !== owner) {
       [HIST_PREFIX, MEM_PREFIX, DOCS_PREFIX, DOCSON_PREFIX,
-        "atb_hello_", "atb_intro_", "atb_rout_", "atb_streak_", "atb_visit_", "atb_fp_", "atb_cost_", "atb_pulse_snooze_"]
+        "atb_hello_", "atb_intro_", "atb_rout_", "atb_streak_", "atb_visit_", "atb_fp_", "atb_cost_", "atb_pulse_snooze_", "atb_teamext_"]
         .forEach((p) => localStorage.removeItem(p + slug));
     }
     try { localStorage.setItem(ownerKey, owner); } catch (_) { /* full storage */ }
@@ -380,6 +460,17 @@ async function loadTeam(slug) {
   if (!Array.isArray(team.agents) || team.agents.length === 0) {
     throw new Error("Teamet saknar agenter.");
   }
+  // Lokala teamtillägg ("Utveckla teamet"): agenter/rutiner kunden godkänt
+  // efter bygget läggs ovanpå grundkonfigen vid varje laddning.
+  try {
+    const ext = JSON.parse(localStorage.getItem("atb_teamext_" + slug) || "null");
+    if (ext && Array.isArray(ext.agents)) {
+      ext.agents.forEach((a) => { if (a && a.id && a.system && !team.agents.some((b) => b.id === a.id)) { a.added = true; team.agents.push(a); } });
+      (ext.routines || []).forEach((r) => {
+        if (r && r.label && !(team.routines || []).some((x) => x.label === r.label)) (team.routines = team.routines || []).push(r);
+      });
+    }
+  } catch (_) { /* trasigt tillägg — kör grundkonfigen */ }
   assignAvatars(team); // ge varje agent en (stabil, slumpad) avatar om ingen är satt
   state.slug = slug;
   state.history = loadHistory(slug);
@@ -643,6 +734,8 @@ function renderSidebar() {
   wsBtn("📈", "Veckans arbete", openWeekWork, "Vad du och teamet gjort den här veckan — och tid tillbaka");
   if (whyAvailable()) wsBtn("✨", "Därför detta team", openWhyTeam, "Varje agents koppling till er verksamhet — och det vi medvetet sa nej till");
   if (!state.demo && quarterEndsSoon()) wsBtn("🏆", "Kvartalet med teamet", openQuarter, "Kvartalets siffror — delbara med en kollega");
+  if (!state.demo) wsBtn("🔄", "Utveckla teamet", openGrow, "Lägg till en agent när verksamheten förändras — avvisade moment står först i kön");
+  if (!state.demo) wsBtn("🔍", "Sök i historiken", openSearch, "Sök i alla samtal och arkivet");
   if (team.firstProject) wsBtn("🎯", "Första projektet", openFirstProject, "Ert första AI-projekt — planen och första steget");
 
   // Synlig inlärning: minnet som växande investering, inte gömd inställning.
@@ -1079,6 +1172,7 @@ function routineMarkDone(label) {
   r.done.push({ label, at: Date.now() });
   routSave(r);
   touchStreak();
+  syncStatusToFolder(); // dela avbockningen med kollegor via mappen (best effort)
   // Uppdatera sidopanelens rutinknapp utan full omritning.
   document.querySelectorAll(".routine-item").forEach((n) => {
     if (n.dataset.label === label) { n.classList.add("done"); const dEl = n.querySelector(".routine-day"); if (dEl) dEl.textContent = "klar ✓"; }
@@ -1311,6 +1405,213 @@ function openWhyTeam() {
     box.appendChild(el("div", "ovl-label", "Skulle samma team passa någon annan?"));
     box.appendChild(el("div", "why-text", team.divergence));
   }
+}
+
+// ---------- sök i historiken + arkivet ----------
+// Simuleringens månad 3-fynd: utan sök tappar portalen sitt värde som
+// arbetsyta med minne ("vad sa hon om prissättningen i augusti?").
+function snippetAround(text, idx, qlen) {
+  const start = Math.max(0, idx - 60);
+  return (start > 0 ? "…" : "") + text.slice(start, idx + qlen + 90).replace(/\s+/g, " ").trim() + "…";
+}
+function openSearch() {
+  const box = openOverlay("🔍 Sök i historiken");
+  box.appendChild(el("p", "ovl-lead", "Söker i alla agenters samtal" + (folderActive() ? " och i mappens arkiv." : ". Koppla en mapp så söks även arkiverade äldre samtal.")));
+  const inp = el("input", "ovl-input"); inp.placeholder = "Sök ord eller fras…";
+  const res = el("div", "search-res");
+  const run = async () => {
+    const q = inp.value.trim().toLowerCase();
+    res.innerHTML = "";
+    if (q.length < 2) return;
+    const hits = [];
+    team.agents.forEach((a) => {
+      (state.history[a.id] || []).forEach((m) => {
+        const idx = (m.content || "").toLowerCase().indexOf(q);
+        if (idx >= 0) hits.push({ agent: a, role: m.role, at: m.at, snippet: snippetAround(m.content, idx, q.length) });
+      });
+    });
+    if (folderActive()) {
+      try {
+        const dir = await state.folder.handle.getDirectoryHandle("arkiv");
+        for await (const [name, h] of dir.entries()) {
+          if (h.kind !== "file" || !name.endsWith(".md")) continue;
+          const text = await (await h.getFile()).text();
+          const lower = text.toLowerCase();
+          let from = 0, idx, n = 0;
+          while ((idx = lower.indexOf(q, from)) >= 0 && n < 10) {
+            const a = agentById(name.replace(/\.md$/, ""));
+            hits.push({ agent: a || { name: name.replace(/\.md$/, "") }, role: "arkiv", at: null, snippet: snippetAround(text, idx, q.length) });
+            from = idx + q.length; n++;
+          }
+        }
+      } catch (_) { /* inget arkiv än */ }
+    }
+    if (!hits.length) { res.appendChild(el("div", "doc-empty", "Inga träffar.")); return; }
+    hits.sort((x, y) => (y.at || 0) - (x.at || 0));
+    hits.slice(0, 50).forEach((h) => {
+      const row = el("button", "search-hit"); row.type = "button";
+      row.appendChild(el("div", "search-meta",
+        `${h.agent.name || "?"} · ${h.role === "user" ? "du" : h.role === "arkiv" ? "arkiv" : "svar"}${h.at ? " · " + new Date(h.at).toLocaleDateString("sv-SE") : ""}`));
+      row.appendChild(el("div", "search-snip", h.snippet));
+      if (h.agent.id) row.onclick = () => { closeOverlay(); selectAgent(h.agent.id); };
+      res.appendChild(row);
+    });
+    if (hits.length > 50) res.appendChild(el("p", "ovl-note", `Visar 50 av ${hits.length} träffar — förfina sökningen.`));
+  };
+  let t;
+  inp.addEventListener("input", () => { clearTimeout(t); t = setTimeout(run, 250); });
+  box.appendChild(inp);
+  box.appendChild(res);
+  setTimeout(() => inp.focus(), 60);
+}
+
+// ---------- utveckla teamet (växtväg utan konsultsamtal) ----------
+// Simuleringens oktober-kris: ett avvisat moment behövdes plötsligt, och
+// portalen hade ingen väg att växa teamet → "varför betalar vi"-frågan.
+// Avvisade moment är "först i kön"; ett anrop genererar en komplett agent
+// som förhandsvisas och läggs till som lokalt tillägg efter godkännande.
+function extractJsonBlock(s) {
+  const t = (s || "").trim().replace(/^```(json)?/i, "").replace(/```$/, "").trim();
+  const start = t.indexOf("{");
+  if (start === -1) throw new Error("ingen JSON i svaret");
+  let depth = 0, inStr = false, esc = false;
+  for (let i = start; i < t.length; i++) {
+    const ch = t[i];
+    if (inStr) { if (esc) esc = false; else if (ch === "\\") esc = true; else if (ch === '"') inStr = false; }
+    else if (ch === '"') inStr = true;
+    else if (ch === "{") depth++;
+    else if (ch === "}") { depth--; if (depth === 0) return t.slice(start, i + 1); }
+  }
+  throw new Error("ofullständig JSON");
+}
+const GROW_RULES = `Du utökar ett befintligt AI-agentteam för ett företag med EN ny agent.
+Regler:
+- Agenten måste motiveras av kundens beskrivna behov. Fabricera inget.
+- Den får inte dela perspektiv med någon befintlig agent — den ska se något ingen annan ser.
+- system skrivs FÖR agenten (inte för användaren) med: kontext + roll, DITT PERSPEKTIV (blicken den resonerar från), DINA KAPACITETER (punktlista), LEVERANS med 2–4 "Klart när"-punkter som går att svara ja/nej på, ARBETSSÄTT (be om data som saknas i stället för att gissa), TON (svenska, vardaglig och rak), VIKTIGT (vad agenten INTE gör — slutbeslut, juridik och relationer ligger hos människan).
+- why = EN mening som knyter agenten till kundens egna ord.
+- starters = 2–4 korta exempeluppgifter i du-form, konkreta nog att skicka direkt.
+- routine bara om behovet är återkommande (annars null); prompt i du-form med [fyll i]-luckor; auto alltid false; timeEstimate alltid null.
+Returnera ENBART giltig JSON (inga staket, ingen text runt):
+{ "agent": { "id": "<kebab-case>", "name": "", "icon": "<emoji>", "role": "", "tagline": "", "always": false, "job": "", "why": "", "capabilities": [""], "starters": [""], "system": "" }, "routine": { "label": "", "agentId": "<samma id>", "day": null, "timeEstimate": null, "auto": false, "prompt": "" } | null }`;
+
+function openGrow() {
+  const box = openOverlay("🔄 Utveckla teamet");
+  box.appendChild(el("p", "ovl-lead", "Verksamheter förändras — teamet ska kunna växa med er. Beskriv vad som ändrats, eller aktivera något vi medvetet sa nej till vid bygget."));
+
+  const ta = el("textarea", "ovl-ta"); ta.rows = 3;
+  ta.placeholder = "T.ex: Vi har börjat söka projektstöd och behöver hjälp med ansökningarna — deadline i april.";
+
+  if (Array.isArray(team.rejected) && team.rejected.length) {
+    box.appendChild(el("div", "ovl-label", "Först i kön — det vi sa nej till vid bygget"));
+    team.rejected.forEach((r) => {
+      const row = el("div", "why-row rej");
+      const head = el("div", "why-head");
+      head.appendChild(el("span", "why-name", r.name));
+      const act = el("button", "act-btn", "Aktivera →"); act.type = "button";
+      act.onclick = () => { ta.value = `Vi behöver nu hjälp med: ${r.name}. (Avvisades vid bygget med motiveringen: ${r.why})`; ta.focus(); };
+      head.appendChild(act);
+      row.appendChild(head);
+      row.appendChild(el("div", "why-text", r.why));
+      box.appendChild(row);
+    });
+  }
+
+  box.appendChild(el("div", "ovl-label", "Vad har ändrats / vad behöver ni?"));
+  box.appendChild(ta);
+  const errEl = el("div", "setup-err"); errEl.style.display = "none"; box.appendChild(errEl);
+  const preview = el("div", "grow-preview");
+  box.appendChild(preview);
+
+  const go = el("button", "btn-primary ovl-save", "Föreslå en ny agent"); go.type = "button";
+  go.onclick = async () => {
+    const need = ta.value.trim();
+    if (need.length < 10) { errEl.textContent = "Beskriv behovet med åtminstone en mening."; errEl.style.display = "block"; return; }
+    if (state.demo || !state.apiKey) { errEl.textContent = "Kräver en inkopplad nyckel — demoläget kan inte generera."; errEl.style.display = "block"; return; }
+    errEl.style.display = "none";
+    go.disabled = true; go.textContent = "Formar agenten… (~30 s)";
+    preview.innerHTML = "";
+    try {
+      const existing = team.agents.map((a) => `- ${a.name} (${a.id}): ${a.job || a.tagline || ""}`).join("\n");
+      const mem = loadMemory().trim().slice(0, 1500);
+      const raw = await window.ATBClaude.collect({
+        apiKey: state.apiKey, model: state.model, system: GROW_RULES,
+        messages: [{ role: "user", content: `FÖRETAG: ${team.company} — ${team.tagline || ""}\n\nBEFINTLIGA AGENTER:\n${existing}\n\nKUNDENS BEHOV:\n${need}${mem ? `\n\nUR FÖRETAGSMINNET:\n${mem}` : ""}` }],
+        maxTokens: 4096, onUsage: costAdd,
+      });
+      const data = JSON.parse(extractJsonBlock(raw));
+      const a = data.agent;
+      if (!a || !a.id || !a.system) throw new Error("svaret saknade en komplett agent");
+      if (team.agents.some((b) => b.id === a.id)) a.id = a.id + "-2";
+      if (data.routine) data.routine.agentId = a.id;
+      renderGrowPreview(preview, a, data.routine || null);
+    } catch (e) {
+      errEl.textContent = "Kunde inte forma agenten: " + ((e && e.message) || "okänt fel") + " — försök igen.";
+      errEl.style.display = "block";
+    } finally {
+      go.disabled = false; go.textContent = "Föreslå en ny agent";
+    }
+  };
+  box.appendChild(go);
+
+  // Befintliga tillägg — kan tas bort (grundteamet kan inte).
+  let ext = null;
+  try { ext = JSON.parse(localStorage.getItem("atb_teamext_" + state.slug) || "null"); } catch (_) { /* trasigt */ }
+  if (ext && Array.isArray(ext.agents) && ext.agents.length) {
+    box.appendChild(el("div", "ovl-label", "Tillagda efter bygget"));
+    ext.agents.forEach((a) => {
+      const row = el("div", "doc-row");
+      row.appendChild(el("span", "doc-title", `${a.icon || "•"} ${a.name}`));
+      const del = el("button", "doc-del", "✕"); del.type = "button"; del.title = "Ta bort tillägget (historiken för agenten rensas inte)";
+      del.onclick = () => {
+        if (!confirm(`Ta bort ${a.name} ur teamet?`)) return;
+        const cur = JSON.parse(localStorage.getItem("atb_teamext_" + state.slug) || "{}");
+        cur.agents = (cur.agents || []).filter((x) => x.id !== a.id);
+        cur.routines = (cur.routines || []).filter((r) => r.agentId !== a.id);
+        try { localStorage.setItem("atb_teamext_" + state.slug, JSON.stringify(cur)); } catch (_) { /* full storage */ }
+        team.agents = team.agents.filter((x) => x.id !== a.id);
+        team.routines = (team.routines || []).filter((r) => r.agentId !== a.id);
+        closeOverlay(); renderPortal();
+      };
+      row.appendChild(del);
+      box.appendChild(row);
+    });
+  }
+  box.appendChild(el("p", "ovl-note", "Tillägg sparas lokalt i den här webbläsaren (och följer med i delningslänkar/teamfiler du skapar härifrån). För en full omprövning av hela teamet: kör en ny Builder-körning."));
+}
+
+function renderGrowPreview(preview, a, routine) {
+  preview.innerHTML = "";
+  const card = el("div", "why-row");
+  const head = el("div", "why-head");
+  head.appendChild(el("span", "why-icon", a.icon || "•"));
+  head.appendChild(el("span", "why-name", `${a.name} — ${a.role || ""}`));
+  card.appendChild(head);
+  if (a.why) card.appendChild(el("div", "why-text", a.why));
+  if (a.job) card.appendChild(el("div", "why-text", a.job));
+  if (Array.isArray(a.capabilities) && a.capabilities.length) {
+    const ul = el("ul", "week-list");
+    a.capabilities.slice(0, 6).forEach((c) => ul.appendChild(el("li", null, c)));
+    card.appendChild(ul);
+  }
+  if (routine) card.appendChild(el("div", "why-text", `Föreslagen rutin: ${routine.label}${routine.day ? ` (${dayName(routine.day)})` : ""}`));
+  preview.appendChild(card);
+  const add = el("button", "btn-primary ovl-save", `✓ Lägg till ${a.name} i teamet`); add.type = "button";
+  add.onclick = () => {
+    let cur = {};
+    try { cur = JSON.parse(localStorage.getItem("atb_teamext_" + state.slug) || "{}") || {}; } catch (_) { /* trasigt */ }
+    cur.agents = (cur.agents || []).concat([a]);
+    if (routine) cur.routines = (cur.routines || []).concat([routine]);
+    try { localStorage.setItem("atb_teamext_" + state.slug, JSON.stringify(cur)); } catch (_) { alert("Kunde inte spara tillägget (lagringen är full)."); return; }
+    a.added = true;
+    team.agents.push(a);
+    if (routine) (team.routines = team.routines || []).push(routine);
+    assignAvatars(team);
+    closeOverlay();
+    renderPortal();
+    selectAgent(a.id);
+  };
+  preview.appendChild(add);
 }
 
 // ---------- dela & exportera team ----------
@@ -1737,8 +2038,41 @@ function openMemory() {
   renderDocs();
   box.appendChild(listBox);
 
+  // Fil-import: PDF/Word/txt/md blir underlag utan att klistras in för hand.
+  const fileRow = el("div", "file-row");
+  const fileBtn = el("button", "btn-primary ovl-save", "📎 Lägg till fil (PDF, Word, .md, .txt)…"); fileBtn.type = "button";
+  fileBtn.onclick = () => {
+    const inp = document.createElement("input");
+    inp.type = "file"; inp.accept = ".pdf,.docx,.doc,.md,.txt"; inp.multiple = true;
+    inp.onchange = async () => {
+      const files = [...(inp.files || [])];
+      for (const f of files) {
+        fileBtn.disabled = true; fileBtn.textContent = `Läser ${f.name}…`;
+        try {
+          const text = await extractFileText(f);
+          const title = (f.name || "underlag").replace(/\.[^.]+$/, "");
+          if (folderActive()) {
+            const safe = title.replace(/[\\/:*?"<>|]/g, "-").slice(0, 60);
+            try { await writeFolderFile(safe + ".md", text); await refreshFolder(); }
+            catch (_) { const ds = loadLocalDocs(); ds.push({ title, text, on: true }); saveDocs(ds); }
+          } else {
+            const ds = loadLocalDocs(); ds.push({ title, text, on: true }); saveDocs(ds);
+          }
+        } catch (e) {
+          alert(`${f.name}: ${(e && e.message) || "kunde inte läsas"}`);
+        }
+      }
+      fileBtn.disabled = false; fileBtn.textContent = "📎 Lägg till fil (PDF, Word, .md, .txt)…";
+      renderDocs();
+    };
+    inp.click();
+  };
+  fileRow.appendChild(fileBtn);
+  box.appendChild(fileRow);
+  box.appendChild(el("p", "ovl-note", "Filen läses helt lokalt i din webbläsare — innehållet skickas ingenstans förrän du ställer en fråga med underlaget aktivt."));
+
   const dt = el("input", "ovl-input"); dt.placeholder = "Namn, t.ex. Prislista 2026 eller Mötesanteckning 14 juli";
-  const dta = el("textarea", "ovl-ta"); dta.rows = 5; dta.placeholder = "Klistra in texten här…";
+  const dta = el("textarea", "ovl-ta"); dta.rows = 5; dta.placeholder = "…eller klistra in text här";
   const add = el("button", "btn-primary ovl-save", "Lägg till underlag"); add.type = "button";
   add.onclick = async () => {
     const text = dta.value.trim();
@@ -1759,6 +2093,41 @@ function openMemory() {
   };
   box.appendChild(dt); box.appendChild(dta); box.appendChild(add);
   box.appendChild(el("p", "ovl-note", `Aktiva underlag följer med i varje anrop (max ~${Math.round(DOC_BUDGET / 1000)}000 tecken totalt) — fler aktiva = högre kostnad per fråga. Slå av det som inte behövs just nu, och håll minnet kort och kurerat.`));
+}
+
+// ---------- filimport (PDF/Word → underlag) ----------
+// Simuleringens största churn-risk: kärnmaterial (manus, offerter, avtal)
+// lever som PDF/Word och fick klistras in för hand. Extraheringen sker helt
+// lokalt i webbläsaren (vendorerade pdf.js/mammoth laddas först vid behov) —
+// filen lämnar aldrig datorn, i linje med BYO-löftet.
+async function extractFileText(file) {
+  const ext = ((file.name || "").split(".").pop() || "").toLowerCase();
+  if (ext === "txt" || ext === "md") return await file.text();
+  if (ext === "pdf") {
+    if (!window.pdfjsLib) await loadScript("vendor/pdf.min.js");
+    window.pdfjsLib.GlobalWorkerOptions.workerSrc = "vendor/pdf.worker.min.js";
+    const doc = await window.pdfjsLib.getDocument({ data: await file.arrayBuffer() }).promise;
+    const out = [];
+    const pages = Math.min(doc.numPages, 400);
+    for (let i = 1; i <= pages; i++) {
+      const tc = await (await doc.getPage(i)).getTextContent();
+      out.push(tc.items.map((it) => it.str).join(" "));
+    }
+    if (doc.numPages > pages) out.push(`[… ${doc.numPages - pages} sidor till utelämnade]`);
+    const text = out.join("\n\n").trim();
+    if (!text) throw new Error("PDF:en verkar sakna textlager (inskannad?) — prova att spara om den med OCR, eller klistra in texten.");
+    return text;
+  }
+  if (ext === "docx") {
+    if (!window.mammoth) await loadScript("vendor/mammoth.browser.min.js");
+    const res = await window.mammoth.extractRawText({ arrayBuffer: await file.arrayBuffer() });
+    const text = (res.value || "").trim();
+    if (!text) throw new Error("Dokumentet verkar vara tomt.");
+    return text;
+  }
+  throw new Error(ext === "doc"
+    ? "Gamla .doc-formatet stöds inte — spara om filen som .docx eller PDF."
+    : "Filtypen stöds inte. Portalen läser PDF, .docx, .md och .txt.");
 }
 
 // ---------- första projektet ----------
