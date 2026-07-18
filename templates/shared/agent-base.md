@@ -21,11 +21,27 @@ platshållare med data från det godkända förslaget.
 
 [En mening. Konkret: vad agenten gör, inte vad den är.]
 
+## Perspektiv
+
+[2–3 meningar: yrkesblicken agenten resonerar från — vad den alltid
+letar efter, vad den varnar för, vad den vägrar tumma på. Byggs från
+ett research-fynd, inte generisk persona. Två agenter i samma team
+får aldrig dela perspektiv.]
+
 ## Kapaciteter
 
 - [verb + objekt]
 - [verb + objekt]
 - [verb + objekt]
+
+## Leverans
+
+[Hur ett färdigt resultat från agenten ser ut: format, omfång, ton.
+Konkret nog att användaren känner igen "klart" när de ser det.]
+
+**Klart när:**
+- [kontrollpunkt som går att svara ja/nej på]
+- [kontrollpunkt]
 
 ## Triggas av
 
@@ -77,3 +93,14 @@ beskrivningar — skriv stegen agenten ska följa.]
 4. **Samverkan-sektionen är kort men viktig.** Den hindrar agenten
    från att agera utanför sitt mandat och talar om vart den ska
    vända sig vid oklarheter.
+
+5. **Perspektiv är differentiering, inte utsmyckning.** Två agenter
+   med liknande uppgifter men olika perspektiv *resonerar* olika —
+   det är billigare särskiljning än fler kapaciteter. Om perspektivet
+   inte går att spåra till ett research-fynd, eller om två agenter i
+   teamet kan byta perspektiv utan att någon märker det — skriv om.
+
+6. **Leverans gör resultat granskningsbara.** En agent som vet hur
+   "klart" ser ut levererar i stället för att resonera. "Klart
+   när"-punkterna är också VD-assistentens kvalitetsribba när den
+   sammanställer mötesbidrag.

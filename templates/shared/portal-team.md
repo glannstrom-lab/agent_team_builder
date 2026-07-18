@@ -74,11 +74,13 @@ Skriv den **för agenten**, inte för användaren (jfr regel 4 i generate.md).
 Bygg varje del från proposal/research:
 
 1. **Kontext + roll** — en mening om företaget, sedan agentens jobb (jobb-meningen från proposal).
-2. **DINA KAPACITETER** — punktlista, agentens kapaciteter från proposal.
-3. **DITT TEAM** (bara för VD-assistenten) — lista övriga agenter och vad de gör, så den kan hänvisa rätt.
-4. **ARBETSSÄTT** (valfritt) — hur agenten ska be om data den saknar istället för att gissa (jfr regel 8 i generate.md: agenter startar utan data).
-5. **TON** — kort. Spegla läget: nybörjarkund → pedagogisk, klarspråk; van/byggare → rakare, mer jämbördig. Avsluta med "Svara på <språk>."
-6. **VIKTIGT** — vad agenten INTE gör (från proposalens "Rör inte"). Slutbeslut, juridik etc. ligger hos människan.
+2. **DITT PERSPEKTIV** — proposalens Perspektiv: blicken agenten resonerar från, vad den alltid letar efter/varnar för. Det här är vad som gör att två agenter med närliggande uppgifter svarar olika.
+3. **DINA KAPACITETER** — punktlista, agentens kapaciteter från proposal.
+4. **DITT TEAM** (bara för VD-assistenten) — lista övriga agenter och vad de gör, så den kan hänvisa rätt. För VD-assistenten även: granska mötesbidrag mot varje agents "Klart när"-punkter innan sammanställning.
+5. **LEVERANS** — proposalens Leverans + "Klart när"-punkter: hur ett färdigt svar ser ut, så agenten levererar mot det istället för att resonera fritt.
+6. **ARBETSSÄTT** (valfritt) — hur agenten ska be om data den saknar istället för att gissa (jfr regel 8 i generate.md: agenter startar utan data).
+7. **TON** — kort. Spegla läget: nybörjarkund → pedagogisk, klarspråk; van/byggare → rakare, mer jämbördig. Avsluta med "Svara på <språk>."
+8. **VIKTIGT** — vad agenten INTE gör (från proposalens "Rör inte"). Slutbeslut, juridik etc. ligger hos människan.
 
 **Läge B (externt/hypotes):** lägg in en mening i varje system-prompt om att
 agenten arbetar utifrån antaganden om verksamheten och bör be om verklig data

@@ -33,11 +33,28 @@ Koppla till kundens verklighet, inte till teknisk kapacitet. Kunden
 ska tänka "ja, det där problemet känner jag igen" — inte "vilken
 imponerande teknik".]
 
+## Perspektiv
+
+[2–3 meningar: yrkesblicken agenten resonerar från — vad den alltid
+letar efter och varnar för. Byggs från ett intake-/research-fynd,
+inte generisk persona. Skrivet så att kunden förstår vilken sorts
+kollega det här är. Två agenter i samma team delar aldrig perspektiv.]
+
 ## Kapaciteter
 
 - [verb + objekt — vad agenten faktiskt gör]
 - [verb + objekt]
 - [verb + objekt]
+
+## Leverans
+
+[Hur ett färdigt resultat från agenten ser ut: format, omfång, ton.
+Skrivet så att kunden vet vad de kan förvänta sig — och känner igen
+"klart" när de ser det.]
+
+**Klart när:**
+- [kontrollpunkt som går att svara ja/nej på]
+- [kontrollpunkt]
 
 ## Så här pratar ni med den
 
@@ -113,6 +130,7 @@ Den behöver inte vara pedagogisk — den behöver vara precis.]
 | Sektion | agent-base.md | agent-pedagogical.md |
 |---------|--------------|---------------------|
 | Kommentarblock | Motivering | + kund, mognad |
+| Perspektiv / Leverans | Samma | Samma, men skrivna i kundvänlig ton |
 | Varför just denna agent | — | Ny. Citera intake. |
 | Så här pratar ni med den | — | Ny. Exempeldialoger. |
 | När ni vill ändra den | — | Ny. Mognadsnivåanpassad. |

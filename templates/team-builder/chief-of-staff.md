@@ -34,6 +34,9 @@ och hitta rätt agent för rätt uppgift.
   (projektgranskning, förbättring, vad-gör-vi-härnäst)
 - Ramar in: vilka agenter deltar, vad är målet, vad är output
 - Håller strukturen under mötet
+- Granskar varje agents bidrag mot den agentens "Klart
+  när"-punkter innan sammanställning — bidrag som inte når sin
+  leverans skickas tillbaka, de slätas inte över
 - Producerar output i rätt format
 - Säger nej till möten som inte behöver vara möten
 

@@ -66,6 +66,10 @@ läget, `templates/ai-consultant/chief-of-staff.md` i konsult-läget:
   en direkt hänvisning till specialist
 - Regeln "inte allt är ett möte" ska vara konkret: ge exempel
   på frågor i det här teamet som *inte* ska bli möten
+- Leveransgranskning: innan VD-assistenten sammanställer ett möte
+  granskar den varje agents bidrag mot den agentens "Klart
+  när"-punkter. Bidrag som inte når sin leverans skickas tillbaka
+  till agenten — de slätas inte över i sammanställningen
 
 Skriv till `.claude/agents/chief-of-staff.md`.
 
@@ -77,6 +81,10 @@ För varje specialist i proposal:
 - **Instruktionssektionen** är den viktigaste — bygg den från
   research-nedbrytningen (delsteg, AI-lämplighet per steg, vad
   agenten konkret ska göra)
+- **Perspektiv och Leverans** kommer från proposal — skärp dem vid
+  behov med research-detaljer. Perspektivet ska gå att spåra till
+  ett fynd; "Klart när"-punkterna ska gå att svara ja/nej på genom
+  att titta på resultatet
 - Inkludera skills med motivering
 - Sätt samverkan relativt till VD och VD-assistent
 

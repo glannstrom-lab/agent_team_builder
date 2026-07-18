@@ -74,6 +74,10 @@ sedan, specialister i prioritetsordning.
 
 **Jobb:** En mening som beskriver vad agenten gör i det dagliga.
 
+**Perspektiv:** [En mening: yrkesblicken agenten resonerar från — vad
+den alltid letar efter eller varnar för. Byggd från ett research-fynd,
+inte generisk persona.]
+
 **Motivering:** "[Citat eller referens från intake]" →
 [Koppling till research-kluster och specifikt moment.]
 
@@ -89,6 +93,11 @@ inte "När det behövs innehåll".]
 - [verb + objekt]
 - [verb + objekt]
 (3–6 stycken)
+
+**Leverans:** [Hur ett färdigt resultat ser ut — format, omfång, ton.]
+
+**Klart när:** [1–3 kontrollpunkter som går att svara ja/nej på.
+VD-assistenten granskar mötesbidrag mot dessa.]
 
 **Föreslagna skills:**
 - [Skill-namn] — [motivering kopplad till specifikt fynd]
@@ -158,10 +167,24 @@ här med en kort rekommendation:
 7. **Språk följer research.** Om research är på svenska, är
    förslaget på svenska.
 
-8. **Divergens-självtest (obligatoriskt sista steg).** Innan du lämnar
-   förslaget: skulle exakt den här agentuppsättningen kunna klistras in
-   hos ett annat företag i samma bransch och fortfarande passa? Om ja —
-   den är för generisk. Knyt varje agent hårdare till ett konkret fynd ur
-   *denna* intake/research, eller stryk den. Output ska vara omöjlig att
-   förväxla med ett annat företags team. Det här är projektets viktigaste
-   regel: ser output likadan ut oavsett input är förslaget trasigt.
+8. **Perspektiv skiljer agenter åt.** Varje agents perspektiv ska gå
+   att spåra till ett research-fynd, och två agenter i samma team får
+   inte dela perspektiv. Perspektiv är billigare differentiering än
+   fler kapaciteter — två agenter med närliggande uppgifter men olika
+   blick resonerar olika. Generiska perspektiv ("noggrann och
+   hjälpsam") är värre än inget: skriv om eller stryk.
+
+9. **Leverans är granskningsbar.** "Klart när"-punkterna ska gå att
+   svara ja/nej på genom att titta på resultatet. "Håller hög
+   kvalitet" är ingen kontrollpunkt; "innehåller pris, leveranstid
+   och en tydlig nästa åtgärd" är en.
+
+10. **Divergens-självtest (obligatoriskt sista steg).** Innan du lämnar
+    förslaget: skulle exakt den här agentuppsättningen kunna klistras in
+    hos ett annat företag i samma bransch och fortfarande passa? Om ja —
+    den är för generisk. Knyt varje agent hårdare till ett konkret fynd ur
+    *denna* intake/research, eller stryk den. Testa perspektiven särskilt:
+    kan två agenter i teamet byta perspektiv med varandra utan att någon
+    märker det — skärp dem. Output ska vara omöjlig att förväxla med ett
+    annat företags team. Det här är projektets viktigaste regel: ser
+    output likadan ut oavsett input är förslaget trasigt.

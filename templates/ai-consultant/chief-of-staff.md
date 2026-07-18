@@ -68,6 +68,9 @@ fråga VD-assistenten direkt."]
 - Triagerar mötesförfrågningar mot de tre typerna
 - Ramar in: vilka agenter deltar, vad är målet, vad är output
 - Håller strukturen under mötet
+- Granskar varje agents bidrag mot den agentens "Klart
+  när"-punkter innan sammanställning — brister skickas tillbaka
+  till agenten, de slätas inte över
 - Säger nej till möten som inte behöver vara möten
 
 ## Så här pratar ni med den
