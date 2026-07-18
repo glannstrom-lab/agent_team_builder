@@ -29,7 +29,14 @@ och en växtväg för teamet utan konsultsamtal.
 
 ## Prioriterade förbättringar
 
-### P1 — Churn-riskerna (bygg härnäst)
+### P1 — Churn-riskerna ✅ byggda + deployade 2026-07-18 (samma kväll)
+
+> 1 = filknapp i Minne & underlag (vendorerad pdf.js/mammoth, lokal
+> extrahering); 2 = "🔄 Utveckla teamet" i arbetsytan (avvisade = "först i
+> kön", genererad agent förhandsvisas → lokalt tillägg `atb_teamext_`);
+> 3 = `teamstatus.json` i kopplad mapp (rutinlogg + streak merge:as);
+> 4 = arkivering till mappens `arkiv/<agent>.md` + "🔍 Sök i historiken".
+> Webbläsartest återstår.
 
 1. **Bilagor: PDF/Word → text, klient-side.** 15–20 manus/vecka som PDF
    klistras idag in för hand — mitt i kärnflödet. Lösning utan backend:

@@ -110,6 +110,14 @@ window.BUILDER_SURVEY = {
       ],
     },
     {
+      key: "ownai", type: "single", title: "Använder ni redan en AI i dag?",
+      hint: "Har ni t.ex. ett ChatGPT-abonnemang kan teamet arbetsleda den i stället för att göra allt själv.",
+      options: [
+        "Nej / knappt", "ChatGPT (betalt abonnemang)", "ChatGPT (gratis)",
+        "Microsoft Copilot", "Google Gemini", "Claude", "Flera olika",
+      ],
+    },
+    {
       key: "goals", type: "multi", title: "Vad ska AI-teamet framför allt ge?",
       options: [
         "Frigöra tid från admin", "Fler kunder & mer försäljning",

@@ -75,13 +75,17 @@ function saveHistory() {
       if (msgs.length > 60) {
         const dropped = msgs.slice(0, msgs.length - 60);
         state.history[id] = msgs.slice(-60);
-        if (folderActive()) archiveMessages(id, dropped); // fire & forget
+        // Seriell kö: två samtidiga read→append→write mot samma arkivfil
+        // skulle låta den ena skrivningen radera den andras rader.
+        if (folderActive()) archiveChain = archiveChain.then(() => archiveMessages(id, dropped)).catch(() => {});
       }
       capped[id] = state.history[id];
     }
     localStorage.setItem(HIST_PREFIX + state.slug, JSON.stringify(capped));
   } catch (_) { /* full/blockerad storage får aldrig krascha chatten */ }
 }
+
+let archiveChain = Promise.resolve(); // serialiserar arkivskrivningar
 
 async function archiveMessages(agentId, dropped) {
   try {
@@ -112,8 +116,31 @@ function saveMemory(text) {
   // Mapp kopplad → minne.md är sanningen (redigerbar i valfritt program).
   // localStorage skrivs alltid som reserv så inget tappas om mappen försvinner.
   if (folderActive()) {
+    const baseline = state.folder.memory || "";
     state.folder.memory = text;
-    writeFolderFile("minne.md", text).catch(() => { /* skrivfel — reserven finns */ });
+    (async () => {
+      try {
+        // Konfliktskydd: rader en kollega hunnit lägga till i minne.md (via
+        // OneDrive-synk) sedan vår senaste läsning får inte skrivas över —
+        // de följer med. Rader användaren aktivt raderat återuppstår inte
+        // (bara det som är nytt gentemot VÅR baslinje flyttas med).
+        let finalText = text;
+        try {
+          const fh = await state.folder.handle.getFileHandle("minne.md");
+          const current = await (await fh.getFile()).text();
+          if (current !== baseline) {
+            const inText = new Set(text.split("\n").map((s) => s.trim()));
+            const inBase = new Set(baseline.split("\n").map((s) => s.trim()));
+            const added = current.split("\n").filter((l) => l.trim() && !inBase.has(l.trim()) && !inText.has(l.trim()));
+            if (added.length) finalText = text.replace(/\s+$/, "") + "\n" + added.join("\n");
+          }
+        } catch (_) { /* ingen fil än — skriv vårt innehåll */ }
+        state.folder.memory = finalText;
+        await writeFolderFile("minne.md", finalText);
+        try { localStorage.setItem(MEM_PREFIX + state.slug, finalText); } catch (_) { /* full storage */ }
+        paintFactCount();
+      } catch (_) { /* skrivfel — localStorage-reserven nedan gäller */ }
+    })();
   }
   try { localStorage.setItem(MEM_PREFIX + state.slug, text); } catch (_) { /* full storage */ }
 }
@@ -440,6 +467,10 @@ async function loadTeam(slug) {
       [HIST_PREFIX, MEM_PREFIX, DOCS_PREFIX, DOCSON_PREFIX,
         "atb_hello_", "atb_intro_", "atb_rout_", "atb_streak_", "atb_visit_", "atb_fp_", "atb_cost_", "atb_pulse_snooze_", "atb_teamext_"]
         .forEach((p) => localStorage.removeItem(p + slug));
+      // Mappkopplingen ligger i IndexedDB — utan detta återansluter förra
+      // företagets mapp och dess minne/underlag läcker in i nya teamet.
+      state.folder = null;
+      idbDel("dir_" + slug).catch(() => { /* ingen koppling fanns */ });
     }
     try { localStorage.setItem(ownerKey, owner); } catch (_) { /* full storage */ }
   } else {
@@ -475,8 +506,10 @@ async function loadTeam(slug) {
   state.slug = slug;
   state.history = loadHistory(slug);
   state.activeAgentId = agentById(team.entryAgent) ? team.entryAgent : team.agents[0].id;
-  // Teamets defaultModel är ett Anthropic-id — gäller inte OpenRouter-nycklar.
-  if (!isOpenRouter() && !localStorage.getItem(MODEL_STORAGE) && team.defaultModel) state.model = team.defaultModel;
+  // Teamets defaultModel gäller bara om det matchar användarens leverantör —
+  // ett team byggt med OpenRouter-nyckel kan bära t.ex. "openrouter/auto",
+  // som skulle ge 404 på varje anrop mot api.anthropic.com.
+  if (!isOpenRouter() && !localStorage.getItem(MODEL_STORAGE) && team.defaultModel && /^claude-/.test(team.defaultModel)) state.model = team.defaultModel;
 }
 
 // ---------- boot ----------
@@ -896,6 +929,7 @@ function renderMain() {
 // ---------- agent selection ----------
 function selectAgent(id) {
   state.activeAgentId = id;
+  state.pendingRoutine = null; // agentbyte = rutinklicket är inte längre "på väg"
   const agent = agentById(id);
   if (!agent) return;
 
@@ -1297,6 +1331,31 @@ function renderPulse() {
     if (days === null) cards.push({ icon: "🎯", label: "Första projektet väntar på sitt första steg", act: openFirstProject });
     else if (days >= 7) cards.push({ icon: "🎯", label: `${days} dagar sedan ni rörde första projektet`, act: openFirstProject });
   }
+  // Årshjulet: närmaste säsongshändelse ur teamkonfigen (`seasons`) inom
+  // fyra veckor — "3 veckor till mässan" är initiativ som känns som personal.
+  const seasons = Array.isArray(team.seasons) ? team.seasons : [];
+  const now = new Date();
+  let nextSeason = null;
+  seasons.forEach((s) => {
+    if (!s || !s.label || !s.month) return;
+    let when = new Date(now.getFullYear(), s.month - 1, s.day || 1);
+    if (when < now && (now - when) / 86400000 > 1) when = new Date(now.getFullYear() + 1, s.month - 1, s.day || 1);
+    const days = Math.ceil((when - now) / 86400000);
+    if (days >= 0 && days <= 28 && (!nextSeason || days < nextSeason.days)) nextSeason = { s, days };
+  });
+  if (nextSeason) {
+    const aid = nextSeason.s.agentId && agentById(nextSeason.s.agentId) ? nextSeason.s.agentId : team.entryAgent;
+    const lbl = nextSeason.days === 0 ? `Idag: ${nextSeason.s.label}` : `${nextSeason.days} dagar till ${nextSeason.s.label} — dags att börja?`;
+    cards.push({ icon: "🗓", label: lbl, act: () => {
+      selectAgent(aid);
+      const ta = $("#composer-input");
+      if (ta) {
+        ta.value = nextSeason.s.prompt || `Det är ${nextSeason.days} dagar kvar till ${nextSeason.s.label}. Vad borde vi börja med nu, och vad kan vänta?`;
+        ta.style.height = "auto"; ta.style.height = Math.min(ta.scrollHeight, 200) + "px";
+        if (!COARSE) ta.focus();
+      }
+    } });
+  }
   if (!loadMemory().trim() && !loadDocs().length) cards.push({ icon: "🧠", label: "Teamet känner er inte än — lägg in ett underlag eller minne", act: openMemory });
   if (!cards.length) return;
 
@@ -1347,25 +1406,32 @@ function weekReview() {
 // körs max en gång per vecka och rutin, och får aldrig störa vid fel.
 async function runAutoRoutines() {
   if (state.demo || !state.apiKey || state.streaming) return;
+  // Dagfönster: rutinens dag ELLER senare samma vecka — den som öppnar
+  // portalen på tisdag ska inte bli utan måndagsbriefen.
   const due = (team.routines || []).filter((rt) =>
-    rt.auto === true && rt.day === todayDayNo() && rt.prompt && !rt.prompt.includes("[fyll i]") && !routineDone(rt.label));
+    rt.auto === true && rt.day != null && rt.day <= todayDayNo() && rt.prompt && !rt.prompt.includes("[fyll i]") && !routineDone(rt.label));
   for (const rt of due) {
+    // Racea aldrig användarens egen chatt: börjar den strömma, avvakta auto
+    // till nästa sidöppning (rutinen är fortfarande obockad och körs då).
+    if (state.streaming) return;
     const agent = agentById(rt.agentId) || agentById(team.entryAgent);
     if (!agent) continue;
     try {
-      lastCallCost = 0;
+      const costBefore = lastCallCost; // stör inte användarens pågående kostnadsräkning
       const userMsg = { role: "user", content: `${rt.prompt}\n\n(Stående rutin, körd automatiskt av portalen. Leverera ett färdigt utkast — lista i slutet vad du vill ha kompletterat om något saknas.)`, at: Date.now() };
       const reply = await window.ATBClaude.collect({
         apiKey: state.apiKey, model: state.model, system: systemFor(agent),
         messages: (state.history[agent.id] || []).map((m) => ({ role: m.role, content: m.content })).concat([{ role: "user", content: userMsg.content }]),
         maxTokens: 4096, onUsage: costAdd,
       });
+      lastCallCost = costBefore;
       if (!state.history[agent.id]) state.history[agent.id] = [];
       state.history[agent.id].push(userMsg, { role: "assistant", content: reply, at: Date.now(), auto: true });
       saveHistory();
       routineMarkDone(rt.label);
       autoDelivered.push({ label: rt.label, agentId: agent.id });
-      if (state.activeAgentId === agent.id) renderLog();
+      // Rita inte om loggen mitt i en pågående strömning hos användaren.
+      if (state.activeAgentId === agent.id && !state.streaming) renderLog();
       renderPulse();
     } catch (_) { /* auto får aldrig störa — rutinen går att köra manuellt */ }
   }
@@ -1565,12 +1631,16 @@ function openGrow() {
       const del = el("button", "doc-del", "✕"); del.type = "button"; del.title = "Ta bort tillägget (historiken för agenten rensas inte)";
       del.onclick = () => {
         if (!confirm(`Ta bort ${a.name} ur teamet?`)) return;
-        const cur = JSON.parse(localStorage.getItem("atb_teamext_" + state.slug) || "{}");
+        let cur = {};
+        try { cur = JSON.parse(localStorage.getItem("atb_teamext_" + state.slug) || "{}") || {}; } catch (_) { /* trasigt — bygg om */ }
         cur.agents = (cur.agents || []).filter((x) => x.id !== a.id);
         cur.routines = (cur.routines || []).filter((r) => r.agentId !== a.id);
         try { localStorage.setItem("atb_teamext_" + state.slug, JSON.stringify(cur)); } catch (_) { /* full storage */ }
         team.agents = team.agents.filter((x) => x.id !== a.id);
         team.routines = (team.routines || []).filter((r) => r.agentId !== a.id);
+        // Stod kunden i den borttagna agentens chatt? Peka om till ingången,
+        // annars renderas en portal utan aktiv agent (och nästa send kastar).
+        if (state.activeAgentId === a.id) state.activeAgentId = agentById(team.entryAgent) ? team.entryAgent : team.agents[0].id;
         closeOverlay(); renderPortal();
       };
       row.appendChild(del);
@@ -1781,6 +1851,19 @@ function addActions(row, getText) {
     };
     acts.appendChild(fk);
   }
+  if (/```/.test(getText())) {
+    // Arbetsledarläget: svar med kodblock är oftast en färdig prompt till
+    // kundens egen AI — kopiera bara blocket, inte hela svaret.
+    const pb = el("button", "act-btn", "🤖 Kopiera prompten"); pb.type = "button";
+    pb.title = "Kopierar promptblocket — klistra in i din egen AI (t.ex. ChatGPT)";
+    pb.onclick = async () => {
+      const m = /```(?:\w+)?\r?\n([\s\S]*?)```/.exec(getText());
+      try { await navigator.clipboard.writeText(m ? m[1].trim() : getText()); pb.textContent = "Kopierad ✓ — klistra in i din AI"; }
+      catch (_) { pb.textContent = "Kunde inte kopiera"; }
+      setTimeout(() => (pb.textContent = "🤖 Kopiera prompten"), 2200);
+    };
+    acts.appendChild(pb);
+  }
   if (!state.demo) {
     // Minnesförslag med grind: agenten föreslår, användaren godkänner.
     const mb = el("button", "act-btn", "🧠 Spara lärdomar"); mb.type = "button";
@@ -1887,7 +1970,9 @@ const dayName = (d) => DAY_NAMES[d] || "";
 function runRoutine(rt) {
   const target = agentById(rt.agentId) ? rt.agentId : team.entryAgent;
   selectAgent(target);
-  state.pendingRoutine = rt.label; // bockas av när prompten faktiskt skickas
+  // Bockas av när rutinens prompt faktiskt skickas — stem (texten före första
+  // [fyll i]-luckan) används för att inte bocka av en helt annan fråga.
+  state.pendingRoutine = { label: rt.label, stem: (rt.prompt || rt.label).split("[")[0].trim().slice(0, 40) };
   const ta = $("#composer-input");
   if (ta) {
     ta.value = rt.prompt || rt.label;
@@ -2010,6 +2095,20 @@ function openMemory() {
       const s = el("span", "doc-fit " + cls, ch); s.title = tip;
       return s;
     };
+    // Stora underlag kan destilleras: ett AI-koncentrat ersätter originalet i
+    // det som skickas med (originalet ligger kvar avstängt) — så spricker
+    // inte budgeten av sju titelunderlag i en katalogvecka.
+    const sumBtn = (d, isFile, idx) => {
+      if ((d.text || "").length < 4000 || state.demo || !state.apiKey) return null;
+      const b = el("button", "act-btn", "Sammanfatta"); b.type = "button";
+      b.title = "Skapa ett kort destillat som tar originalets plats i det som skickas med (originalet finns kvar, avstängt)";
+      b.onclick = async () => {
+        b.disabled = true; b.textContent = "Destillerar…";
+        try { await distillDoc(d, isFile, idx); renderDocs(); }
+        catch (e) { alert("Kunde inte sammanfatta: " + ((e && e.message) || "fel")); renderDocs(); }
+      };
+      return b;
+    };
     fdocs.forEach((d) => {
       const rowEl = el("div", "doc-row");
       const on = toggles[d.title] !== false;
@@ -2019,6 +2118,7 @@ function openMemory() {
       rowEl.appendChild(chk);
       const dot = fitDot(fitOf(d.text, on)); if (dot) rowEl.appendChild(dot);
       rowEl.appendChild(el("span", "doc-title", `📄 ${d.title} · ${Math.max(1, Math.round((d.text || "").length / 1000))}k tecken`));
+      const sb = sumBtn(d, true, -1); if (sb) rowEl.appendChild(sb);
       listBox.appendChild(rowEl); // mappfiler tas bort i Utforskaren, inte här
     });
     local.forEach((d, i) => {
@@ -2029,12 +2129,34 @@ function openMemory() {
       rowEl.appendChild(chk);
       const dot = fitDot(fitOf(d.text, !!d.on)); if (dot) rowEl.appendChild(dot);
       rowEl.appendChild(el("span", "doc-title", `${d.title} · ${Math.max(1, Math.round((d.text || "").length / 1000))}k tecken`));
+      const sb = sumBtn(d, false, i); if (sb) rowEl.appendChild(sb);
       const del = el("button", "doc-del", "✕"); del.type = "button"; del.title = "Ta bort underlaget";
       del.onclick = () => { const ds = loadLocalDocs(); ds.splice(i, 1); saveDocs(ds); renderDocs(); };
       rowEl.appendChild(del);
       listBox.appendChild(rowEl);
     });
   };
+
+  async function distillDoc(d, isFile, idx) {
+    const out = await window.ATBClaude.collect({
+      apiKey: state.apiKey, model: state.model,
+      system: "Komprimera underlaget till ett destillat på högst 2500 tecken som bevarar alla fakta, siffror, namn, priser, datum och beslut. Punktform, svenska, ingen inledning eller avslutning.",
+      messages: [{ role: "user", content: (d.text || "").slice(0, 60000) }],
+      maxTokens: 1200, onUsage: costAdd,
+    });
+    const title = d.title.replace(/\.(md|txt)$/i, "") + " (destillat)";
+    if (isFile && folderActive()) {
+      const safe = title.replace(/[\\/:*?"<>|]/g, "-").slice(0, 60);
+      await writeFolderFile(safe + ".md", out.trim());
+      const t = loadDocToggles(); t[d.title] = false; saveDocToggles(t); // originalet av
+      await refreshFolder();
+    } else {
+      const ds = loadLocalDocs();
+      if (idx >= 0 && ds[idx]) ds[idx].on = false;
+      ds.push({ title, text: out.trim(), on: true });
+      saveDocs(ds);
+    }
+  }
   renderDocs();
   box.appendChild(listBox);
 
@@ -2233,7 +2355,8 @@ async function runMeeting(type, focus, ids) {
   const agentId = team.entryAgent;
   const userText = `🤝 Möte — ${type.label}: ${focus}`;
   if (!state.history[agentId]) state.history[agentId] = [];
-  state.history[agentId].push({ role: "user", content: userText, at: Date.now() });
+  const meetingMsg = { role: "user", content: userText, at: Date.now() };
+  state.history[agentId].push(meetingMsg);
   saveHistory();
 
   const log = $("#chat-log");
@@ -2312,7 +2435,10 @@ async function runMeeting(type, focus, ids) {
       saveHistory();
       if (bub.isConnected) { renderMarkdown(bub, acc); addActions(row, () => acc); if (perspectives.length) row.appendChild(perspToggle(perspectives)); }
     } else {
-      state.history[agentId].pop(); // ta bort mötesraden — inget svar kom
+      // Ta bort exakt mötesraden — inte det som råkar ligga sist.
+      const arr = state.history[agentId] || [];
+      const mi = arr.lastIndexOf(meetingMsg);
+      if (mi >= 0) arr.splice(mi, 1);
       saveHistory();
       if (bub.isConnected) {
         bub.classList.remove("typing");
@@ -2347,7 +2473,10 @@ async function submitMessage(text) {
   const agentId = state.activeAgentId;
   const agent = agentById(agentId);
   if (!state.history[agentId]) state.history[agentId] = [];
-  state.history[agentId].push({ role: "user", content: text, at: Date.now() });
+  // Behåll referensen — vid fel ska EXAKT detta meddelande tas bort, inte
+  // det som råkar ligga sist (en auto-rutin kan ha hunnit skriva under tiden).
+  const userMsg = { role: "user", content: text, at: Date.now() };
+  state.history[agentId].push(userMsg);
   saveHistory();
 
   const log = $("#chat-log");
@@ -2384,8 +2513,13 @@ async function submitMessage(text) {
     else await streamClaude(systemFor(agent), state.history[agentId], onDelta);
     state.history[agentId].push({ role: "assistant", content: acc, at: Date.now() });
     saveHistory();
-    // Skickades en rutin-prompt? Bocka av den för veckan (+ streak + puls).
-    if (state.pendingRoutine) { routineMarkDone(state.pendingRoutine); state.pendingRoutine = null; renderPulse(); }
+    // Skickades en rutin-prompt? Bocka av den för veckan (+ streak + puls) —
+    // men bara om det som skickades faktiskt var rutinen, inte en annan fråga.
+    if (state.pendingRoutine) {
+      const pr = state.pendingRoutine;
+      state.pendingRoutine = null;
+      if (pr.stem.length < 8 || text.startsWith(pr.stem)) { routineMarkDone(pr.label); renderPulse(); }
+    }
     // Rendera det färdiga svaret som markdown (strömningen skrev råtext),
     // och rita om från historiken om bubblan detachats av ett agentbyte.
     const finalText = acc;
@@ -2403,7 +2537,9 @@ async function submitMessage(text) {
         assistantBubble.classList.add("error");
         assistantBubble.textContent = err && err.name === "AbortError" ? "⏹ Stoppad." : "⚠️ " + (err.message || "Något gick fel.");
       }
-      state.history[agentId].pop();
+      const arr = state.history[agentId] || [];
+      const ui = arr.lastIndexOf(userMsg);
+      if (ui >= 0) arr.splice(ui, 1);
       saveHistory();
       // Ge tillbaka det skickade meddelandet så användaren inte behöver skriva om det.
       const input = $("#composer-input");

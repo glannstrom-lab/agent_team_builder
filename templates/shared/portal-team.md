@@ -26,7 +26,11 @@ window.TEAM = {
   defaultModel: "claude-opus-4-8",
   entryAgent: "<VD-assistentens id>",   // alltid den primära arbetspartnern
   routines: [ /* se nedan — driver "Veckans rutiner" i portalens arbetsyta */ ],
+  seasons: [ /* årshjulet: { label, month: 1–12, day|null, agentId|null, prompt|null } — BARA händelser
+                ur intake/research (mässor, deadlines, högsäsonger); portalen påminner i förväg.
+                Fabricera inga datum; utelämna/tom lista om årsrytmen är okänd. */ ],
   firstProject: null,        // ai-consultant-läget: { name, problem, week1, owner } → 🎯-panelen
+  workstyle: null,           // "coach" = arbetsledarläge (se nedan), annars null/utelämna
   divergence: "<en mening ur divergens-checken: varför teamet inte skulle passa en annan aktör i samma bransch>",
   rejected: [ { name: "<avvisat moment>", why: "<varför det inte blev en agent>" } ],
   agents: [ /* se nedan, VD-assistent först, sedan VD, sedan specialister */ ]
@@ -108,6 +112,16 @@ Bygg varje del från proposal/research:
 **Läge B (externt/hypotes):** lägg in en mening i varje system-prompt om att
 agenten arbetar utifrån antaganden om verksamheten och bör be om verklig data
 eller bekräftelse innan den agerar.
+
+**Arbetsledarläge (`workstyle: "coach"`):** när kunden gör utförandet i sin
+egen AI (t.ex. betalt ChatGPT) ska varje agents system-prompt instruera den
+att leverera **arbetspaket** i stället för färdigt innehåll: kort brief + en
+färdig självbärande prompt i ett kodblock (all nödvändig kontext inbakad) +
+"Klart när"-checklista + erbjudande att kvalitetsgranska resultatet om kunden
+klistrar tillbaka det. Starters formuleras som arbetspaket-beställningar.
+Portalen förblir navet: rutiner, minne, avbockning och uppföljning gäller
+oavsett var utförandet sker, och "🤖 Kopiera prompten"-knappen plockar
+kodblocket åt kunden.
 
 ## Registret (`portal/teams/index.js`)
 

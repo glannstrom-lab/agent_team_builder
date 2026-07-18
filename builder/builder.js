@@ -209,6 +209,14 @@ function renderForm() {
   matRow.style.display = "none"; form.appendChild(matRow);
   modeSel.onchange = () => { matRow.style.display = modeSel.value === "ai-consultant" ? "" : "none"; };
 
+  // Arbetsledarläge: kunder som redan betalar för en egen AI (ChatGPT m.fl.)
+  // kan låta teamet briefa/coacha i stället för att utföra — portalen förblir
+  // navet (rutiner, minne, uppföljning), utförandet sker i kundens AI.
+  form.appendChild(fieldRow("Hur ska teamet arbeta?", selectEl("workstyle", "workstyle", [
+    ["team", "Teamet gör jobbet — allt sker i portalen (standard)"],
+    ["coach", "Arbetsledarläge — teamet briefar & coachar, ni kör er egen AI (t.ex. ChatGPT)"],
+  ])));
+
   let modelSel;
   if (!state.demo && isOpenRouter()) {
     // OpenRouter: hämta katalogen live (kurerad i atb-claude.js); tills dess
@@ -345,6 +353,7 @@ function surveyCollect() {
   const out = {
     industry: surveyState.single.industry || null,
     rhythm: surveyState.single.rhythm || null,
+    ownai: surveyState.single.ownai || null,
     customers: [...(surveyState.multi.customers || [])],
     sales: [...(surveyState.multi.sales || [])],
     tools: [...(surveyState.multi.tools || [])],
@@ -496,7 +505,12 @@ function buildIntakeBlock(intake) {
     list(sv.sales) ? `försäljning:    ${list(sv.sales)}` : null,
     list(sv.channels) ? `kanaler:        ${list(sv.channels)}` : null,
     sv.rhythm ? `årsrytm:        ${sv.rhythm}` : null,
+    sv.ownai && !/^nej/i.test(sv.ownai) ? `egen_ai:        ${sv.ownai}` : null,
   ].filter(Boolean);
+
+  // Arbetsledarläget påverkar VAD agenterna levererar — research/proposal ska
+  // känna till det, så det går in som egen intake-sektion.
+  const coach = intake.workstyle === "coach";
 
   return [
     "```",
@@ -525,6 +539,7 @@ function buildIntakeBlock(intake) {
     "",
     "## Avgränsningar",
     nogo,
+    coach ? `\n## Arbetssätt (viktigt för förslaget)\nKunden vill fortsätta göra själva utförandet i sin egen AI${sv.ownai && !/^nej/i.test(sv.ownai) ? ` (${sv.ownai})` : " (t.ex. ChatGPT)"}. Teamets agenter ska därför ARBETSLEDA, inte utföra: varje agents Leverans blir ett arbetspaket — en kort brief, en FÄRDIG självbärande prompt att klistra in i kundens AI, och en "Klart när"-checklista för att bedöma resultatet. Portalen förblir navet för rutiner, minne och uppföljning.` : null,
     intake.extra ? "\n## Kompletterande svar (följdfrågor)\n" + intake.extra : null,
     "```",
   ].filter((x) => x !== null).join("\n");
@@ -689,21 +704,27 @@ async function structureTeam(intake, r) {
   "divergence": string,
   "rejected": [{ "name": string, "why": string }],
   "routines": [{ "label": string, "agentId": string, "day": number|null, "timeEstimate": number|null, "auto": boolean, "prompt": string }],
+  "seasons": [{ "label": string, "month": number, "day": number|null, "agentId": string|null, "prompt": string|null }],
   "agents": [{
     "id": string, "name": string, "icon": string, "role": string, "tagline": string,
     "always": boolean, "job": string, "why": string, "capabilities": [string], "triggers": [string],
     "starters": [string], "system": string
   }]
 }`;
+  const coachRules = intake.workstyle === "coach" ? `
+
+ARBETSLEDARLÄGE (viktigt): kunden gör själva utförandet i sin egen AI (t.ex. ChatGPT). Varje agents system-prompt ska instruera agenten att leverera ARBETSPAKET i stället för färdigt innehåll: 1) kort brief (vad och varför), 2) en FÄRDIG självbärande prompt i ett \`\`\`-kodblock — med all kontext kundens AI behöver inbakad, 3) "Klart när"-checklistan att bedöma resultatet mot, 4) erbjudande att kvalitetsgranska om kunden klistrar tillbaka resultatet. Starters formuleras som arbetspaket-beställningar ("Gör ett arbetspaket för veckans nyhetsbrev").` : "";
   const sys = `Du sammanställer ett redan färdigt agent-team till strukturerad JSON för rendering och för en kundportal.
 
 HÄMTA ALLT INNEHÅLL FRÅN FÖRSLAGET OCH RESEARCHEN NEDAN. Fabricera inget, lägg inte till eller ta bort agenter, ändra inte besluten. Du formaterar bara om — innehållet är redan bestämt.
 
-${PORTAL_RULES}
+${PORTAL_RULES}${coachRules}
 
 VD-assistenten ska ha id "vd-assistent" och vara först i listan, sedan VD (id "vd"), sedan specialister i prioritetsordning. always=true för VD och VD-assistent. VD ⚡, VD-assistent 🧭, domän-emoji för specialister. Avvisade moment kommer från researchen/förslaget (minst ett).
 
 DIVERGENCE: en mening ur proposalens/researchens divergens-check — varför just DETTA team inte skulle passa en annan aktör i samma bransch ("Skulle det passa en annan keramiker? Nej, för …"). Hämta ur underlaget; finns ingen divergens-check, härled den ur teamets mest verksamhetsspecifika val.
+
+SEASONS: kundens årshjul — BARA händelser som uttryckligen nämns i intake/research (mässor, deklarationsdatum, högsäsonger, ansökningsdeadlines). month 1–12, day om känd annars null, agentId = mest relevant agent annars null, prompt = valfri startuppgift i du-form. Fabricera inga datum; tom lista om årsrytmen är okänd. Portalen påminner kunden i förväg ("X dagar till mässan").
 
 RUTINER: 3–5 stående rutiner hämtade ur kundens faktiska veckomoment (inte påhittade). label = kort namn; agentId = agenten som äger momentet; day = veckodag 1–7 (1=måndag) om momentet är dagbundet, annars null; timeEstimate = minuter momentet brukar ta manuellt ENLIGT RESEARCHEN (null om researchen inte anger tid — hitta aldrig på); auto = true på HÖGST EN rutin och bara om dess prompt är komplett utan [fyll i]-luckor (portalen kör den då automatiskt på rätt dag), annars false; prompt = uppgiften i du-form med [fyll i]-luckor för det agenten behöver av användaren, konkret nog att skicka direkt.
 
@@ -729,6 +750,7 @@ ${schema}`;
   team.slug = slugify(team.slug || intake.company);
   team.language = "sv";
   team.defaultModel = state.model;
+  team.workstyle = intake.workstyle === "coach" ? "coach" : null;
   team.entryAgent = (team.agents.find((a) => a.id === "vd-assistent") || team.agents[0]).id;
   return team;
 }
@@ -982,9 +1004,11 @@ function stripTeam(team) {
   // "Därför ser ert team ut så här"-sida (anställningsceremonin).
   return { company: team.company, tagline: team.tagline, language: "sv", defaultModel: state.model, entryAgent: team.entryAgent,
     routines: Array.isArray(team.routines) ? team.routines : [],
+    seasons: Array.isArray(team.seasons) ? team.seasons : [],
     firstProject: team.firstProject || null,
     divergence: team.divergence || null,
     rejected: Array.isArray(team.rejected) ? team.rejected : [],
+    workstyle: team.workstyle || null,
     agents: team.agents.map((a) => ({ id: a.id, name: a.name, icon: a.icon, avatarN: a.avatarN, role: a.role, tagline: a.tagline, always: !!a.always,
       job: a.job, why: a.why || null, capabilities: a.capabilities, starters: a.starters, system: a.system })) };
 }
