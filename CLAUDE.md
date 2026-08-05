@@ -91,7 +91,7 @@ regeln.
 ## Webbgränssnitt (valfritt lager ovanpå kärnan)
 
 Fyra statiska webbappar + en hub gör verktyget demobart och användbart för
-icke-tekniska kunder. De delar designsystem (`site/showcase.css`) och kör i
+icke-tekniska kunder. De delar designsystemet `site/showcase.css` och kör i
 webbläsaren — i BYO-läget anger kunden sin egen nyckel: Anthropic (`sk-ant-`,
 anropar `api.anthropic.com` direkt via `anthropic-dangerous-direct-browser-access`)
 eller OpenRouter (`sk-or-`, OpenAI-kompatibelt API mot `openrouter.ai`, modellista
@@ -101,7 +101,23 @@ Det finns ett valfritt, tunt köp/leverans-lager (Cloudflare Pages Functions + D
 se `docs/m2-backend-spec.md`) för moln-sparade team — annars ingen backend.
 Demolägen (`?demo=1`) låter både portal och builder visas helt utan nyckel.
 
-- **Hub** (`index.html`) — front-dörr som navigerar till de tre.
+**Designsystemet** (`site/showcase.css`, bytt 2026-08-05) heter *Personalen /
+Ljus*: sand `#F1ECE3`, papper `#FCFAF6`, bläck `#1E1913` och ockra `#A9741F`
+som accent (`--accent-2 #8A5C14` för liten text mot ljus botten), 6 px radie,
+1 px linjer, inga gradienter och inget glow. Archivo i display, Karla i
+brödtext, IBM Plex Mono i etiketter. Primärknappen är solid bläck, inte
+accentfärgad. Portalen (`portal/portal.css`) och Buildern (`builder/builder.css`)
+har egna filer men **samma tokennamn** — ändra tokens på ett ställe och det slår
+igenom överallt. Nav (`.hubnav`/`.stepnav`) och sälj-knappar (`.btn-lg`) bor i
+designsystemet, inte i sidornas inline-CSS; sälj-varianten heter
+`.btn-lg.btn-ghost` för att inte krocka med builderns egen `.btn-ghost` på
+knappelement. Bärande grepp: agenterna presenteras som anställda — passerkort
+med porträtt (`.pbadge`/`.rack`) och en personalliggare (`table.liggare`) där
+avvisade förslag står kvar överstrukna. Det gör regeln om att minst en agent
+ska få nej synlig i designen. Elva alternativa riktningar finns kvar som
+skisser i `design/` (deployas inte).
+
+- **Hub** (`index.html`) — front-dörr och säljsida som navigerar till de fyra.
 - **Builder** (`builder/`) — bygg ett team live framför en kund. Kör den
   **riktiga pipelinen** i webbläsaren: hämtar `prompts/shared/research.md`,
   `scale.md`, `proposal.md` (+ `ai-consultant/first-project.md`) live och kör
@@ -115,11 +131,19 @@ Demolägen (`?demo=1`) låter både portal och builder visas helt utan nyckel.
   svårt att formulera sin verksamhet kan bygga helt utan fritext. Körningar
   persisteras per steg (`atb_last_run`) och kan återupptas efter fel/F5. Eftersom den hämtar
   filerna live följer den alltid de underhållna prompterna — Builder och
-  `/build-team` kan inte glida isär.
+  `/build-team` kan inte glida isär **i research, skalning och förslag**.
+  Sammanställningssteget (`PORTAL_RULES` i `builder.js`) och arbetsledarläget
+  bor däremot bara i webblagret och speglar `templates/shared/portal-team.md`
+  för hand — ändras den ena måste den andra följa med.
+  **Arbetsledarläge** (`workstyle: "coach"`): kunden som redan betalar för egen
+  AI får arbetspaket i stället för färdigt innehåll — brief, en självbärande
+  prompt i kodblock, "Klart när"-checklista och erbjudande om granskning.
+  Finns bara i webblagret, inte i `/build-team`.
 - **Galleri** (`site/`) — `index.html` + scroll-stories (fem i dagsläget;
   täcker inte alla `examples/` — team-builder-exemplen lerverk/
-  norrskenspodden/wikander saknar sidor än) som visar hela processen.
-  Säljmaterial. Statiskt, ingen nyckel.
+  norrskenspodden/wikander saknar sidor än) som visar hela processen, plus
+  `site/en-vecka.html` ("En vecka med teamet") som är ett vardagscase snarare
+  än en processberättelse. Säljmaterial. Statiskt, ingen nyckel.
 - **Portal** (`portal/`) — där kunden använder sitt team: arbetsyta med
   agentkort ("det här kan jag hjälpa dig med" + klickbara startförslag,
   `starters` i teamkonfigen), markdown-renderade svar, persistent
@@ -137,11 +161,19 @@ Demolägen (`?demo=1`) låter både portal och builder visas helt utan nyckel.
   (M1.5, Chrome/Edge): kunden kopplar en lokal mapp via File System Access —
   `.md`/`.txt` blir underlag, `minne.md` är företagsminnet, svar sparas till
   `från-teamet/`; handtag i IndexedDB, localStorage förblir fallback. Mapp i
-  OneDrive/Dropbox ger kunden synk/delning via egen infra. Multi-tenant via `?team=<slug>` →
-  `portal/teams/<slug>.js`; utan parameter visas en kundväljare;
-  `?team=__draft` öppnar ett Builder-utkast, `?team=__vertical` en
-  branschdemo (egen localStorage-nyckel — kan inte skriva över utkast).
-  Installerbar **PWA** (`manifest.webmanifest`, `sw.js`).
+  OneDrive/Dropbox ger kunden synk/delning via egen infra, och `teamstatus.json`
+  i mappen gör status delad mellan kollegor. **Ackumulering över tid** (etapp
+  1–4, juli 2026): kostnad per svar, kom igång-checklista, puls-kort,
+  vecko-streak, "Veckan som gick", auto-körda rutiner, minnesförslag med
+  godkännande, sök i historik + arkiv till mappen, "Utveckla teamet" (växtväg
+  via tidigare avvisade agenter), Dela & exportera team, kvartalsöverblick,
+  filimport (PDF/Word/xlsx/csv via `portal/vendor/`), svenska myndighetsdatum
+  (`portal/deadlines-se.js`), diktering och seasons-årshjul. Multi-tenant via
+  `?team=<slug>` → `portal/teams/<slug>.js`; utan parameter visas en
+  kundväljare; `?team=__draft` öppnar ett Builder-utkast, `?team=__vertical` en
+  branschdemo (egen localStorage-nyckel — kan inte skriva över utkast),
+  `?team=__link` ett team som delats via länk (`#cfg=` i fragmentet, når aldrig
+  servern) eller teamfil. Installerbar **PWA** (`manifest.webmanifest`, `sw.js`).
 - **Branscher** (`verticals/`) — datadrivna branschlandningssidor
   (`?v=<slug>` från `verticals.js`); varje bransch har en live-demo utan nyckel.
 
@@ -170,12 +202,18 @@ ny kund dyker upp i både galleri och portal automatiskt.
 ├── index.html                      # Säljsida + nav till apparna
 ├── avatars.js                      # Delad avatar-tilldelning (alla ytor)
 ├── atb-claude.js                   # Delad Claude-klient (builder + portal)
-├── builder/                        # Builder-UI: bygg ett team live (+ demo-data.js)
-├── site/                           # Galleri: showcase-sidor + showcase.css + gallery.js
+├── builder/                        # Builder-UI: bygg ett team live (+ demo-data.js,
+│                                   #   survey-data.js = förvalsenkäten)
+├── site/                           # Galleri + DESIGNSYSTEMET (showcase.css, laddas av
+│                                   #   alla ytor utom portalen) + en-vecka.html + gallery.js
 ├── portal/                         # Kundportal: chatta med ett team (+ PWA: manifest/sw)
 │   ├── avatars/                    # 25 agentporträtt (PNG)
+│   ├── vendor/                     # pdf.js, mammoth, xlsx (filimport — räknas mot CSP)
+│   ├── deadlines-se.js             # Svenska myndighetsdatum till årshjulet
 │   └── teams/                      # En <slug>.js per kund + index.js (register)
 ├── verticals/                      # Branschlandningssidor (datadrivet, ?v=<slug>)
+├── design/                         # Elva designskisser; variant 8 blev systemet.
+│                                   #   Deployas inte — saknas medvetet i ITEMS
 ├── functions/                      # Cloudflare Pages Functions (/api/* — moln-team)
 │                                   #   OBS: deployas från repo-roten, aldrig via dist/
 ├── migrations/                     # D1-schema (SQL) för köp/leverans-lagret
@@ -194,7 +232,17 @@ ny kund dyker upp i både galleri och portal automatiskt.
 │   ├── meetings.md                 # Mötesfunktionen i detalj
 │   ├── first-project.md            # Kriterier för ett bra första kundprojekt
 │   ├── produktstrategi-sjalvbetjaning.md  # Affärs-/produktstrategi (roadmap)
-│   └── m2-backend-spec.md          # Spec för köp/leverans-lagret (Stripe + D1)
+│   ├── m2-backend-spec.md          # Spec för köp/leverans-lagret (Stripe + D1)
+│   │
+│   │                               # Daterade ögonblicksbilder (granskningar/research).
+│   │                               # Läget de beskriver är alltid färskare i LÄGET nedan:
+│   ├── granskning-helhet-2026-08-05.md    # Sexagentsgranskning: kod, säkerhet,
+│   │                               #   visuellt, kärna, affär, dokumentation
+│   ├── granskning-kundresa-2026-07-16.md  # 30 punkter längs kundresan
+│   ├── omvarldsresearch-2026-07-17.md     # Konkurrenter och marknad
+│   ├── roadmap-anvandarvarde-2026-07-17.md # UX/retention, etapp 0–4 (byggd)
+│   ├── simulering-forlag-slutsatser-2026-07-18.md # Halvårssimulering, förlagskund
+│   └── idekatalog-anstalld-smaforetagare-2026-07-18.md # Idébank (topp 5 byggd)
 │
 ├── .claude/
 │   └── commands/
@@ -258,12 +306,20 @@ ny kund dyker upp i både galleri och portal automatiskt.
 
 ## Nuvarande sprint
 
-> **Status (2026-06-28):** Fas 1–3 nedan är klara (kärna, team-builder,
-> ai-consultant — se `examples/`). Webblagret och köp/leverans-lagret är
-> påbörjade. Det *aktuella* arbetet och roadmappen finns i
-> `docs/produktstrategi-sjalvbetjaning.md` (milstolpar M1–M4) och
-> `docs/m2-backend-spec.md` (byggsekvens; M2a-1 klar). Fas 1–3 nedan står kvar
-> som historik över hur kärnan byggdes.
+> **LÄGET (2026-08-05) — läs `docs/granskning-helhet-2026-08-05.md` först.**
+> Den filen är den enda som beskriver nuläget; övriga daterade dokument är
+> ögonblicksbilder från när de skrevs och ska inte läsas som plan.
+>
+> Kärnan (fas 1–3 nedan) är klar och bevisat divergerande — se `examples/`.
+> Webblagret är däremot djupt överbyggt i förhållande till affären: portalen
+> har fyra omgångar funktioner ovanpå en kundbas på noll, medan de billiga
+> sakerna som faktiskt bryter kedjan står kvar. **Noll betalande kunder, noll
+> mätning, ingen kassa.** Nästa arbete är därför inte fler funktioner utan:
+> (1) gör sajten kontaktbar, identifierbar och ärligt prissatt, (2) riktiga
+> demosvar + branschval från hubben, (3) Stripe M2a-2…4 när kontot finns.
+> Funktionsarbete i `portal/` är fryst tills någon betalat.
+>
+> Fas 1–3 nedan står kvar som historik över hur kärnan byggdes.
 
 Bygg i den här ordningen. Hoppa inte över steg.
 

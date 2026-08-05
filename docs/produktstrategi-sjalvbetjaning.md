@@ -1,10 +1,12 @@
 # Produktstrategi: low-touch självbetjäning
 
-> Status: v1.1 (2026-07-15). Beslutad riktning, inte färdig spec.
-> Läge: M2a-1 byggd + deployad (D1 skapad); M3-*landningssidorna* (9
+> Status: v1.2 (2026-08-05). Beslutad riktning, inte färdig spec.
+> Läge: M2a-1 byggd + deployad (D1 skapad); M3-*landningssidorna* (12
 > branscher i `verticals/`) är byggda i förväg, men vertikala
-> **team-mallar** (fork C:s egentliga IP) återstår. M2a-2+ väntar på
-> Stripe-konto.
+> **team-mallar** (fork C:s egentliga IP) återstår — och är blockerade per
+> definition så länge inga riktiga uppdrag finns att skörda dem ur.
+> M2a-2+ väntar på Stripe-konto. Aktuellt nuläge och prioritering står i
+> `docs/granskning-helhet-2026-08-05.md`, inte här.
 > Skriven utifrån två beslut: **Hybrid betalmodell** och **A+B+C** som
 > tillsammans tjänar ett mål — en produkt som säljer sig själv och kör utan
 > att Mikael behöver vara inblandad, eftersom säljtiden är starkt begränsad.

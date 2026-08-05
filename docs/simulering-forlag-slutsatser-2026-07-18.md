@@ -62,7 +62,13 @@ och en växtväg för teamet utan konsultsamtal.
    arkiv. (Sök var medvetet nedprioriterad i etapp 0–4 — simuleringen visar
    att den blir kritisk runt månad 3.)
 
-### P2 — Vardagsvärde och småfixar
+### P2 — Vardagsvärde och småfixar ✅ delvis byggt 2026-07-18
+
+> 5a (årshjul + puls-kort), 6 (auto-rutinens dagfönster), 7 (minne.md-merge) och
+> 8 (Sammanfatta-destillat) är byggda. Kvar: 5b (VD:ns stående månadsleverans)
+> och 9 (mobil + mapp). P3 nedan är orört — `prompts/shared/scale.md` har varken
+> golvregeln eller halveringstabellen. Ändras scale.md måste `docs/scaling.md`
+> följa med i samma commit.
 
 5. **Köparens vardagsvärde (Karin-problemet).** VD-agenten användes två
    gånger på sex månader — köparen hittade ingen vardagsanvändning, farligt
@@ -83,7 +89,7 @@ och en växtväg för teamet utan konsultsamtal.
    (File System Access finns inte på mobil). Ingen statisk lösning —
    argument för M2b-3 (moln-material). Dokumentera ärligt i UI:t.
 
-### P3 — Pipeline-prompterna (små, gör vid tillfälle)
+### P3 — Pipeline-prompterna (små, gör vid tillfälle) — EJ PÅBÖRJADE
 
 10. **`scale.md`:** explicit golv — "minst 1 specialist när minst ett kluster
     ligger över ribban" — och en färdig tabellrad för mognadshalveringen

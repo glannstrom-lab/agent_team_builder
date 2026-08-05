@@ -4,7 +4,8 @@
 // OBS: functions/ ska INTE med i dist/ — Cloudflare hämtar Pages Functions
 // från repo-roten (cwd vid `wrangler pages deploy`), och att kopiera in dem
 // i dist/ publicerar API-källkoden som statiska filer.
-// Lämnar templates/, examples/, docs/, migrations/, .claude/, testoutput/ utanför.
+// Lämnar templates/, examples/, docs/, migrations/, .claude/, testoutput/ och
+// design/ (designskisser) utanför — utelämnandena är avsiktliga, inte glömska.
 import { rmSync, mkdirSync, cpSync } from "node:fs";
 import { dirname } from "node:path";
 

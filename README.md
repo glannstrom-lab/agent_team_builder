@@ -58,15 +58,18 @@ Fyra statiska appar gör verktyget demobart och användbart för icke-tekniska
 kunder, plus en hub som binder ihop dem:
 
 - **`builder/`** — bygg ett team live i webbläsaren (kör den riktiga pipelinen).
-- **`site/`** — galleri med fem exempel som visar hela processen.
-- **`portal/`** — kundportal där kunden chattar med sitt team (installerbar PWA).
+- **`site/`** — galleri med fem exempel som visar hela processen, plus
+  "En vecka med teamet" som visar vardagen. Här bor också designsystemet.
+- **`portal/`** — kundportal där kunden chattar med sitt team. Arbetsytan
+  (veckostart, rutiner, möten, delat minne) är det som skiljer den från en
+  vanlig AI-chatt. Installerbar PWA.
 - **`verticals/`** — branschlandningssidor, en live-demo per bransch.
 
 Kör lokalt från repo-roten (`npm run dev` eller `python -m http.server 8420`)
 och öppna `http://localhost:8420/`. Bygg/deploy till Cloudflare Pages med
 `npm run build` / `npm run deploy`.
 
-Builder och portal anropar Claude direkt från webbläsaren och kräver din egen
-Anthropic-nyckel (lagras bara lokalt) — men demolägen (`?demo=1`) visar allt
-utan nyckel. Galleriet kräver ingen nyckel. Mer i `CLAUDE.md` och
-`docs/m2-backend-spec.md`.
+Builder och portal anropar modellen direkt från webbläsaren och kräver din egen
+nyckel — Anthropic (`sk-ant-`) eller OpenRouter (`sk-or-`), lagras bara lokalt.
+Demolägen (`?demo=1`) visar allt utan nyckel, och galleriet kräver ingen alls.
+Mer i `CLAUDE.md` och `docs/m2-backend-spec.md`.

@@ -95,6 +95,12 @@ Skriv agent-filerna till målprojektets `.claude/agents/`.
 Generera även `team-presentation.html` — en visuell presentation av
 teamet enligt `templates/shared/team-presentation.md`.
 
+Körs detta **inifrån agent-team-builder-repot**: gör också steg 7–8 i
+`generate.md` — portal-konfig (`portal/teams/<slug>.js` + rad i `index.js`
+enligt `templates/shared/portal-team.md`) och galleri-sida (`site/<slug>.html`
+enligt `templates/shared/showcase-page.md`). Utan dem dyker kunden aldrig upp
+i portalen eller galleriet.
+
 Visa sammanfattning av genererade filer inklusive HTML-presentationen.
 
 ## Regler

@@ -80,6 +80,11 @@ konkreta arbetsmoment som identifierats i intake.
 - För stora team: dela upp hellre än att slå ihop
 - Specialister får inte bara vara "research-agent" eller "writer-agent" —
   de ska ha ett jobb som är specifikt för det här företaget
+- Varje specialist har ett eget **Perspektiv** (blicken den resonerar från)
+  och en **Leverans** med "Klart när"-punkter som går att svara ja/nej på.
+  Två agenter som delar perspektiv är samma agent. Sektionerna finns i
+  `templates/shared/agent-base.md` och byggs in i portalens systemprompter —
+  utelämnas de blir agenten en generalist med nytt namn.
 
 ## Hur agenterna samverkar
 

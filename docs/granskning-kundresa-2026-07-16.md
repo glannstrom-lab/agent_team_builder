@@ -1,5 +1,13 @@
 # Kundresegranskning: "Anna hittar Mitt AI-team" (2026-07-16)
 
+> **Status 2026-08-05:** åtgärdade: P0-2 (domän), P2-15 (kopiera/exportera),
+> P2-16 (dokumentkontext), P2-17 (företagsminne), P2-19 (historik-export),
+> P2-21 (kostnadsmätare), P2-22 (checklista), P3-28 (svenska felmeddelanden).
+> Allt annat är öppet. De fyra som fortfarande **bryter kedjan** är P0-1
+> (mailto-platshållaren), P0-3 (OG-taggar), P0-4 (pris utan kassa) och P1-7
+> (mallade demosvar) — samma fyra som inte går att lösa genom att skriva
+> JavaScript. Se `docs/granskning-helhet-2026-08-05.md`.
+
 Persona-baserad genomgång av hela resan från kollegans tips till fullskalig
 användning, med 30 prioriterade förbättringar. Persona: **Anna, 46, delägare i
 en redovisningsbyrå med fyra anställda.** Har provat ChatGPT lite grann. En

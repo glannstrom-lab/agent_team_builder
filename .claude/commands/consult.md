@@ -105,6 +105,11 @@ Generera även första-projekt-briefen som separat fil:
 
 Generera `team-presentation.html` — en visuell presentation av teamet
 och första projektet enligt `templates/shared/team-presentation.md`.
+
+Körs detta **inifrån agent-team-builder-repot**: gör också steg 7–8 i
+`generate.md` — portal-konfig (`portal/teams/<slug>.js` + rad i `index.js`)
+och galleri-sida (`site/<slug>.html`). Utan dem dyker kunden aldrig upp i
+portalen eller galleriet.
 Inkludera sektion 7 (första-projekt) med data från briefen.
 
 Visa sammanfattning av genererade filer inklusive HTML-presentationen.

@@ -204,8 +204,12 @@ Inloggning för dessa gör du själv i din terminal med t.ex.
 1. **M2a-1:** ✅ **BYGGT (2026-06-28).** D1-schema (`migrations/0001_init.sql`),
    `/api/teams/:slug` (`functions/api/teams/[slug].js`), portalens fallback-laddning,
    D1-bindning i `wrangler.toml`, npm-scripts (`db:migrate:local`, `dev:cf`).
-   Funktionslogiken enhetstestad (200/404/400/500). Återstår innan skarp drift:
-   `npx wrangler d1 create` + klistra in `database_id`, sen `npm run db:migrate`.
+   **I drift sedan 2026-07-15:** D1 skapad, remote-migrerad, `database_id` i
+   `wrangler.toml`, `/api/teams/:slug` verifierad live. Verifieringen var
+   **manuell (ad hoc), inte automatiserad** — repot innehåller inga tester.
+   Känd lucka: `_headers` gäller inte Functions-svar, så `/api/*` går ut utan
+   CSP och `nosniff`, och HEAD faller tillbaka på den statiska sidan. Fixa i
+   ett `functions/_middleware.js` innan M2a-2 ärver samma nolla.
 2. **M2a-2:** `/api/checkout` + Stripe i **testläge** + aktiveringssida.
 3. **M2a-3:** `/api/stripe-webhook` + provisionering + idempotens. End-to-end i
    Stripe-testläge.
