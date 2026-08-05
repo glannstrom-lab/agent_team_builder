@@ -20,10 +20,10 @@ const DEFAULT_OR_MODEL = "deepseek/deepseek-v4-flash"; // billigast som klarar j
 // API-URL, anthropic-version och strömningen ligger i ../atb-claude.js
 // (window.ATBClaude) — delat med Portalen så de inte kan glida isär.
 
-const MODELS = [
-  { id: "claude-opus-4-8", label: "Opus 4.8 — mest kapabel (djupast analys)" },
-  { id: "claude-sonnet-4-6", label: "Sonnet 4.6 — snabbare & billigare" },
-];
+const MODELS = [{ id: window.ATBClaude.MODEL_ID, label: window.ATBClaude.MODEL_LABEL }];
+// En modell, inga alternativ (2026-08-05). Listan finns kvar för att
+// anropande kod inte ska behöva skrivas om, men har exakt ett element
+// och hämtar det från atb-claude.js — modellvalet bor på ett ställe.
 
 function isOpenRouter() { return window.ATBClaude.providerFor(state.apiKey) === "openrouter"; }
 function syncModelForProvider() {

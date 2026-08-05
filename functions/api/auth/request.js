@@ -29,8 +29,13 @@ export async function onRequestPost({ request, env }) {
 
   // Spärren räknas före allt annat arbete, så att ett angrepp inte kostar
   // oss databasanrop eller utskick.
+  // Att säga "för många förfrågningar" avslöjar ingenting om huruvida
+  // adressen finns — spärren räknas på det som skrevs in, oavsett. Att
+  // däremot svara "vi har skickat en kod" när ingen kod skickats är ett
+  // tyst fel: användaren hamnar framför ett tomt kodfält och tror att hen
+  // gjort något galet. Tystnad är rätt mot kartläggning, fel mot kunden.
   if (!(await throttleOk(db, email, clientIp(request), "req"))) {
-    return json(SAME_ANSWER);
+    return json({ error: "För många kodförfrågningar. Vänta en kvart och försök igen." }, 429);
   }
 
   // Bara befintliga konton får koder. Konton skapas när ett team levereras,

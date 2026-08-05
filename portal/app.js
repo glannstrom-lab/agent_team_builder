@@ -14,19 +14,18 @@ const HIST_PREFIX = "atb_hist_"; // + team-slug → sparad chatthistorik
 const MEM_PREFIX = "atb_mem_";   // + team-slug → delat företagsminne (instruktioner)
 const DOCS_PREFIX = "atb_docs_"; // + team-slug → inklistrade underlag [{title,text,on}]
 const DOCSON_PREFIX = "atb_docson_"; // + team-slug → { filnamn: bool } på/av för mapp-underlag
-const DEFAULT_MODEL = "claude-sonnet-4-6"; // billig default för BYO-kund; kan höjas till Opus i UI
+const DEFAULT_MODEL = "deepseek/deepseek-v4-flash-latest"; // en modell gäller — se atb-claude.js
 // OpenRouter-nycklar (sk-or-) har eget modellval — sparas separat så det
 // aldrig krockar med Anthropic-valet när man byter nyckel fram och tillbaka.
 const OR_MODEL_STORAGE = "atb_model_or";
-const DEFAULT_OR_MODEL = "deepseek/deepseek-v4-flash"; // billigast som klarar jobbet bra
+const DEFAULT_OR_MODEL = "deepseek/deepseek-v4-flash-latest"; // samma id som atb-claude.js MODEL_ID
 // API-URL, anthropic-version och själva strömningen ligger i ../atb-claude.js
 // (window.ATBClaude) — delat med Buildern så de inte kan glida isär.
 
-const MODELS = [
-  { id: "claude-sonnet-4-6", label: "Sonnet 4.6 — snabb & prisvärd (rekommenderad)" },
-  { id: "claude-opus-4-8", label: "Opus 4.8 — mest kapabel" },
-  { id: "claude-haiku-4-5", label: "Haiku 4.5 — billigast" },
-];
+const MODELS = [{ id: window.ATBClaude.MODEL_ID, label: window.ATBClaude.MODEL_LABEL }];
+// En modell, inga alternativ (2026-08-05). Listan finns kvar för att
+// anropande kod inte ska behöva skrivas om, men har exakt ett element
+// och hämtar det från atb-claude.js — modellvalet bor på ett ställe.
 
 function isOpenRouter() { return window.ATBClaude.providerFor(state.apiKey) === "openrouter"; }
 // Läs rätt sparat modellval för nyckelns leverantör (anropas vid boot och nyckelbyte).
@@ -1025,7 +1024,9 @@ function renderSidebar() {
   const foot = el("div", "side-foot");
   const hub = el("a", "hub-foot", "← Till hubben"); hub.href = "../";
   foot.appendChild(hub);
-  const sl = el("label", "side-label", "Modell"); sl.setAttribute("for", "model-select");
+  // Modellväljaren är borttagen: produkten kör en modell och bara en, så en
+  // dropdown vore ett val som inte finns. Etiketten visar vilken det är.
+  const sl = el("div", "side-label", "Modell: " + window.ATBClaude.MODEL_LABEL);
   foot.appendChild(sl);
   const sel = el("select", "model-select"); sel.id = "model-select";
   const fillOptions = (list) => {
@@ -1053,7 +1054,8 @@ function renderSidebar() {
     state.model = sel.value;
     localStorage.setItem(isOpenRouter() ? OR_MODEL_STORAGE : MODEL_STORAGE, sel.value);
   };
-  foot.appendChild(sel);
+  // sel byggs fortfarande (koden nedan refererar den) men läggs INTE in i
+  // sidfoten — det finns inget val att göra. Etiketten ovan visar modellen.
 
   const share = el("button", "link-btn", "Dela / exportera team");
   share.onclick = openShare;
