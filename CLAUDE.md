@@ -322,8 +322,12 @@ ny kund dyker upp i både galleri och portal automatiskt.
 > **Ingen ny funktionskod i `portal/`, `builder/` eller `verticals/` committas
 > förrän `docs/kunder.md` har en ny rad med datum, namn och utfall från ett
 > riktigt samtal med en riktig människa.** Kontrollera filen innan du börjar
-> bygga. Undantag: buggar som en namngiven betalande kund har stött på, plus de
-> tre säkerhetsposterna i planen (pdf.js, SheetJS, `functions/_middleware.js`).
+> bygga. Undantag: buggar som en namngiven betalande kund har stött på, de tre
+> säkerhetsposterna i planen (pdf.js, SheetJS, `functions/_middleware.js`), och
+> **vecka 0-arbetet i planen** — identitet, juridiktexter, bokningslänk,
+> självhostade typsnitt, OG-bild, analytics och riktiga demosvar i
+> `portal/teams/`. Det är säljmaterial och data, inte nya funktioner. Grinden
+> stoppar funktionsutveckling, inte förberedelsen för att sälja.
 >
 > Skriv ingen ny daterad granskningsfil i `docs/`. Fyra på fyra månader räcker;
 > nästa bedömning görs av en kund som betalar eller låter bli. Uppdatera
