@@ -1443,7 +1443,11 @@ function renderLog() {
         if (!ta) return;
         ta.value = s;
         ta.style.height = "auto"; ta.style.height = Math.min(ta.scrollHeight, 200) + "px";
-        ta.focus();
+        // Skicka direkt. Rubriken säger "Prova en av de här" — att bara fylla
+        // rutan ser ut som att klicket inte gjorde någonting, och kunden vet
+        // inte att den ska trycka Enter. Verifierat i webbläsare: chipsen gav
+        // noll svar innan den här raden.
+        submitMessage();
       };
       chips.appendChild(chip);
     });
