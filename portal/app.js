@@ -514,8 +514,23 @@ async function loadTeam(slug) {
 
 // ---------- boot ----------
 async function boot() {
-  if (!state.apiKey && !state.demo) { renderKeySetup(); return; }
   syncModelForProvider(); // nyckelns leverantör avgör vilket modellval som gäller
+
+  // Kontot före nyckeln. Att välja vilket team man vill öppna kräver ingen
+  // API-nyckel, och en kund som ännu inte loggat in ska inte mötas av en
+  // ruta som frågar efter en. Gäller bara den nakna adressen: står det ett
+  // team i URL:en, eller bär fragmentet en delningslänk, är avsikten redan
+  // uttalad och den gamla vägen gäller.
+  if (!/^#cfg=/.test(location.hash || "") && !getSlug()) {
+    if (state.demo) { renderPicker(); return; }
+    const me = await authMe();
+    if (me) { renderAccountPicker(me); return; }
+    if (me === false) { renderLogin({}); return; }
+    renderPicker(); // API:et onåbart — visa det som ändå fungerar
+    return;
+  }
+
+  if (!state.apiKey && !state.demo) { renderKeySetup(); return; }
   // Delningslänk? Fragment (#cfg=…) bär hela teamkonfigen och når aldrig
   // servern. Packa upp, spara lokalt och öppna som __link-team.
   const hashCfg = /^#cfg=(.+)/.exec(location.hash || "");
@@ -533,7 +548,7 @@ async function boot() {
     }
   }
   const slug = getSlug();
-  if (!slug) { renderPicker(); return; }
+  if (!slug) { renderPicker(); return; } // nås bara om adressen ändrats under körning
   try {
     await loadTeam(slug);
     renderPortal();
@@ -616,6 +631,177 @@ function connectKey() {
 }
 
 // ---------- team picker ----------
+// ---------- inloggning (M3) ----------
+// Portalen har två publiker: exempelteamen, som är öppna för vem som helst,
+// och kunder med ett köpt team, som ska logga in. Skillnaden avgörs av om
+// ?team= står i adressen — står det, gäller den gamla vägen; står det inget,
+// frågar vi kontot först och faller tillbaka på exempellistan.
+//
+// Ingen lösenordshantering här. Kunden skriver sin adress, får en sexsiffrig
+// kod i mejlen och är inne. Sessionen ligger i en HttpOnly-kaka som det här
+// skriptet varken kan läsa eller skriva — vilket är hela poängen.
+
+// Tre utfall, och skillnaden mellan de två sista spelar roll:
+//   objekt → inloggad
+//   false  → inte inloggad, men API:et svarar (visa inloggning)
+//   null   → API:et finns inte eller är onåbart (visa exempellistan)
+// Utan den skillnaden möts en besökare av en inloggningsruta som inte kan
+// fungera de dagar backend ligger nere eller inte är driftsatt.
+async function authMe() {
+  try {
+    const res = await window.ATBClaude.fetchWithTimeout("/api/auth/me", { credentials: "same-origin" }, 8000);
+    if (res.status === 401) return false;
+    if (!res.ok) return null;
+    return await res.json();
+  } catch (_) {
+    return null;
+  }
+}
+
+async function authPost(path, body) {
+  const res = await window.ATBClaude.fetchWithTimeout(path, {
+    method: "POST",
+    credentials: "same-origin",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(body),
+  }, 15000);
+  let data = {};
+  try { data = await res.json(); } catch (_) { /* tomt svar */ }
+  return { ok: res.ok, status: res.status, data };
+}
+
+const INPUT_CSS = "width:100%;max-width:340px;padding:12px 14px;border:1px solid var(--border);" +
+  "border-radius:6px;font-size:16px;font-family:inherit;background:var(--surface);color:var(--text)";
+
+function renderLogin(opts) {
+  const o = opts || {};
+  const root = $("#root");
+  root.innerHTML = "";
+  const wrap = el("main", "picker");
+  wrap.appendChild(hubLink());
+  wrap.appendChild(el("div", "setup-badge", o.email ? "Kolla mejlen" : "Logga in"));
+
+  const h = el("h1");
+  h.innerHTML = o.email
+    ? `Vi skickade en <span class="grad">kod</span>`
+    : `Logga in på <span class="grad">ert team</span>`;
+  wrap.appendChild(h);
+
+  wrap.appendChild(el("p", "setup-lead", o.email
+    ? `Om ${o.email} finns hos oss ligger det en sexsiffrig kod i inkorgen. Den gäller i tio minuter.`
+    : "Skriv adressen ni angav när teamet levererades, så skickar vi en engångskod. Inget lösenord att komma ihåg."));
+
+  const err = el("div", "setup-err"); err.style.display = "none";
+  wrap.appendChild(err);
+  const fail = (msg) => { err.textContent = "⚠️ " + msg; err.style.display = "block"; };
+
+  const input = el("input");
+  input.type = o.email ? "text" : "email";
+  input.autocomplete = o.email ? "one-time-code" : "email";
+  if (o.email) { input.inputMode = "numeric"; input.maxLength = 6; input.placeholder = "123456"; }
+  else { input.placeholder = "namn@företaget.se"; input.value = o.prefill || ""; }
+  input.style.cssText = INPUT_CSS + (o.email ? ";letter-spacing:.3em;font-size:22px;text-align:center;max-width:200px" : "");
+  wrap.appendChild(input);
+
+  const btn = el("button", "btn-primary", o.email ? "Logga in" : "Skicka kod");
+  btn.type = "button";
+  btn.style.cssText = "margin-top:14px;display:block";
+  wrap.appendChild(btn);
+
+  const submit = async () => {
+    const value = input.value.trim();
+    if (!value) return fail(o.email ? "Skriv koden från mejlet." : "Skriv din e-postadress.");
+    btn.disabled = true;
+    btn.textContent = o.email ? "Loggar in…" : "Skickar…";
+    try {
+      if (o.email) {
+        const r = await authPost("/api/auth/verify", { email: o.email, code: value });
+        if (!r.ok) throw new Error(r.data.error || "Koden gick inte att verifiera.");
+        boot(); // inloggad — kör om starten, nu med session
+        return;
+      }
+      const r = await authPost("/api/auth/request", { email: value });
+      if (!r.ok) throw new Error(r.data.error || "Kunde inte skicka koden.");
+      renderLogin({ email: value });
+      return;
+    } catch (e) {
+      fail((e && e.message) || "Något gick fel. Försök igen.");
+    }
+    btn.disabled = false;
+    btn.textContent = o.email ? "Logga in" : "Skicka kod";
+  };
+
+  btn.onclick = submit;
+  input.onkeydown = (e) => { if (e.key === "Enter") submit(); };
+
+  const alt = el("p", "setup-lead");
+  alt.style.cssText = "margin-top:26px;font-size:14px";
+  if (o.email) {
+    const again = el("a", "", "Skicka en ny kod");
+    again.href = "#"; again.style.color = "var(--accent-2)";
+    again.onclick = (e) => { e.preventDefault(); renderLogin({ prefill: o.email }); };
+    alt.appendChild(again);
+    alt.appendChild(document.createTextNode(" · "));
+  }
+  const demo = el("a", "", "Titta på exempelteamen i stället");
+  demo.href = "#"; demo.style.color = "var(--accent-2)";
+  demo.onclick = (e) => { e.preventDefault(); renderPicker(); };
+  alt.appendChild(demo);
+  wrap.appendChild(alt);
+
+  root.appendChild(wrap);
+  input.focus();
+}
+
+// Inloggad kund: visar de team kontot faktiskt når. Skiljer sig från
+// exempellistan genom att den kommer från servern och går att ta tillbaka.
+function renderAccountPicker(me) {
+  const root = $("#root");
+  root.innerHTML = "";
+  const wrap = el("main", "picker");
+  wrap.appendChild(hubLink());
+  wrap.appendChild(el("div", "setup-badge", "Inloggad"));
+
+  const h = el("h1");
+  h.innerHTML = me.teams.length === 1
+    ? `Välkommen <span class="grad">tillbaka</span>`
+    : `Vilket <span class="grad">team</span> vill ni öppna?`;
+  wrap.appendChild(h);
+  wrap.appendChild(el("p", "setup-lead", "Inloggad som " + me.email + "."));
+
+  if (!me.teams.length) {
+    wrap.appendChild(el("div", "picker-empty",
+      "Kontot finns, men inget team är kopplat till det än. Hör av dig till info@mittaiteam.se så ordnar vi det."));
+  } else {
+    const grid = el("div", "picker-grid");
+    me.teams.forEach((t) => {
+      const card = el("a", "pcard");
+      card.href = `?team=${encodeURIComponent(t.slug)}`;
+      // Samma uppbyggnad som exempellistans kort (ikon + meta), annars
+      // ramlar layouten isär — .pcard är en flexrad, inte en stapel.
+      card.appendChild(el("span", "pcard-icon", "🏢"));
+      const meta = el("span", "pcard-meta");
+      meta.appendChild(el("span", "pcard-name", t.company || t.slug));
+      meta.appendChild(el("span", "pcard-tag", t.role === "owner" ? "Ägare" : "Medlem"));
+      card.appendChild(meta);
+      grid.appendChild(card);
+    });
+    wrap.appendChild(grid);
+  }
+
+  const out = el("button", "btn-ghost", "Logga ut");
+  out.type = "button";
+  out.style.cssText = "margin-top:26px";
+  out.onclick = async () => {
+    out.disabled = true;
+    try { await authPost("/api/auth/logout", {}); } catch (_) { /* logga ut lokalt ändå */ }
+    renderLogin({});
+  };
+  wrap.appendChild(out);
+
+  root.appendChild(wrap);
+}
+
 function renderPicker(errMsg) {
   const root = $("#root");
   root.innerHTML = "";
