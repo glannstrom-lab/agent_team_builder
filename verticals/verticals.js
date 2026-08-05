@@ -115,10 +115,11 @@ window.VERTICALS = [
   },
   {
     slug: "restaurang",
+    demoTeam: "restaurang",
     name: "Restaurang / café",
     icon: "🍽️",
-    tagline: "Menyer, sociala medier och recensioner — skött.",
-    intro: "Driften tar all energi, och marknadsföringen blir lidande. Ett litet team håller er synliga och svarar på gästerna så att ni kan vara i köket och i salen.",
+    tagline: "Schemat, menyn och fakturorna — innan söndagskvällen.",
+    intro: "Driften tar all energi, och det administrativa hamnar på söndagskvällen. Ett litet team lägger bemanningen, sätter lunchmenyn utifrån vad som faktiskt finns i kylen, och läser leverantörsfakturorna som annars godkänns i klump.",
     pains: [
       "Sociala medier som borde uppdateras men aldrig hinns med",
       "Recensioner som ligger obesvarade",
@@ -191,6 +192,7 @@ window.VERTICALS = [
   },
   {
     slug: "hantverkare",
+    demoTeam: "hantverkare",
     name: "Bygg / hantverkare",
     icon: "🔨",
     tagline: "Offerter och kundkontakt på kvällen — borta.",

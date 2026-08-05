@@ -12,10 +12,26 @@
   const OPENROUTER_MODELS_URL = "https://openrouter.ai/api/v1/models";
   const ANTHROPIC_VERSION = "2023-06-01"; // uppdatera här när Anthropic byter version
 
-  // Leverantör avgörs av nyckelns prefix: sk-ant- = Anthropic direkt,
-  // sk-or- = OpenRouter (OpenAI-kompatibelt API, fler modeller att välja på).
-  function providerFor(apiKey) {
-    return (apiKey || "").startsWith("sk-or-") ? "openrouter" : "anthropic";
+  // ── EN MODELL, INGA ALTERNATIV (beslutat 2026-08-05) ──────────────────
+  // Hela produkten kör DeepSeek V4 Flash via OpenRouter. Det är ~1/30 av
+  // Opus pris ($0,09/$0,18 per miljon tokens mot $5/$25) och det som gör
+  // både provmånaden och den nyckelfria nivån möjliga att prissätta.
+  //
+  // Konsekvenser att inte glömma:
+  //  - Anthropic-nycklar (sk-ant-) fungerar INTE längre. Enda giltiga
+  //    nyckel är sk-or- från OpenRouter.
+  //  - Modellvalet är borta ur gränssnittet. Lägg inte tillbaka en
+  //    dropdown utan att först ändra prisantagandena i index.html och
+  //    villkor.html — de bygger på den här kostnadsnivån.
+  //  - villkor.html § 3 och integritet.html § 3 beskriver vilken
+  //    leverantör kundens data går till. Ändras raden nedan måste de med.
+  const MODEL_ID = "deepseek/deepseek-v4-flash-latest";
+  const MODEL_LABEL = "DeepSeek V4 Flash";
+
+  // Kvar som funktion för att anropsställena ska slippa ändras, men den
+  // har bara ett svar numera: allt går via OpenRouter.
+  function providerFor() {
+    return "openrouter";
   }
 
   // Översätter ett misslyckat svar till ett begripligt felmeddelande.
@@ -68,8 +84,11 @@
   // Väljer Anthropic- eller OpenRouter-format utifrån nyckelns prefix.
   // opts: { apiKey, model, system, messages, maxTokens?, signal?, onDelta }
   async function stream(opts) {
-    const { apiKey, model, system, messages, maxTokens, signal, onDelta } = opts;
-    const openrouter = providerFor(apiKey) === "openrouter";
+    const { apiKey, system, messages, maxTokens, signal, onDelta } = opts;
+    // opts.model ignoreras med flit. Anropsställena får fortsätta skicka
+    // den — det är en modell som gäller, och den bestäms här.
+    const model = MODEL_ID;
+    const openrouter = true;
 
     let url, init;
     if (openrouter) {
@@ -163,11 +182,18 @@
   // tokens förbrukas). Kastar ett begripligt svenskt fel om nyckeln är
   // ogiltig eller tjänsten onåbar; returnerar true annars.
   async function validateKey(apiKey) {
-    const openrouter = providerFor(apiKey) === "openrouter";
-    const url = openrouter ? "https://openrouter.ai/api/v1/auth/key" : "https://api.anthropic.com/v1/models";
-    const headers = openrouter
-      ? { authorization: "Bearer " + apiKey }
-      : { "x-api-key": apiKey, "anthropic-version": ANTHROPIC_VERSION, "anthropic-dangerous-direct-browser-access": "true" };
+    // Enda giltiga nyckeln är OpenRouter. En Anthropic-nyckel når inte
+    // DeepSeek, så den avvisas här med en förklaring i stället för att
+    // gå igenom och sedan falla på första riktiga anropet.
+    if (!(apiKey || "").startsWith("sk-or-")) {
+      throw new Error(
+        "Det här ser inte ut som en OpenRouter-nyckel. Portalen kör " + MODEL_LABEL +
+        " via OpenRouter, och nyckeln ska börja med sk-or-. Du skaffar en på openrouter.ai/keys."
+      );
+    }
+    const url = "https://openrouter.ai/api/v1/auth/key";
+    const headers = { authorization: "Bearer " + apiKey };
+    const openrouter = true;
     let res;
     try {
       res = await fetchWithTimeout(url, { headers }, 8000);
@@ -188,7 +214,14 @@
   // alla Claude-modeller (produktens hemmaplan), sedan övriga flaggskepp.
   // Cachas i sessionStorage ett dygn så portalen inte hämtar i onödan.
   let orModelsPromise = null;
+  // Returnerar den enda modell som används. Behåller formen (en lista med
+  // {id,name,pricing}) så att anropande kod inte behöver skrivas om — men
+  // listan har numera exakt ett element och hämtar ingenting över nätet.
   async function openrouterModels() {
+    return [{ id: MODEL_ID, name: MODEL_LABEL, pricing: { prompt: "0.00000009", completion: "0.00000018" } }];
+  }
+
+  async function openrouterModelsUnused() {
     if (orModelsPromise) return orModelsPromise;
     orModelsPromise = (async () => {
       const CACHE_KEY = "atb_or_models_v2"; // v2: inkluderar pricing (kostnadsvisningen)
@@ -269,5 +302,5 @@
     }
   }
 
-  window.ATBClaude = { stream, collect, fetchWithTimeout, providerFor, openrouterModels, validateKey, encodeTeamLink, decodeTeamLink, API_URL, ANTHROPIC_VERSION };
+  window.ATBClaude = { stream, collect, fetchWithTimeout, providerFor, openrouterModels, validateKey, encodeTeamLink, decodeTeamLink, API_URL, ANTHROPIC_VERSION, MODEL_ID, MODEL_LABEL };
 })();

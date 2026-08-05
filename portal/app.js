@@ -787,6 +787,25 @@ function renderSidebar() {
     wsBtn("🎭", "Öva ett samtal", openPractice, "Rollspela ett svårt samtal — agenten spelar motparten och ger feedback");
   }
 
+  // Tidig utveckling — säg det, dölj det inte. Kunderna är i praktiken
+  // betatestare, och en synlig väg att klaga är billigare än en kund som
+  // tyst slutar använda portalen. Ämnesraden bär teamets slug så att det
+  // går att se vem som skrivit utan att fråga.
+  ws.appendChild(el("div", "side-label ws-head", "Tyck till"));
+  const beta = el("p", "ws-beta");
+  beta.style.cssText = "font-size:12.5px;line-height:1.55;color:var(--text-dim);margin:2px 0 14px;padding:0 2px";
+  beta.appendChild(document.createTextNode("Den här appen är i tidig utveckling. Rapportera buggar, berätta vad som funkar bra och dåligt, och önska funktioner — "));
+  const betaLink = el("a", "", "hör av dig här");
+  betaLink.href = "mailto:info@mittaiteam.se?subject=" +
+    encodeURIComponent("Feedback på portalen (" + (state.slug || "okänt team") + ")") +
+    "&body=" + encodeURIComponent(
+      "Vad jag gjorde:\n\n\nVad som hände:\n\n\nVad jag hade väntat mig:\n\n\n" +
+      "Önskemål eller idéer:\n\n");
+  betaLink.style.cssText = "color:var(--accent-2);text-decoration:underline";
+  beta.appendChild(betaLink);
+  beta.appendChild(document.createTextNode("."));
+  ws.appendChild(beta);
+
   const routines = Array.isArray(team.routines) ? team.routines : [];
   if (routines.length) {
     ws.appendChild(el("div", "side-label ws-head", "Veckans rutiner"));
