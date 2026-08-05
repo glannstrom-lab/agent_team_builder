@@ -14,7 +14,7 @@
 
   // ── EN MODELL, INGA ALTERNATIV (beslutat 2026-08-05) ──────────────────
   // Hela produkten kör DeepSeek V4 Flash via OpenRouter. Det är ~1/30 av
-  // Opus pris ($0,09/$0,18 per miljon tokens mot $5/$25) och det som gör
+  // Opus pris ($0,14/$0,28 per miljon tokens mot $5/$25) och det som gör
   // både provmånaden och den nyckelfria nivån möjliga att prissätta.
   //
   // Konsekvenser att inte glömma:
@@ -25,7 +25,7 @@
   //    villkor.html — de bygger på den här kostnadsnivån.
   //  - villkor.html § 3 och integritet.html § 3 beskriver vilken
   //    leverantör kundens data går till. Ändras raden nedan måste de med.
-  const MODEL_ID = "deepseek/deepseek-v4-flash-latest";
+  const MODEL_ID = "deepseek/deepseek-v4-flash"; // stabilt id: varken tilde-alias (~...-latest, uppdateras utan forvarning) eller datumsuffix (-0731, ruttnar)
   const MODEL_LABEL = "DeepSeek V4 Flash";
 
   // Kvar som funktion för att anropsställena ska slippa ändras, men den

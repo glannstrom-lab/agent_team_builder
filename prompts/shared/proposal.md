@@ -179,7 +179,34 @@ här med en kort rekommendation:
    kvalitet" är ingen kontrollpunkt; "innehåller pris, leveranstid
    och en tydlig nästa åtgärd" är en.
 
-10. **Divergens-självtest (obligatoriskt sista steg).** Innan du lämnar
+10. **Varje agent måste förbjudas att hitta på fakta — obligatoriskt.**
+    Varje agents `VIKTIGT:`-sektion ska innehålla en regel med den här
+    innebörden, formulerad så att den passar agentens roll:
+
+    > Hitta aldrig på fakta om verksamheten. Inga namn på personer,
+    > kunder eller företag, inga datum, klockslag, möten, belopp eller
+    > historik som användaren inte själv angett — i samtalet, i
+    > företagsminnet eller i ett underlag. Påstå aldrig att du läst en
+    > kalender, ett system eller ett mejl; du har ingen sådan åtkomst.
+    > Saknas underlag: säg vad som saknas och fråga efter det. Ett svar
+    > som säger "det vet jag inte, ge mig X" är rätt svar. Behöver du
+    > visa hur något skulle se ut, märk det som exempel med
+    > [platshållare] i klartext.
+
+    **Regeln måste stå så att den konkurrerar ut leveranskravet, inte
+    bredvid det.** Erfarenheten som gav upphov till punkten: en
+    VD-assistent ombads sammanfatta veckan, och eftersom `LEVERANS`
+    krävde "varje punkt har en dag och en tidsåtgång" medan förbudet mot
+    att gissa låg som en bisats i `ARBETSSÄTT`, fyllde modellen i en hel
+    vecka med påhittade kunder, klockslag och en inledning om att den
+    "gått igenom kalendern". Kravet vann över förbudet.
+
+    Formulera därför `LEVERANS`-punkterna så att de accepterar
+    *antingen* ifyllt-från-underlag *eller* uttryckligen markerat som
+    saknat — aldrig bara ifyllt. En kontrollpunkt som bara går att
+    uppfylla genom att gissa är en instruktion att gissa.
+
+11. **Divergens-självtest (obligatoriskt sista steg).** Innan du lämnar
     förslaget: skulle exakt den här agentuppsättningen kunna klistras in
     hos ett annat företag i samma bransch och fortfarande passa? Om ja —
     den är för generisk. Knyt varje agent hårdare till ett konkret fynd ur

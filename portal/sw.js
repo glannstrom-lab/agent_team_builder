@@ -6,7 +6,7 @@
 
 // Bumpa versionen vid varje ändring i SHELL-filerna nedan — annars precachar
 // inte service workern om skalet och offline-användare fastnar på gammal kod.
-const CACHE = "atb-portal-v12"; // v10: devCode i konsolläge — bumpa ALLTID vid ändring i app.js, annars serverar service workern gammal kod
+const CACHE = "atb-portal-v13"; // Bumpa vid VARJE ändring i en SHELL-fil nedan — även atb-claude.js, annars serveras gammal modell-id ur cachen hur mycket som än deployas
 // De delade rot-skripten (avatars/atb-claude) MÅSTE precachas — utan dem
 // kraschar en offline-öppnad PWA med "ATBClaude is undefined".
 // Typsnitten är självhostade sedan 2026-08-05 — utan dem i skalet renderar en

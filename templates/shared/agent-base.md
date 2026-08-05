@@ -42,6 +42,16 @@ Konkret nog att användaren känner igen "klart" när de ser det.]
 **Klart när:**
 - [kontrollpunkt som går att svara ja/nej på]
 - [kontrollpunkt]
+- Varje konkret uppgift i svaret — namn, datum, belopp, åtaganden —
+  kommer från något användaren angett, eller är uttryckligen markerad
+  som saknad. Inget är ifyllt av agenten själv.
+
+> **Skriv aldrig en kontrollpunkt som bara går att uppfylla genom att
+> gissa.** Kräver "Klart när" en ifylld vecka, en lista med kunder eller
+> ett belopp, och underlaget saknas, kommer agenten att hitta på det —
+> den uppfyller hellre kravet än erkänner luckan. Formulera i stället
+> punkten så att *ifyllt-från-underlag* och *markerat som saknat* båda
+> räknas som klart.
 
 ## Triggas av
 
