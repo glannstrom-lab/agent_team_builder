@@ -14,7 +14,7 @@
 // köras och kommandot som kör den — så att man ser exakt vad som händer med
 // produktionsdatan innan det händer. Klistra in kommandot för att verkställa.
 
-import { readFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import { randomBytes } from "node:crypto";
 
 const args = process.argv.slice(2);
@@ -79,10 +79,16 @@ const flag = local ? "--local" : "--remote";
 console.log("\n─── SQL som körs ───────────────────────────────────────────\n");
 console.log(sql);
 console.log("\n─── Kör så här ─────────────────────────────────────────────\n");
-// Radbrytningar går inte att skicka i --command: JSON.stringify gör dem till
-// literala \n, som SQLite läser som skräptecken och inte som blanksteg.
-// Kommandoraden får därför allt på en rad.
-console.log(`npx wrangler d1 execute agent-team-builder ${flag} --command ${JSON.stringify(statements.join(" "))}`);
+// SQL:en skrivs till fil i stället för att skickas som --command. En hel
+// teamkonfiguration är tiotusentals tecken, och Windows kommandorad tar slut
+// vid drygt åtta tusen — med --command fungerar bara de allra minsta teamen,
+// och felet ("The command line is too long") pekar inte på orsaken.
+const outFile = "scripts/.provision.sql";
+writeFileSync(outFile, sql + "\n", "utf8");
+
+console.log(`\nSQL:en är skriven till ${outFile} (${sql.length} tecken).`);
+console.log("\n─── Kör så här ─────────────────────────────────────────────\n");
+console.log(`npx wrangler d1 execute agent-team-builder ${flag} --file ${outFile}`);
 console.log(`
 ─── Efteråt ────────────────────────────────────────────────
 

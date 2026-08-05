@@ -16,3 +16,7 @@ npm-debug.log*
 .dev.vars.*
 .env
 .env.*
+
+# Provisionering: innehåller kunddata, hör hemma i databasen och inte i git
+scripts/.provision.sql
+scratch-*.json
