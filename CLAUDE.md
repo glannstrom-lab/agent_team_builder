@@ -177,6 +177,28 @@ skisser i `design/` (deployas inte).
 - **Branscher** (`verticals/`) — datadrivna branschlandningssidor
   (`?v=<slug>` från `verticals.js`); varje bransch har en live-demo utan nyckel.
 
+**En modell, inga alternativ (2026-08-05):** hela produkten kör
+`deepseek/deepseek-v4-flash` via OpenRouter. Valet bor i `atb-claude.js`, och
+`stream()` ignorerar vilken modell anropet än skickar med — det gick inte att
+lita på att varje anropsställe skickade rätt. Anthropic-nycklar avvisas med ett
+förklarande fel. Ändras modellraden måste prisantagandena i `index.html` och
+avsnitt 3–4 i `villkor.html` följa med; de bygger på kostnadsnivån
+$0,14/$0,28 per miljon tokens.
+
+**Konton (M3, 2026-08-05):** portalen har två dörrar. Exempelteamen nås som förut
+med `?team=` i adressen; den nakna adressen frågar kontot först. Inloggning sker
+med engångskod till mejlen — inga lösenord, alltså inget att läcka och inget
+återställningsflöde. Fem tabeller i `migrations/0002_auth.sql`, fyra rutter under
+`functions/api/auth/`, och `scripts/provision.mjs` som lägger upp en kund för hand
+tills köpflödet finns. Capability-URL:en finns kvar men räcker bara för det som
+säljs på kundens egen nyckel — utan identitet går förbrukning inte att mäta per
+konto, vilket den nyckelfria nivån kräver.
+
+**Portalens layout:** tre spalter på desktop — laget till vänster, chatten i
+mitten, arbetsytan och sidfoten till höger. **Ändras `portal/app.js` måste `CACHE`
+i `portal/sw.js` bumpas**, annars serverar service workern gammal kod hur mycket
+som än deployas. Det gäller varje fil i `SHELL`, inklusive `atb-claude.js`.
+
 Säkerhetsheaders/CSP sätts via `_headers` (kopieras till `dist/` vid bygge).
 
 **Kör lokalt:** `python -m http.server 8420` från repo-roten (eller `npm run dev`),
@@ -342,10 +364,10 @@ ny kund dyker upp i både galleri och portal automatiskt.
 > 4 990 / 490 per mån / offert) och står i lägesdokumentet — prislistan i
 > `index.html` och avsnitt 4 i `villkor.html` måste alltid ändras tillsammans.
 >
-> **Nästa pass:** fyll i org.nr, momsreg.nr och adress på de tre ställen där det
-> står `[FYLL I]`, kör `npm run build` (spärren släpper igenom juridiksidorna
-> först då), avkommentera sitemap-posterna — och skriv sedan listan på 40
-> företag. Ingen funktionskod.
+> **Nästa pass:** sätt upp en avsändartjänst (Resend/Postmark + DNS på
+> mittaiteam.se), sätt MAIL_API_KEY och MAIL_FROM, och ändra MAIL_PROVIDER
+> från console till resend — så länge den står på console skrivs varje
+> inloggningskod i klartext till loggen. Därefter: prata med en människa.
 >
 > Fas 1–3 nedan står kvar som historik över hur kärnan byggdes.
 
