@@ -691,6 +691,12 @@ function renderLogin(opts) {
     ? `Om ${o.email} finns hos oss ligger det en sexsiffrig kod i inkorgen. Den gäller i tio minuter.`
     : "Skriv adressen ni angav när teamet levererades, så skickar vi en engångskod. Inget lösenord att komma ihåg."));
 
+  if (o.devNote) {
+    const note = el("div", "setup-err", "🛠 " + o.devNote);
+    note.style.cssText = "border-color:var(--accent);color:var(--accent-2)";
+    wrap.appendChild(note);
+  }
+
   const err = el("div", "setup-err"); err.style.display = "none";
   wrap.appendChild(err);
   const fail = (msg) => { err.textContent = "⚠️ " + msg; err.style.display = "block"; };
@@ -698,7 +704,10 @@ function renderLogin(opts) {
   const input = el("input");
   input.type = o.email ? "text" : "email";
   input.autocomplete = o.email ? "one-time-code" : "email";
-  if (o.email) { input.inputMode = "numeric"; input.maxLength = 6; input.placeholder = "123456"; }
+  if (o.email) {
+    input.inputMode = "numeric"; input.maxLength = 6; input.placeholder = "123456";
+    if (o.devCode) input.value = o.devCode; // konsolläge: förifylld, tryck bara Logga in
+  }
   else { input.placeholder = "namn@företaget.se"; input.value = o.prefill || ""; }
   input.style.cssText = INPUT_CSS + (o.email ? ";letter-spacing:.3em;font-size:22px;text-align:center;max-width:200px" : "");
   wrap.appendChild(input);
@@ -722,7 +731,10 @@ function renderLogin(opts) {
       }
       const r = await authPost("/api/auth/request", { email: value });
       if (!r.ok) throw new Error(r.data.error || "Kunde inte skicka koden.");
-      renderLogin({ email: value });
+      // devCode kommer bara när servern kör i konsolläge, alltså innan en
+      // avsändare är uppsatt. Då fylls koden i åt användaren i stället för
+      // att ligga i en logg som hen inte når.
+      renderLogin({ email: value, devCode: r.data.devCode || "", devNote: r.data.devNote || "" });
       return;
     } catch (e) {
       fail((e && e.message) || "Något gick fel. Försök igen.");

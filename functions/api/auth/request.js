@@ -60,5 +60,18 @@ export async function onRequestPost({ request, env }) {
     // går det att skilja en existerande adress från en som inte finns.
   }
 
+  // Utvecklingsläge: innan en avsändare är uppsatt finns koden bara i
+  // loggen, dit den som ska logga in inte når. Då är tjänsten obrukbar,
+  // inte säker. I konsolläge returneras koden därför i svaret så att
+  // flödet går att köra hela vägen.
+  //
+  // Det här är säkert exakt så länge MAIL_PROVIDER är "console", och
+  // katastrofalt annars: då lämnas koden ut till vem som helst som kan
+  // gissa en e-postadress. Villkoret är avsiktligt en exakt jämförelse
+  // mot ett värde som måste sättas medvetet — default är "resend".
+  if (env.MAIL_PROVIDER === "console") {
+    return json({ ...SAME_ANSWER, devCode: code, devNote: "Utvecklingsläge — ingen avsändare uppsatt. Koden visas här i stället för att mejlas." });
+  }
+
   return json(SAME_ANSWER);
 }
