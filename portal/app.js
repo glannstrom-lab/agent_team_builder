@@ -51,6 +51,35 @@ const state = {
   chatAbort: null, // AbortController för pågående svar (stoppknappen)
 };
 
+// ---------- lagringsfel ----------
+// Varje sparning i portalen har ett tomt catch, så att full eller blockerad
+// lagring aldrig kan krascha chatten. Priset var att ett misslyckat sparande
+// blev helt osynligt — kunden trodde att samtalet låg kvar, och upptäckte
+// motsatsen först nästa dag. Felen räknas nu, loggas, och första gången något
+// väsentligt inte kan sparas får kunden en diskret rad ovanför chatten.
+const storeErrors = [];
+window.ATBStorageErrors = storeErrors; // felsökning: inspektera i konsolen
+let storeBannerShown = false;
+function storeWarn(what, e) {
+  storeErrors.push({ what, at: Date.now(), msg: (e && e.message) || String(e || "") });
+  console.warn("[Mitt AI-team] kunde inte spara:", what, e);
+  if (storeBannerShown) return;
+  // Flaggan sätts först när raden faktiskt syntes — händer felet innan
+  // portalen ritats upp finns ingen yta att visa den på, och då ska nästa
+  // fel få göra ett nytt försök i stället för att tystas.
+  try { storeBannerShown = showStoreBanner(what); } catch (_) { /* varningen får aldrig krascha */ }
+}
+function showStoreBanner(what) {
+  const main = document.querySelector(".main");
+  if (!main || $("#store-banner")) return false;
+  const b = el("button", "folder-banner");
+  b.id = "store-banner"; b.type = "button";
+  b.textContent = `⚠️ Kunde inte spara ${what} — webbläsarens utrymme kan vara fullt eller blockerat. Kopiera viktiga svar innan du stänger fliken. (Klicka för att dölja.)`;
+  b.onclick = () => b.remove();
+  main.insertBefore(b, $("#chat-header"));
+  return true;
+}
+
 // ---------- persistent historik ----------
 // Chatten överlever sidladdningar: historiken sparas per team i localStorage.
 // Utan detta tappar en kund som stänger fliken allt — då är portalen en
@@ -81,10 +110,20 @@ function saveHistory() {
       capped[id] = state.history[id];
     }
     localStorage.setItem(HIST_PREFIX + state.slug, JSON.stringify(capped));
-  } catch (_) { /* full/blockerad storage får aldrig krascha chatten */ }
+  } catch (e) { storeWarn("chatthistoriken", e); /* får aldrig krascha chatten */ }
 }
 
 let archiveChain = Promise.resolve(); // serialiserar arkivskrivningar
+// Egen kö för mappens DELADE filer (minne.md, teamstatus.json,
+// team-tillagg.json). Utan den kan två read→ändra→write mot samma fil köra om
+// varandra och den sena skrivningen radera den tidigas rader — exakt det som
+// archiveChain redan löser för arkivet. Två köer, inte en: arkivet skriver
+// andra filer och ska inte behöva vänta på en långsam minnesskrivning.
+let folderChain = Promise.resolve();
+function queueFolder(fn) {
+  folderChain = folderChain.then(fn).catch((e) => { storeWarn("till mappen", e); });
+  return folderChain;
+}
 
 async function archiveMessages(agentId, dropped) {
   try {
@@ -99,7 +138,7 @@ async function archiveMessages(agentId, dropped) {
     const w = await fh.createWritable();
     await w.write(old + add);
     await w.close();
-  } catch (_) { /* arkivering är best effort — kapningen sker ändå */ }
+  } catch (e) { storeWarn("äldre svar till arkivet", e); /* kapningen sker ändå */ }
 }
 
 // ---------- minne & underlag ----------
@@ -117,42 +156,43 @@ function saveMemory(text) {
   if (folderActive()) {
     const baseline = state.folder.memory || "";
     state.folder.memory = text;
-    (async () => {
+    // Genom kön: två snabba sparningar (minnesförslag + manuell redigering)
+    // läste annars samma fil samtidigt och den sista skrivningen slog ut den
+    // första — kunden såg en rad hen just godkänt försvinna.
+    queueFolder(async () => {
+      // Konfliktskydd: rader en kollega hunnit lägga till i minne.md (via
+      // OneDrive-synk) sedan vår senaste läsning får inte skrivas över —
+      // de följer med. Rader användaren aktivt raderat återuppstår inte
+      // (bara det som är nytt gentemot VÅR baslinje flyttas med).
+      let finalText = text;
       try {
-        // Konfliktskydd: rader en kollega hunnit lägga till i minne.md (via
-        // OneDrive-synk) sedan vår senaste läsning får inte skrivas över —
-        // de följer med. Rader användaren aktivt raderat återuppstår inte
-        // (bara det som är nytt gentemot VÅR baslinje flyttas med).
-        let finalText = text;
-        try {
-          const fh = await state.folder.handle.getFileHandle("minne.md");
-          const current = await (await fh.getFile()).text();
-          if (current !== baseline) {
-            const inText = new Set(text.split("\n").map((s) => s.trim()));
-            const inBase = new Set(baseline.split("\n").map((s) => s.trim()));
-            const added = current.split("\n").filter((l) => l.trim() && !inBase.has(l.trim()) && !inText.has(l.trim()));
-            if (added.length) finalText = text.replace(/\s+$/, "") + "\n" + added.join("\n");
-          }
-        } catch (_) { /* ingen fil än — skriv vårt innehåll */ }
-        state.folder.memory = finalText;
-        await writeFolderFile("minne.md", finalText);
-        try { localStorage.setItem(MEM_PREFIX + state.slug, finalText); } catch (_) { /* full storage */ }
-        paintFactCount();
-      } catch (_) { /* skrivfel — localStorage-reserven nedan gäller */ }
-    })();
+        const fh = await state.folder.handle.getFileHandle("minne.md");
+        const current = await (await fh.getFile()).text();
+        if (current !== baseline) {
+          const inText = new Set(text.split("\n").map((s) => s.trim()));
+          const inBase = new Set(baseline.split("\n").map((s) => s.trim()));
+          const added = current.split("\n").filter((l) => l.trim() && !inBase.has(l.trim()) && !inText.has(l.trim()));
+          if (added.length) finalText = text.replace(/\s+$/, "") + "\n" + added.join("\n");
+        }
+      } catch (_) { /* ingen fil än — skriv vårt innehåll */ }
+      state.folder.memory = finalText;
+      await writeFolderFile("minne.md", finalText);
+      try { localStorage.setItem(MEM_PREFIX + state.slug, finalText); } catch (e) { storeWarn("företagsminnet", e); }
+      paintFactCount();
+    });
   }
-  try { localStorage.setItem(MEM_PREFIX + state.slug, text); } catch (_) { /* full storage */ }
+  try { localStorage.setItem(MEM_PREFIX + state.slug, text); } catch (e) { storeWarn("företagsminnet", e); }
 }
 function loadLocalDocs() {
   try { const d = JSON.parse(localStorage.getItem(DOCS_PREFIX + state.slug) || "[]"); return Array.isArray(d) ? d : []; }
   catch (_) { return []; }
 }
-function saveDocs(docs) { try { localStorage.setItem(DOCS_PREFIX + state.slug, JSON.stringify(docs)); } catch (_) { /* full storage */ } }
+function saveDocs(docs) { try { localStorage.setItem(DOCS_PREFIX + state.slug, JSON.stringify(docs)); } catch (e) { storeWarn("underlagen", e); } }
 function loadDocToggles() {
   try { return JSON.parse(localStorage.getItem(DOCSON_PREFIX + state.slug) || "{}") || {}; }
   catch (_) { return {}; }
 }
-function saveDocToggles(t) { try { localStorage.setItem(DOCSON_PREFIX + state.slug, JSON.stringify(t)); } catch (_) { /* full storage */ } }
+function saveDocToggles(t) { try { localStorage.setItem(DOCSON_PREFIX + state.slug, JSON.stringify(t)); } catch (e) { storeWarn("valet av underlag", e); } }
 // Alla underlag agenterna ser: mappens filer (om kopplad) + inklistrade.
 function loadDocs() {
   const local = loadLocalDocs();
@@ -242,6 +282,9 @@ async function connectFolder() {
     await idbSet("dir_" + state.slug, handle);
     await refreshFolder({ ask: true });
     updateFolderBanner();
+    // Nykopplad mapp: lägg upp befintliga teamtillägg där de överlever en
+    // rensad webbläsare, och ta hem sådana som redan låg i mappen.
+    if (await syncTeamExtWithFolder()) renderPortal();
   } catch (_) { /* avbruten dialog */ }
 }
 async function disconnectFolder() {
@@ -261,6 +304,8 @@ async function initFolder() {
     await refreshFolder();
     updateFolderBanner();
     await syncStatusToFolder(); // hämta in kollegors rutinbockar/streak
+    // Tillägg gjorda på en annan dator: rita om bara om något faktiskt kom in.
+    if (await syncTeamExtWithFolder()) renderPortal();
   } catch (_) { /* ingen mapp */ }
 }
 
@@ -284,7 +329,14 @@ async function readStatusFile() {
     return JSON.parse(await (await fh.getFile()).text());
   } catch (_) { return null; }
 }
-async function syncStatusToFolder() {
+// Genom folderChain: read→merge→write mot teamstatus.json är inte atomärt, och
+// två samtidiga synkar (sidöppning + avbockad rutin) kunde annars läsa samma
+// utgångsläge och skriva över varandras bockar.
+function syncStatusToFolder() {
+  if (!folderActive()) return Promise.resolve();
+  return queueFolder(syncStatusNow);
+}
+async function syncStatusNow() {
   if (!folderActive()) return;
   try {
     const cur = (await readStatusFile()) || {};
@@ -312,7 +364,7 @@ async function syncStatusToFolder() {
     await writeFolderFile("teamstatus.json", JSON.stringify({ rout: merged, streak, at: Date.now() }, null, 2));
     // Spegla tillbaka det merge:ade läget lokalt.
     routSave(merged);
-    if (streak) { try { localStorage.setItem("atb_streak_" + state.slug, JSON.stringify(streak)); } catch (_) { /* full storage */ } }
+    if (streak) { try { localStorage.setItem("atb_streak_" + state.slug, JSON.stringify(streak)); } catch (e) { storeWarn("veckostreaken", e); } }
     // Måla om rutinbockar som kom in från en kollega.
     merged.done.forEach((d) => {
       const label = d.label || d;
@@ -324,6 +376,68 @@ async function syncStatusToFolder() {
       });
     });
   } catch (_) { /* status-synk är best effort — lokalt läge gäller ändå */ }
+}
+
+// ---------- teamtillägg ("Utveckla teamet") ----------
+// Tilläggen låg BARA i localStorage. Rensad webbläsare, ny dator eller en
+// kollega med egen inloggning = agenten borta, utan att något sa till — och
+// det är en agent kunden själv bett om och betalat för att få formad. Med en
+// kopplad mapp skrivs de därför också till team-tillagg.json, samma väg som
+// teamstatus.json och genom samma kö. Utan mapp är läget som förut.
+const TEAMEXT_FILE = "team-tillagg.json";
+const teamExtKey = () => "atb_teamext_" + state.slug;
+function loadTeamExt() {
+  try { return JSON.parse(localStorage.getItem(teamExtKey()) || "{}") || {}; }
+  catch (_) { return {}; } // trasigt tillägg — börja om hellre än att kasta
+}
+function saveTeamExt(ext) {
+  try { localStorage.setItem(teamExtKey(), JSON.stringify(ext)); }
+  catch (e) { storeWarn("teamets tillägg", e); return false; }
+  if (folderActive()) queueFolder(() => writeFolderFile(TEAMEXT_FILE, JSON.stringify(ext, null, 2)));
+  return true;
+}
+// Vid mappkoppling: hämta hem tillägg som gjorts i en annan webbläsare.
+// Union, aldrig radering — den som tagit bort en agent har redan skrivit om
+// filen, så det som ligger kvar där är sådant som ska finnas.
+async function mergeTeamExtFromFolder() {
+  if (!folderActive() || !team) return false;
+  let fromFile = null;
+  try {
+    const fh = await state.folder.handle.getFileHandle(TEAMEXT_FILE);
+    fromFile = JSON.parse(await (await fh.getFile()).text());
+  } catch (_) { return false; } // ingen fil (eller trasig) — inget att hämta
+  if (!fromFile || !Array.isArray(fromFile.agents)) return false;
+  const cur = loadTeamExt();
+  const agents = (cur.agents || []).slice();
+  const routines = (cur.routines || []).slice();
+  let changed = false;
+  fromFile.agents.forEach((a) => {
+    if (!a || !a.id || !a.system || agents.some((b) => b.id === a.id)) return;
+    agents.push(a); changed = true;
+  });
+  (fromFile.routines || []).forEach((r) => {
+    if (!r || !r.label || routines.some((x) => x.label === r.label)) return;
+    routines.push(r); changed = true;
+  });
+  if (!changed) return false;
+  cur.agents = agents; cur.routines = routines;
+  try { localStorage.setItem(teamExtKey(), JSON.stringify(cur)); } catch (e) { storeWarn("teamets tillägg", e); }
+  // Lägg in i det laddade teamet direkt, annars syns de först vid nästa F5.
+  agents.forEach((a) => { if (!team.agents.some((b) => b.id === a.id)) { a.added = true; team.agents.push(a); } });
+  routines.forEach((r) => { if (!(team.routines || []).some((x) => x.label === r.label)) (team.routines = team.routines || []).push(r); });
+  assignAvatars(team);
+  return true;
+}
+// Tvåvägs: hämta först hem filens tillägg (så inget skrivs över), skicka
+// sedan upp den sammanslagna listan. Returnerar true om teamet ändrades.
+async function syncTeamExtWithFolder() {
+  if (!folderActive()) return false;
+  const changed = await mergeTeamExtFromFolder();
+  const cur = loadTeamExt();
+  if ((cur.agents || []).length || (cur.routines || []).length) {
+    queueFolder(() => writeFolderFile(TEAMEXT_FILE, JSON.stringify(cur, null, 2)));
+  }
+  return changed;
 }
 
 function updateFolderBanner() {
@@ -363,6 +477,70 @@ function systemFor(agent) {
     sys += `\n\nNär du använder företagsminnet eller ett underlag i ett svar: hänvisa kort till källan vid namn (t.ex. "enligt er prislista"). Påstå aldrig att ett underlag innehåller något det inte gör — saknas uppgiften, säg det och be om den.`;
   }
   return sys;
+}
+
+// ---------- kontextbudget för samtalet ----------
+// Underlagen har haft en budget sedan länge (DOC_BUDGET). Samtalet hade ingen:
+// hela historiken (upp till 60 meddelanden per agent) skickades med i VARJE
+// anrop. Efter ett par veckors dagligt bruk växer alltså kostnaden för varje
+// ny fråga, tills anropet till slut spränger modellfönstret — och kunden
+// betalar mest just när teamet börjat bli användbart.
+//
+// Samma grepp som för stora underlag: behåll det färska ordagrant och låt det
+// äldre krympa till ett destillat. Destillatet görs LOKALT (rubriker + första
+// raderna per meddelande) — ett AI-destillat hade krävt ett extra betalt anrop
+// mitt i svarsvägen, se rapporten.
+const CHAT_KEEP = 12;            // meddelanden som alltid skickas ordagrant
+const CHAT_BUDGET = 40000;       // tecken totalt i fönstret (≈ 12k tokens)
+const CHAT_DIGEST_BUDGET = 3000; // tecken destillatet av det äldre får kosta
+
+// Ett äldre meddelande kokas ner till roll + rubriker + inledning. Rubrikerna
+// är billiga och bär strukturen i en leverans ("## Prisförslag"), så teamet
+// minns VAD det levererat även när texten är borta.
+function digestMessage(m) {
+  const body = (m.content || "").trim();
+  if (!body) return "";
+  const who = m.role === "user" ? "DU" : "TEAMET";
+  const heads = body.split("\n").filter((l) => /^#{1,4}\s+\S/.test(l.trim())).slice(0, 6)
+    .map((l) => l.replace(/^#+\s*/, "").trim());
+  const lead = body.replace(/\s+/g, " ").slice(0, 220);
+  return `${who}: ${lead}${body.length > 220 ? "…" : ""}${heads.length ? `\n  (avsnitt: ${heads.join(" · ")})` : ""}`;
+}
+
+// Bygger meddelandelistan för ett anrop: destillat av det äldre + de senaste
+// meddelandena ordagrant. Fönstret börjar alltid på ett användarmeddelande och
+// destillatet läggs FÖRE det i samma meddelande — då behålls turordningen
+// user/assistant exakt som modellen förväntar sig.
+function contextFor(msgs) {
+  const all = (msgs || []).filter((m) => m && m.content);
+  const chars = (arr) => arr.reduce((n, m) => n + m.content.length, 0);
+  let start = Math.max(0, all.length - CHAT_KEEP);
+  // Krymp fönstret tills det ryms i budgeten — sista meddelandet (frågan som
+  // just ställdes) släpps alltid igenom, hur långt det än är.
+  while (start < all.length - 1 && chars(all.slice(start)) > CHAT_BUDGET) start++;
+  // Snäpp fram till närmaste användarmeddelande.
+  while (start < all.length && all[start].role !== "user") start++;
+  if (start >= all.length) start = Math.max(0, all.length - 1);
+
+  const out = all.slice(start).map((m) => ({ role: m.role, content: m.content }));
+  const older = all.slice(0, start);
+  if (!older.length || !out.length) return out;
+
+  // Bygg destillatet bakifrån: det som ligger närmast i tiden är mest värt.
+  const lines = [];
+  let used = 0;
+  for (let i = older.length - 1; i >= 0; i--) {
+    const line = digestMessage(older[i]);
+    if (!line) continue;
+    if (used + line.length > CHAT_DIGEST_BUDGET) break;
+    used += line.length;
+    lines.unshift(line);
+  }
+  if (!lines.length) return out;
+  const omitted = older.length - lines.length;
+  const head = `TIDIGARE I DET HÄR SAMTALET (förkortat sammandrag — texten är avkortad, gissa inte i luckorna; be om det du saknar)${omitted > 0 ? `\n[${omitted} ännu äldre meddelanden är utelämnade]` : ""}:\n`;
+  out[0] = { role: out[0].role, content: head + lines.join("\n") + "\n\n--- HÄR OCH NU ---\n" + out[0].content };
+  return out;
 }
 
 // ---------- helpers ----------
@@ -988,20 +1166,6 @@ function renderSidebar() {
   // betatestare, och en synlig väg att klaga är billigare än en kund som
   // tyst slutar använda portalen. Ämnesraden bär teamets slug så att det
   // går att se vem som skrivit utan att fråga.
-  ws.appendChild(el("div", "side-label ws-head", "Tyck till"));
-  const beta = el("p", "ws-beta");
-  beta.style.cssText = "font-size:12.5px;line-height:1.55;color:var(--text-dim);margin:2px 0 14px;padding:0 2px";
-  beta.appendChild(document.createTextNode("Den här appen är i tidig utveckling. Rapportera buggar, berätta vad som funkar bra och dåligt, och önska funktioner — "));
-  const betaLink = el("a", "", "hör av dig här");
-  betaLink.href = "mailto:info@mittaiteam.se?subject=" +
-    encodeURIComponent("Feedback på portalen (" + (state.slug || "okänt team") + ")") +
-    "&body=" + encodeURIComponent(
-      "Vad jag gjorde:\n\n\nVad som hände:\n\n\nVad jag hade väntat mig:\n\n\n" +
-      "Önskemål eller idéer:\n\n");
-  betaLink.style.cssText = "color:var(--accent-2);text-decoration:underline";
-  beta.appendChild(betaLink);
-  beta.appendChild(document.createTextNode("."));
-  ws.appendChild(beta);
 
   const routines = Array.isArray(team.routines) ? team.routines : [];
   if (routines.length) {
@@ -1019,6 +1183,19 @@ function renderSidebar() {
       ws.appendChild(b);
     });
   }
+
+  ws.appendChild(el("div", "side-label ws-head", "Tyck till"));
+  const beta = el("p", "ws-beta");
+  beta.appendChild(document.createTextNode("Den här appen är i tidig utveckling. Rapportera buggar, berätta vad som funkar bra och dåligt, och önska funktioner — "));
+  const betaLink = el("a", "", "hör av dig här");
+  betaLink.href = "mailto:info@mittaiteam.se?subject=" +
+    encodeURIComponent("Feedback på portalen (" + (state.slug || "okänt team") + ")") +
+    "&body=" + encodeURIComponent(
+      "Vad jag gjorde:\n\n\nVad som hände:\n\n\nVad jag hade väntat mig:\n\n\n" +
+      "Önskemål eller idéer:\n\n");
+  beta.appendChild(betaLink);
+  beta.appendChild(document.createTextNode("."));
+  ws.appendChild(beta);
   side.appendChild(ws);
 
   const foot = el("div", "side-foot");
@@ -1355,13 +1532,8 @@ function isoWeek() {
   const week = 1 + Math.round(((d - jan4) / 86400000 - 3 + ((jan4.getDay() + 6) % 7)) / 7);
   return `${d.getFullYear()}-W${week}`;
 }
-// Senaste anropskedjans kostnad (nollställs i submitMessage/runMeeting-start
-// implicit genom att läsas och visas direkt efter svaret).
-let lastCallCost = 0;
-function costAdd(used) {
-  const c = costSek(used);
-  if (c == null) return;
-  lastCallCost += c;
+// Veckosumman är portalens — den ska räkna varje anrop, oavsett varifrån.
+function costAddWeek(c) {
   try {
     const key = "atb_cost_" + (state.slug || "team");
     const cur = JSON.parse(localStorage.getItem(key) || "null");
@@ -1369,8 +1541,26 @@ function costAdd(used) {
     const rec = cur && cur.week === wk ? cur : { week: wk, sek: 0 };
     rec.sek += c;
     localStorage.setItem(key, JSON.stringify(rec));
-  } catch (_) { /* full storage — visningen är nice-to-have */ }
+  } catch (_) { /* full storage — veckosumman är nice-to-have, inte data */ }
 }
+// Kostnaden under ett svar hör till EN anropskedja, inte till portalen som
+// helhet. Med en global räknare kunde en auto-rutin som körde i bakgrunden
+// skriva in sin kostnad i användarens pågående svar (och tvärtom) — siffran
+// under bubblan hörde då till fel anrop. Varje kedja får därför en egen
+// räknare som skickas in som onUsage.
+function newCostRun() {
+  const run = { sek: 0 };
+  run.onUsage = (used) => {
+    const c = costSek(used);
+    if (c == null) return;
+    run.sek += c;
+    costAddWeek(c);
+  };
+  return run;
+}
+// För anrop som inte visar någon kostnadsrad (destillat, minnesförslag,
+// nya agenter) — de ska ändå synas i veckosumman.
+const costOnly = () => newCostRun().onUsage;
 function costWeekSek() {
   try {
     const rec = JSON.parse(localStorage.getItem("atb_cost_" + (state.slug || "team")) || "null");
@@ -1379,12 +1569,11 @@ function costWeekSek() {
 }
 const fmtSek = (v) => (v >= 1 ? v.toFixed(2) : v.toFixed(2)).replace(".", ",") + " kr";
 // Liten kostnadsrad under ett svar: "≈ 0,04 kr · den här veckan: 3,20 kr".
-function appendCost(row) {
-  if (state.demo || lastCallCost <= 0) { lastCallCost = 0; return; }
-  const c = el("div", "msg-cost", `≈ ${fmtSek(lastCallCost)} · den här veckan: ${fmtSek(costWeekSek())}`);
+function appendCost(row, run) {
+  if (state.demo || !run || run.sek <= 0) return;
+  const c = el("div", "msg-cost", `≈ ${fmtSek(run.sek)} · den här veckan: ${fmtSek(costWeekSek())}`);
   c.title = "Uppskattad API-kostnad via din egen nyckel (tokenpris × förbrukning). Ingen avgift till Mitt AI-team.";
   row.appendChild(c);
-  lastCallCost = 0;
 }
 
 // ---------- kom igång-checklista ----------
@@ -1521,6 +1710,7 @@ Läs samtalsutdraget och föreslå 0–3 KORTA rader med stabila fakta om föret
 Upprepa inget som redan står i minnet. Returnera EN rad per faktum, varje rad börjar med "- ". Finns inget nytt att spara: svara exakt "INGA".`;
 async function suggestMemory(agentId) {
   if (state.demo || !state.apiKey || state.streaming) return;
+  stopAutoRoutines(); // ett betalt anrop i taget
   const msgs = (state.history[agentId] || []).slice(-8);
   if (!msgs.length) return;
   const convo = msgs.map((m) => `${m.role === "user" ? "ANVÄNDAREN" : "AGENTEN"}: ${(m.content || "").slice(0, 1500)}`).join("\n\n");
@@ -1532,7 +1722,7 @@ async function suggestMemory(agentId) {
     out = await window.ATBClaude.collect({
       apiKey: state.apiKey, model: state.model, system: MEM_SUGGEST_PROMPT,
       messages: [{ role: "user", content: `BEFINTLIGT MINNE:\n${loadMemory().trim() || "(tomt)"}\n\nSAMTAL:\n${convo}` }],
-      maxTokens: 400, onUsage: costAdd,
+      maxTokens: 400, onUsage: costOnly(),
     });
   } catch (e) { status.textContent = "⚠️ " + ((e && e.message) || "Gick inte att hämta förslag — försök igen."); return; }
   const lines = out.split("\n").map((s) => s.replace(/^[-•\s]+/, "").trim()).filter((s) => s && !/^INGA\b/i.test(s)).slice(0, 3);
@@ -1702,36 +1892,64 @@ function weekReview() {
 // portalen öppnas på rätt dag — skillnaden mellan "teamet väntar på order"
 // och "teamet har redan jobbat". Kräver komplett prompt (inga [fyll i]),
 // körs max en gång per vecka och rutin, och får aldrig störa vid fel.
+//
+// Bakgrundsarbete som kunden betalar för måste gå att stoppa. Kontrollen låg
+// tidigare bara i en `if (state.streaming)`-koll FÖRE anropet: började
+// användaren skriva under tiden fanns två betalda anrop i luften samtidigt,
+// utan signal och utan stoppknapp. Nu har auto-körningen en egen
+// AbortController, och den avbryts i samma ögonblick som användaren själv
+// skickar något (submitMessage/runMeeting). Rutinen förblir obockad och körs
+// om vid nästa sidöppning.
+let autoAbort = null; // AbortController för pågående auto-rutin
+let autoBusy = false; // en auto-körning i taget
+function stopAutoRoutines() {
+  if (!autoAbort) return;
+  try { autoAbort.abort(); } catch (_) { /* redan avslutad */ }
+  autoAbort = null;
+}
 async function runAutoRoutines() {
-  if (state.demo || !state.apiKey || state.streaming) return;
+  if (state.demo || !state.apiKey || state.streaming || autoBusy) return;
   // Dagfönster: rutinens dag ELLER senare samma vecka — den som öppnar
   // portalen på tisdag ska inte bli utan måndagsbriefen.
   const due = (team.routines || []).filter((rt) =>
     rt.auto === true && rt.day != null && rt.day <= todayDayNo() && rt.prompt && !rt.prompt.includes("[fyll i]") && !routineDone(rt.label));
-  for (const rt of due) {
-    // Racea aldrig användarens egen chatt: börjar den strömma, avvakta auto
-    // till nästa sidöppning (rutinen är fortfarande obockad och körs då).
-    if (state.streaming) return;
-    const agent = agentById(rt.agentId) || agentById(team.entryAgent);
-    if (!agent) continue;
-    try {
-      const costBefore = lastCallCost; // stör inte användarens pågående kostnadsräkning
-      const userMsg = { role: "user", content: `${rt.prompt}\n\n(Stående rutin, körd automatiskt av portalen. Leverera ett färdigt utkast — lista i slutet vad du vill ha kompletterat om något saknas.)`, at: Date.now() };
-      const reply = await window.ATBClaude.collect({
-        apiKey: state.apiKey, model: state.model, system: systemFor(agent),
-        messages: (state.history[agent.id] || []).map((m) => ({ role: m.role, content: m.content })).concat([{ role: "user", content: userMsg.content }]),
-        maxTokens: 4096, onUsage: costAdd,
-      });
-      lastCallCost = costBefore;
-      if (!state.history[agent.id]) state.history[agent.id] = [];
-      state.history[agent.id].push(userMsg, { role: "assistant", content: reply, at: Date.now(), auto: true });
-      saveHistory();
-      routineMarkDone(rt.label);
-      autoDelivered.push({ label: rt.label, agentId: agent.id });
-      // Rita inte om loggen mitt i en pågående strömning hos användaren.
-      if (state.activeAgentId === agent.id && !state.streaming) renderLog();
-      renderPulse();
-    } catch (_) { /* auto får aldrig störa — rutinen går att köra manuellt */ }
+  if (!due.length) return;
+  autoBusy = true;
+  try {
+    for (const rt of due) {
+      // Racea aldrig användarens egen chatt: börjar den strömma, avvakta auto
+      // till nästa sidöppning (rutinen är fortfarande obockad och körs då).
+      if (state.streaming) return;
+      const agent = agentById(rt.agentId) || agentById(team.entryAgent);
+      if (!agent) continue;
+      const ctrl = new AbortController();
+      autoAbort = ctrl;
+      try {
+        const userMsg = { role: "user", content: `${rt.prompt}\n\n(Stående rutin, körd automatiskt av portalen. Leverera ett färdigt utkast — lista i slutet vad du vill ha kompletterat om något saknas.)`, at: Date.now() };
+        const reply = await window.ATBClaude.collect({
+          apiKey: state.apiKey, model: state.model, system: systemFor(agent),
+          messages: contextFor((state.history[agent.id] || []).concat([userMsg])),
+          maxTokens: 4096, signal: ctrl.signal,
+          onUsage: costOnly(), // egen räknare — får inte hamna i användarens svar
+        });
+        if (ctrl.signal.aborted) return; // avbruten mitt i: spara inget halvfärdigt
+        if (!state.history[agent.id]) state.history[agent.id] = [];
+        state.history[agent.id].push(userMsg, { role: "assistant", content: reply, at: Date.now(), auto: true });
+        saveHistory();
+        routineMarkDone(rt.label);
+        autoDelivered.push({ label: rt.label, agentId: agent.id });
+        // Rita inte om loggen mitt i en pågående strömning hos användaren.
+        if (state.activeAgentId === agent.id && !state.streaming) renderLog();
+        renderPulse();
+      } catch (e) {
+        if (e && e.name === "AbortError") return; // användaren tog över — inte ett fel
+        /* auto får aldrig störa — rutinen går att köra manuellt */
+      } finally {
+        if (autoAbort === ctrl) autoAbort = null;
+      }
+    }
+  } finally {
+    autoBusy = false;
   }
 }
 
@@ -1955,6 +2173,7 @@ function openGrow() {
     if (need.length < 10) { errEl.textContent = "Beskriv behovet med åtminstone en mening."; errEl.style.display = "block"; return; }
     if (state.demo || !state.apiKey) { errEl.textContent = "Kräver en inkopplad nyckel — demoläget kan inte generera."; errEl.style.display = "block"; return; }
     errEl.style.display = "none";
+    stopAutoRoutines(); // ett betalt anrop i taget
     go.disabled = true; go.textContent = "Formar agenten… (~30 s)";
     preview.innerHTML = "";
     try {
@@ -1963,7 +2182,7 @@ function openGrow() {
       const raw = await window.ATBClaude.collect({
         apiKey: state.apiKey, model: state.model, system: GROW_RULES,
         messages: [{ role: "user", content: `FÖRETAG: ${team.company} — ${team.tagline || ""}\n\nBEFINTLIGA AGENTER:\n${existing}\n\nKUNDENS BEHOV:\n${need}${mem ? `\n\nUR FÖRETAGSMINNET:\n${mem}` : ""}` }],
-        maxTokens: 4096, onUsage: costAdd,
+        maxTokens: 4096, onUsage: costOnly(),
       });
       const data = JSON.parse(extractJsonBlock(raw));
       const a = data.agent;
@@ -1981,9 +2200,8 @@ function openGrow() {
   box.appendChild(go);
 
   // Befintliga tillägg — kan tas bort (grundteamet kan inte).
-  let ext = null;
-  try { ext = JSON.parse(localStorage.getItem("atb_teamext_" + state.slug) || "null"); } catch (_) { /* trasigt */ }
-  if (ext && Array.isArray(ext.agents) && ext.agents.length) {
+  const ext = loadTeamExt();
+  if (Array.isArray(ext.agents) && ext.agents.length) {
     box.appendChild(el("div", "ovl-label", "Tillagda efter bygget"));
     ext.agents.forEach((a) => {
       const row = el("div", "doc-row");
@@ -1991,11 +2209,10 @@ function openGrow() {
       const del = el("button", "doc-del", "✕"); del.type = "button"; del.title = "Ta bort tillägget (historiken för agenten rensas inte)";
       del.onclick = () => {
         if (!confirm(`Ta bort ${a.name} ur teamet?`)) return;
-        let cur = {};
-        try { cur = JSON.parse(localStorage.getItem("atb_teamext_" + state.slug) || "{}") || {}; } catch (_) { /* trasigt — bygg om */ }
+        const cur = loadTeamExt();
         cur.agents = (cur.agents || []).filter((x) => x.id !== a.id);
         cur.routines = (cur.routines || []).filter((r) => r.agentId !== a.id);
-        try { localStorage.setItem("atb_teamext_" + state.slug, JSON.stringify(cur)); } catch (_) { /* full storage */ }
+        saveTeamExt(cur); // även till mappen — annars kommer agenten tillbaka där
         team.agents = team.agents.filter((x) => x.id !== a.id);
         team.routines = (team.routines || []).filter((r) => r.agentId !== a.id);
         // Stod kunden i den borttagna agentens chatt? Peka om till ingången,
@@ -2007,7 +2224,9 @@ function openGrow() {
       box.appendChild(row);
     });
   }
-  box.appendChild(el("p", "ovl-note", "Tillägg sparas lokalt i den här webbläsaren (och följer med i delningslänkar/teamfiler du skapar härifrån). För en full omprövning av hela teamet: kör en ny Builder-körning."));
+  box.appendChild(el("p", "ovl-note", folderActive()
+    ? `Tillägg sparas i den här webbläsaren OCH i mappen "${state.folder.name}" (team-tillagg.json) — de överlever alltså en rensad webbläsare och följer med till en annan dator. För en full omprövning av hela teamet: kör en ny Builder-körning.`
+    : "Tillägg sparas lokalt i den här webbläsaren (och följer med i delningslänkar/teamfiler du skapar härifrån). Koppla en mapp under Minne & underlag om de ska överleva en rensad webbläsare. För en full omprövning av hela teamet: kör en ny Builder-körning."));
 }
 
 function renderGrowPreview(preview, a, routine) {
@@ -2028,11 +2247,10 @@ function renderGrowPreview(preview, a, routine) {
   preview.appendChild(card);
   const add = el("button", "btn-primary ovl-save", `✓ Lägg till ${a.name} i teamet`); add.type = "button";
   add.onclick = () => {
-    let cur = {};
-    try { cur = JSON.parse(localStorage.getItem("atb_teamext_" + state.slug) || "{}") || {}; } catch (_) { /* trasigt */ }
+    const cur = loadTeamExt();
     cur.agents = (cur.agents || []).concat([a]);
     if (routine) cur.routines = (cur.routines || []).concat([routine]);
-    try { localStorage.setItem("atb_teamext_" + state.slug, JSON.stringify(cur)); } catch (_) { alert("Kunde inte spara tillägget (lagringen är full)."); return; }
+    if (!saveTeamExt(cur)) { alert("Kunde inte spara tillägget (lagringen är full)."); return; }
     a.added = true;
     team.agents.push(a);
     if (routine) (team.routines = team.routines || []).push(routine);
@@ -2289,11 +2507,59 @@ function mdInline(parent, text) {
   }
   if (last < text.length) parent.appendChild(document.createTextNode(text.slice(last)));
 }
+// Kodblock (```) var det enda som saknades — och det är arbetsledarlägets
+// HELA leverans: den färdiga prompten kunden ska klistra in i sin egen AI
+// levereras i ett kodblock. Utan stöd här renderades den som brödtext, med
+// staketen kvar och radbrytningarna borta. Egen CSS får inte läggas till
+// härifrån (portal.css ägs av någon annan), så stilen sätts inline på samma
+// tokens som .md-code redan använder.
+const PRE_CSS = 'font-family:ui-monospace,"Cascadia Code",Consolas,monospace;font-size:12.5px;' +
+  "line-height:1.5;white-space:pre-wrap;word-break:break-word;background:var(--surface-3);" +
+  "border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin:0;overflow-x:auto";
+function appendCodeBlock(container, code, lang) {
+  const wrap = el("div", "md-pre-wrap");
+  wrap.style.cssText = "margin:7px 0";
+  const pre = el("pre", "md-pre", code);
+  pre.style.cssText = PRE_CSS;
+  wrap.appendChild(pre);
+  // Kopieringsknappen är själva poängen: prompten ska vidare till ett annat
+  // fönster, och att markera flera hundra rader med musen är inget en kund gör.
+  const copy = el("button", "act-btn", lang ? `Kopiera (${lang})` : "Kopiera");
+  copy.type = "button";
+  copy.style.cssText = "margin-top:5px";
+  copy.onclick = async () => {
+    try { await navigator.clipboard.writeText(code); copy.textContent = "Kopierad ✓"; }
+    catch (_) { copy.textContent = "Kunde inte kopiera"; }
+    setTimeout(() => { copy.textContent = lang ? `Kopiera (${lang})` : "Kopiera"; }, 1800);
+  };
+  wrap.appendChild(copy);
+  container.appendChild(wrap);
+}
 function renderMarkdown(container, text) {
   container.textContent = "";
   let list = null, listType = null;
   const endList = () => { list = null; listType = null; };
+  // Kodblocksläge: allt mellan ``` och ``` går rått in i ett <pre>. Ett
+  // oavslutat staket (svaret strömmar fortfarande, eller modellen glömde
+  // stänga) renderas ändå vid slutet — hellre synlig text än tappad text.
+  let fence = null, fenceLang = "", fenceLines = null;
+  const closeFence = () => {
+    if (fence === null) return;
+    appendCodeBlock(container, fenceLines.join("\n"), fenceLang);
+    fence = null; fenceLang = ""; fenceLines = null;
+  };
   for (const raw of (text || "").split("\n")) {
+    const fenceMark = /^\s*(```|~~~)\s*([A-Za-z0-9+#._-]*)\s*$/.exec(raw);
+    if (fence !== null) {
+      if (fenceMark && fenceMark[1] === fence) { closeFence(); continue; }
+      fenceLines.push(raw);
+      continue;
+    }
+    if (fenceMark) {
+      endList();
+      fence = fenceMark[1]; fenceLang = fenceMark[2] || ""; fenceLines = [];
+      continue;
+    }
     const line = raw.trimEnd();
     const h = /^(#{1,4})\s+(.+)$/.exec(line);
     const ul = /^\s*[-*•]\s+(.+)$/.exec(line);
@@ -2313,6 +2579,7 @@ function renderMarkdown(container, text) {
       const p = el("div", "md-p"); mdInline(p, line); container.appendChild(p);
     }
   }
+  closeFence(); // oavslutat staket — visa innehållet ändå
 }
 
 // ============================================================
@@ -2498,11 +2765,12 @@ function openMemory() {
   };
 
   async function distillDoc(d, isFile, idx) {
+    stopAutoRoutines(); // ett betalt anrop i taget
     const out = await window.ATBClaude.collect({
       apiKey: state.apiKey, model: state.model,
       system: "Komprimera underlaget till ett destillat på högst 2500 tecken som bevarar alla fakta, siffror, namn, priser, datum och beslut. Punktform, svenska, ingen inledning eller avslutning.",
       messages: [{ role: "user", content: (d.text || "").slice(0, 60000) }],
-      maxTokens: 1200, onUsage: costAdd,
+      maxTokens: 1200, onUsage: costOnly(),
     });
     const title = d.title.replace(/\.(md|txt)$/i, "") + " (destillat)";
     if (isFile && folderActive()) {
@@ -2742,6 +3010,7 @@ function openMeeting() {
 
 async function runMeeting(type, focus, ids) {
   if (state.streaming) return;
+  stopAutoRoutines(); // mötet är dyrt nog utan en bakgrundsrutin bredvid
   if (state.folder) { await refreshFolder(state.folder.needsPermission ? { ask: true } : undefined); updateFolderBanner(); }
   selectAgent(team.entryAgent);
   const entry = agentById(team.entryAgent);
@@ -2767,7 +3036,7 @@ async function runMeeting(type, focus, ids) {
   const signal = state.chatAbort.signal;
   if (send) { send.textContent = "■"; send.setAttribute("aria-label", "Stoppa mötet"); send.classList.add("stop"); }
 
-  lastCallCost = 0; // mötets kostnad = summan av alla anrop i kedjan
+  const costRun = newCostRun(); // mötets kostnad = summan av alla anrop i kedjan
   let acc = "";
   const perspectives = []; // { name, tagline, text } — sparas med anteckningen
   try {
@@ -2784,7 +3053,7 @@ async function runMeeting(type, focus, ids) {
           apiKey: state.apiKey, model: state.model,
           system: systemFor(a),
           messages: [{ role: "user", content: `MÖTE — ${type.label}.\nFråga/fokus: ${focus}\n\nGe DITT perspektiv utifrån din roll. Max 120 ord. Var konkret och våga ha en åsikt — vad är viktigast och varför, och vad kan vänta? Ingen artighetsprosa.` }],
-          maxTokens: 600, signal, onUsage: costAdd,
+          maxTokens: 600, signal, onUsage: costRun.onUsage,
         });
         perspectives.push({ name: a.name, tagline: a.tagline || "", text: p });
       } catch (e) {
@@ -2802,7 +3071,7 @@ async function runMeeting(type, focus, ids) {
       apiKey: state.apiKey, model: state.model,
       system: systemFor(entry),
       messages: [{ role: "user", content: `Du leder ett möte av typen "${type.label}".\nFråga/fokus: ${focus}\n\nDeltagarnas oberoende perspektiv:\n\n${perspBlockText}${failedNote}\n\nSAMMANSTÄLL TILL EN MÖTESANTECKNING. Börja med raden "## 🤝 Mötesanteckning — ${type.label}". Format därefter:\n${type.output}\n\nOm perspektiven krockar: lyft krocken öppet och ta ställning. Om frågan egentligen inte behövde ett möte, säg det ärligt.` }],
-      maxTokens: 2000, signal, onUsage: costAdd,
+      maxTokens: 2000, signal, onUsage: costRun.onUsage,
       onDelta: (d) => {
         if (!started && bub.isConnected) { bub.textContent = ""; bub.classList.remove("typing"); started = true; }
         acc += d;
@@ -2819,7 +3088,7 @@ async function runMeeting(type, focus, ids) {
     introMark("meeting");
     touchStreak();
     const finalText = acc;
-    if (bub.isConnected) { renderMarkdown(bub, finalText); addActions(row, () => finalText); row.appendChild(perspToggle(perspectives)); appendCost(row); }
+    if (bub.isConnected) { renderMarkdown(bub, finalText); addActions(row, () => finalText); row.appendChild(perspToggle(perspectives)); appendCost(row, costRun); }
     else if (state.activeAgentId === agentId) renderLog();
   } catch (err) {
     if (err && err.name === "AbortError" && acc) {
@@ -2860,6 +3129,9 @@ async function sendMessage() {
 // rutiner) kan skicka programmatiskt till den aktiva agenten.
 async function submitMessage(text) {
   if (state.streaming) return;
+  // Användaren går före: en auto-rutin i bakgrunden avbryts här, så att det
+  // aldrig finns två betalda anrop i luften samtidigt.
+  stopAutoRoutines();
   // Färska underlag från mappen inför varje anrop (vi är i en användargest,
   // så ett ev. tillståndsprompt är tillåtet här).
   if (state.folder) { await refreshFolder(state.folder.needsPermission ? { ask: true } : undefined); updateFolderBanner(); }
@@ -2887,7 +3159,7 @@ async function submitMessage(text) {
   state.streaming = true;
   state.chatAbort = new AbortController();
   if (send) { send.textContent = "■"; send.setAttribute("aria-label", "Stoppa svaret"); send.classList.add("stop"); }
-  lastCallCost = 0; // nollställ inför den här svarskedjan
+  const costRun = newCostRun(); // egen räknare för just det här svaret
   let acc = "";
   const onDelta = (delta) => {
     acc += delta;
@@ -2903,7 +3175,7 @@ async function submitMessage(text) {
   };
   try {
     if (state.demo) await streamDemo(agent, state.history[agentId], onDelta);
-    else await streamClaude(systemFor(agent), state.history[agentId], onDelta);
+    else await streamClaude(systemFor(agent), state.history[agentId], onDelta, costRun.onUsage);
     state.history[agentId].push({ role: "assistant", content: acc, at: Date.now() });
     saveHistory();
     // Skickades en rutin-prompt? Bocka av den för veckan (+ streak + puls) —
@@ -2916,7 +3188,7 @@ async function submitMessage(text) {
     // Rendera det färdiga svaret som markdown (strömningen skrev råtext),
     // och rita om från historiken om bubblan detachats av ett agentbyte.
     const finalText = acc;
-    if (assistantBubble.isConnected) { renderMarkdown(assistantBubble, finalText); addActions(assistantRow, () => finalText); appendCost(assistantRow); }
+    if (assistantBubble.isConnected) { renderMarkdown(assistantBubble, finalText); addActions(assistantRow, () => finalText); appendCost(assistantRow, costRun); }
     else if (state.activeAgentId === agentId) renderLog();
   } catch (err) {
     if (err && err.name === "AbortError" && acc) {
@@ -3006,15 +3278,15 @@ async function streamDemo(agent, messages, onDelta) {
 
 // Anropar Claude Messages API direkt från webbläsaren och strömmar svaret.
 // Själva strömningen + felhanteringen ligger i den delade klienten.
-async function streamClaude(system, messages, onDelta) {
+async function streamClaude(system, messages, onDelta, onUsage) {
   await window.ATBClaude.stream({
     apiKey: state.apiKey,
     model: state.model,
     system,
-    messages: messages.map((m) => ({ role: m.role, content: m.content })),
+    messages: contextFor(messages), // rullande fönster + destillat, inte hela historiken
     maxTokens: 4096,
     onDelta,
-    onUsage: costAdd,
+    onUsage,
     signal: state.chatAbort ? state.chatAbort.signal : undefined,
   });
 }

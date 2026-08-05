@@ -61,10 +61,11 @@ for (const file of files) {
 }
 
 // Ett team som säljs ska bära produktens argument: varje agent motiverad,
-// minst ett avvisat förslag, och startförslag att klicka på. Demoteamen som
-// bara finns som strukturexempel undantas medvetet och namnges här, så att
-// undantaget syns i stället för att glömmas bort.
-const STRUCTURE_ONLY = new Set(["ikea.js", "agency.js", "studio.js"]);
+// minst ett avvisat förslag, och startförslag att klicka på. Mängden nedan är
+// tom sedan agency/studio/ikea fyllts ut (2026-08-05) — den står kvar som
+// namngiven krok, så att ett framtida undantag måste skrivas ut i stället för
+// att smyga in som ett team utan motiveringar.
+const STRUCTURE_ONLY = new Set([]);
 
 for (const file of files.filter((f) => !STRUCTURE_ONLY.has(f))) {
   test(`${file} bär produktens argument`, () => {
@@ -76,5 +77,20 @@ for (const file of files.filter((f) => !STRUCTURE_ONLY.has(f))) {
       "varje agent ska ha en why som knyter den till kundens egna ord");
     assert.ok(team.agents.some((a) => Array.isArray(a.starters) && a.starters.length),
       "inget agentkort har startförslag att klicka på");
+  });
+}
+
+// Produktens farligaste felläge: en agent som hittar på kunddata och lägger
+// fram den som avläst fakta (namngivna personer, möten, "jag har gått igenom
+// kalendern"). Orsaken var promptdesign — LEVERANS krävde en ifylld artefakt
+// medan förbudet mot att gissa låg som en bisats. Varje agent ska nu bära
+// regeln uttryckligen och tidigt i sin systemprompt.
+for (const file of files) {
+  test(`${file} förbjuder påhittade uppgifter i varje systemprompt`, () => {
+    const team = loadTeam(file);
+    for (const agent of team.agents) {
+      assert.ok(/VIKTIGAST AV ALLT/.test(agent.system),
+        `agent ${agent.id} saknar regeln mot påhittade uppgifter i systemprompten`);
+    }
   });
 }

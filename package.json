@@ -13,5 +13,8 @@
     "db:migrate:local": "npx --yes wrangler d1 migrations apply agent-team-builder --local",
     "db:migrate": "npx --yes wrangler d1 migrations apply agent-team-builder --remote",
     "deploy": "node build-dist.mjs && npx --yes wrangler pages deploy dist --project-name agent-team-builder"
+  },
+  "devDependencies": {
+    "playwright": "^1.62.1"
   }
 }
