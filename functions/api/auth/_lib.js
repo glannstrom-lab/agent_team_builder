@@ -120,9 +120,24 @@ export async function allowAttempt(db, bucket, max) {
   return true;
 }
 
-export async function throttleOk(db, email, ip) {
-  const byEmail = await allowAttempt(db, "email:" + email, THROTTLE_MAX_EMAIL);
-  const byIp = await allowAttempt(db, "ip:" + (ip || "okänd"), THROTTLE_MAX_IP);
+// Två skilda hinkar, för de skyddar mot olika saker och tål olika mycket:
+//
+//   "req" — att skicka mejl till en adress som anroparen anger. Måste vara
+//           snävt: det är både en mejlbomb mot tredje part och ett sätt att
+//           bränna avsändarens rykte.
+//   "vfy" — att gissa en kod. Här är den egentliga spärren försöksräknaren
+//           på själva koden (tre försök, sedan bränd), så hinken behöver
+//           bara stoppa maskinell gissning över många koder.
+//
+// Först delade de hink, och då räckte tre åtgärder av vilket slag som helst
+// för att låsa ute en person som bara skrivit fel en gång. Det är en spärr
+// som stoppar kunden i stället för angriparen.
+export async function throttleOk(db, email, ip, scope) {
+  const s = scope === "vfy" ? "vfy" : "req";
+  const maxEmail = s === "vfy" ? 12 : THROTTLE_MAX_EMAIL;
+  const maxIp = s === "vfy" ? 40 : THROTTLE_MAX_IP;
+  const byEmail = await allowAttempt(db, `email:${s}:` + email, maxEmail);
+  const byIp = await allowAttempt(db, `ip:${s}:` + (ip || "okänd"), maxIp);
   return byEmail && byIp;
 }
 

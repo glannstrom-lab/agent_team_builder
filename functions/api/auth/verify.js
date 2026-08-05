@@ -24,7 +24,7 @@ export async function onRequestPost({ request, env }) {
 
   // Samma spärr som på utskicket. Utan den är den här rutten stället där
   // en miljon gissningar görs.
-  if (!(await throttleOk(db, email, clientIp(request)))) {
+  if (!(await throttleOk(db, email, clientIp(request), "vfy"))) {
     return json({ error: "För många försök. Vänta en stund och begär en ny kod." }, 429);
   }
 

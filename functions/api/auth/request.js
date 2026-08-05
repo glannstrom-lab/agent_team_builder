@@ -29,7 +29,7 @@ export async function onRequestPost({ request, env }) {
 
   // Spärren räknas före allt annat arbete, så att ett angrepp inte kostar
   // oss databasanrop eller utskick.
-  if (!(await throttleOk(db, email, clientIp(request)))) {
+  if (!(await throttleOk(db, email, clientIp(request), "req"))) {
     return json(SAME_ANSWER);
   }
 
