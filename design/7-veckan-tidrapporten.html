@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Mitt AI-team — Veckan / Tidrapporten (variant 7)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+<style>
+:root{
+  --ivory:#F7F5EE; --sheet:#FFFDF7; --ink:#191A17; --dim:#6B6F66;
+  --ledger:#1E4D3E; --red:#B4392B; --rule:#DCD8C9;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--ivory);color:var(--ink);font-family:'Instrument Sans',system-ui,sans-serif;
+  font-size:16.5px;line-height:1.6;-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4{font-weight:600;letter-spacing:-0.025em;line-height:1.1}
+.m{font-family:'Space Mono',monospace}
+a{color:inherit}
+.wrap{max-width:1060px;margin:0 auto;padding:0 26px}
+.narrow{max-width:620px}
+section{padding:clamp(52px,6.5vw,94px) 0}
+
+header{border-bottom:1px solid var(--ink);position:sticky;top:0;z-index:40;background:var(--ivory)}
+header .inner{max-width:1060px;margin:0 auto;padding:13px 26px;display:flex;align-items:center;gap:20px}
+.mark{font-family:'Space Mono',monospace;font-weight:700;font-size:14px;letter-spacing:.02em;margin-right:auto;text-decoration:none;text-transform:uppercase}
+header nav{display:flex;gap:20px}
+header nav a{font-size:14px;color:var(--dim);text-decoration:none}
+header nav a:hover{color:var(--ink)}
+@media(max-width:800px){header nav{display:none}}
+.btn{display:inline-block;font-family:'Space Mono',monospace;font-weight:700;font-size:13.5px;letter-spacing:.06em;
+  text-transform:uppercase;text-decoration:none;padding:12px 20px;background:var(--ledger);color:var(--sheet);
+  border:1px solid var(--ledger);transition:background .16s,color .16s}
+.btn:hover{background:var(--ink);border-color:var(--ink)}
+.btn.ghost{background:transparent;color:var(--ledger)}
+.btn.ghost:hover{background:var(--ledger);color:var(--sheet)}
+header .btn{padding:9px 15px;font-size:12.5px}
+
+/* hero */
+.top{text-align:center;padding:clamp(46px,6vw,80px) 0 clamp(28px,3vw,40px)}
+.kick{font-family:'Space Mono',monospace;font-size:11.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim)}
+.top h1{font-size:clamp(34px,5.2vw,58px);margin:16px auto 0;max-width:17ch;letter-spacing:-.035em}
+.top h1 span{color:var(--ledger)}
+.top p{color:var(--dim);font-size:18px;max-width:52ch;margin:18px auto 0}
+.top .cta{display:flex;gap:13px;justify-content:center;flex-wrap:wrap;margin-top:28px}
+
+/* SIGNATUR: tidrapporten */
+.receipt{max-width:620px;margin:clamp(36px,5vw,56px) auto 0;background:var(--sheet);
+  border:1px solid var(--rule);box-shadow:0 24px 50px -40px rgba(25,26,23,.5);padding:30px 30px 0}
+@media(max-width:520px){.receipt{padding:22px 20px 0}}
+.rh{text-align:center;padding-bottom:18px;border-bottom:2px solid var(--ink)}
+.rh .t{font-family:'Space Mono',monospace;font-weight:700;font-size:15px;letter-spacing:.14em;text-transform:uppercase}
+.rh .s{font-family:'Space Mono',monospace;font-size:11.5px;color:var(--dim);margin-top:6px;letter-spacing:.06em}
+.li{display:flex;align-items:baseline;gap:8px;padding:11px 0;border-bottom:1px dotted var(--rule);font-size:14.5px}
+.li .lbl{white-space:nowrap;max-width:62%;overflow:hidden;text-overflow:ellipsis}
+.li .fill{flex:1;border-bottom:1px dotted #C9C4B2;transform:translateY(-4px)}
+.li .h{font-family:'Space Mono',monospace;font-size:13.5px;white-space:nowrap}
+.li.take .lbl{font-weight:600}
+.li.take .h{color:var(--ledger);font-weight:700}
+.li.keep{color:var(--dim)}
+.li .who{font-family:'Space Mono',monospace;font-size:10.5px;color:var(--dim);letter-spacing:.04em;
+  display:block;margin-top:3px;font-weight:400}
+.sum{display:flex;justify-content:space-between;gap:14px;align-items:baseline;padding:16px 0 6px;
+  border-top:2px solid var(--ink);margin-top:6px}
+.sum .st{font-family:'Space Mono',monospace;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
+.sum .sv{font-family:'Space Mono',monospace;font-weight:700;font-size:26px;color:var(--ledger)}
+.sub{display:flex;justify-content:space-between;gap:14px;font-family:'Space Mono',monospace;font-size:12px;color:var(--dim);padding:4px 0 20px}
+.tear{height:22px;margin:0 -30px;background:
+  radial-gradient(circle at 8px 0,transparent 7px,var(--ivory) 7.5px) 0 0/16px 22px repeat-x;}
+@media(max-width:520px){.tear{margin:0 -20px}}
+.stamp{display:inline-block;margin:0 auto;transform:rotate(-3deg);border:2px solid var(--red);color:var(--red);
+  font-family:'Space Mono',monospace;font-weight:700;font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;padding:5px 14px}
+.stampwrap{text-align:center;margin-top:-4px;padding-bottom:22px}
+
+/* sektioner */
+.shead{max-width:620px;margin-bottom:34px}
+.shead h2{font-size:clamp(26px,3.8vw,40px)}
+.shead p{color:var(--dim);margin-top:12px;font-size:17px}
+.shead.mid{margin-inline:auto;text-align:center}
+
+.ledger{border-top:2px solid var(--ink)}
+.lrow{display:grid;grid-template-columns:1fr 150px 150px;gap:18px;padding:16px 2px;border-bottom:1px solid var(--rule);align-items:baseline}
+@media(max-width:720px){.lrow{grid-template-columns:1fr;gap:6px}}
+.lrow.head{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);border-bottom:1px solid var(--ink)}
+@media(max-width:720px){.lrow.head{display:none}}
+.lrow b{font-weight:600;font-size:16px}
+.lrow .d{color:var(--dim);font-size:14px;margin-top:3px;max-width:56ch}
+.lrow .c{font-family:'Space Mono',monospace;font-size:13.5px}
+.lrow .c.g{color:var(--ledger);font-weight:700}
+.lrow .c.r{color:var(--red)}
+
+/* team */
+.team{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:0;border:1px solid var(--rule);background:var(--sheet)}
+.mem{padding:24px 22px;border-right:1px solid var(--rule)}
+.mem:last-child{border-right:0}
+@media(max-width:860px){.mem{border-right:0;border-bottom:1px solid var(--rule)}.mem:last-child{border-bottom:0}}
+.mem .rl{font-family:'Space Mono',monospace;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ledger)}
+.mem h4{font-size:21px;margin:8px 0 9px}
+.mem p{font-size:14.5px;color:var(--dim)}
+.mem .kv{margin-top:14px;padding-top:12px;border-top:1px dotted var(--rule);font-size:13.5px;color:var(--dim)}
+.mem .kv b{color:var(--ink);font-weight:600}
+.mem .hrs{font-family:'Space Mono',monospace;font-size:12px;color:var(--ledger);margin-top:10px}
+
+/* pris */
+.pris{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid var(--ink)}
+@media(max-width:820px){.pris{grid-template-columns:1fr}}
+.p{padding:26px 24px;border-right:1px solid var(--ink)}
+.p:last-child{border-right:0}
+@media(max-width:820px){.p{border-right:0;border-bottom:1px solid var(--ink)}.p:last-child{border-bottom:0}}
+.p.mid{background:var(--ledger);color:var(--sheet)}
+.p .pn{font-family:'Space Mono',monospace;font-size:12px;letter-spacing:.12em;text-transform:uppercase}
+.p .pa{font-size:29px;font-weight:600;letter-spacing:-.03em;margin:10px 0 6px}
+.p .pa span{font-family:'Space Mono',monospace;font-size:12px;letter-spacing:.06em;color:var(--dim)}
+.p.mid .pa span{color:rgba(255,253,247,.66)}
+.p p{font-size:14px;color:var(--dim)}
+.p.mid p{color:rgba(255,253,247,.78)}
+.p a{display:inline-block;margin-top:14px;font-family:'Space Mono',monospace;font-size:12.5px;text-decoration:none;
+  border-bottom:1.5px solid currentColor;padding-bottom:2px}
+
+.end{text-align:center;border:2px solid var(--ink);padding:clamp(32px,5vw,56px);background:var(--sheet)}
+.end h2{font-size:clamp(25px,3.6vw,38px);max-width:20ch;margin:0 auto}
+.end p{color:var(--dim);max-width:48ch;margin:14px auto 0}
+.end .btn{margin-top:26px}
+footer{border-top:1px solid var(--ink);padding:26px 0 56px;color:var(--dim);font-size:13px}
+:focus-visible{outline:2px solid var(--ledger);outline-offset:3px}
+@media(prefers-reduced-motion:reduce){*{transition-duration:.001ms!important;animation-duration:.001ms!important}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="inner">
+    <a class="mark" href="#">Mitt AI-team</a>
+    <nav><a href="#rapport">Tidrapporten</a><a href="#teamet">Teamet</a><a href="#priser">Priser</a></nav>
+    <a class="btn" href="#">Prova demo</a>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="top">
+    <div class="kick">AI-team för små och medelstora företag</div>
+    <h1>Räkna på veckan innan ni köper <span>något alls</span>.</h1>
+    <p>Vi börjar inte med teknik. Vi börjar med en tidrapport: vad ni gör, hur lång tid det tar, och vilka rader som faktiskt går att lämna ifrån sig.</p>
+    <div class="cta">
+      <a class="btn" href="#">Prova ett team live</a>
+      <a class="btn ghost" href="#priser">Se priser</a>
+    </div>
+  </div>
+
+  <!-- SIGNATUR: tidrapporten -->
+  <div class="receipt" id="rapport">
+    <div class="rh">
+      <div class="t">Tidrapport · vecka 32</div>
+      <div class="s">LERVERK KERAMIK · 1 ANSTÄLLD · 40 H</div>
+    </div>
+
+    <div class="li take"><span class="lbl">Svara på förfrågningar<span class="who">→ Vera, kunddialog</span></span><span class="fill"></span><span class="h">3 h 20 min</span></div>
+    <div class="li take"><span class="lbl">Prissätta ny serie<span class="who">→ Ester, kalkyl</span></span><span class="fill"></span><span class="h">1 h 15 min</span></div>
+    <div class="li take"><span class="lbl">Veckans inlägg och brev<span class="who">→ Sixten, butik</span></span><span class="fill"></span><span class="h">1 h 30 min</span></div>
+    <div class="li take"><span class="lbl">Jaga obetalda fakturor<span class="who">→ Ester, kalkyl</span></span><span class="fill"></span><span class="h">40 min</span></div>
+    <div class="li keep"><span class="lbl">Dreja och glasera</span><span class="fill"></span><span class="h">18 h 00 min</span></div>
+    <div class="li keep"><span class="lbl">Bränning och ugnspassning</span><span class="fill"></span><span class="h">9 h 30 min</span></div>
+    <div class="li keep"><span class="lbl">Packa och skicka order</span><span class="fill"></span><span class="h">3 h 45 min</span></div>
+    <div class="li keep"><span class="lbl">Studiobesök och marknad</span><span class="fill"></span><span class="h">2 h 00 min</span></div>
+
+    <div class="sum"><span class="st">Tid ett team kan ta över</span><span class="sv">6 h 45 min</span></div>
+    <div class="sub"><span>PER VECKA · 17 % AV ARBETSTIDEN</span><span>≈ 27 H / MÅN</span></div>
+    <div class="tear"></div>
+  </div>
+  <div class="stampwrap"><span class="stamp">Resten är hantverket</span></div>
+</div>
+
+<section>
+  <div class="wrap">
+    <div class="shead">
+      <h2>Varje rad får ett omdöme</h2>
+      <p>Kartläggningen letar efter arbetsmoment, inte titlar. Det som inte passar AI får ett nej — annars bygger vi ett team som ser imponerande ut och gör ingenting.</p>
+    </div>
+    <div class="ledger">
+      <div class="lrow head"><div>Moment</div><div>Tid per vecka</div><div>Omdöme</div></div>
+      <div class="lrow"><div><b>Förfrågningar via mejl och DM</b><div class="d">Samma femton frågor varje vecka, men varje svar skrivs från början.</div></div><div class="c">3 h 20 min</div><div class="c g">Egen agent</div></div>
+      <div class="lrow"><div><b>Prissättning av nya serier</b><div class="d">Material, tid och svinn räknas i huvudet. Osäkerheten gör att priset sätts för lågt.</div></div><div class="c">1 h 15 min</div><div class="c g">Egen agent</div></div>
+      <div class="lrow"><div><b>Inlägg och nyhetsbrev</b><div class="d">Ska göras varje vecka, blir gjort varannan månad. Underlaget finns i vad som drejats.</div></div><div class="c">1 h 30 min</div><div class="c g">Egen agent</div></div>
+      <div class="lrow"><div><b>Glasyrrecept och brännkurvor</b><div class="d">Kräver att någon står vid ugnen och känner materialet.</div></div><div class="c">9 h 30 min</div><div class="c r">Nej — rörs inte</div></div>
+      <div class="lrow"><div><b>Varumärkesstrategi</b><div class="d">Föreslogs som egen agent, men hade inget att göra på tisdag förmiddag.</div></div><div class="c">—</div><div class="c r">Nej — avvisad</div></div>
+    </div>
+  </div>
+</section>
+
+<section id="teamet">
+  <div class="wrap">
+    <div class="shead"><h2>Teamet, uttryckt i timmar</h2><p>En agent per rad som klarade ribban. Var och en har en leverans som går att svara ja eller nej på.</p></div>
+    <div class="team">
+      <div class="mem"><div class="rl">Ingång</div><h4>Vera</h4><p>Håller ihop veckan och tar kunddialogen. Vet vad som ligger olöst på måndagen.</p><div class="hrs">3 h 20 min / vecka</div><div class="kv"><b>Klart när:</b> alla förfrågningar äldre än ett dygn har ett svarsutkast.</div></div>
+      <div class="mem"><div class="rl">Specialist</div><h4>Ester</h4><p>Räknar på serier och håller reda på pengarna in. Ifrågasätter priser som inte täcker tiden.</p><div class="hrs">1 h 55 min / vecka</div><div class="kv"><b>Klart när:</b> varje ny produkt har ett pris med redovisad kalkyl.</div></div>
+      <div class="mem"><div class="rl">Specialist</div><h4>Sixten</h4><p>Gör om veckans arbete till inlägg och nyhetsbrev. Skriver i er röst, inte i reklamröst.</p><div class="hrs">1 h 30 min / vecka</div><div class="kv"><b>Klart när:</b> veckans inlägg finns skrivet innan fredag.</div></div>
+    </div>
+  </div>
+</section>
+
+<section id="priser">
+  <div class="wrap">
+    <div class="shead mid"><h2>Vad raden kostar</h2><p>En svensk AI-konsult kostar 1 200–2 500 kr i timmen. Ett skräddarsytt team kostar mindre än två konsulttimmar — och det jobbar kvar.</p></div>
+    <div class="pris">
+      <div class="p"><div class="pn">Bygg själv</div><div class="pa">2 900 kr <span>engång</span></div><p>Ni bygger teamet i webbläsaren och äger allt.</p><a href="#">Bygg ert team</a></div>
+      <div class="p mid"><div class="pn">Vi bygger åt er</div><div class="pa">14 900 kr <span>engång</span></div><p>Kartläggning, första projekt, driftsatt portal, 30 dagars support.</p><a href="#">Boka ett samtal</a></div>
+      <div class="p"><div class="pn">Löpande partner</div><div class="pa">2 900 kr <span>/ mån</span></div><p>Vi uppdaterar teamet när verksamheten ändras.</p><a href="#">Boka ett samtal</a></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap narrow">
+    <div class="end">
+      <h2>Hur många timmar ligger i er vecka?</h2>
+      <p>Ett kort samtal räcker för att göra tidrapporten och skissa ett första team. Ni binder er inte till något.</p>
+      <a class="btn" href="#">Boka ett samtal</a>
+    </div>
+  </div>
+</section>
+
+<footer><div class="wrap">Mitt AI-team · variant 7 — <span class="m">Veckan / "Tidrapporten"</span></div></footer>
+
+</body>
+</html>

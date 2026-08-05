@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Mitt AI-team — Samtalet (designförslag 4)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+:root{
+  --bg:#EEF0F1; --sheet:#FFFFFF; --ink:#161B1E; --dim:#68757C;
+  --deep:#0E4C56; --deep-soft:#DCEAEC; --coral:#F2664A; --line:#DDE2E4;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:'Figtree',system-ui,sans-serif;
+  font-size:17px;line-height:1.62;-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4{font-family:'Sora',sans-serif;font-weight:700;letter-spacing:-0.03em;line-height:1.12}
+.mono{font-family:'JetBrains Mono',monospace}
+a{color:inherit}
+
+/* chatt-huvud */
+.chathead{position:sticky;top:0;z-index:40;background:rgba(238,240,241,.9);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--line)}
+.chathead .inner{max-width:860px;margin:0 auto;padding:12px 22px;display:flex;align-items:center;gap:14px}
+.faces{display:flex}
+.faces img{width:34px;height:34px;border-radius:50%;object-fit:cover;border:2px solid var(--bg);margin-left:-11px}
+.faces img:first-child{margin-left:0}
+.chathead .t{margin-right:auto;min-width:0}
+.chathead .t b{font-family:'Sora',sans-serif;font-size:15px;font-weight:700;display:block;letter-spacing:-.02em}
+.chathead .t span{font-size:12.5px;color:var(--dim);display:flex;align-items:center;gap:6px}
+.chathead .t span::before{content:'';width:7px;height:7px;border-radius:50%;background:#3FAE6A}
+.mini{font-size:14px;font-weight:600;text-decoration:none;color:var(--deep);
+  border:1px solid var(--line);background:var(--sheet);padding:8px 15px;border-radius:100px;white-space:nowrap}
+.mini:hover{border-color:var(--deep)}
+
+/* tråden */
+.thread{max-width:860px;margin:0 auto;padding:44px 22px 190px;display:flex;flex-direction:column;gap:26px}
+.msg{display:flex;gap:14px;max-width:100%;opacity:0;transform:translateY(14px);
+  transition:opacity .55s ease,transform .55s ease}
+.msg.in{opacity:1;transform:none}
+.msg .av{width:38px;height:38px;border-radius:50%;object-fit:cover;flex-shrink:0;margin-top:22px}
+.msg .col{min-width:0;flex:1}
+.name{font-size:12.5px;font-weight:600;color:var(--dim);margin:0 0 5px 4px;display:flex;gap:9px;align-items:baseline}
+.name .role{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--deep);opacity:.75}
+.bubble{background:var(--sheet);border:1px solid var(--line);border-radius:6px 18px 18px 18px;padding:20px 24px}
+.bubble h2{font-size:clamp(26px,4.2vw,40px);margin-bottom:12px}
+.bubble h3{font-size:21px;margin-bottom:8px}
+.bubble p+p{margin-top:12px}
+.bubble .lead{font-size:19px}
+.msg.me{flex-direction:row-reverse}
+.msg.me .col{max-width:78%;flex:0 1 auto}
+.msg.me .name{justify-content:flex-end;margin-right:4px;margin-left:0}
+.msg.me .bubble{background:var(--deep);color:#EAF4F5;border-color:var(--deep);border-radius:18px 6px 18px 18px}
+.msg.me .av{display:none}
+.msg.wide .col{max-width:100%}
+
+/* skriv-indikator */
+.typing{display:inline-flex;gap:5px;align-items:center;padding:4px 0}
+.typing i{width:7px;height:7px;border-radius:50%;background:var(--dim);opacity:.45;animation:blip 1.3s infinite}
+.typing i:nth-child(2){animation-delay:.18s}.typing i:nth-child(3){animation-delay:.36s}
+@keyframes blip{0%,60%,100%{opacity:.3;transform:translateY(0)}30%{opacity:.9;transform:translateY(-3px)}}
+
+/* bifogade kort */
+.att{margin-top:16px;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--sheet)}
+.att .ah{padding:11px 16px;border-bottom:1px solid var(--line);font-family:'JetBrains Mono',monospace;
+  font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);display:flex;justify-content:space-between;gap:10px}
+.att .ab{padding:18px 16px}
+.roster{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+@media(max-width:620px){.roster{grid-template-columns:1fr}}
+.rm{display:flex;gap:12px;align-items:flex-start;background:#F7F9F9;border:1px solid var(--line);border-radius:11px;padding:13px}
+.rm img{width:40px;height:40px;border-radius:10px;object-fit:cover;flex-shrink:0}
+.rm b{font-family:'Sora',sans-serif;font-size:15px;display:block;letter-spacing:-.02em}
+.rm span{font-size:13px;color:var(--dim);display:block;line-height:1.45;margin-top:2px}
+.compare{display:grid;grid-template-columns:repeat(3,1fr);gap:0}
+@media(max-width:620px){.compare{grid-template-columns:1fr}}
+.cc{padding:14px 16px;border-right:1px solid var(--line)}
+.cc:last-child{border-right:0}
+@media(max-width:620px){.cc{border-right:0;border-bottom:1px solid var(--line)}.cc:last-child{border-bottom:0}}
+.cc .cw{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
+.cc b{font-family:'Sora',sans-serif;font-size:16px;display:block;margin:5px 0 8px;letter-spacing:-.02em}
+.cc ul{list-style:none;display:grid;gap:5px}
+.cc li{font-size:13.5px;color:var(--dim)}
+.prices{display:grid;gap:10px}
+.pr{display:grid;grid-template-columns:1fr auto;gap:14px;align-items:baseline;padding:13px 15px;
+  border:1px solid var(--line);border-radius:11px}
+.pr.pick{border-color:var(--deep);background:var(--deep-soft)}
+.pr b{font-family:'Sora',sans-serif;font-size:16px;letter-spacing:-.02em}
+.pr span{font-size:13.5px;color:var(--dim);display:block}
+.pr .amt{font-family:'Sora',sans-serif;font-weight:700;font-size:17px;white-space:nowrap}
+
+/* citat/nej */
+.no{border-left:3px solid var(--coral);padding-left:16px;margin-top:14px}
+.no b{font-weight:600}
+.no p{font-size:15.5px;color:var(--dim)}
+ul.plain{list-style:none;display:grid;gap:9px;margin-top:12px}
+ul.plain li{font-size:15.5px;padding-left:22px;position:relative;color:var(--dim)}
+ul.plain li::before{content:'✓';position:absolute;left:0;color:var(--deep);font-weight:700}
+
+/* SIGNATUR: kompositören är CTA:n */
+.composer{position:fixed;left:0;right:0;bottom:0;z-index:45;
+  background:linear-gradient(180deg,rgba(238,240,241,0) 0%,var(--bg) 34%);padding:34px 22px 20px}
+.composer .inner{max-width:860px;margin:0 auto}
+.quick{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.quick a{font-size:13.5px;text-decoration:none;background:var(--sheet);border:1px solid var(--line);
+  padding:7px 14px;border-radius:100px;color:var(--dim)}
+.quick a:hover{border-color:var(--deep);color:var(--deep)}
+.box{display:flex;align-items:center;gap:10px;background:var(--sheet);border:1px solid var(--line);
+  border-radius:100px;padding:8px 8px 8px 22px;box-shadow:0 10px 30px -18px rgba(14,76,86,.5)}
+.box .ph{flex:1;color:var(--dim);font-size:16px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.box .send{background:var(--coral);color:#fff;border:0;border-radius:100px;padding:13px 24px;
+  font-family:'Sora',sans-serif;font-weight:700;font-size:15px;text-decoration:none;white-space:nowrap;
+  display:inline-flex;align-items:center;gap:8px;transition:transform .15s}
+.box .send:hover{transform:translateY(-1px)}
+.composer .fine{font-size:12.5px;color:var(--dim);text-align:center;margin-top:10px}
+@media(max-width:560px){.box .ph{font-size:14.5px}.box .send{padding:12px 18px;font-size:14px}}
+:focus-visible{outline:2px solid var(--deep);outline-offset:3px}
+@media(prefers-reduced-motion:reduce){
+  *{transition-duration:.001ms!important;animation-duration:.001ms!important}
+  .msg{opacity:1;transform:none}
+}
+</style>
+</head>
+<body>
+
+<div class="chathead">
+  <div class="inner">
+    <div class="faces">
+      <img src="../portal/avatars/avatar-04.png" alt="" />
+      <img src="../portal/avatars/avatar-11.png" alt="" />
+      <img src="../portal/avatars/avatar-18.png" alt="" />
+      <img src="../portal/avatars/avatar-22.png" alt="" />
+    </div>
+    <div class="t"><b>Ditt AI-team</b><span>fyra agenter · svarar direkt</span></div>
+    <a class="mini" href="#">Öppna demon</a>
+  </div>
+</div>
+
+<main class="thread">
+
+  <div class="msg me">
+    <div class="col">
+      <div class="name">Du</div>
+      <div class="bubble"><p class="lead">Vi borde göra något med AI. Men alla verktyg känns likadana — och ingen av dem vet något om hur vi jobbar.</p></div>
+    </div>
+  </div>
+
+  <div class="msg wide">
+    <img class="av" src="../portal/avatars/avatar-04.png" alt="" />
+    <div class="col">
+      <div class="name">Vera <span class="role">VD-assistent</span></div>
+      <div class="bubble">
+        <h2>Då börjar vi i er vecka istället.</h2>
+        <p class="lead">Vi bygger inte samma team åt alla. Apparna med färdiga "AI-anställda" ger varje kund samma roller med nya namn. Vi gör tvärtom: kartlägger vad ni faktiskt gör mellan måndag och fredag, och bygger agenterna runt det.</p>
+        <p>Det tar ungefär en kvart. Ni behöver inte kunna någon teknik — bara er egen verksamhet.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="msg me">
+    <div class="col">
+      <div class="name">Du</div>
+      <div class="bubble"><p>Vad blir det konkret? Vi är tre personer på en keramikverkstad.</p></div>
+    </div>
+  </div>
+
+  <div class="msg wide">
+    <img class="av" src="../portal/avatars/avatar-11.png" alt="" />
+    <div class="col">
+      <div class="name">Ester <span class="role">Kalkyl &amp; fakturor</span></div>
+      <div class="bubble">
+        <h3>Ett team på fyra, byggt av era tidstjuvar</h3>
+        <p>Förfrågningar, prissättning, veckans inlägg och fakturajakt — de fyra momenten som äter mest tid och minst hantverk. Varje agent finns för att den löser något vi hittade hos er.</p>
+        <div class="att">
+          <div class="ah"><span>Bifogat · teamförslag</span><span>Lerverk Keramik</span></div>
+          <div class="ab">
+            <div class="roster">
+              <div class="rm"><img src="../portal/avatars/avatar-04.png" alt="" /><div><b>Vera</b><span>Håller ihop veckan, föreslår måndagens fokus</span></div></div>
+              <div class="rm"><img src="../portal/avatars/avatar-11.png" alt="" /><div><b>Ester</b><span>Räknar på serier, jagar obetalda fakturor</span></div></div>
+              <div class="rm"><img src="../portal/avatars/avatar-18.png" alt="" /><div><b>Sixten</b><span>Gör veckans arbete till inlägg och brev</span></div></div>
+              <div class="rm"><img src="../portal/avatars/avatar-22.png" alt="" /><div><b>Malte</b><span>Svarar på förfrågningar med era priser</span></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="no">
+          <p><b>Och en vi sa nej till:</b> en varumärkesstrateg föreslogs, men hade inget att göra på tisdag förmiddag. En agent utan veckojobb blir teater.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="msg me">
+    <div class="col">
+      <div class="name">Du</div>
+      <div class="bubble"><p>Hur vet jag att ni inte ger alla samma fyra?</p></div>
+    </div>
+  </div>
+
+  <div class="msg wide">
+    <img class="av" src="../portal/avatars/avatar-18.png" alt="" />
+    <div class="col">
+      <div class="name">Sixten <span class="role">Synlighet</span></div>
+      <div class="bubble">
+        <h3>Titta på tre kunder i samma storleksklass</h3>
+        <p>Samma pipeline, tre soloföretag — och tre olika sammansättningar, för att veckorna såg olika ut.</p>
+        <div class="att">
+          <div class="ah"><span>Bifogat · jämförelse</span><span>3 körningar</span></div>
+          <div class="ab">
+            <div class="compare">
+              <div class="cc"><div class="cw">Keramik</div><b>Lerverk</b><ul><li>Veckan</li><li>Kalkyl</li><li>Butik</li></ul></div>
+              <div class="cc"><div class="cw">Podd</div><b>Norrsken</b><ul><li>Produktion</li><li>Gästresearch</li><li>Klipptext</li><li>Sponsorer</li></ul></div>
+              <div class="cc"><div class="cw">Översättning</div><b>Wikander</b><ul><li>Uppdrag</li><li>Terminologi</li><li>Offerter</li></ul></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="msg me">
+    <div class="col">
+      <div class="name">Du</div>
+      <div class="bubble"><p>Var hamnar vår data? Vi hanterar kunduppgifter.</p></div>
+    </div>
+  </div>
+
+  <div class="msg wide">
+    <img class="av" src="../portal/avatars/avatar-22.png" alt="" />
+    <div class="col">
+      <div class="name">Malte <span class="role">Kunddialog</span></div>
+      <div class="bubble">
+        <h3>Hos er, om ni vill ha det så</h3>
+        <p>Portalen kör i er egen webbläsare med er egen nyckel. Samtalen går direkt till AI-leverantören — det finns ingen mellanserver som sparar dem.</p>
+        <ul class="plain">
+          <li>Ingen mellanserver, inga sparade samtal</li>
+          <li>Ert material bor som vanliga filer i en mapp ni äger</li>
+          <li>Inget biträdesavtal med oss behövs</li>
+          <li>Eller: vi sköter drift och nycklar åt er, om ni hellre vill det</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="msg me">
+    <div class="col">
+      <div class="name">Du</div>
+      <div class="bubble"><p>Vad kostar det?</p></div>
+    </div>
+  </div>
+
+  <div class="msg wide">
+    <img class="av" src="../portal/avatars/avatar-04.png" alt="" />
+    <div class="col">
+      <div class="name">Vera <span class="role">VD-assistent</span></div>
+      <div class="bubble">
+        <h3>Mindre än två konsulttimmar</h3>
+        <p>En svensk AI-konsult kostar 1 200–2 500 kr i timmen. Teamet jobbar kvar när konsulten gått hem.</p>
+        <div class="att">
+          <div class="ah"><span>Bifogat · prislista</span><span>exkl. moms</span></div>
+          <div class="ab">
+            <div class="prices">
+              <div class="pr"><div><b>Bygg själv</b><span>Ni bygger teamet i webbläsaren</span></div><div class="amt">2 900 kr</div></div>
+              <div class="pr pick"><div><b>Vi bygger åt er</b><span>Kartläggning, första projekt, driftsatt portal, 30 dagars support</span></div><div class="amt">14 900 kr</div></div>
+              <div class="pr"><div><b>Löpande partner</b><span>Vi uppdaterar teamet när verksamheten ändras</span></div><div class="amt">2 900 kr/mån</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="msg wide">
+    <img class="av" src="../portal/avatars/avatar-04.png" alt="" />
+    <div class="col">
+      <div class="name">Vera <span class="role">VD-assistent</span></div>
+      <div class="bubble"><span class="typing"><i></i><i></i><i></i></span></div>
+    </div>
+  </div>
+
+</main>
+
+<!-- SIGNATUR: kompositören är sidans CTA -->
+<div class="composer">
+  <div class="inner">
+    <div class="quick">
+      <a href="#">Vad skulle mitt team bli?</a>
+      <a href="#">Visa fler exempel</a>
+      <a href="#">Boka ett samtal</a>
+    </div>
+    <div class="box">
+      <div class="ph">Berätta vad ni gör — så börjar vi där…</div>
+      <a class="send" href="#">Starta samtalet →</a>
+    </div>
+    <div class="fine">Demoläget kräver ingen nyckel och ingen inloggning.</div>
+  </div>
+</div>
+
+<script>
+  const io = new IntersectionObserver((es)=>{
+    es.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+  },{threshold:.2});
+  document.querySelectorAll('.msg').forEach(m=>io.observe(m));
+</script>
+
+</body>
+</html>

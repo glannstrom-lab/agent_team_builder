@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Mitt AI-team — Veckan (designförslag 1)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;500;600;700&family=Instrument+Sans:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+<style>
+:root{
+  --paper:#EDEAE3; --card:#FAF9F5; --ink:#14171A; --pencil:#6E7269;
+  --marker:#FFE14D; --red:#D9432F; --rule:#D5D1C6;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  background:var(--paper); color:var(--ink);
+  font-family:'Instrument Sans',system-ui,sans-serif; font-size:16.5px; line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+  background-image:linear-gradient(var(--rule) 1px,transparent 1px);
+  background-size:100% 34px;
+}
+.wrap{max-width:1120px;margin:0 auto;padding:0 28px}
+h1,h2,h3,h4{font-family:'Familjen Grotesk',sans-serif;font-weight:700;line-height:1.05;letter-spacing:-0.02em}
+.mono{font-family:'Space Mono',monospace}
+a{color:inherit}
+section{padding:clamp(56px,7vw,104px) 0}
+
+/* header */
+header{border-bottom:1.5px solid var(--ink);background:var(--paper);position:sticky;top:0;z-index:40}
+header .inner{max-width:1120px;margin:0 auto;padding:14px 28px;display:flex;align-items:center;gap:18px}
+.mark{font-family:'Familjen Grotesk',sans-serif;font-weight:700;font-size:17px;margin-right:auto;text-decoration:none}
+.mark em{font-style:normal;background:var(--marker);padding:0 4px}
+header nav a{font-size:14px;text-decoration:none;color:var(--pencil)}
+header nav a:hover{color:var(--ink)}
+header nav{display:flex;gap:20px}
+@media(max-width:760px){header nav{display:none}}
+.btn{display:inline-block;font-family:'Familjen Grotesk',sans-serif;font-weight:700;font-size:15px;
+  text-decoration:none;padding:11px 20px;border:1.5px solid var(--ink);background:var(--ink);color:var(--card);
+  transition:transform .12s ease,box-shadow .12s ease}
+.btn:hover{transform:translate(-2px,-2px);box-shadow:4px 4px 0 var(--ink)}
+.btn.ghost{background:transparent;color:var(--ink)}
+.btn.ghost:hover{background:var(--marker);box-shadow:4px 4px 0 var(--ink)}
+header .btn{padding:8px 15px;font-size:14px}
+
+/* hero */
+.hero{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1.15fr);gap:56px;align-items:start;
+  padding-top:clamp(44px,6vw,84px)}
+@media(max-width:960px){.hero{grid-template-columns:1fr;gap:40px}}
+.kicker{font-family:'Space Mono',monospace;font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--pencil)}
+.hero h1{font-size:clamp(40px,6.4vw,72px);margin:18px 0 0}
+.hl{background:linear-gradient(transparent 58%,var(--marker) 58%);padding:0 2px}
+.hero p{font-size:18.5px;margin-top:22px;max-width:46ch;color:#2C3130}
+.hero .cta{display:flex;gap:14px;flex-wrap:wrap;margin-top:32px}
+.footnote{margin-top:26px;font-size:14px;color:var(--pencil);border-left:2px solid var(--red);padding-left:12px}
+
+/* SIGNATUR: veckoplanen */
+.week{background:var(--card);border:1.5px solid var(--ink);box-shadow:8px 8px 0 rgba(20,23,26,.12)}
+.week .whead{display:flex;justify-content:space-between;align-items:baseline;
+  padding:14px 18px;border-bottom:1.5px solid var(--ink);font-family:'Space Mono',monospace;font-size:12.5px;letter-spacing:.08em;text-transform:uppercase}
+.week .whead .who{color:var(--pencil)}
+.days{display:grid;grid-template-columns:repeat(5,1fr)}
+@media(max-width:700px){.days{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:430px){.days{grid-template-columns:1fr}}
+.day{border-right:1px solid var(--rule);padding:14px 12px 20px;min-height:210px}
+.day:last-child{border-right:0}
+.day .dn{font-family:'Space Mono',monospace;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--pencil);margin-bottom:12px}
+.task{font-size:13.5px;line-height:1.4;margin-bottom:12px}
+.task .t{display:inline;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+.task.steal .t{background-image:linear-gradient(transparent 55%,var(--marker) 55%);
+  background-repeat:no-repeat;background-size:0 100%;animation:sweep .5s ease forwards}
+.task.steal:nth-of-type(1) .t{animation-delay:.5s}
+.task.steal:nth-of-type(2) .t{animation-delay:.7s}
+.task.steal:nth-of-type(3) .t{animation-delay:.9s}
+@keyframes sweep{to{background-size:100% 100%}}
+.task .owner{display:block;font-family:'Space Mono',monospace;font-size:10.5px;letter-spacing:.05em;
+  color:var(--pencil);margin-top:5px;opacity:0;animation:fade .4s 1.15s ease forwards}
+@keyframes fade{to{opacity:1}}
+.wfoot{border-top:1.5px solid var(--ink);padding:12px 18px;font-size:13px;color:var(--pencil);display:flex;gap:18px;flex-wrap:wrap}
+.swatch{display:inline-flex;align-items:center;gap:7px}
+.swatch i{width:14px;height:14px;background:var(--marker);display:block}
+
+/* sektionsrubrik */
+.shead{max-width:640px;margin-bottom:40px}
+.shead h2{font-size:clamp(28px,3.8vw,42px)}
+.shead p{color:var(--pencil);margin-top:14px;font-size:17.5px}
+.rule{border:0;border-top:1.5px solid var(--ink);margin:0}
+
+/* tidstjuvar */
+.thieves{display:grid;gap:0;border-top:1px solid var(--rule)}
+.thief{display:grid;grid-template-columns:44px 1fr auto;gap:18px;align-items:baseline;
+  padding:18px 4px;border-bottom:1px solid var(--rule)}
+.thief .no{font-family:'Space Mono',monospace;font-size:13px;color:var(--pencil)}
+.thief h4{font-size:19px}
+.thief p{font-size:14.5px;color:var(--pencil);margin-top:5px;max-width:60ch}
+.verdict{font-family:'Space Mono',monospace;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;
+  padding:4px 9px;border:1.5px solid var(--ink);white-space:nowrap}
+.verdict.yes{background:var(--marker)}
+.verdict.no{border-color:var(--red);color:var(--red)}
+@media(max-width:640px){.thief{grid-template-columns:32px 1fr;gap:12px}.verdict{grid-column:2}}
+
+/* teamet */
+.team{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:0;
+  border:1.5px solid var(--ink);background:var(--card)}
+.member{padding:26px 24px;border-right:1px solid var(--rule)}
+.member:last-child{border-right:0}
+@media(max-width:840px){.member{border-right:0;border-bottom:1px solid var(--rule)}.member:last-child{border-bottom:0}}
+.member .role{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--pencil)}
+.member h4{font-size:22px;margin:8px 0 10px}
+.member p{font-size:14.5px;color:#3A3F3D}
+.member .when{margin-top:16px;font-size:13.5px;border-top:1px solid var(--rule);padding-top:12px;color:var(--pencil)}
+.member .when b{color:var(--ink);font-weight:600}
+
+/* pris */
+.prices{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+@media(max-width:860px){.prices{grid-template-columns:1fr}}
+.price{border:1.5px solid var(--ink);background:var(--card);padding:26px;display:flex;flex-direction:column}
+.price.pick{background:var(--marker)}
+.price .pn{font-family:'Familjen Grotesk',sans-serif;font-weight:700;font-size:19px}
+.price .pf{font-size:14px;color:var(--pencil);margin-top:4px;min-height:42px}
+.price.pick .pf{color:#4A421A}
+.price .pa{font-family:'Familjen Grotesk',sans-serif;font-size:34px;font-weight:700;margin:14px 0 16px;letter-spacing:-0.03em}
+.price .pa span{font-size:14px;font-family:'Instrument Sans',sans-serif;color:var(--pencil);letter-spacing:0}
+.price ul{list-style:none;font-size:14px;color:#3A3F3D;display:grid;gap:8px;margin-bottom:22px}
+.price li{padding-left:18px;position:relative}
+.price li::before{content:'—';position:absolute;left:0;color:var(--pencil)}
+.price .btn{margin-top:auto;text-align:center}
+
+/* slut-CTA */
+.end{border:1.5px solid var(--ink);background:var(--card);padding:clamp(32px,5vw,60px);
+  display:grid;grid-template-columns:1fr auto;gap:30px;align-items:center}
+@media(max-width:760px){.end{grid-template-columns:1fr}}
+.end h2{font-size:clamp(26px,3.6vw,40px);max-width:18ch}
+.end p{color:var(--pencil);margin-top:12px;max-width:48ch}
+footer{border-top:1.5px solid var(--ink);padding:30px 0 60px;font-size:13.5px;color:var(--pencil)}
+:focus-visible{outline:2.5px solid var(--red);outline-offset:2px}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;transition-duration:.001ms!important}
+  .task.steal .t{background-size:100% 100%}.task .owner{opacity:1}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="inner">
+    <a class="mark" href="#">Mitt <em>AI-team</em></a>
+    <nav>
+      <a href="#veckan">Veckan</a>
+      <a href="#teamet">Teamet</a>
+      <a href="#priser">Priser</a>
+    </nav>
+    <a class="btn" href="#">Prova demo</a>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="hero">
+    <div>
+      <div class="kicker">Skräddarsydda AI-team · små &amp; medelstora företag</div>
+      <h1>Vi bygger ert team ur <span class="hl">er egen vecka</span>.</h1>
+      <p>Inte ur en lista med AI-roller. Vi tittar på vad som faktiskt händer mellan måndag och fredag hos er, plockar ut momenten som äter tid, och bygger en agent per moment som är värd en agent.</p>
+      <div class="cta">
+        <a class="btn" href="#">Prova ett team live</a>
+        <a class="btn ghost" href="#priser">Se priser</a>
+      </div>
+      <p class="footnote">Tre olika företag får tre meningsfullt olika team. Skulle output se likadant ut oavsett input vore verktyget trasigt.</p>
+    </div>
+
+    <!-- SIGNATUR: veckoplanen där tidstjuvarna markeras -->
+    <div class="week">
+      <div class="whead"><span>Vecka 32</span><span class="who">Lerverk Keramik · 1 anställd</span></div>
+      <div class="days">
+        <div class="day">
+          <div class="dn">Mån</div>
+          <div class="task">Dreja beställningar</div>
+          <div class="task steal"><span class="t">Svara på förfrågningar</span><span class="owner">→ Vera, kunddialog</span></div>
+          <div class="task">Blanda glasyr</div>
+        </div>
+        <div class="day">
+          <div class="dn">Tis</div>
+          <div class="task">Bränning, ugn 1</div>
+          <div class="task steal"><span class="t">Prissätta ny serie</span><span class="owner">→ Ester, kalkyl</span></div>
+        </div>
+        <div class="day">
+          <div class="dn">Ons</div>
+          <div class="task">Studiobesök 14:00</div>
+          <div class="task steal"><span class="t">Skriva veckans inlägg</span><span class="owner">→ Sixten, butik</span></div>
+          <div class="task">Packa order</div>
+        </div>
+        <div class="day">
+          <div class="dn">Tors</div>
+          <div class="task">Marknad, ansökan</div>
+          <div class="task">Bränning, ugn 2</div>
+        </div>
+        <div class="day">
+          <div class="dn">Fre</div>
+          <div class="task steal"><span class="t">Jaga obetalda fakturor</span><span class="owner">→ Ester, kalkyl</span></div>
+          <div class="task">Städa verkstan</div>
+        </div>
+      </div>
+      <div class="wfoot">
+        <span class="swatch"><i></i> Markerat = moment ett team tar över</span>
+        <span>Omarkerat = ert hantverk, det rör vi inte</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<section id="veckan">
+  <div class="wrap">
+    <div class="shead">
+      <h2>Vad vi letar efter i veckan</h2>
+      <p>Kartläggningen letar efter arbetsmoment — inte titlar. Varje moment får ett ärligt omdöme, och det som inte passar AI får ett nej.</p>
+    </div>
+    <div class="thieves">
+      <div class="thief">
+        <div class="no">01</div>
+        <div><h4>Förfrågningar via mejl och DM</h4><p>Samma femton frågor varje vecka, men varje svar skrivs från början. Tar 3–4 timmar utspritt över dagarna.</p></div>
+        <div class="verdict yes">Egen agent</div>
+      </div>
+      <div class="thief">
+        <div class="no">02</div>
+        <div><h4>Prissättning av nya serier</h4><p>Material, tid, svinn och marginal räknas i huvudet varje gång. Osäkerheten gör att priset sätts för lågt.</p></div>
+        <div class="verdict yes">Egen agent</div>
+      </div>
+      <div class="thief">
+        <div class="no">03</div>
+        <div><h4>Inlägg och nyhetsbrev</h4><p>Ska göras varje vecka, blir gjort varannan månad. Underlaget finns redan i vad som drejats.</p></div>
+        <div class="verdict yes">Egen agent</div>
+      </div>
+      <div class="thief">
+        <div class="no">04</div>
+        <div><h4>Glasyrrecept och brännkurvor</h4><p>Kräver att man står vid ugnen och känner materialet. En agent här hade varit teater.</p></div>
+        <div class="verdict no">Nej</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="teamet">
+  <div class="wrap">
+    <div class="shead">
+      <h2>Teamet som blev av det</h2>
+      <p>Fyra agenter, en per moment som klarade ribban. Varje agent har en leverans som går att svara ja eller nej på.</p>
+    </div>
+    <div class="team">
+      <div class="member">
+        <div class="role">Ingångsagent</div>
+        <h4>Vera</h4>
+        <p>Håller ihop veckan och tar kunddialogen. Föreslår fokus på måndagen och vet vad som ligger olöst.</p>
+        <div class="when"><b>Klart när:</b> alla förfrågningar äldre än ett dygn har ett svarsutkast.</div>
+      </div>
+      <div class="member">
+        <div class="role">Specialist</div>
+        <h4>Ester</h4>
+        <p>Räknar på serier och håller reda på pengarna in. Ifrågasätter priser som inte täcker tiden.</p>
+        <div class="when"><b>Klart när:</b> varje ny produkt har ett pris med redovisad kalkyl.</div>
+      </div>
+      <div class="member">
+        <div class="role">Specialist</div>
+        <h4>Sixten</h4>
+        <p>Butik och synlighet. Gör om veckans arbete till inlägg och nyhetsbrev utan reklamröst.</p>
+        <div class="when"><b>Klart när:</b> veckans inlägg finns skrivet innan fredag.</div>
+      </div>
+      <div class="member">
+        <div class="role">Avvisad</div>
+        <h4 style="text-decoration:line-through;text-decoration-color:var(--red);text-decoration-thickness:2px;color:var(--pencil)">Varumärkesstrateg</h4>
+        <p>Föreslogs, men hade inget att göra på tisdag förmiddag. En agent utan veckojobb blir teater.</p>
+        <div class="when"><b>Motivering:</b> inget konkret fynd i kartläggningen.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="priser">
+  <div class="wrap">
+    <div class="shead">
+      <h2>Tre sätt att göra det</h2>
+      <p>Samma motor i botten. Skillnaden är hur mycket vi gör åt er.</p>
+    </div>
+    <div class="prices">
+      <div class="price">
+        <div class="pn">Bygg själv</div>
+        <div class="pf">För er som vill komma igång på egen hand.</div>
+        <div class="pa">2 900 kr <span>engång</span></div>
+        <ul><li>Bygg teamet i webbläsaren</li><li>Egen kundportal</li><li>Fem mallar att utgå från</li><li>Ni äger allt</li></ul>
+        <a class="btn ghost" href="#">Bygg ert team</a>
+      </div>
+      <div class="price pick">
+        <div class="pn">Vi bygger åt er</div>
+        <div class="pf">För er som vill ha det gjort rätt från start.</div>
+        <div class="pa">14 900 kr <span>engång</span></div>
+        <ul><li>Kartläggning tillsammans</li><li>Team + ett skarpt första projekt</li><li>Portal driftsatt och klar</li><li>30 dagars support</li></ul>
+        <a class="btn" href="#">Boka ett samtal</a>
+      </div>
+      <div class="price">
+        <div class="pn">Löpande partner</div>
+        <div class="pf">För er som vill att teamet växer med verksamheten.</div>
+        <div class="pa">2 900 kr <span>/ mån</span></div>
+        <ul><li>Vi uppdaterar teamet löpande</li><li>Nya agenter när behoven ändras</li><li>Prioriterad support</li><li>Vi sköter driften</li></ul>
+        <a class="btn ghost" href="#">Boka ett samtal</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="end">
+      <div>
+        <h2>Hur ser er vecka ut?</h2>
+        <p>Ett kort samtal räcker för att skissa ett första team. Ni binder er inte till något.</p>
+      </div>
+      <a class="btn" href="#">Boka ett samtal</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">Mitt AI-team · designförslag 1 av 5 — <span class="mono">"Veckan"</span></div>
+</footer>
+
+</body>
+</html>

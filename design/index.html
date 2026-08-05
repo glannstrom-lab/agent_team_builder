@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Designförslag — Mitt AI-team</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+:root{--bg:#101214;--panel:#181B1E;--line:#2A2F34;--text:#E7EAEC;--dim:#98A1A8;--acc:#7FC4A8}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',system-ui,sans-serif;line-height:1.6;font-size:16px}
+a{color:inherit}
+.wrap{max-width:1180px;margin:0 auto;padding:56px 26px 90px}
+h1{font-size:32px;font-weight:700;letter-spacing:-.03em}
+.lede{color:var(--dim);margin-top:12px;max-width:70ch}
+.mono{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--acc)}
+.grid{display:grid;gap:26px;margin-top:40px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;
+  display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr)}
+@media(max-width:900px){.card{grid-template-columns:1fr}}
+.shot{position:relative;height:380px;overflow:hidden;border-right:1px solid var(--line);background:#fff}
+@media(max-width:900px){.shot{border-right:0;border-bottom:1px solid var(--line);height:300px}}
+.shot iframe{width:1440px;height:1140px;border:0;transform:scale(.46);transform-origin:0 0;pointer-events:none}
+.shot a{position:absolute;inset:0;display:block}
+.info{padding:26px 28px}
+.info h2{font-size:22px;font-weight:700;letter-spacing:-.02em;margin:8px 0 10px}
+.info p{color:var(--dim);font-size:15px}
+.rows{margin-top:18px;display:grid;gap:10px;font-size:14px}
+.row{display:grid;grid-template-columns:96px 1fr;gap:12px}
+.row b{color:var(--dim);font-weight:500;font-size:12.5px;letter-spacing:.06em;text-transform:uppercase}
+.sw{display:flex;gap:6px}
+.sw i{width:20px;height:20px;border-radius:5px;border:1px solid rgba(255,255,255,.14);display:block}
+.open{display:inline-block;margin-top:20px;background:var(--acc);color:#0C1512;text-decoration:none;
+  font-weight:600;font-size:14.5px;padding:10px 18px;border-radius:8px}
+.open:hover{filter:brightness(1.08)}
+footer{margin-top:44px;color:var(--dim);font-size:13.5px;border-top:1px solid var(--line);padding-top:22px}
+:focus-visible{outline:2px solid var(--acc);outline-offset:3px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="mono">Designförslag · omgång 1 + 2</div>
+  <h1>Elva sätt sajten skulle kunna se ut</h1>
+  <p class="lede">Samma innehåll och samma affär, olika visuella tesar. Var och en har egen palett, egen typografi och ett signaturgrepp hämtat ur vad produkten faktiskt gör. Öppna dem via localhost så laddar teckensnitt och avatarer korrekt.</p>
+  <p class="lede" style="margin-top:10px"><b style="color:var(--acc)">Omgång 2 (variant 6–11)</b> ligger längst ner: varianter på Veckan och Personalen, plus två som mixar dem.</p>
+
+  <div class="mono" style="margin-top:44px">Omgång 1 · fem riktningar</div>
+  <div class="grid">
+
+    <div class="card">
+      <div class="shot"><iframe src="1-veckan.html" title="Förhandsvisning: Veckan" loading="lazy"></iframe><a href="1-veckan.html" aria-label="Öppna Veckan"></a></div>
+      <div class="info">
+        <div class="mono">Förslag 1</div>
+        <h2>Veckan</h2>
+        <p>Papper, blyerts och överstrykningspenna. Hjälten är en riktig veckoplan där tidstjuvarna stryks över och får en agent tilldelad — själva metoden blir bilden.</p>
+        <div class="rows">
+          <div class="row"><b>Palett</b><span class="sw"><i style="background:#EDEAE3"></i><i style="background:#14171A"></i><i style="background:#FFE14D"></i><i style="background:#D9432F"></i></span></div>
+          <div class="row"><b>Typsnitt</b><span>Familjen Grotesk (svensk) + Instrument Sans + Space Mono</span></div>
+          <div class="row"><b>Signatur</b><span>Överstrykningen som sveper in på de moment teamet tar över</span></div>
+          <div class="row"><b>Passar om</b><span>ni vill att sajten känns som ett arbetsredskap, inte som en AI-produkt</span></div>
+        </div>
+        <a class="open" href="1-veckan.html">Öppna förslag 1 →</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="shot"><iframe src="2-personalen.html" title="Förhandsvisning: Personalen" loading="lazy"></iframe><a href="2-personalen.html" aria-label="Öppna Personalen"></a></div>
+      <div class="info">
+        <div class="mono">Förslag 2</div>
+        <h2>Personalen</h2>
+        <p>Mörkt trä och mässing. Agenterna presenteras som anställda med passerkort, porträtt och anställningsbevis — och de som inte behövdes får en röd AVSLAG-stämpel.</p>
+        <div class="rows">
+          <div class="row"><b>Palett</b><span class="sw"><i style="background:#17130F"></i><i style="background:#211B15"></i><i style="background:#C8A45C"></i><i style="background:#C4603F"></i></span></div>
+          <div class="row"><b>Typsnitt</b><span>Archivo + Karla + IBM Plex Mono</span></div>
+          <div class="row"><b>Signatur</b><span>Brickstället med riktiga porträtt + avslagsstämpeln</span></div>
+          <div class="row"><b>Passar om</b><span>ni vill sälja "kollegor", inte "funktioner" — varmt och personligt</span></div>
+        </div>
+        <a class="open" href="2-personalen.html">Öppna förslag 2 →</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="shot"><iframe src="3-plakat.html" title="Förhandsvisning: Plakat" loading="lazy"></iframe><a href="3-plakat.html" aria-label="Öppna Plakat"></a></div>
+      <div class="info">
+        <div class="mono">Förslag 3</div>
+        <h2>Plakat</h2>
+        <p>Svensk affischgrafik: platta färgfält, noll rundade hörn, inga skuggor och typografi i plakatstorlek. "Tre företag / tre team / noll mallar" är hela hjälten.</p>
+        <div class="rows">
+          <div class="row"><b>Palett</b><span class="sw"><i style="background:#F4F2EC"></i><i style="background:#123A2C"></i><i style="background:#FF4E17"></i><i style="background:#1E5BE0"></i></span></div>
+          <div class="row"><b>Typsnitt</b><span>Syne + Manrope</span></div>
+          <div class="row"><b>Signatur</b><span>Typografin som bild + de tre färgblocken med tre olika team</span></div>
+          <div class="row"><b>Passar om</b><span>ni vill synas och låta bestämd — mest distinkt av de fem</span></div>
+        </div>
+        <a class="open" href="3-plakat.html">Öppna förslag 3 →</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="shot"><iframe src="4-samtalet.html" title="Förhandsvisning: Samtalet" loading="lazy"></iframe><a href="4-samtalet.html" aria-label="Öppna Samtalet"></a></div>
+      <div class="info">
+        <div class="mono">Förslag 4</div>
+        <h2>Samtalet</h2>
+        <p>Hela sidan är en chattråd: kunden frågar, agenterna svarar, och argumenten levereras som meddelanden med bifogade teamförslag och prislistor. Produkten demonstrerar sig själv.</p>
+        <div class="rows">
+          <div class="row"><b>Palett</b><span class="sw"><i style="background:#EEF0F1"></i><i style="background:#FFFFFF"></i><i style="background:#0E4C56"></i><i style="background:#F2664A"></i></span></div>
+          <div class="row"><b>Typsnitt</b><span>Sora + Figtree + JetBrains Mono</span></div>
+          <div class="row"><b>Signatur</b><span>Skrivfältet längst ner är sidans CTA — man svarar i stället för att klicka</span></div>
+          <div class="row"><b>Passar om</b><span>ni vill att besökaren fattar portalen direkt, utan att öppna demon</span></div>
+        </div>
+        <a class="open" href="4-samtalet.html">Öppna förslag 4 →</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="shot"><iframe src="5-jamforaren.html" title="Förhandsvisning: Jämföraren" loading="lazy"></iframe><a href="5-jamforaren.html" aria-label="Öppna Jämföraren"></a></div>
+      <div class="info">
+        <div class="mono">Förslag 5</div>
+        <h2>Jämföraren</h2>
+        <p>Skiffergrå bas där kunden själv byter mellan tre företag — hela sidan byter accentfärg, veckan till vänster och teamet till höger byts ut. Projektets enda regel blir interaktiv.</p>
+        <div class="rows">
+          <div class="row"><b>Palett</b><span class="sw"><i style="background:#232A31"></i><i style="background:#D2794A"></i><i style="background:#D4478E"></i><i style="background:#5E9B6B"></i></span></div>
+          <div class="row"><b>Typsnitt</b><span>Bricolage Grotesque + IBM Plex Sans/Mono</span></div>
+          <div class="row"><b>Signatur</b><span>Växlaren som färgar om sidan + difftabellen över de tre teamen</span></div>
+          <div class="row"><b>Passar om</b><span>ni vill bevisa påståendet i stället för att skriva det</span></div>
+        </div>
+        <a class="open" href="5-jamforaren.html">Öppna förslag 5 →</a>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="mono" style="margin-top:56px">Omgång 2 · varianter på Veckan &amp; Personalen</div>
+  <div class="grid">
+
+    <div class="card">
+      <div class="shot"><iframe src="6-veckan-tavlan.html" title="Förhandsvisning: Veckan / Tavlan" loading="lazy"></iframe><a href="6-veckan-tavlan.html" aria-label="Öppna Veckan / Tavlan"></a></div>
+      <div class="info">
+        <div class="mono">Variant 6 · Veckan</div>
+        <h2>Tavlan</h2>
+        <p>Veckan i mörkt läge: skiffergrön tavla, kritvit text och överstrykning i kritgult. Största tidstjuven ringas in för hand med en ritad ellips.</p>
+        <div class="rows">
+          <div class="row"><b>Palett</b><span class="sw"><i style="background:#1A1E1C"></i><i style="background:#EAE7DD"></i><i style="background:#F2D04C"></i><i style="background:#E8735A"></i></span></div>
+          <div class="row"><b>Typsnitt</b><span>Familjen Grotesk + Instrument Sans + Space Mono</span></div>
+          <div class="row"><b>Ändrat</b><span>Mörk bakgrund, ritad ring, streckade dagsavdelare</span></div>
+          <div class="row"><b>Passar om</b><span>ni gillade Veckan men vill behålla ett mörkt uttryck</span></div>
+        </div>
+        <a class="open" href="6-veckan-tavlan.html">Öppna variant 6 →</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="shot"><iframe src="7-veckan-tidrapporten.html" title="Förhandsvisning: Veckan / Tidrapporten" loading="lazy"></iframe><a href="7-veckan-tidrapporten.html" aria-label="Öppna Veckan / Tidrapporten"></a></div>
+      <div class="info">
+        <div class="mono">Variant 7 · Veckan</div>
+        <h2>Tidrapporten</h2>
+        <p>Veckan som kvitto. Centrerad remsa med prickade ledare, timmar per rad och en summa längst ner: <em>6 h 45 min ett team kan ta över</em>. Stämpeln säger "resten är hantverket".</p>
+        <div class="rows">
+          <div class="row"><b>Palett</b><span class="sw"><i style="background:#F7F5EE"></i><i style="background:#191A17"></i><i style="background:#1E4D3E"></i><i style="background:#B4392B"></i></span></div>
+          <div class="row"><b>Typsnitt</b><span>Space Mono + Instrument Sans</span></div>
+          <div class="row"><b>Ändrat</b><span>Siffror i stället för rutnät — säljargumentet blir en summa</span></div>
+          <div class="row"><b>Passar om</b><span>ni vill leda med ROI utan att skryta: kunden räknar själv</span></div>
+        </div>
+        <a class="open" href="7-veckan-tidrapporten.html">Öppna variant 7 →</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="shot"><iframe src="8-personalen-ljus.html" title="Förhandsvisning: Personalen / Ljus" loading="lazy"></iframe><a href="8-personalen-ljus.html" aria-label="Öppna Personalen / Ljus"></a></div>
+      <div class="info">
+        <div class="mono">Variant 8 · Personalen</div>
+        <h2>Ljus</h2>
+        <p>Samma passerkort, men i sand och ockra i stället för espresso och mässing. Nytt huvudgrepp: personalliggaren — en tabell med uppdrag, "klart när" och status, där avslagen står kvar överstrukna.</p>
+        <div class="rows">
+          <div class="row"><b>Palett</b><span class="sw"><i style="background:#F1ECE3"></i><i style="background:#1E1913"></i><i style="background:#A9741F"></i><i style="background:#4F7A54"></i></span></div>
+          <div class="row"><b>Typsnitt</b><span>Archivo + Karla + IBM Plex Mono</span></div>
+          <div class="row"><b>Ändrat</b><span>Ljus botten + personalliggare i stället för avslagskort</span></div>
+          <div class="row"><b>Passar om</b><span>ni gillade Personalen men vill ha ett vänligare, ljusare intryck</span></div>
+        </div>
+        <a class="open" href="8-personalen-ljus.html">Öppna variant 8 →</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="shot"><iframe src="9-personalen-portrattet.html" title="Förhandsvisning: Personalen / Porträttet" loading="lazy"></iframe><a href="9-personalen-portrattet.html" aria-label="Öppna Personalen / Porträttet"></a></div>
+      <div class="info">
+        <div class="mono">Variant 9 · Personalen</div>
+        <h2>Porträttet</h2>
+        <p>Redaktionellt magasin: ett stort porträtt i hjälten, "Det här är Vera. Hon börjar hos er på måndag." Resten av personalen ligger som en filmremsa man scrollar i sidled.</p>
+        <div class="rows">
+          <div class="row"><b>Palett</b><span class="sw"><i style="background:#121110"></i><i style="background:#E9E3D8"></i><i style="background:#A8452F"></i><i style="background:#B9975B"></i></span></div>
+          <div class="row"><b>Typsnitt</b><span>Instrument Serif + Karla + IBM Plex Mono</span></div>
+          <div class="row"><b>Ändrat</b><span>Serif i display, en person i fokus i stället för fyra kort</span></div>
+          <div class="row"><b>Passar om</b><span>ni vill att det ska kännas dyrt och personligt snarare än tekniskt</span></div>
+        </div>
+        <a class="open" href="9-personalen-portrattet.html">Öppna variant 9 →</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="shot"><iframe src="10-mix-anstallningen.html" title="Förhandsvisning: Anställningen" loading="lazy"></iframe><a href="10-mix-anstallningen.html" aria-label="Öppna Anställningen"></a></div>
+      <div class="info">
+        <div class="mono">Variant 10 · MIX Veckan × Personalen</div>
+        <h2>Anställningen</h2>
+        <p>Veckoplanen i full bredd — och varje överstruken rad får ett litet porträtt med namnet på kollegan som tar den. Under följer fyra anställningsbevis med "klart när" och vilken dag passet ligger.</p>
+        <div class="rows">
+          <div class="row"><b>Palett</b><span class="sw"><i style="background:#EFECE4"></i><i style="background:#16191A"></i><i style="background:#FFE14D"></i><i style="background:#2E6B4F"></i></span></div>
+          <div class="row"><b>Typsnitt</b><span>Familjen Grotesk + Karla + Space Mono</span></div>
+          <div class="row"><b>Mixen</b><span>Veckans papper och överstrykning + Personalens porträtt och avslagsstämpel</span></div>
+          <div class="row"><b>Passar om</b><span>ni vill visa både metoden och kollegorna i samma bild</span></div>
+        </div>
+        <a class="open" href="10-mix-anstallningen.html">Öppna variant 10 →</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="shot"><iframe src="11-mix-schemat.html" title="Förhandsvisning: Schemat" loading="lazy"></iframe><a href="11-mix-schemat.html" aria-label="Öppna Schemat"></a></div>
+      <div class="info">
+        <div class="mono">Variant 11 · MIX Personalen × Veckan</div>
+        <h2>Schemat</h2>
+        <p>Personalens mörka trä och mässing, men veckan som bemanningsschema: agenterna är rader, dagarna kolumner, passen mässingsfärgade. Nedersta raden är ni själva — obemannat, streckat, hantverket.</p>
+        <div class="rows">
+          <div class="row"><b>Palett</b><span class="sw"><i style="background:#1A1511"></i><i style="background:#F2ECE2"></i><i style="background:#C8A45C"></i><i style="background:#7FA97A"></i></span></div>
+          <div class="row"><b>Typsnitt</b><span>Archivo + Instrument Sans + IBM Plex Mono</span></div>
+          <div class="row"><b>Mixen</b><span>Personalens palett och porträtt + Veckans rutnät, som schema</span></div>
+          <div class="row"><b>Passar om</b><span>ni vill att "de jobbar åt er hela veckan" ska synas direkt</span></div>
+        </div>
+        <a class="open" href="11-mix-schemat.html">Öppna variant 11 →</a>
+      </div>
+    </div>
+
+  </div>
+
+  <footer>Sidorna är fristående utkast i <span class="mono" style="text-transform:none;letter-spacing:0">design/</span> och ingår inte i bygget till Cloudflare Pages. Innehållet är sajtens riktiga texter, lätt omskrivna per riktning.</footer>
+</div>
+</body>
+</html>

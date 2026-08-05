@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Mitt AI-team — Personalen / Porträttet (variant 9)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Karla:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+:root{
+  --bg:#121110; --panel:#1B1917; --line:#2C2926; --bone:#E9E3D8; --dim:#8C857A;
+  --ox:#A8452F; --gold:#B9975B;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--bone);font-family:'Karla',system-ui,sans-serif;
+  font-size:17px;line-height:1.68;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+h1,h2,h3{font-family:'Instrument Serif',Georgia,serif;font-weight:400;letter-spacing:-0.015em;line-height:1.02}
+.mono{font-family:'IBM Plex Mono',monospace}
+a{color:inherit}
+.wrap{max-width:1180px;margin:0 auto;padding:0 30px}
+section{padding:clamp(56px,7vw,104px) 0}
+
+header{border-bottom:1px solid var(--line);position:sticky;top:0;z-index:40;background:rgba(18,17,16,.9);backdrop-filter:blur(10px)}
+header .inner{max-width:1180px;margin:0 auto;padding:15px 30px;display:flex;align-items:center;gap:24px}
+.mark{font-family:'Instrument Serif',serif;font-size:21px;margin-right:auto;text-decoration:none;letter-spacing:-.01em}
+header nav{display:flex;gap:22px}
+header nav a{font-size:14px;color:var(--dim);text-decoration:none;letter-spacing:.01em}
+header nav a:hover{color:var(--bone)}
+@media(max-width:860px){header nav{display:none}}
+.btn{display:inline-flex;align-items:center;gap:9px;font-family:'Karla',sans-serif;font-weight:600;font-size:15px;
+  text-decoration:none;padding:13px 24px;background:var(--ox);color:#FBEFE9;border:1px solid var(--ox);
+  border-radius:2px;transition:filter .18s,transform .14s}
+.btn:hover{filter:brightness(1.12);transform:translateY(-1px)}
+.btn.ghost{background:transparent;color:var(--bone);border-color:var(--line)}
+.btn.ghost:hover{border-color:var(--gold);color:var(--gold);filter:none}
+header .btn{padding:9px 17px;font-size:14px}
+
+/* SIGNATUR: porträttet */
+.hero{display:grid;grid-template-columns:minmax(0,.82fr) minmax(0,1fr);gap:clamp(30px,5vw,64px);
+  align-items:center;padding:clamp(44px,5.5vw,80px) 0 clamp(30px,4vw,52px)}
+@media(max-width:900px){.hero{grid-template-columns:1fr;gap:30px}}
+.frame{position:relative}
+.frame img{width:100%;aspect-ratio:4/5;object-fit:cover;display:block;filter:saturate(.82) contrast(1.05);border-radius:2px}
+.frame::after{content:'';position:absolute;inset:0;border:1px solid rgba(233,227,216,.14);pointer-events:none}
+.cap{margin-top:14px;display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;
+  font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
+.cap b{color:var(--gold);font-weight:400}
+.eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--ox)}
+.hero h1{font-size:clamp(50px,8.5vw,104px);margin:16px 0 0}
+.hero h1 em{font-style:italic;color:var(--gold)}
+.hero .lede{font-size:19.5px;color:var(--dim);max-width:50ch;margin-top:22px}
+.hero .lede b{color:var(--bone);font-weight:500}
+.hero .cta{display:flex;gap:14px;flex-wrap:wrap;margin-top:30px}
+
+/* filmremsa */
+.strip{border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:26px 0}
+.striphead{display:flex;justify-content:space-between;align-items:baseline;gap:16px;flex-wrap:wrap;margin-bottom:20px;
+  font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+.reel{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(216px,1fr);gap:20px;overflow-x:auto;
+  scroll-snap-type:x mandatory;padding-bottom:8px;scrollbar-width:thin}
+.reel::-webkit-scrollbar{height:6px}
+.reel::-webkit-scrollbar-thumb{background:var(--line);border-radius:6px}
+.cast{scroll-snap-align:start}
+.cast img{width:100%;aspect-ratio:1;object-fit:cover;display:block;filter:saturate(.8) contrast(1.04);border-radius:2px;
+  transition:filter .3s}
+.cast:hover img{filter:saturate(1) contrast(1.06)}
+.cast .no{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.12em;color:var(--dim);margin-top:12px}
+.cast h3{font-size:26px;margin:5px 0 3px}
+.cast .r{font-size:13px;color:var(--gold);letter-spacing:.02em}
+.cast p{font-size:14px;color:var(--dim);margin-top:9px}
+
+/* redaktionell text */
+.editorial{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(28px,5vw,64px)}
+@media(max-width:860px){.editorial{grid-template-columns:1fr;gap:26px}}
+.editorial h2{font-size:clamp(32px,4.6vw,52px);max-width:15ch}
+.editorial .body p{color:var(--dim);font-size:17px}
+.editorial .body p+p{margin-top:16px}
+.editorial .body p b{color:var(--bone);font-weight:500}
+.pull{font-family:'Instrument Serif',serif;font-size:clamp(24px,3vw,32px);line-height:1.24;color:var(--bone);
+  border-left:2px solid var(--ox);padding-left:22px;margin:26px 0}
+.deliver{margin-top:26px;display:grid;gap:1px;background:var(--line);border:1px solid var(--line)}
+.deliver div{background:var(--bg);padding:15px 18px;display:grid;grid-template-columns:112px 1fr;gap:16px;font-size:14.5px}
+@media(max-width:560px){.deliver div{grid-template-columns:1fr;gap:4px}}
+.deliver b{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);font-weight:400}
+.deliver span{color:var(--dim)}
+
+/* avslag */
+.rejects{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:0;border-top:1px solid var(--line)}
+.rej{padding:26px 26px 26px 0;border-bottom:1px solid var(--line)}
+.rej+.rej{padding-left:26px;border-left:1px solid var(--line)}
+@media(max-width:820px){.rej+.rej{padding-left:0;border-left:0}}
+.rej h3{font-size:24px;color:var(--dim);text-decoration:line-through;text-decoration-color:var(--ox);text-decoration-thickness:1.5px}
+.rej p{font-size:15px;color:var(--dim);margin-top:10px}
+.rej .tag{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ox);margin-bottom:10px}
+
+.end{display:grid;grid-template-columns:1fr auto;gap:30px;align-items:center;border-top:1px solid var(--line);padding-top:clamp(36px,5vw,58px)}
+@media(max-width:800px){.end{grid-template-columns:1fr}}
+.end h2{font-size:clamp(30px,4.4vw,50px);max-width:16ch}
+.end p{color:var(--dim);margin-top:14px;max-width:48ch}
+footer{padding:34px 0 64px;color:var(--dim);font-size:13px}
+:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+@media(prefers-reduced-motion:reduce){*{transition-duration:.001ms!important;animation-duration:.001ms!important}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="inner">
+    <a class="mark" href="#">Mitt AI-team</a>
+    <nav><a href="#teamet">Teamet</a><a href="#uppdrag">Uppdraget</a><a href="#avslag">Avslagen</a></nav>
+    <a class="btn" href="#">Prova demo</a>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="hero">
+    <div class="frame">
+      <img src="../portal/avatars/avatar-04.png" alt="Porträtt av Vera, VD-assistent" />
+      <div class="cap"><span>Anställd 001 · Lerverk Keramik</span><b>I tjänst</b></div>
+    </div>
+    <div>
+      <div class="eyebrow">AI-team för små och medelstora företag</div>
+      <h1>Det här är <em>Vera</em>. Hon börjar hos er på måndag.</h1>
+      <p class="lede"><b>Vi bygger inte samma team åt alla.</b> Vera finns för att vi hittade ett konkret moment i just er vecka som ingen hann med. Fyra kollegor blev det — och tre förslag fick nej.</p>
+      <div class="cta">
+        <a class="btn" href="#">Träffa teamet live</a>
+        <a class="btn ghost" href="#uppdrag">Vad hon gör</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="strip" id="teamet">
+    <div class="striphead"><span>Resten av personalen</span><span>Lerverk Keramik · 4 anställda</span></div>
+    <div class="reel">
+      <div class="cast">
+        <img src="../portal/avatars/avatar-11.png" alt="" />
+        <div class="no">002</div><h3>Ester</h3><div class="r">Kalkyl &amp; fakturor</div>
+        <p>Räknar på nya serier och ifrågasätter priser som inte täcker tiden ni lagt.</p>
+      </div>
+      <div class="cast">
+        <img src="../portal/avatars/avatar-18.png" alt="" />
+        <div class="no">003</div><h3>Sixten</h3><div class="r">Butik &amp; synlighet</div>
+        <p>Gör om veckans arbete till inlägg och nyhetsbrev. I er röst, inte i reklamröst.</p>
+      </div>
+      <div class="cast">
+        <img src="../portal/avatars/avatar-22.png" alt="" />
+        <div class="no">004</div><h3>Malte</h3><div class="r">Kunddialog</div>
+        <p>Svarar på förfrågningar med era priser, era leveranstider och era ord.</p>
+      </div>
+      <div class="cast">
+        <img src="../portal/avatars/avatar-09.png" alt="" />
+        <div class="no">005</div><h3>Tuva</h3><div class="r">Föreslås vid tillväxt</div>
+        <p>Kommer med först när ni är fler än två. Idag hade hon inget att göra.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<section id="uppdrag">
+  <div class="wrap">
+    <div class="editorial">
+      <div><h2>Ett jobb, inte en funktionslista</h2></div>
+      <div class="body">
+        <p><b>Vera är ingångsagenten.</b> Hon är den ni pratar med på måndag morgon, och den som vet vad som hänger kvar sedan förra veckan. Hon delar ut arbetet till de andra tre och håller ihop resultatet.</p>
+        <p>Hon har också en regel: hon vägrar kalla till möte när en enskild agent räcker. Ett team som alltid sammanträder är ett team som aldrig levererar.</p>
+        <div class="pull">"En agent utan ett veckojobb är teater. Då kommer den inte med."</div>
+        <div class="deliver">
+          <div><b>Uppdrag</b><span>Håller ihop veckan: fokus, fördelning och uppföljning.</span></div>
+          <div><b>Klart när</b><span>Veckans tre viktigaste uppgifter är valda och tilldelade innan tisdag.</span></div>
+          <div><b>Rör inte</b><span>Drejning, glasyr och bränning. Hantverket är ert.</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="avslag">
+  <div class="wrap">
+    <div class="editorial" style="margin-bottom:34px">
+      <div><h2>De tre vi inte anställde</h2></div>
+      <div class="body"><p>Varje kartläggning ger förslag som inte håller. Att säga nej till dem är hela poängen — annars får ni ett team som ser imponerande ut och gör ingenting.</p></div>
+    </div>
+    <div class="rejects">
+      <div class="rej"><div class="tag">Avslag</div><h3>Varumärkesstrateg</h3><p>Låter bra på ett organisationsschema. Men i en enmansverkstad finns ingen vecka där jobbet utförs.</p></div>
+      <div class="rej"><div class="tag">Avslag</div><h3>Dataanalytiker</h3><p>Underlaget är 40 ordrar i månaden i ett kalkylark. Det behöver läsas, inte analyseras.</p></div>
+      <div class="rej"><div class="tag">Avslag</div><h3>Glasyrspecialist</h3><p>Kräver att någon står vid ugnen och känner materialet. Det är hantverket — och det rör vi inte.</p></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="end">
+      <div>
+        <h2>Vem skulle er Vera vara?</h2>
+        <p>Ett kort samtal om er vecka räcker för att skissa ett första team — och för att säga nej till det som inte behövs.</p>
+      </div>
+      <a class="btn" href="#">Boka ett samtal</a>
+    </div>
+  </div>
+</section>
+
+<footer><div class="wrap">Mitt AI-team · variant 9 — <span class="mono">Personalen / "Porträttet"</span></div></footer>
+
+</body>
+</html>

@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Mitt AI-team — Plakat (designförslag 3)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+:root{
+  --paper:#F4F2EC; --ink:#0E100D; --skog:#123A2C; --signal:#FF4E17; --himmel:#1E5BE0; --mist:#5C635B;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--paper);color:var(--ink);font-family:'Manrope',system-ui,sans-serif;
+  font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+h1,h2,h3,h4{font-family:'Syne',sans-serif;font-weight:800;line-height:.94;letter-spacing:-0.03em;text-transform:uppercase}
+a{color:inherit}
+.wrap{max-width:1240px;margin:0 auto;padding:0 32px}
+.block{padding:clamp(60px,8vw,120px) 0}
+
+/* header — plakatremsa */
+header{background:var(--ink);color:var(--paper);position:sticky;top:0;z-index:40}
+header .inner{max-width:1240px;margin:0 auto;padding:0 32px;display:flex;align-items:stretch;gap:0;height:58px}
+.mark{font-family:'Syne',sans-serif;font-weight:800;font-size:17px;text-transform:uppercase;letter-spacing:-.01em;
+  display:flex;align-items:center;margin-right:auto;text-decoration:none}
+header nav{display:flex}
+header nav a{display:flex;align-items:center;padding:0 20px;font-size:13.5px;font-weight:600;
+  text-transform:uppercase;letter-spacing:.06em;text-decoration:none;border-left:1px solid #2A2C29}
+header nav a:hover{background:var(--signal);color:var(--ink)}
+header .cta{display:flex;align-items:center;padding:0 24px;background:var(--signal);color:var(--ink);
+  font-family:'Syne',sans-serif;font-weight:800;font-size:14px;text-transform:uppercase;letter-spacing:.02em;text-decoration:none}
+header .cta:hover{background:var(--paper)}
+@media(max-width:900px){header nav{display:none}}
+
+/* SIGNATUR: typografiskt plakat */
+.poster{border-bottom:3px solid var(--ink);padding:clamp(40px,5vw,72px) 0 0}
+.poster .kick{font-size:13px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--mist)}
+.poster h1{font-size:clamp(52px,13vw,168px);margin:22px 0 0}
+.poster h1 .l2{display:block;color:var(--skog)}
+.poster h1 .l3{display:block}
+.poster h1 .l3 em{font-style:normal;color:var(--signal)}
+.poster .under{display:grid;grid-template-columns:1.2fr 1fr;gap:40px;align-items:end;
+  margin-top:clamp(30px,4vw,54px);padding-bottom:clamp(30px,4vw,52px)}
+@media(max-width:860px){.poster .under{grid-template-columns:1fr;gap:26px}}
+.poster .under p{font-size:20px;max-width:48ch}
+.poster .under p b{font-weight:700}
+.bigbtn{display:inline-block;background:var(--ink);color:var(--paper);font-family:'Syne',sans-serif;font-weight:800;
+  text-transform:uppercase;font-size:17px;letter-spacing:.01em;padding:20px 34px;text-decoration:none;
+  transition:background .15s,color .15s}
+.bigbtn:hover{background:var(--signal);color:var(--ink)}
+.bigbtn.alt{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 3px var(--ink)}
+.bigbtn.alt:hover{background:var(--ink);color:var(--paper)}
+.btnrow{display:flex;gap:16px;flex-wrap:wrap}
+
+/* remsa med tal */
+.strip{background:var(--skog);color:var(--paper)}
+.strip .inner{max-width:1240px;margin:0 auto;padding:0 32px;display:grid;grid-template-columns:repeat(3,1fr)}
+@media(max-width:760px){.strip .inner{grid-template-columns:1fr}}
+.figure{padding:38px 0;border-right:1px solid rgba(244,242,236,.22)}
+.figure:last-child{border-right:0}
+@media(max-width:760px){.figure{border-right:0;border-bottom:1px solid rgba(244,242,236,.22)}.figure:last-child{border-bottom:0}}
+.figure .n{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(40px,5.5vw,64px);line-height:1;letter-spacing:-.04em}
+.figure .t{font-size:15px;margin-top:10px;max-width:26ch;opacity:.82}
+@media(min-width:761px){.figure+.figure{padding-left:32px}}
+
+/* sektionsrubrik */
+.head{display:grid;grid-template-columns:auto 1fr;gap:28px;align-items:start;margin-bottom:clamp(34px,4vw,56px)}
+@media(max-width:700px){.head{grid-template-columns:1fr;gap:14px}}
+.head .num{font-family:'Syne',sans-serif;font-weight:800;font-size:15px;letter-spacing:.1em;color:var(--signal);padding-top:8px}
+.head h2{font-size:clamp(32px,5.4vw,64px);max-width:16ch}
+.head .lead{font-size:18px;color:var(--mist);max-width:60ch;margin-top:18px}
+
+/* tre företag */
+.three{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border-top:3px solid var(--ink)}
+@media(max-width:900px){.three{grid-template-columns:1fr}}
+.co{padding:34px 30px 38px;border-right:3px solid var(--ink);border-bottom:3px solid var(--ink)}
+.co:last-child{border-right:0}
+@media(max-width:900px){.co{border-right:0}}
+.co.a{background:var(--skog);color:var(--paper)}
+.co.b{background:var(--signal);color:var(--ink)}
+.co.c{background:var(--himmel);color:var(--paper)}
+.co .who{font-size:13px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;opacity:.75}
+.co h3{font-size:clamp(26px,3vw,34px);margin:10px 0 16px}
+.co .desc{font-size:15.5px;opacity:.9;min-height:84px}
+.co ul{list-style:none;margin-top:20px;border-top:1px solid currentColor;padding-top:18px;display:grid;gap:10px}
+.co li{font-size:15px;font-weight:600;display:flex;gap:10px;align-items:baseline}
+.co li span{font-size:12px;font-weight:700;opacity:.7;letter-spacing:.08em;text-transform:uppercase;min-width:66px}
+.three-note{font-size:16.5px;color:var(--mist);margin-top:26px;max-width:66ch}
+
+/* process */
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:0}
+@media(max-width:860px){.steps{grid-template-columns:1fr}}
+.step{border-top:3px solid var(--ink);padding:26px 26px 34px 0}
+.step+.step{padding-left:26px}
+@media(max-width:860px){.step+.step{padding-left:0}}
+.step .sn{font-family:'Syne',sans-serif;font-weight:800;font-size:56px;line-height:1;letter-spacing:-.05em;color:var(--signal)}
+.step h4{font-size:23px;margin:14px 0 10px}
+.step p{font-size:15.5px;color:var(--mist)}
+
+/* pris */
+.pris{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:3px solid var(--ink)}
+@media(max-width:900px){.pris{grid-template-columns:1fr}}
+.p{padding:32px 28px 34px;border-right:3px solid var(--ink);display:flex;flex-direction:column}
+.p:last-child{border-right:0}
+@media(max-width:900px){.p{border-right:0;border-bottom:3px solid var(--ink)}.p:last-child{border-bottom:0}}
+.p.mid{background:var(--ink);color:var(--paper)}
+.p .pn{font-family:'Syne',sans-serif;font-weight:800;font-size:21px;text-transform:uppercase}
+.p .pf{font-size:14.5px;color:var(--mist);margin-top:8px;min-height:46px}
+.p.mid .pf{color:rgba(244,242,236,.7)}
+.p .pa{font-family:'Syne',sans-serif;font-weight:800;font-size:38px;letter-spacing:-.04em;margin:18px 0 4px}
+.p .pu{font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--mist)}
+.p.mid .pu{color:rgba(244,242,236,.7)}
+.p ul{list-style:none;margin:22px 0 26px;display:grid;gap:9px;font-size:15px}
+.p li{padding-left:20px;position:relative}
+.p li::before{content:'→';position:absolute;left:0;color:var(--signal);font-weight:700}
+.p .go{margin-top:auto;font-family:'Syne',sans-serif;font-weight:800;text-transform:uppercase;font-size:15px;
+  text-decoration:none;border-bottom:3px solid var(--signal);padding-bottom:3px;align-self:flex-start}
+.p .go:hover{color:var(--signal)}
+
+/* slutplakat */
+.final{background:var(--signal);color:var(--ink);border-top:3px solid var(--ink)}
+.final .inner{max-width:1240px;margin:0 auto;padding:clamp(60px,8vw,110px) 32px}
+.final h2{font-size:clamp(38px,8vw,96px);max-width:14ch}
+.final p{font-size:19px;max-width:46ch;margin-top:22px}
+.final .btnrow{margin-top:38px}
+.final .bigbtn.alt{box-shadow:inset 0 0 0 3px var(--ink)}
+footer{background:var(--ink);color:rgba(244,242,236,.62);font-size:13.5px}
+footer .inner{max-width:1240px;margin:0 auto;padding:26px 32px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+:focus-visible{outline:3px solid var(--himmel);outline-offset:2px}
+@media(prefers-reduced-motion:reduce){*{transition-duration:.001ms!important;animation-duration:.001ms!important}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="inner">
+    <a class="mark" href="#">Mitt AI-team</a>
+    <nav>
+      <a href="#bevis">Beviset</a>
+      <a href="#process">Process</a>
+      <a href="#priser">Priser</a>
+    </nav>
+    <a class="cta" href="#">Prova demo</a>
+  </div>
+</header>
+
+<!-- SIGNATUR: plakatet -->
+<div class="poster">
+  <div class="wrap">
+    <div class="kick">AI-team för små och medelstora företag</div>
+    <h1>Tre företag<span class="l2">Tre team</span><span class="l3">Noll <em>mallar</em></span></h1>
+    <div class="under">
+      <p><b>Vi bygger inte samma team åt alla.</b> Apparna med färdiga "AI-anställda" ger varje kund samma roller med nya namn. Vi kartlägger er faktiska vecka och bygger agenterna runt den — och det som vore AI-teater får ett ärligt nej.</p>
+      <div class="btnrow">
+        <a class="bigbtn" href="#">Prova ett team</a>
+        <a class="bigbtn alt" href="#priser">Priser</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="strip">
+  <div class="inner">
+    <div class="figure"><div class="n">15 min</div><div class="t">från samtal till färdigt team</div></div>
+    <div class="figure"><div class="n">0</div><div class="t">teknik ni behöver kunna</div></div>
+    <div class="figure"><div class="n">5</div><div class="t">färdiga exempel att titta på</div></div>
+  </div>
+</div>
+
+<div class="block" id="bevis">
+  <div class="wrap">
+    <div class="head">
+      <div class="num">01</div>
+      <div>
+        <h2>Samma metod. Helt olika svar.</h2>
+        <p class="lead">Tre soloföretagare, samma storleksklass, samma pipeline. Titta på vad som faktiskt kom ut — det är hela beviset för att verktyget gör något.</p>
+      </div>
+    </div>
+    <div class="three">
+      <div class="co a">
+        <div class="who">Keramiker · 1 person</div>
+        <h3>Lerverk</h3>
+        <div class="desc">Verkstad och webbshop. Tiden går åt till förfrågningar och prissättning, inte till drejningen.</div>
+        <ul>
+          <li><span>Ingång</span> Vera, veckan</li>
+          <li><span>Special</span> Ester, kalkyl</li>
+          <li><span>Special</span> Sixten, butik</li>
+        </ul>
+      </div>
+      <div class="co b">
+        <div class="who">Podd · 1 person</div>
+        <h3>Norrskenspodden</h3>
+        <div class="desc">Ett avsnitt i veckan. Flaskhalsen är research inför gäster och allt som ska göras efter inspelning.</div>
+        <ul>
+          <li><span>Ingång</span> Ida, produktion</li>
+          <li><span>Special</span> Rune, gästresearch</li>
+          <li><span>Special</span> Alva, klipptext</li>
+          <li><span>Special</span> Bo, sponsorer</li>
+        </ul>
+      </div>
+      <div class="co c">
+        <div class="who">Översättare · 1 person</div>
+        <h3>Wikander</h3>
+        <div class="desc">Facköversättning på uppdrag. Kvaliteten är produkten — terminologi och offerter är tidstjuvarna.</div>
+        <ul>
+          <li><span>Ingång</span> Nils, uppdrag</li>
+          <li><span>Special</span> Signe, terminologi</li>
+          <li><span>Special</span> Tage, offerter</li>
+        </ul>
+      </div>
+    </div>
+    <p class="three-note">Inte tre namnbyten på samma tre roller — tre olika sammansättningar, för att veckorna såg olika ut. Om output hade sett likadan ut oavsett input vore verktyget trasigt.</p>
+  </div>
+</div>
+
+<div class="block" id="process">
+  <div class="wrap">
+    <div class="head">
+      <div class="num">02</div>
+      <div>
+        <h2>Tre steg, en kvart</h2>
+        <p class="lead">Ni behöver inte kunna någon AI-terminologi. Ni behöver kunna er egen vecka.</p>
+      </div>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <div class="sn">1</div>
+        <h4>Kartlägg</h4>
+        <p>Ett kort samtal om vad ni faktiskt gör — det repetitiva, det tidskrävande, det som alltid hamnar sist.</p>
+      </div>
+      <div class="step">
+        <div class="sn">2</div>
+        <h4>Bygg</h4>
+        <p>Teamet växer fram framför er. Varje agent finns för att den löser något konkret vi hittade — annars kommer den inte med.</p>
+      </div>
+      <div class="step">
+        <div class="sn">3</div>
+        <h4>Använd</h4>
+        <p>Ni får en egen portal där ni pratar med varje agent. Ingen terminal, ingen installation, inget att lära sig.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="block" id="priser">
+  <div class="wrap">
+    <div class="head">
+      <div class="num">03</div>
+      <div>
+        <h2>Välj hur involverade vi ska vara</h2>
+        <p class="lead">En svensk AI-konsult kostar 1 200–2 500 kr i timmen. Ett skräddarsytt team kostar mindre än två konsulttimmar — och det jobbar kvar.</p>
+      </div>
+    </div>
+    <div class="pris">
+      <div class="p">
+        <div class="pn">Bygg själv</div>
+        <div class="pf">För er som vill komma igång på egen hand.</div>
+        <div class="pa">2 900 kr</div><div class="pu">Engångskostnad</div>
+        <ul><li>Bygg teamet i webbläsaren</li><li>Egen kundportal</li><li>Fem mallar att utgå från</li><li>Ni äger allt</li></ul>
+        <a class="go" href="#">Bygg ert team</a>
+      </div>
+      <div class="p mid">
+        <div class="pn">Vi bygger åt er</div>
+        <div class="pf">För er som vill ha det gjort rätt från start.</div>
+        <div class="pa">14 900 kr</div><div class="pu">Engångskostnad</div>
+        <ul><li>Kartläggning tillsammans</li><li>Team + skarpt första projekt</li><li>Portal driftsatt och klar</li><li>30 dagars support</li></ul>
+        <a class="go" href="#">Boka ett samtal</a>
+      </div>
+      <div class="p">
+        <div class="pn">Partner</div>
+        <div class="pf">För er som vill att teamet växer med verksamheten.</div>
+        <div class="pa">2 900 kr</div><div class="pu">Per månad</div>
+        <ul><li>Vi uppdaterar teamet löpande</li><li>Nya agenter vid nya behov</li><li>Prioriterad support</li><li>Vi sköter driften</li></ul>
+        <a class="go" href="#">Boka ett samtal</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="final">
+  <div class="inner">
+    <h2>Vad blir ert team?</h2>
+    <p>Boka ett kort samtal så tittar vi på er vecka tillsammans och skissar ett första team. Ni binder er inte till något.</p>
+    <div class="btnrow">
+      <a class="bigbtn" href="#">Boka ett samtal</a>
+      <a class="bigbtn alt" href="#">Prova demon först</a>
+    </div>
+  </div>
+</div>
+
+<footer><div class="inner"><span>Mitt AI-team</span><span>Designförslag 3 av 5 — "Plakat"</span></div></footer>
+
+</body>
+</html>

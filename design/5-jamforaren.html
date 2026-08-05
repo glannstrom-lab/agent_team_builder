@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Mitt AI-team — Jämföraren (designförslag 5)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+:root{
+  --bg:#232A31; --panel:#2B343C; --panel-2:#333E47; --line:#3E4A54;
+  --text:#E9EDF0; --dim:#9DAAB4;
+  --accent:#C2673F; --accent-ink:#1B1210;   /* sätts om av jämföraren */
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',system-ui,sans-serif;
+  font-size:16.5px;line-height:1.6;-webkit-font-smoothing:antialiased;
+  transition:background .5s ease}
+h1,h2,h3,h4{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;letter-spacing:-0.03em;line-height:1.04}
+.mono{font-family:'IBM Plex Mono',monospace}
+a{color:inherit}
+.wrap{max-width:1200px;margin:0 auto;padding:0 28px}
+section{padding:clamp(56px,6.5vw,96px) 0}
+
+header{border-bottom:1px solid var(--line);position:sticky;top:0;z-index:40;background:rgba(35,42,49,.92);backdrop-filter:blur(10px)}
+header .inner{max-width:1200px;margin:0 auto;padding:14px 28px;display:flex;align-items:center;gap:20px}
+.mark{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:17px;margin-right:auto;text-decoration:none;letter-spacing:-.03em}
+.mark b{color:var(--accent);transition:color .4s}
+header nav{display:flex;gap:20px}
+header nav a{font-size:14.5px;color:var(--dim);text-decoration:none}
+header nav a:hover{color:var(--text)}
+@media(max-width:860px){header nav{display:none}}
+.btn{display:inline-flex;align-items:center;gap:8px;font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:15px;
+  text-decoration:none;padding:11px 20px;border-radius:9px;background:var(--accent);color:#fff;
+  border:1px solid transparent;transition:filter .18s,transform .15s,background .4s}
+.btn:hover{filter:brightness(1.12);transform:translateY(-1px)}
+.btn.ghost{background:transparent;color:var(--text);border-color:var(--line)}
+.btn.ghost:hover{border-color:var(--accent);filter:none}
+header .btn{padding:9px 15px;font-size:14px}
+
+/* hero */
+.hero{padding:clamp(50px,6vw,86px) 0 clamp(28px,3vw,44px)}
+.eyebrow{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);transition:color .4s}
+.hero h1{font-size:clamp(40px,6.2vw,74px);margin:18px 0 0;max-width:17ch}
+.hero h1 em{font-style:normal;color:var(--accent);transition:color .4s}
+.hero p{font-size:19px;color:var(--dim);max-width:60ch;margin-top:22px}
+
+/* SIGNATUR: jämföraren */
+.switch{display:flex;gap:10px;flex-wrap:wrap;margin:34px 0 22px}
+.switch button{font-family:'IBM Plex Sans',sans-serif;font-size:14.5px;font-weight:600;cursor:pointer;
+  background:var(--panel);color:var(--dim);border:1px solid var(--line);border-radius:100px;padding:10px 18px;
+  display:inline-flex;align-items:center;gap:9px;transition:color .2s,border-color .2s,background .2s}
+.switch button i{width:9px;height:9px;border-radius:50%;background:currentColor;opacity:.5}
+.switch button:hover{color:var(--text)}
+.switch button[aria-pressed="true"]{color:var(--text);border-color:var(--accent);background:var(--panel-2)}
+.switch button[aria-pressed="true"] i{background:var(--accent);opacity:1}
+
+.compare{display:grid;grid-template-columns:1fr 58px 1.15fr;gap:0;align-items:stretch;
+  border:1px solid var(--line);border-radius:16px;overflow:hidden;background:var(--panel)}
+@media(max-width:940px){.compare{grid-template-columns:1fr}}
+.pane{padding:28px 30px 32px}
+.pane.out{background:var(--panel-2);border-left:1px solid var(--line)}
+@media(max-width:940px){.pane.out{border-left:0;border-top:1px solid var(--line)}}
+.pane .plabel{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+.pane h3{font-size:27px;margin:9px 0 4px}
+.pane .biz{font-size:14.5px;color:var(--dim)}
+.pane .sub{font-size:14px;color:var(--dim);margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}
+.moments{list-style:none;display:grid;gap:9px;margin-top:14px}
+.moments li{display:flex;justify-content:space-between;gap:14px;align-items:baseline;
+  background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:11px 14px;font-size:14.5px}
+.moments li span{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);white-space:nowrap}
+.moments li.hit span{color:var(--accent)}
+.arrow{display:grid;place-items:center;background:var(--panel);border-left:1px solid var(--line);border-right:1px solid var(--line)}
+.arrow div{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);
+  writing-mode:vertical-rl;transform:rotate(180deg)}
+@media(max-width:940px){.arrow{display:none}}
+.roster{display:grid;gap:12px;margin-top:16px}
+.agent{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start;
+  background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.agent img{width:44px;height:44px;border-radius:10px;object-fit:cover}
+.agent b{font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:17px;letter-spacing:-.02em;display:block}
+.agent .role{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);transition:color .4s}
+.agent p{font-size:14px;color:var(--dim);margin-top:6px}
+.nope{margin-top:14px;border-left:2px solid var(--line);padding-left:14px;font-size:14px;color:var(--dim)}
+.nope b{color:var(--text);font-weight:600}
+.nope s{text-decoration-color:var(--accent)}
+.fade{animation:swap .45s ease}
+@keyframes swap{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* difftabell */
+.shead{max-width:640px;margin-bottom:36px}
+.shead h2{font-size:clamp(28px,4vw,44px)}
+.shead p{color:var(--dim);margin-top:14px;font-size:17.5px}
+.difftable{width:100%;border-collapse:collapse;font-size:15px}
+.difftable th,.difftable td{text-align:left;padding:15px 16px;border-bottom:1px solid var(--line);vertical-align:top}
+.difftable thead th{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);font-weight:500}
+.difftable tbody th{font-weight:600;font-size:14.5px;color:var(--dim);width:190px}
+.difftable td{color:var(--text)}
+.difftable td.q{color:var(--dim)}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:14px;background:var(--panel)}
+.difftable tr:last-child th,.difftable tr:last-child td{border-bottom:0}
+
+/* så funkar det */
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+@media(max-width:860px){.steps{grid-template-columns:1fr}}
+.step{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:26px}
+.step .sn{font-family:'IBM Plex Mono',monospace;font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);transition:color .4s}
+.step h4{font-size:20px;margin:12px 0 9px}
+.step p{font-size:15px;color:var(--dim)}
+
+/* pris */
+.prices{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+@media(max-width:900px){.prices{grid-template-columns:1fr}}
+.price{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:28px;display:flex;flex-direction:column}
+.price.pick{border-color:var(--accent);background:var(--panel-2)}
+.price .pn{font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:19px}
+.price .pf{font-size:14px;color:var(--dim);margin-top:6px;min-height:44px}
+.price .pa{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:32px;margin:14px 0 18px;letter-spacing:-.035em}
+.price .pa span{font-family:'IBM Plex Sans',sans-serif;font-size:14px;font-weight:400;color:var(--dim)}
+.price ul{list-style:none;display:grid;gap:8px;margin-bottom:24px;font-size:14.5px;color:var(--dim)}
+.price li{padding-left:19px;position:relative}
+.price li::before{content:'▸';position:absolute;left:0;color:var(--accent);transition:color .4s}
+.price .btn{margin-top:auto;justify-content:center}
+
+.end{background:var(--panel);border:1px solid var(--line);border-top:3px solid var(--accent);border-radius:18px;
+  padding:clamp(34px,5vw,60px);display:grid;grid-template-columns:1fr auto;gap:28px;align-items:center;transition:border-color .4s}
+@media(max-width:800px){.end{grid-template-columns:1fr}}
+.end h2{font-size:clamp(26px,3.6vw,40px);max-width:20ch}
+.end p{color:var(--dim);margin-top:12px;max-width:52ch}
+footer{border-top:1px solid var(--line);padding:30px 0 60px;color:var(--dim);font-size:13.5px}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+@media(prefers-reduced-motion:reduce){*{transition-duration:.001ms!important;animation-duration:.001ms!important}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="inner">
+    <a class="mark" href="#">Mitt <b>AI-team</b></a>
+    <nav>
+      <a href="#jamfor">Jämför</a>
+      <a href="#diff">Skillnaden</a>
+      <a href="#priser">Priser</a>
+    </nav>
+    <a class="btn" href="#">Prova demo</a>
+  </div>
+</header>
+
+<div class="wrap">
+  <section class="hero" id="jamfor">
+    <div class="eyebrow">Skräddarsydda AI-team · små &amp; medelstora företag</div>
+    <h1>Samma metod, tre företag — <em>tre olika team</em>.</h1>
+    <p>Byt företag nedan och se vad pipelinen faktiskt gör. Till vänster: veckan som kartlades. Till höger: teamet som blev av den, plus den agent som fick nej. Skulle output se likadan ut oavsett input vore verktyget trasigt.</p>
+
+    <!-- SIGNATUR: jämföraren -->
+    <div class="switch" id="switch"></div>
+    <div class="compare">
+      <div class="pane in">
+        <div class="plabel">Input · kartlagd vecka</div>
+        <h3 id="co-name">—</h3>
+        <div class="biz" id="co-biz"></div>
+        <ul class="moments" id="co-moments"></ul>
+        <div class="sub" id="co-note"></div>
+      </div>
+      <div class="arrow"><div>Research → skalning → förslag</div></div>
+      <div class="pane out">
+        <div class="plabel">Output · genererat team</div>
+        <h3 id="co-size">—</h3>
+        <div class="biz" id="co-why"></div>
+        <div class="roster" id="co-roster"></div>
+        <div class="nope" id="co-nope"></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<section id="diff">
+  <div class="wrap">
+    <div class="shead">
+      <h2>Vad som faktiskt skiljer</h2>
+      <p>Inte tre namnbyten på samma roller. Antalet agenter, vem som är ingång och vilka specialister som får plats skiljer sig — för att veckorna skiljer sig.</p>
+    </div>
+    <div class="tablewrap">
+      <table class="difftable">
+        <thead><tr><th scope="col"></th><th scope="col">Lerverk · keramik</th><th scope="col">Norrsken · podd</th><th scope="col">Wikander · översättning</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">Antal agenter</th><td>4</td><td>5</td><td>3</td></tr>
+          <tr><th scope="row">Ingångsagent</th><td>Veckan &amp; kunddialog</td><td>Produktionsplan</td><td>Uppdragskö &amp; deadlines</td></tr>
+          <tr><th scope="row">Tyngsta specialist</th><td>Kalkyl &amp; prissättning</td><td>Gästresearch</td><td>Terminologi</td></tr>
+          <tr><th scope="row">Största tidstjuv</th><td>Förfrågningar via DM</td><td>Efterarbete efter inspelning</td><td>Offerter och prisförfrågningar</td></tr>
+          <tr><th scope="row">Avvisad agent</th><td class="q">Varumärkesstrateg</td><td class="q">Community manager</td><td class="q">Marknadsförare</td></tr>
+          <tr><th scope="row">Rörs inte av AI</th><td class="q">Drejning, glasyr, bränning</td><td class="q">Intervjun i rummet</td><td class="q">Den slutliga språkkänslan</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="shead">
+      <h2>Så går det till</h2>
+      <p>Ni behöver inte kunna AI-terminologi. Ni behöver kunna er egen vecka.</p>
+    </div>
+    <div class="steps">
+      <div class="step"><div class="sn">01 · Kartlägg</div><h4>Vi tittar på er vecka</h4><p>Ett kort samtal om vad ni faktiskt gör — det repetitiva, det tidskrävande, det som alltid hamnar sist.</p></div>
+      <div class="step"><div class="sn">02 · Bygg</div><h4>Teamet växer fram</h4><p>Varje agent finns för att den löser något konkret vi hittade. Hittar vi inget skäl kommer den inte med.</p></div>
+      <div class="step"><div class="sn">03 · Använd</div><h4>Ni chattar med teamet</h4><p>En egen portal med veckostart, rutiner, möten och delat minne. Ingen terminal, ingen installation.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="priser">
+  <div class="wrap">
+    <div class="shead">
+      <h2>Välj hur involverade vi ska vara</h2>
+      <p>En svensk AI-konsult kostar 1 200–2 500 kr i timmen. Ett skräddarsytt team kostar mindre än två konsulttimmar — och det jobbar kvar.</p>
+    </div>
+    <div class="prices">
+      <div class="price">
+        <div class="pn">Bygg själv</div>
+        <div class="pf">För er som vill komma igång på egen hand.</div>
+        <div class="pa">2 900 kr <span>engång</span></div>
+        <ul><li>Bygg teamet i webbläsaren</li><li>Egen kundportal</li><li>Fem mallar att utgå från</li><li>Ni äger allt</li></ul>
+        <a class="btn ghost" href="#">Bygg ert team</a>
+      </div>
+      <div class="price pick">
+        <div class="pn">Vi bygger åt er</div>
+        <div class="pf">För er som vill ha det gjort rätt från start.</div>
+        <div class="pa">14 900 kr <span>engång</span></div>
+        <ul><li>Kartläggning tillsammans</li><li>Team + skarpt första projekt</li><li>Portal driftsatt och klar</li><li>30 dagars support</li></ul>
+        <a class="btn" href="#">Boka ett samtal</a>
+      </div>
+      <div class="price">
+        <div class="pn">Löpande partner</div>
+        <div class="pf">För er som vill att teamet växer med verksamheten.</div>
+        <div class="pa">2 900 kr <span>/ mån</span></div>
+        <ul><li>Vi uppdaterar teamet löpande</li><li>Nya agenter vid nya behov</li><li>Prioriterad support</li><li>Vi sköter driften</li></ul>
+        <a class="btn ghost" href="#">Boka ett samtal</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="end">
+      <div>
+        <h2>Vad skulle er kolumn innehålla?</h2>
+        <p>Boka ett kort samtal så kartlägger vi er vecka och skissar ett första team. Ni binder er inte till något.</p>
+      </div>
+      <a class="btn" href="#">Boka ett samtal</a>
+    </div>
+  </div>
+</section>
+
+<footer><div class="wrap">Mitt AI-team · designförslag 5 av 5 — <span class="mono">"Jämföraren"</span></div></footer>
+
+<script>
+const DATA = [
+  {
+    key:'lerverk', tab:'Keramikverkstad', accent:'#D2794A',
+    name:'Lerverk Keramik', biz:'Soloföretagare · verkstad och webbshop',
+    moments:[
+      {t:'Svara på förfrågningar i DM och mejl', f:'Passar AI', hit:true},
+      {t:'Prissätta nya serier', f:'Passar AI', hit:true},
+      {t:'Veckans inlägg och nyhetsbrev', f:'Passar AI', hit:true},
+      {t:'Jaga obetalda fakturor', f:'Passar AI', hit:true},
+      {t:'Dreja, glasera, bränna', f:'Rörs inte', hit:false}
+    ],
+    note:'Fyra av tolv kartlagda moment klarade ribban. Resten är hantverket — det rör vi inte.',
+    size:'4 agenter', why:'Solo-team: färre agenter, bredare uppdrag. VD-rollen fick ett operativt jobb.',
+    roster:[
+      {img:'avatar-04.png', n:'Vera', r:'Ingång · veckan', p:'Föreslår måndagens fokus och håller reda på vad som hänger kvar.'},
+      {img:'avatar-11.png', n:'Ester', r:'Kalkyl', p:'Räknar material, tid och svinn. Ifrågasätter priser som inte täcker tiden.'},
+      {img:'avatar-18.png', n:'Sixten', r:'Butik', p:'Gör veckans arbete till inlägg och nyhetsbrev, i er röst.'},
+      {img:'avatar-22.png', n:'Malte', r:'Kunddialog', p:'Svarar på förfrågningar med era priser och leveranstider.'}
+    ],
+    nope:'<b>Fick nej:</b> <s>Varumärkesstrateg</s> — hade inget att göra på tisdag förmiddag. En agent utan veckojobb blir teater.'
+  },
+  {
+    key:'podd', tab:'Poddproduktion', accent:'#D4478E',
+    name:'Norrskenspodden', biz:'Soloföretagare · ett avsnitt i veckan',
+    moments:[
+      {t:'Research inför gäster', f:'Passar AI', hit:true},
+      {t:'Efterarbete: titel, text, klipp', f:'Passar AI', hit:true},
+      {t:'Sponsorkontakter och underlag', f:'Passar AI', hit:true},
+      {t:'Planera avsnittsordning', f:'Passar AI', hit:true},
+      {t:'Intervjun i rummet', f:'Rörs inte', hit:false}
+    ],
+    note:'Flaskhalsen låg inte i inspelningen utan i allt runt omkring — före och efter.',
+    size:'5 agenter', why:'Fler moment klarade ribban än hos Lerverk, så teamet blev större trots samma storleksklass.',
+    roster:[
+      {img:'avatar-07.png', n:'Ida', r:'Ingång · produktion', p:'Håller avsnittskalendern och vet vad som saknas till nästa släpp.'},
+      {img:'avatar-14.png', n:'Rune', r:'Gästresearch', p:'Tar fram bakgrund och frågeförslag inför varje inspelning.'},
+      {img:'avatar-02.png', n:'Alva', r:'Klipptext', p:'Skriver titel, beskrivning och sociala klipptexter av inspelningen.'},
+      {img:'avatar-20.png', n:'Bo', r:'Sponsorer', p:'Underlag, uppföljning och lästal inför sponsorsamtal.'},
+      {img:'avatar-09.png', n:'Tuva', r:'Lyssnare', p:'Sammanställer frågor och kommentarer till nästa avsnitt.'}
+    ],
+    nope:'<b>Fick nej:</b> <s>Community manager</s> — lyssnarflödet är 20 meddelanden i veckan. Tuva klarar det inom sitt uppdrag.'
+  },
+  {
+    key:'oversattning', tab:'Facköversättning', accent:'#5E9B6B',
+    name:'Wikander Översättning', biz:'Soloföretagare · uppdrag åt byråer och myndigheter',
+    moments:[
+      {t:'Offerter och prisförfrågningar', f:'Passar AI', hit:true},
+      {t:'Terminologi och referenssökning', f:'Passar AI', hit:true},
+      {t:'Deadlinebevakning i uppdragskön', f:'Passar AI', hit:true},
+      {t:'Själva översättningen', f:'Rörs inte', hit:false},
+      {t:'Slutlig språkkänsla', f:'Rörs inte', hit:false}
+    ],
+    note:'Kvaliteten är produkten. Bara stödmomenten runt omkring gick att lämna ifrån sig.',
+    size:'3 agenter', why:'Minst team av de tre. Färre moment klarade ribban — och då blir teamet mindre, inte utfyllt.',
+    roster:[
+      {img:'avatar-16.png', n:'Nils', r:'Ingång · uppdrag', p:'Håller kön, deadlines och vad som måste börja idag för att hinnas.'},
+      {img:'avatar-05.png', n:'Signe', r:'Terminologi', p:'Bygger och slår upp i termlistan per kund och ämnesområde.'},
+      {img:'avatar-24.png', n:'Tage', r:'Offerter', p:'Räknar ordpris mot tidsåtgång och skriver offertsvaret.'}
+    ],
+    nope:'<b>Fick nej:</b> <s>Marknadsförare</s> — uppdragen kommer via tre återkommande byråer. Marknadsföring var inte problemet.'
+  }
+];
+
+const sw = document.getElementById('switch');
+const els = {
+  name:document.getElementById('co-name'), biz:document.getElementById('co-biz'),
+  moments:document.getElementById('co-moments'), note:document.getElementById('co-note'),
+  size:document.getElementById('co-size'), why:document.getElementById('co-why'),
+  roster:document.getElementById('co-roster'), nope:document.getElementById('co-nope')
+};
+
+DATA.forEach((c,i)=>{
+  const b=document.createElement('button');
+  b.innerHTML='<i></i>'+c.tab;
+  b.setAttribute('aria-pressed', i===0?'true':'false');
+  b.addEventListener('click',()=>render(i));
+  sw.appendChild(b);
+});
+
+function render(i){
+  const c=DATA[i];
+  document.documentElement.style.setProperty('--accent',c.accent);
+  [...sw.children].forEach((b,j)=>b.setAttribute('aria-pressed', j===i?'true':'false'));
+  els.name.textContent=c.name; els.biz.textContent=c.biz;
+  els.moments.innerHTML=c.moments.map(m=>`<li class="${m.hit?'hit':''}">${m.t}<span>${m.f}</span></li>`).join('');
+  els.note.textContent=c.note;
+  els.size.textContent=c.size; els.why.textContent=c.why;
+  els.roster.innerHTML=c.roster.map(a=>
+    `<div class="agent"><img src="../portal/avatars/${a.img}" alt="" /><div><b>${a.n}</b><div class="role">${a.r}</div><p>${a.p}</p></div></div>`).join('');
+  els.nope.innerHTML=c.nope;
+  [els.moments,els.roster].forEach(el=>{el.classList.remove('fade');void el.offsetWidth;el.classList.add('fade')});
+}
+render(0);
+</script>
+
+</body>
+</html>

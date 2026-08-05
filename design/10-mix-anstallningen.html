@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Mitt AI-team — Anställningen (variant 10, mix)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;500;600;700&family=Karla:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+<style>
+:root{
+  --paper:#EFECE4; --card:#FBFAF6; --ink:#16191A; --dim:#6B7069;
+  --marker:#FFE14D; --gron:#2E6B4F; --rod:#C24A34; --rule:#D8D3C6;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--paper);color:var(--ink);font-family:'Karla',system-ui,sans-serif;
+  font-size:16.5px;line-height:1.65;-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4{font-family:'Familjen Grotesk',sans-serif;font-weight:700;letter-spacing:-0.025em;line-height:1.05}
+.mono{font-family:'Space Mono',monospace}
+a{color:inherit}
+.wrap{max-width:1200px;margin:0 auto;padding:0 28px}
+section{padding:clamp(52px,6.5vw,96px) 0}
+
+header{border-bottom:1.5px solid var(--ink);position:sticky;top:0;z-index:40;background:var(--paper)}
+header .inner{max-width:1200px;margin:0 auto;padding:13px 28px;display:flex;align-items:center;gap:22px}
+.mark{font-family:'Familjen Grotesk',sans-serif;font-weight:700;font-size:17px;margin-right:auto;text-decoration:none}
+.mark em{font-style:normal;background:var(--marker);padding:0 4px}
+header nav{display:flex;gap:20px}
+header nav a{font-size:14.5px;color:var(--dim);text-decoration:none}
+header nav a:hover{color:var(--ink)}
+@media(max-width:880px){header nav{display:none}}
+.btn{display:inline-flex;align-items:center;gap:8px;font-family:'Familjen Grotesk',sans-serif;font-weight:700;font-size:15px;
+  text-decoration:none;padding:12px 22px;border:1.5px solid var(--ink);background:var(--ink);color:var(--card);
+  transition:transform .13s,box-shadow .13s}
+.btn:hover{transform:translate(-2px,-2px);box-shadow:4px 4px 0 var(--ink)}
+.btn.ghost{background:transparent;color:var(--ink)}
+.btn.ghost:hover{background:var(--marker);box-shadow:4px 4px 0 var(--ink)}
+header .btn{padding:9px 16px;font-size:14px}
+
+.top{padding:clamp(46px,6vw,84px) 0 clamp(28px,3.5vw,44px);display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:44px;align-items:end}
+@media(max-width:920px){.top{grid-template-columns:1fr;gap:26px}}
+.kick{font-family:'Space Mono',monospace;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim)}
+.top h1{font-size:clamp(40px,6.4vw,74px);margin:16px 0 0;max-width:16ch}
+.top h1 span{background:linear-gradient(transparent 58%,var(--marker) 58%);padding:0 3px}
+.top p{font-size:18.5px;color:var(--dim);max-width:50ch;margin-top:18px}
+.top .cta{display:flex;gap:13px;flex-wrap:wrap;margin-top:26px}
+.crew{display:flex;align-items:center;gap:14px}
+.crew .faces{display:flex}
+.crew .faces img{width:46px;height:46px;border-radius:50%;object-fit:cover;border:2.5px solid var(--paper);margin-left:-14px}
+.crew .faces img:first-child{margin-left:0}
+.crew .txt{font-size:14px;color:var(--dim)}
+.crew .txt b{display:block;color:var(--ink);font-family:'Familjen Grotesk',sans-serif;font-weight:700;font-size:16px}
+
+/* SIGNATUR: veckan där varje markerat moment får ett ansikte */
+.board{background:var(--card);border:1.5px solid var(--ink);box-shadow:9px 9px 0 rgba(22,25,26,.1)}
+.bh{display:flex;justify-content:space-between;align-items:baseline;gap:14px;flex-wrap:wrap;padding:15px 20px;
+  border-bottom:1.5px solid var(--ink);font-family:'Space Mono',monospace;font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:var(--dim)}
+.bh b{color:var(--ink);font-weight:700}
+.days{display:grid;grid-template-columns:repeat(5,1fr)}
+@media(max-width:820px){.days{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:480px){.days{grid-template-columns:1fr}}
+.day{border-right:1px solid var(--rule);padding:15px 14px 22px;min-height:250px}
+.day:last-child{border-right:0}
+.dn{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin-bottom:13px}
+.task{margin-bottom:15px;font-size:14px;line-height:1.42}
+.task .t{display:inline;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+.task.take .t{background-image:linear-gradient(transparent 56%,var(--marker) 56%);background-repeat:no-repeat;
+  background-size:0 100%;animation:sweep .5s ease forwards}
+.task.take:nth-of-type(1) .t{animation-delay:.45s}
+.task.take:nth-of-type(2) .t{animation-delay:.65s}
+@keyframes sweep{to{background-size:100% 100%}}
+.task.keep{color:var(--dim)}
+.hand{display:flex;align-items:center;gap:8px;margin-top:8px;opacity:0;animation:fade .45s 1.05s ease forwards}
+@keyframes fade{to{opacity:1}}
+.hand img{width:26px;height:26px;border-radius:50%;object-fit:cover;border:1.5px solid var(--ink)}
+.hand span{font-family:'Space Mono',monospace;font-size:10.5px;letter-spacing:.04em;color:var(--gron)}
+.bf{border-top:1.5px solid var(--ink);padding:12px 20px;display:flex;gap:22px;flex-wrap:wrap;font-size:13px;color:var(--dim)}
+.key{display:inline-flex;align-items:center;gap:8px}
+.key i{width:16px;height:10px;background:var(--marker);display:block}
+
+.shead{max-width:640px;margin-bottom:34px}
+.shead h2{font-size:clamp(28px,4vw,44px)}
+.shead p{color:var(--dim);margin-top:13px;font-size:17.5px}
+
+/* anställningsbevis */
+.hires{display:grid;gap:16px}
+.hire{background:var(--card);border:1.5px solid var(--ink);display:grid;
+  grid-template-columns:96px minmax(0,1.1fr) minmax(0,1fr) auto;gap:24px;align-items:center;padding:20px 24px 20px 20px}
+@media(max-width:940px){.hire{grid-template-columns:72px 1fr;gap:16px;padding:18px}}
+.hire img{width:96px;height:96px;object-fit:cover;border:1.5px solid var(--ink)}
+@media(max-width:940px){.hire img{width:72px;height:72px}}
+.hire .who .rl{font-family:'Space Mono',monospace;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
+.hire .who h4{font-size:25px;margin:5px 0 4px}
+.hire .who p{font-size:14.5px;color:var(--dim)}
+@media(max-width:940px){.hire .who{grid-column:2}}
+.hire .kv{border-left:2px solid var(--gron);padding-left:16px}
+@media(max-width:940px){.hire .kv{grid-column:1/-1;padding-left:14px}}
+.hire .kv .l{font-family:'Space Mono',monospace;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--gron)}
+.hire .kv p{font-size:14.5px;color:var(--dim);margin-top:5px}
+.hire .day-tag{font-family:'Space Mono',monospace;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;
+  border:1.5px solid var(--rule);padding:5px 10px;white-space:nowrap;color:var(--dim)}
+@media(max-width:940px){.hire .day-tag{grid-column:1/-1;justify-self:start}}
+
+/* avslag */
+.rejects{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:18px}
+.rej{border:1.5px dashed var(--ink);padding:24px;position:relative;overflow:hidden;background:rgba(194,74,52,.04)}
+.rej h4{font-size:19px;color:var(--dim);text-decoration:line-through;text-decoration-color:var(--rod);text-decoration-thickness:2px}
+.rej p{font-size:14.5px;color:var(--dim);margin-top:10px}
+.rej .st{position:absolute;top:14px;right:-26px;transform:rotate(13deg);font-family:'Space Mono',monospace;font-weight:700;
+  font-size:11px;letter-spacing:.2em;color:var(--rod);border:2px solid var(--rod);padding:4px 30px;opacity:.85}
+
+/* pris */
+.pstrip{display:grid;grid-template-columns:repeat(3,1fr);border:1.5px solid var(--ink);background:var(--card)}
+@media(max-width:840px){.pstrip{grid-template-columns:1fr}}
+.pc{padding:26px;border-right:1.5px solid var(--ink)}
+.pc:last-child{border-right:0}
+@media(max-width:840px){.pc{border-right:0;border-bottom:1.5px solid var(--ink)}.pc:last-child{border-bottom:0}}
+.pc.mid{background:var(--marker)}
+.pc .pn{font-family:'Familjen Grotesk',sans-serif;font-weight:700;font-size:18px}
+.pc .pa{font-family:'Familjen Grotesk',sans-serif;font-weight:700;font-size:30px;letter-spacing:-.03em;margin:8px 0 5px}
+.pc .pa span{font-family:'Karla',sans-serif;font-size:13.5px;font-weight:400;color:var(--dim)}
+.pc.mid .pa span{color:#5B4F18}
+.pc p{font-size:14px;color:var(--dim)}
+.pc.mid p{color:#54491A}
+.pc a{display:inline-block;margin-top:14px;font-family:'Familjen Grotesk',sans-serif;font-weight:700;font-size:14px;
+  text-decoration:none;border-bottom:2px solid var(--ink);padding-bottom:2px}
+
+.end{border:1.5px solid var(--ink);background:var(--card);padding:clamp(32px,5vw,58px);
+  display:grid;grid-template-columns:1fr auto;gap:28px;align-items:center}
+@media(max-width:800px){.end{grid-template-columns:1fr}}
+.end h2{font-size:clamp(26px,3.6vw,40px);max-width:19ch}
+.end p{color:var(--dim);margin-top:12px;max-width:50ch}
+footer{border-top:1.5px solid var(--ink);padding:28px 0 58px;color:var(--dim);font-size:13.5px}
+:focus-visible{outline:2.5px solid var(--rod);outline-offset:2px}
+@media(prefers-reduced-motion:reduce){
+  *{animation-duration:.001ms!important;transition-duration:.001ms!important}
+  .task.take .t{background-size:100% 100%}.hand{opacity:1}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="inner">
+    <a class="mark" href="#">Mitt <em>AI-team</em></a>
+    <nav><a href="#veckan">Veckan</a><a href="#bevis">Anställningsbevis</a><a href="#avslag">Avslagen</a><a href="#priser">Priser</a></nav>
+    <a class="btn" href="#">Prova demo</a>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="top">
+    <div>
+      <div class="kick">AI-team för små och medelstora företag</div>
+      <h1>Er vecka, med <span>fyra namn</span> i marginalen.</h1>
+      <p>Vi kartlägger vad ni faktiskt gör mellan måndag och fredag, stryker över det som går att lämna ifrån sig — och sätter en kollega på varje överstruken rad.</p>
+      <div class="cta">
+        <a class="btn" href="#">Träffa teamet live</a>
+        <a class="btn ghost" href="#priser">Se priser</a>
+      </div>
+    </div>
+    <div class="crew">
+      <div class="faces">
+        <img src="../portal/avatars/avatar-04.png" alt="" />
+        <img src="../portal/avatars/avatar-11.png" alt="" />
+        <img src="../portal/avatars/avatar-18.png" alt="" />
+        <img src="../portal/avatars/avatar-22.png" alt="" />
+      </div>
+      <div class="txt"><b>Vera, Ester, Sixten, Malte</b>Fyra anställda · tre avslag · vecka 32</div>
+    </div>
+  </div>
+
+  <!-- SIGNATUR: veckan + ansiktena -->
+  <div class="board" id="veckan">
+    <div class="bh"><span>Veckoplan · <b>Lerverk Keramik</b></span><span>1 anställd · 40 h</span></div>
+    <div class="days">
+      <div class="day">
+        <div class="dn">Måndag</div>
+        <div class="task keep">Dreja beställningar</div>
+        <div class="task take"><span class="t">Svara på förfrågningar</span>
+          <span class="hand"><img src="../portal/avatars/avatar-22.png" alt="" /><span>Malte tar den</span></span></div>
+        <div class="task keep">Blanda glasyr</div>
+      </div>
+      <div class="day">
+        <div class="dn">Tisdag</div>
+        <div class="task keep">Bränning, ugn 1</div>
+        <div class="task take"><span class="t">Prissätta ny serie</span>
+          <span class="hand"><img src="../portal/avatars/avatar-11.png" alt="" /><span>Ester tar den</span></span></div>
+      </div>
+      <div class="day">
+        <div class="dn">Onsdag</div>
+        <div class="task keep">Studiobesök 14:00</div>
+        <div class="task take"><span class="t">Veckans inlägg</span>
+          <span class="hand"><img src="../portal/avatars/avatar-18.png" alt="" /><span>Sixten tar det</span></span></div>
+        <div class="task keep">Packa order</div>
+      </div>
+      <div class="day">
+        <div class="dn">Torsdag</div>
+        <div class="task take"><span class="t">Planera nästa vecka</span>
+          <span class="hand"><img src="../portal/avatars/avatar-04.png" alt="" /><span>Vera tar den</span></span></div>
+        <div class="task keep">Bränning, ugn 2</div>
+      </div>
+      <div class="day">
+        <div class="dn">Fredag</div>
+        <div class="task take"><span class="t">Jaga obetalda fakturor</span>
+          <span class="hand"><img src="../portal/avatars/avatar-11.png" alt="" /><span>Ester tar den</span></span></div>
+        <div class="task keep">Städa verkstan</div>
+      </div>
+    </div>
+    <div class="bf">
+      <span class="key"><i></i> Överstruket = en kollega tar över</span>
+      <span>Grått = ert hantverk, det rör vi inte</span>
+      <span class="mono" style="margin-left:auto">6 h 45 min / vecka</span>
+    </div>
+  </div>
+</div>
+
+<section id="bevis">
+  <div class="wrap">
+    <div class="shead">
+      <h2>Fyra anställningsbevis</h2>
+      <p>Varje kollega kom med för att en rad i veckan motiverade det. Var och en har en leverans som går att svara ja eller nej på.</p>
+    </div>
+    <div class="hires">
+      <div class="hire">
+        <img src="../portal/avatars/avatar-04.png" alt="" />
+        <div class="who"><div class="rl">Anst 001 · ingång</div><h4>Vera</h4><p>Håller ihop veckan: fokus, fördelning och uppföljning. Vägrar kalla till möte när en enskild agent räcker.</p></div>
+        <div class="kv"><div class="l">Klart när</div><p>Veckans tre viktigaste uppgifter är valda och tilldelade innan tisdag.</p></div>
+        <div class="day-tag">Torsdag</div>
+      </div>
+      <div class="hire">
+        <img src="../portal/avatars/avatar-11.png" alt="" />
+        <div class="who"><div class="rl">Anst 002 · ekonomi</div><h4>Ester</h4><p>Räknar material, tid och svinn på nya serier. Listar obetalda fakturor och skriver påminnelsen.</p></div>
+        <div class="kv"><div class="l">Klart när</div><p>Varje ny produkt har ett pris med redovisad kalkyl bakom sig.</p></div>
+        <div class="day-tag">Tis + fre</div>
+      </div>
+      <div class="hire">
+        <img src="../portal/avatars/avatar-18.png" alt="" />
+        <div class="who"><div class="rl">Anst 003 · butik</div><h4>Sixten</h4><p>Utgår från vad som faktiskt tillverkats i veckan och föreslår ett inlägg och ett stycke till nyhetsbrevet.</p></div>
+        <div class="kv"><div class="l">Klart när</div><p>Veckans inlägg finns färdigskrivet innan fredag lunch.</p></div>
+        <div class="day-tag">Onsdag</div>
+      </div>
+      <div class="hire">
+        <img src="../portal/avatars/avatar-22.png" alt="" />
+        <div class="who"><div class="rl">Anst 004 · kund</div><h4>Malte</h4><p>Skriver svarsutkast på förfrågningar med rätt priser, leveranstider och ton.</p></div>
+        <div class="kv"><div class="l">Klart när</div><p>Inga förfrågningar äldre än ett dygn ligger obesvarade.</p></div>
+        <div class="day-tag">Måndag</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="avslag">
+  <div class="wrap">
+    <div class="shead"><h2>Tre som inte fick jobbet</h2><p>Att säga nej är hela poängen. Annars får ni ett team som ser imponerande ut och gör ingenting.</p></div>
+    <div class="rejects">
+      <div class="rej"><div class="st">Avslag</div><h4>Varumärkesstrateg</h4><p>Låter bra på ett organisationsschema. Men det fanns ingen ruta i veckan där jobbet skulle utföras.</p></div>
+      <div class="rej"><div class="st">Avslag</div><h4>Dataanalytiker</h4><p>Underlaget är 40 ordrar i månaden i ett kalkylark. Det behöver läsas, inte analyseras.</p></div>
+      <div class="rej"><div class="st">Avslag</div><h4>Glasyrspecialist</h4><p>Kräver att någon står vid ugnen och känner materialet. Det är hantverket — och det rör vi inte.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="priser">
+  <div class="wrap">
+    <div class="shead"><h2>Tre sätt att göra det</h2><p>Samma motor i botten. Skillnaden är hur mycket vi gör åt er.</p></div>
+    <div class="pstrip">
+      <div class="pc"><div class="pn">Bygg själv</div><div class="pa">2 900 kr <span>engång</span></div><p>Ni bygger teamet i webbläsaren och äger allt.</p><a href="#">Bygg ert team →</a></div>
+      <div class="pc mid"><div class="pn">Vi bygger åt er</div><div class="pa">14 900 kr <span>engång</span></div><p>Kartläggning, första projekt, driftsatt portal, 30 dagars support.</p><a href="#">Boka ett samtal →</a></div>
+      <div class="pc"><div class="pn">Löpande partner</div><div class="pa">2 900 kr <span>/ mån</span></div><p>Vi uppdaterar teamet när verksamheten ändras.</p><a href="#">Boka ett samtal →</a></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="end">
+      <div><h2>Vilka rader i er vecka skulle få ett ansikte?</h2><p>Ett kort samtal räcker för att kartlägga veckan och skissa ett första team. Ni binder er inte till något.</p></div>
+      <a class="btn" href="#">Boka ett samtal</a>
+    </div>
+  </div>
+</section>
+
+<footer><div class="wrap">Mitt AI-team · variant 10 — <span class="mono">Mix: Veckan × Personalen / "Anställningen"</span></div></footer>
+
+</body>
+</html>
