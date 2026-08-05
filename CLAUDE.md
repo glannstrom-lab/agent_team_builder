@@ -307,17 +307,34 @@ ny kund dyker upp i både galleri och portal automatiskt.
 ## Nuvarande sprint
 
 > **LÄGET (2026-08-05) — läs `docs/granskning-helhet-2026-08-05.md` först.**
-> Den filen är den enda som beskriver nuläget; övriga daterade dokument är
-> ögonblicksbilder från när de skrevs och ska inte läsas som plan.
+> Den filen är den enda som beskriver nuläget och planen; övriga daterade
+> dokument är ögonblicksbilder från när de skrevs och ska inte läsas som plan.
 >
 > Kärnan (fas 1–3 nedan) är klar och bevisat divergerande — se `examples/`.
 > Webblagret är däremot djupt överbyggt i förhållande till affären: portalen
-> har fyra omgångar funktioner ovanpå en kundbas på noll, medan de billiga
-> sakerna som faktiskt bryter kedjan står kvar. **Noll betalande kunder, noll
-> mätning, ingen kassa.** Nästa arbete är därför inte fler funktioner utan:
-> (1) gör sajten kontaktbar, identifierbar och ärligt prissatt, (2) riktiga
-> demosvar + branschval från hubben, (3) Stripe M2a-2…4 när kontot finns.
-> Funktionsarbete i `portal/` är fryst tills någon betalat.
+> har fyra omgångar funktioner ovanpå en kundbas på noll. **Noll betalande
+> kunder, noll mätning, ingen kassa.** Nästa arbete är inte fler funktioner
+> utan att sälja för hand: identitet och juridik på sajten, ett demoteam med
+> riktiga svar, fyrtio namngivna företag, förbyggda team, och samtal.
+>
+> ## GRINDEN — gäller varje session
+>
+> **Ingen ny funktionskod i `portal/`, `builder/` eller `verticals/` committas
+> förrän `docs/kunder.md` har en ny rad med datum, namn och utfall från ett
+> riktigt samtal med en riktig människa.** Kontrollera filen innan du börjar
+> bygga. Undantag: buggar som en namngiven betalande kund har stött på, plus de
+> tre säkerhetsposterna i planen (pdf.js, SheetJS, `functions/_middleware.js`).
+>
+> Skriv ingen ny daterad granskningsfil i `docs/`. Fyra på fyra månader räcker;
+> nästa bedömning görs av en kund som betalar eller låter bli. Uppdatera
+> lägesdokumentet i stället.
+>
+> Sista raden varje arbetspass: skriv nästa pass enda uppgift, en mening, här
+> nedanför. Projektet arbetar i skurar (38 commits på sex dagar), så scopet
+> måste laddas i förväg — annars väljs det som är roligast under första timmen.
+>
+> **Nästa pass:** ta de tre besluten (enskild firma/AB, B2B-only, moms) och
+> skriv listan på 40 företag. Ingen kod.
 >
 > Fas 1–3 nedan står kvar som historik över hur kärnan byggdes.
 

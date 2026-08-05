@@ -236,70 +236,149 @@ ackumulering) när nästa funktion tillkommer; `docs/` innehåller sex daterade
 ögonblicksbilder som delvis motsäger varandra — den här filen ersätter dem som
 plan, och de bör läsas som historik.
 
-## Nästa arbete
+## Planen: 30 dagar till första kunden
 
-Rangordnat efter hur mycket det ökar chansen att någon betalar.
+> Reviderad 2026-08-05 efter fyra specialistgranskningar (pris, distribution,
+> juridik, sekvensering). Den tidigare listan var **hundra procent utbudssida** —
+> fyra steg som alla förbättrade sajten, och inte en rad om vem som skulle få veta
+> att den finns. En sajt som ingen besöker, förbättrad, är fortfarande en sajt som
+> ingen besöker.
 
-**1. Gör sajten kontaktbar, identifierbar och ärligt prissatt — ~1 dag.**
-✅ *Kontaktvägen är klar sedan 2026-08-05:* info@mittaiteam.se via Cloudflare
-Email Routing (gratis, vidarebefordran till Gmail, catch-all på), inlagd i
-kontaktsektionen och sidfoten. Nästa steg där: DMARC-post saknas, och svar går
-i dagsläget ut från privat Gmail-adress — vill du svara *som* info@ krävs
-Google Workspace eller en SMTP-relä. Kvarstår i övrigt i det här steget: lägg till
-"Vem står bakom" med namn, ort, orgnr och kontaktväg. Publicera `integritet.html`
-och `villkor.html`. Antingen koppla kassa på 2 900-kortet eller byt CTA till
-"Prova gratis under beta" — det senare tar en kvart och tar bort förtroendeskadan
-omedelbart. Lägg in cookiefri analytics (kräver en rad i CSP:n) och OG-taggar med
-delningsbild på hub, portal, galleri och branschsidor; kollegadelning är
-huvudkanalen och förhandsvisningen är tom idag. Rätta också prisraden "Löpande
-partner 2 900 kr/mån" — samma siffra som engångspriset, och löftet "vi sköter
-driften av portalen" beskriver en drift som inte finns i BYO-läget.
+### Det som ändrade planen
 
-**2. Riktiga demosvar + branschval från hubben — ~1 dag.**
-Demon är den enda säljaren som jobbar när du inte gör det, och `demoReply()`
-mallar fortfarande ihop svaret ur agentens tagline. Spela in 10–15 äkta svar per
-demoteam via egen Claude Code (kostar noll) och lägg dem som uppslag i
-`portal/teams/<slug>.js` med nuvarande funktion som fallback. Byt samtidigt
-hubbens tre coachonline-CTA:er mot ett litet branschval, och lägg en köp-CTA i
-demobannern. Regenerera teamfilerna i samma svep så att `why`/`starters`/
-`rejected` kommer med — då tänds "Därför detta team", vilket är precis det
-förtroendeargument steg 1 handlar om.
+**Git säger vad som faktiskt händer:** 38 commits på **sex arbetsdagar** utspridda
+över fyra månader, 32 av dem på tre dagar i juli. Det här är inte någon som bygger
+lite för mycket varje dag — det är någon som är tyst i veckor och sedan levererar
+en hel roadmap på ett dygn. Månadens utfall avgörs alltså under **första timmen av
+nästa skurdag**. Ett veckoschema är fel medicin; skuren måste laddas i förväg.
 
-**3. Gör mobilen och galleriet användbara — ~1 dag.**
-Halva besökarna är på mobil och där är produkten svårast att röra sig i: hubbens
-navpunkter göms utan meny, portalens topbar har 19 px-kontroller, agentlistan
-klipps mitt i ett kort, och galleriet — säljmaterialet — har varken nav eller
-CTA och slutar med en utvecklarinstruktion. Lägg samtidigt in
-`section[id] { scroll-margin-top: 84px }`; utan den hamnar varje ankarhopp bakom
-den sticky headern. Billigt, och det är den yta som just nu ser mest halvfärdig ut.
+**Första kunden behöver ingen kassa.** Handsålt uppdrag: 15–25 samtal, stängs på
+veckor, marginalkostnad noll (levereras via `/build-team` på Max), faktureras från
+enskild firma, portalen handprovisioneras på tio minuter. Självbetjäning: kräver
+trafik som inte finns, 50–100 kvalificerade besökare per försäljning, från en
+anonym sajt utan referenser. Och det handsålda uppdraget är dessutom det enda som
+**deponerar den vertikala mallen** som produktstrategin själv kallar bränslet och
+som är blockerad tills ett riktigt uppdrag finns. Att sälja för hand är alltså
+inte ett avsteg från självbetjäningsstrategin — det är dess enda genomförbara
+första steg.
 
-**4. Stripe M2a-2 → M2a-4 — 2–3 dagar, blockerad tills Stripe-kontot finns.**
-Kortaste vägen från arkitektur till första kronan: beslutet är taget,
-capability-modellen specad, D1 och `/api/teams/:slug` live, utkastflödet finns.
-Flytta upp till andraplats så snart kontot är öppnat.
+**Den starkaste säljhävstången ligger utanför repot:** Region Örebro läns
+*Konsultinsats* betalar **50 %, max 150 000 kr, uttryckligen för att köpa in extern
+kompetens** — och Lindesberg ligger i stödområdet. Ett paket på 14 900 kr kostar
+kunden 7 450 kr. Det förvandlar "för dyrt" till "när ansöker vi".
+⚠️ Ring 019-602 10 00 och bekräfta att 2026 års medel finns kvar **innan** något
+lovas en kund.
 
-**Parallellt, billigt och bör inte vänta:** självhosta typsnitten (stänger
-GDPR-risken och gör påståendena sanna), uppgradera pdf.js och SheetJS, lägg
-`functions/_middleware.js` som stämplar säkerhetsheaders innan M2a-2 ärver
-nollan, och skriv de fyra node-testerna ovan — särskilt schematestet.
+### Tre beslut som blockerar allt annat
 
-**Designskuld att beta av när ytorna ändå rörs:** byt de 150+ emojierna mot
-enfärgade inline-SVG som ärver `currentColor`. Det är den enda återstående saken
-som gör att det nya systemet ser halvfärdigt ut. Ta det ikonuppsättning för
-ikonuppsättning i takt med att sidorna ändå redigeras — inte som eget projekt.
+Ingen policytext, inget pris och ingen kassa kan skrivas färdigt innan de är
+fattade. Alla tre tar en eftermiddag.
 
-**Frys.** Funktionsarbete i `portal/` pausas tills någon betalat. Portalen är
-redan djupare än vad noll kunder efterfrågar; varje ny funktion ökar
-underhållsytan utan att flytta affären.
+1. **Enskild firma eller AB?** En enskild näringsidkare har inget separat
+   organisationsnummer — personnumret *är* identitetsbeteckningen, och lagen om
+   elektronisk handel kräver att det publiceras tillsammans med adress. AB ger eget
+   orgnr och ingen personuppgift i sidfoten.
+2. **B2B-only eller får konsumenter köpa?** B2B-only fäller distansavtalslagen,
+   ångerrätten, den obligatoriska ångerknappen (krav sedan 2026-06-19) och kravet
+   på pris inklusive moms — i ett svep. En halvtimmes text.
+3. **Momsregistrering eller 120 000-undantaget?** Avgör om "priser exkl. moms" ens
+   är en tillåten formulering.
 
-**Stryk ur planen:** RAG-trappan (M2b-4) — ingen har slagit i kontextbudgeten;
-managed-nivån (M2b-1) som näraliggande punkt — dess pitch har urholkats av
-mappstödet och ingen har sagt att de skulle betala för den; idékatalogens 13
-obyggda idéer; fler galleri- och branschsidor (tolv landningssidor för noll
-trafik är produktion utan distribution); fork C i sin nuvarande formulering
-(blockerad per definition — antingen stryk eller definiera om till "två mallar
-destillerade ur befintliga `examples/`"); och "tester/CI" som projekt — ersätt med
-en manuell 30-minuterschecklista före varje deploy, plus de fyra node-testerna.
+### Priset — förslag som väntar på beslut
+
+Marknaden är kluven i två fack: självbetjäning **250–700 kr/mån** (Vorker ~285 kr
+i beta, Bokio 249, Fortnox 349) och människodriven leverans **5 000–60 000 kr
+engång**. Dagens prislista sitter i glappet där ingen köpare har ett mentalt fack.
+
+Och köpknappen för "Bygg själv 2 900 kr" länkar till `builder/` — den **ger bort
+produkten gratis**. Grinden går inte att bygga i efterhand: buildern och portalen
+är statiska filer på kundens nyckel. Enda tekniskt äkta betalgrinden är
+moln-sparat team + delbar länk, och den servern finns redan.
+
+| Nivå | Förslag | Kommentar |
+|---|---|---|
+| Prova själv | **0 kr**, beta-märkt | Rättar en osanning i stället för att lösa den |
+| Pilotplats | **4 900 kr, 3 platser** | Mot skriftlig case-rätt. Betald pilot konverterar 60–80 % till full affär, gratis pilot under 10 % |
+| Uppstart | **7 900–14 900 kr** | Höj när tre riktiga case ligger i galleriet. Med regionstöd halveras kundens kostnad |
+| Team i molnet | **299 kr/mån** | Först när någon efterfrågat det |
+
+Bort oavsett beslut: *"Vi sköter driften av portalen"* (ingen drift finns i BYO),
+*"Populärast"* på ett paket med noll kunder (faktapåstående om marknaden), och de
+två identiska 2 900-talen.
+
+### Veckorna
+
+**Vecka 0 — ~6 timmar, före all trafik.** "Vem står bakom" med namn, ort och
+kontaktväg (sajten nämner idag inte Mikael någonstans — noll träffar på Lindesberg,
+Glänne eller orgnr). Bokningslänk i stället för enbart `mailto:`. Riktiga demosvar
+för **ett** demoteam — det i branschen där listan är tyngst. OG-bild för den enda
+länk som faktiskt klistras in. Självhosta typsnitten (en timme, stänger den enda
+GDPR-risk du själv bär, och är ett säljargument mot reglerade yrken). Cookiefri
+analytics. **Köp API-credits för 200 kr** — utan dem kan du inte visa din egen
+produkt live, och det står ingenstans i någon tidigare plan.
+
+**Vecka 1 — öppna dörrarna, bygg ammunition.** Ring näringslivsutvecklaren i
+Lindesberg (0581-810 94) — kommunen kartlägger just nu kompetensbehoven hos företag
+med 5–30 anställda, vilket är bokstavligen det du säljer. Ring regionen om stödet.
+Skriv **listan: 40 namngivna företag**, sorterade A (jag känner dem) / B (ett steg
+bort) / C (kalla), i de fyra branscher där demoteam finns. Kör sedan `/build-team`
+mot de tio första A-företagen — ett färdigt team per företag, ~30 min styck.
+
+**Vecka 2 — första vågen.** Kontakta de tio med det färdiga teamet bifogat: *"Jag
+har byggt ett AI-team åt er. Fyra roller, och två som verktyget sa nej till."*
+Hyperriktade utskick med en specifik trigger svarar 15–25 % mot 2,1 % för
+massutskick — det färdigbyggda teamet *är* triggern. Kör fem kontakter **utan**
+förbyggt team som kontrollgrupp; det är den mest värdefulla data 30 dagar kan ge.
+
+**Vecka 3 — byråer och scen.** Redovisningsbyråer, med Srf-vinkeln i stället för
+AI-vinkeln: branschen pratar själv om att gå "från tid till värde". Sälj till dem
+som kunder först — partnerpitchen kräver bevis som inte finns än. Boka höstens
+scener (näringslivsfrukost, Rotary Lindesberg har talarplats varje måndag) med ett
+föredrag bara du kan hålla: *"Jag byggde AI-team åt tolv företag i Bergslagen.
+Fyra saker fungerade, sju var teater."* Avslagen är det enda i erbjudandet ingen
+konkurrent säger.
+
+**Vecka 4 — konvertera och skörda.** Målet är **10 samtal**, inte 10 kunder.
+Leverera för hand, fakturera, och skörda den vertikala mallen ur uppdraget.
+
+### Grinden
+
+Frysningen i förra versionen hade tre undantag i samma dokument — det är en önskan,
+inte en frys. Den här är mekanisk och står i CLAUDE.md:
+
+> Ingen ny funktionskod i `portal/`, `builder/` eller `verticals/` committas förrän
+> `docs/kunder.md` har en ny rad med datum, namn och utfall från ett riktigt samtal.
+
+Den fungerar för att den är binär, för att varje session kan kontrollera den innan
+den börjar bygga, och för att den vänder beroendet: bygget blir belöningen för
+säljandet.
+
+**Månadens mått är samtal, inte commits:** 20 samtal, 3 demos, 1 offert ute till
+4 september. Slutar månaden med tolv commits och noll samtal har den misslyckats,
+oavsett vad som byggdes.
+
+**Rytmen:** tisdag 08:30–09:15 säljficka (enda tillåtna output: skickade
+meddelanden eller bokade samtal), torsdag 08:30–08:50 uppföljning. Byggdagen börjar
+inte förrän veckans säljficka är gjord — inte som moral, som sekvens. Byggandet
+belönar sig självt, säljandet gör det inte.
+
+### Stryk
+
+Självbetjäningsnivån som **aktivt arbetsprogram**, inklusive Stripe M2a-2…4 — det
+är 2 900-kortet som tvingar fram kassan, som tvingar fram konverteringsoptimerad
+demo, som tvingar fram mobilfixar, i tjänst av ett köp ingen kan ledas fram till.
+Handprovisionera de fem första. De åtta branschsidorna utan demoteam (de skickar
+trafik till ingenting). Fler galleri- och landningssidor. SEO som 30-dagarsåtgärd —
+1,74 % av nya sidor når topp 10 inom ett år; gör sitemap och robots på en halvtimme
+och förvänta avkastning månad 6–12. RAG-trappan och managed-nivån. Idékatalogens
+13 obyggda idéer. Emoji→SVG som eget projekt. **Och: fler helhetsgranskningar.**
+Fyra på fyra månader räcker — nästa bedömning görs av en kund som betalar eller
+inte gör det.
+
+**Undantagen som köps in när något annat ändå görs** (~20 min tillsammans):
+versionshöj pdf.js och SheetJS, självhosta typsnitten, lägg
+`functions/_middleware.js`. Kontextbudget-buggen fixas dagen kund ett börjar föra
+långa samtal — men publicera inget kostnadslöfte innan dess.
 
 ## Åtgärdat i den här omgången
 
