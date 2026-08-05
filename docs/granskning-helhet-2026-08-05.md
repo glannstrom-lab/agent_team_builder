@@ -172,8 +172,10 @@ genomfört, inte påklistrat** — det som återstår är kanter.
 
 **P0**
 
-- `index.html:484` — "Boka ett samtal" går till `mailto:din@email.se`. Alla tre
-  priskorten leder hit. Sajtens enda betalväg är död. (Samma fynd som produkt.)
+- ~~`index.html:484` — "Boka ett samtal" går till `mailto:din@email.se`. Alla tre
+  priskorten leder hit. Sajtens enda betalväg är död.~~ **Åtgärdat 2026-08-05:**
+  riktig adress info@mittaiteam.se, i kontaktsektionen och sidfoten. Knappen
+  heter numera "Mejla oss" — den låtsades vara en kalenderbokning.
 - `site/index.html` — **galleriet har varken nav eller CTA.** Sidan har exakt sex
   länkar, alla showcase-kort, och avslutas med "Kör det själv i Claude Code:
   `/build-team`" — en utvecklarinstruktion som sista rad i säljmaterialet.
@@ -239,7 +241,11 @@ plan, och de bör läsas som historik.
 Rangordnat efter hur mycket det ökar chansen att någon betalar.
 
 **1. Gör sajten kontaktbar, identifierbar och ärligt prissatt — ~1 dag.**
-Ersätt `mailto:din@email.se` med en bokningslänk eller ett formulär. Lägg till
+✅ *Kontaktvägen är klar sedan 2026-08-05:* info@mittaiteam.se via Cloudflare
+Email Routing (gratis, vidarebefordran till Gmail, catch-all på), inlagd i
+kontaktsektionen och sidfoten. Nästa steg där: DMARC-post saknas, och svar går
+i dagsläget ut från privat Gmail-adress — vill du svara *som* info@ krävs
+Google Workspace eller en SMTP-relä. Kvarstår i övrigt i det här steget: lägg till
 "Vem står bakom" med namn, ort, orgnr och kontaktväg. Publicera `integritet.html`
 och `villkor.html`. Antingen koppla kassa på 2 900-kortet eller byt CTA till
 "Prova gratis under beta" — det senare tar en kvart och tar bort förtroendeskadan
@@ -319,3 +325,7 @@ en manuell 30-minuterschecklista före varje deploy, plus de fyra node-testerna.
   galleri-sida) tillagd — den saknades, så en session som följde kommandot hoppade
   över den.
 - `build-dist.mjs`: kommentaren nämner `design/` så utelämnandet syns som avsikt.
+- **Riktig kontaktväg:** info@mittaiteam.se satt upp via Cloudflare Email Routing
+  (MX + SPF live, catch-all på, vidarebefordran till Gmail, leverans verifierad i
+  Activity Log). Platshållaren `din@email.se` finns inte kvar någonstans i repot.
+  Kvar på den punkten: DMARC-post, och möjligheten att svara *som* info@.

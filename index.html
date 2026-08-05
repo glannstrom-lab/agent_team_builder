@@ -86,6 +86,8 @@ if (location.hostname === 'agent-team-builder-2xy.pages.dev') location.replace('
   .contact h2 { font-size: clamp(26px, 4vw, 42px); }
   .contact p { color: var(--text-dim); font-size: 17px; margin: 15px auto 0; max-width: 540px; }
   .contact .btn-lg { margin-top: 30px; }
+  .contact .contact-mail { font-size: 14.5px; margin-top: 18px; }
+  .contact .contact-mail a { color: var(--accent-2); }
 </style>
 </head>
 <body>
@@ -478,11 +480,11 @@ if (location.hostname === 'agent-team-builder-2xy.pages.dev') location.replace('
 <!-- ===== KONTAKT ===== -->
 <section id="kontakt">
   <div class="wrap narrow">
-    <!-- KONTAKT: byt ut mejladressen nedan mot din riktiga affärsadress. -->
     <div class="contact reveal">
       <h2>Vilka fyra skulle ni anställa?</h2>
-      <p>Boka ett kort samtal så tittar vi på er vecka tillsammans och skissar ett första team — utan att ni binder er till något.</p>
-      <a class="btn-lg btn-primary-lg" href="mailto:din@email.se?subject=AI-team%20f%C3%B6r%20mitt%20f%C3%B6retag">Boka ett samtal →</a>
+      <p>Skriv ett par rader om vad ni gör, så hör jag av mig med förslag på ett första team — utan att ni binder er till något.</p>
+      <a class="btn-lg btn-primary-lg" href="mailto:info@mittaiteam.se?subject=Ett%20AI-team%20f%C3%B6r%20mitt%20f%C3%B6retag&amp;body=Hej!%20Vi%20%C3%A4r%20ett%20f%C3%B6retag%20som%20jobbar%20med%20...%20och%20det%20som%20tar%20mest%20tid%20i%20veckan%20%C3%A4r%20...">Mejla oss →</a>
+      <p class="contact-mail">Eller skriv direkt till <a href="mailto:info@mittaiteam.se">info@mittaiteam.se</a></p>
     </div>
   </div>
 </section>
@@ -491,7 +493,8 @@ if (location.hostname === 'agent-team-builder-2xy.pages.dev') location.replace('
 <footer>
   <div class="wrap">
     <div class="built"><span class="dot"></span> Mitt AI-team</div>
-    <div class="fstats">Skräddarsydda AI-team för små och medelstora företag.</div>
+    <div class="fstats">Skräddarsydda AI-team för små och medelstora företag.<br />
+      <a href="mailto:info@mittaiteam.se" style="color: var(--accent-2);">info@mittaiteam.se</a></div>
   </div>
 </footer>
 
