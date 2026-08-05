@@ -30,6 +30,13 @@ const API_SECURITY_HEADERS = {
 const METHOD_RULES = [
   // GET /api/teams/:slug — read-only capability-URL (M2a-1).
   { match: /^\/api\/teams\/[^/]+\/?$/, allow: ["GET"] },
+  // Inloggning (M3). request och verify tar emot data och måste vara POST;
+  // me är en ren läsning. Att låsa metoderna här gör att en felskriven
+  // klient får 405 i stället för att falla ned på asset-servern.
+  { match: /^\/api\/auth\/request\/?$/, allow: ["POST"] },
+  { match: /^\/api\/auth\/verify\/?$/, allow: ["POST"] },
+  { match: /^\/api\/auth\/logout\/?$/, allow: ["POST"] },
+  { match: /^\/api\/auth\/me\/?$/, allow: ["GET"] },
 ];
 
 export async function onRequest(context) {
