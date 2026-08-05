@@ -6,10 +6,12 @@
 
 // Bumpa versionen vid varje ändring i SHELL-filerna nedan — annars precachar
 // inte service workern om skalet och offline-användare fastnar på gammal kod.
-const CACHE = "atb-portal-v7";
+const CACHE = "atb-portal-v8";
 // De delade rot-skripten (avatars/atb-claude) MÅSTE precachas — utan dem
 // kraschar en offline-öppnad PWA med "ATBClaude is undefined".
-const SHELL = ["./", "./index.html", "./app.js", "./portal.css", "./teams/index.js", "./manifest.webmanifest", "./icon.svg", "../avatars.js", "../atb-claude.js"];
+// Typsnitten är självhostade sedan 2026-08-05 — utan dem i skalet renderar en
+// offline-öppnad PWA fallback-sans tills runtime-cachen hunnit hämta dem.
+const SHELL = ["./", "./index.html", "./app.js", "./portal.css", "./teams/index.js", "./manifest.webmanifest", "./icon.svg", "../avatars.js", "../atb-claude.js", "../fonts/fonts.css", "../fonts/archivo-var-latin.woff2", "../fonts/karla-var-latin.woff2", "../fonts/ibm-plex-mono-400-latin.woff2", "../fonts/ibm-plex-mono-500-latin.woff2"];
 
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()).catch(() => {}));
@@ -33,8 +35,12 @@ self.addEventListener("fetch", (e) => {
   e.respondWith(
     fetch(req)
       .then((res) => {
-        const copy = res.clone();
-        caches.open(CACHE).then((c) => c.put(req, copy)).catch(() => {});
+        // Bara lyckade svar får cachas. Utan den här kontrollen hamnade även
+        // 404/500 permanent i CacheStorage och serverades sedan som "sanning".
+        if (res && res.ok) {
+          const copy = res.clone();
+          caches.open(CACHE).then((c) => c.put(req, copy)).catch(() => {});
+        }
         return res;
       })
       // HTML-fallbacken gäller bara sidnavigeringar — annars kan en offline-

@@ -1,0 +1,5 @@
+# mittaiteam.se — allt är publikt och får indexeras.
+User-agent: *
+Allow: /
+
+Sitemap: https://mittaiteam.se/sitemap.xml

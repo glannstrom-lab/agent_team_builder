@@ -2382,9 +2382,12 @@ async function extractFileText(file) {
   const ext = ((file.name || "").split(".").pop() || "").toLowerCase();
   if (ext === "txt" || ext === "md") return await file.text();
   if (ext === "pdf") {
-    if (!window.pdfjsLib) await loadScript("vendor/pdf.min.js");
-    window.pdfjsLib.GlobalWorkerOptions.workerSrc = "vendor/pdf.worker.min.js";
-    const doc = await window.pdfjsLib.getDocument({ data: await file.arrayBuffer() }).promise;
+    // pdf.js ≥4 distribueras bara som ES-modul → dynamisk import i stället för
+    // <script>. isEvalSupported:false stänger dessutom av pdf.js interna
+    // eval-väg, så en preparerad PDF aldrig kan köra egen JS (CVE-2024-4367).
+    if (!window.pdfjsLib) window.pdfjsLib = await import(new URL("vendor/pdf.min.mjs", document.baseURI).href);
+    window.pdfjsLib.GlobalWorkerOptions.workerSrc = new URL("vendor/pdf.worker.min.mjs", document.baseURI).href;
+    const doc = await window.pdfjsLib.getDocument({ data: await file.arrayBuffer(), isEvalSupported: false }).promise;
     const out = [];
     const pages = Math.min(doc.numPages, 400);
     for (let i = 1; i <= pages; i++) {
@@ -2725,9 +2728,29 @@ async function submitMessage(text) {
 }
 
 // ---------- demoläge ----------
+// Förskrivna demosvar ur teamkonfigen (agent.demoAnswers). Matchar på
+// starter-texten (q) i första hand, nyckelord i andra. Ingen träff → det
+// generiska svaret nedan. Team utan demoAnswers beter sig som förut.
+function demoAnswerFor(agent, userText) {
+  const list = Array.isArray(agent.demoAnswers) ? agent.demoAnswers : [];
+  const t = (userText || "").toLowerCase().replace(/\s+/g, " ").trim();
+  if (!list.length || !t) return null;
+  let best = null, bestScore = 0;
+  list.forEach((d) => {
+    let score = 0;
+    const q = (d.q || "").toLowerCase().replace(/\s+/g, " ").trim();
+    if (q && (t === q || t.startsWith(q) || q.startsWith(t))) score += 10;
+    (d.keywords || []).forEach((k) => { if (k && t.includes(k)) score += 2; });
+    if (score > bestScore) { bestScore = score; best = d; }
+  });
+  return bestScore >= 2 ? best.text : null;
+}
+
 // Skapar ett trovärdigt, rollanpassat exempelsvar — utan API-anrop. Tanken är
 // att visa hur portalen känns, inte att ersätta riktiga svar.
 function demoReply(agent, userText) {
+  const hit = demoAnswerFor(agent, userText);
+  if (hit) return hit;
   const topic = (userText || "").replace(/\s+/g, " ").trim();
   const short = topic.length > 70 ? topic.slice(0, 67).trim() + "…" : topic;
   const hat = (agent.tagline || agent.role || "din arbetspartner").replace(/\.$/, "").toLowerCase();
@@ -2749,11 +2772,15 @@ async function streamDemo(agent, messages, onDelta) {
   const full = demoReply(agent, last ? last.content : "");
   await new Promise((r) => setTimeout(r, 280)); // liten "tänk-paus"
   const tokens = full.split(/(\s+)/);
+  // Skala takten efter svarets längd: de förskrivna demosvaren är upp till
+  // ~1000 tokens, och 16 ms styck hade gjort ett nyhetsbrevsutkast 16 sekunder
+  // långt att titta på. Korta svar behåller sin ursprungliga rytm.
+  const delay = Math.max(4, Math.min(16, Math.round(6000 / Math.max(1, tokens.length))));
   for (const tk of tokens) {
     if (state.chatAbort && state.chatAbort.signal.aborted) {
       const e = new Error("Stoppad."); e.name = "AbortError"; throw e;
     }
-    await new Promise((r) => setTimeout(r, 16));
+    await new Promise((r) => setTimeout(r, delay));
     onDelta(tk);
   }
 }

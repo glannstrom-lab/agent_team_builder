@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Integritetspolicy · Mitt AI-team</title>
+<meta name="description" content="Hur Mitt AI-team behandlar personuppgifter — per behandling, med rättslig grund, lagringstid och dina rättigheter." />
+<meta name="robots" content="noindex" />
+<link rel="stylesheet" href="/fonts/fonts.css" />
+<link rel="stylesheet" href="site/showcase.css" />
+
+<!--
+  ============================================================
+  KÄLLOR SOM TEXTEN VILAR PÅ (kontrollerade 2026-08-05)
+  ············································································
+  Art. 13 GDPR, information vid insamling från den registrerade:
+    https://www.imy.se/privatperson/dataskydd/dina-rattigheter/ratt-till-information/
+  Klagomål till IMY (tillsynsmyndighet, art. 77):
+    https://www.imy.se/privatperson/utfora-arenden/lamna-ett-klagomal/
+  Personuppgiftsbiträdesavtal, art. 28.3 + underbiträden + tredjelandsöverföring:
+    https://www.imy.se/verksamhet/dataskydd/det-har-galler-enligt-gdpr/
+      personuppgiftsansvariga-och-personuppgiftsbitraden/personuppgiftsbitradesavtal/
+  Att tänka på som personuppgiftsbiträde:
+    https://www.imy.se/verksamhet/dataskydd/det-har-galler-enligt-gdpr/
+      personuppgiftsansvariga-och-personuppgiftsbitraden/att-tanka-pa-som-personuppgiftsbitrade/
+  8 § lagen (2002:562) om elektronisk handel — namn, adress i etableringsstaten,
+  e-postadress samt i förekommande fall organisationsnummer och momsreg.nr ska
+  hållas tillgängliga "på ett enkelt, direkt och stadigvarande sätt":
+    https://www.riksdagen.se/sv/dokument-och-lagar/dokument/svensk-forfattningssamling/
+      lag-2002562-om-elektronisk-handel-och-andra_sfs-2002-562/
+  ============================================================
+
+  TEKNISKA PÅSTÅENDEN SOM MÅSTE HÅLLAS SYNKRONISERADE MED KODEN
+  ············································································
+  - BYO-läget anropar leverantören direkt från webbläsaren:
+    atb-claude.js rad 10–12 (api.anthropic.com/v1/messages,
+    openrouter.ai/api/v1/chat/completions). Ingen proxy, ingen server hos oss.
+  - Kundens material lagras i localStorage (portal/app.js rad 84–156 m.fl.),
+    mapphandtag i IndexedDB "atb-fs" (rad 178), vald mapp via
+    showDirectoryPicker (rad 241).
+  - Moln-team: functions/api/teams/[slug].js är i dag ENDAST läsning (GET).
+    Ändras det till skrivning måste avsnitt 6 nedan skrivas om.
+  - Typsnitten självhostas (/fonts/fonts.css). Skriv aldrig in Google Fonts här.
+-->
+
+<style>
+  /* Sidspecifikt: juridisk brödtext, utkastruta, beslutmarkering */
+  .legal { max-width: 780px; }
+  .legal h3 { font-size: clamp(19px, 2.2vw, 23px); margin: 44px 0 10px; }
+  .legal h4 { font-family: var(--font-display); font-size: 16px; font-weight: 600; letter-spacing: -0.01em; margin: 22px 0 6px; }
+  .legal p, .legal li { font-size: 16px; line-height: 1.7; }
+  .legal p { margin: 0 0 14px; }
+  .legal ul { margin: 0 0 16px 20px; display: flex; flex-direction: column; gap: 6px; }
+  .legal a { color: var(--accent-2); }
+  .lead-meta { font-family: var(--font-mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 20px; }
+  .kort { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 20px 22px; margin: 0 0 18px; }
+  .kort h4 { margin-top: 0; }
+  .fakta { list-style: none; margin: 10px 0 0; padding: 0; display: flex; flex-direction: column; gap: 7px; }
+  .fakta li { display: grid; grid-template-columns: 190px 1fr; gap: 10px; font-size: 15px; }
+  .fakta li b { font-family: var(--font-mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--text-dim); font-weight: 500; padding-top: 4px; }
+  @media (max-width: 640px) { .fakta li { grid-template-columns: 1fr; gap: 2px; } }
+  .varning { border-left: 3px solid var(--red); background: var(--surface-2); padding: 16px 20px; margin: 0 0 18px; border-radius: 0 6px 6px 0; }
+  .varning h4 { margin-top: 0; color: var(--red); }
+  /* Beslutmarkering: gul så att ingen råkar publicera ett halvfärdigt dokument.
+     Tas bort tillsammans med utkastrutan när besluten är fattade. */
+  .beslut { background: #FFF0A8; box-shadow: 0 0 0 2px #FFF0A8; border-bottom: 2px solid #C9A200; }
+  .valfritt { border: 1px dashed var(--accent); border-radius: 6px; padding: 16px 20px; margin: 0 0 18px; background: rgba(169,116,31,0.05); }
+  .valfritt > .flagga { font-family: var(--font-mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--accent-2); display: block; margin-bottom: 8px; }
+  .utkast { border: 2px solid #C9A200; background: #FFF7D6; border-radius: 6px; padding: 22px 24px; margin: 0 0 40px; color: #1E1913; }
+  .utkast h2 { font-size: 20px; margin-bottom: 10px; }
+  .utkast p { margin: 0 0 10px; font-size: 15.5px; line-height: 1.65; }
+  .utkast ol { margin: 0 0 10px 20px; display: flex; flex-direction: column; gap: 5px; font-size: 15.5px; }
+  .utkast p:last-child { margin-bottom: 0; }
+</style>
+</head>
+<body>
+
+<!-- ===== NAV ===== -->
+<div class="hubnav">
+  <div class="inner">
+    <a class="home" href="./"><span class="dot"></span> Mitt AI-team</a>
+    <a class="np" href="villkor.html">Villkor</a>
+    <a class="np nav-cta" href="./#kontakt">Kontakt</a>
+  </div>
+</div>
+
+<section>
+  <div class="wrap narrow legal">
+
+<!-- ============================================================
+     UTKASTRUTA — TA BORT HELA BLOCKET MELLAN DESSA KOMMENTARER
+     när dokumentet är läst av jurist och de tre besluten är fattade.
+     Sök samtidigt efter class="beslut" och class="valfritt" i filen.
+     ============================================================ -->
+<div class="utkast">
+  <h2>Utkast — får inte publiceras som det är</h2>
+  <p>Det här dokumentet är ett arbetsutkast skrivet av verktygets egen
+  utvecklingsprocess. Det är inte granskat av jurist, och det ska läsas av en
+  jurist innan det publiceras.</p>
+  <p>Tre beslut måste dessutom vara fattade först, eftersom texten ändras av dem.
+  Alla ställen där de slår igenom är gulmarkerade nedan.</p>
+  <ol>
+    <li><b>Enskild firma eller aktiebolag?</b> En enskild näringsidkare har inget
+    separat organisationsnummer — personnumret är identitetsbeteckningen, och
+    e-handelslagen kräver att namn och adress i etableringsstaten hålls
+    tillgängliga.</li>
+    <li><b>Bara företagskunder, eller får konsumenter köpa?</b> Texten nedan utgår
+    från att tjänsten säljs till företag.</li>
+    <li><b>Momsregistrering eller undantaget för omsättning under 120 000 kr?</b></li>
+  </ol>
+  <p>Alla lagringstider nedan är förslag och behöver bekräftas mot hur du faktiskt
+  arbetar.</p>
+</div>
+<!-- ===== SLUT UTKASTRUTA ===== -->
+
+    <div class="lead-meta">Integritetspolicy · Senast ändrad <span class="beslut">[DATUM FYLLS I VID PUBLICERING]</span></div>
+    <h1 class="section-title" style="font-size:clamp(30px,4vw,44px)">Så behandlas personuppgifter</h1>
+    <p class="section-lead" style="margin-bottom:10px">Mitt AI-team är byggt så att så lite som möjligt passerar oss. Den här sidan
+    beskriver de fem behandlingar som faktiskt finns, en i taget, med vad som samlas in, varför, hur länge och vad du kan
+    kräva. Är något oklart går det bra att fråga.</p>
+
+    <!-- ============ 1. VEM ANSVARAR ============ -->
+    <h3 id="ansvarig">Vem som ansvarar</h3>
+
+    <!-- BESLUT 1: Enskild firma eller AB. Vid enskild firma är personnumret
+         identitetsbeteckningen och adressen som publiceras är den registrerade
+         verksamhetsadressen. Vid AB: eget organisationsnummer, ingen personuppgift.
+         8 § e-handelslagen kräver namn, adress i etableringsstaten och e-postadress. -->
+    <div class="kort">
+      <h4>Personuppgiftsansvarig</h4>
+      <ul class="fakta">
+        <li><b>Verksamhet</b><span class="beslut">[FIRMANAMN — beror på beslut 1: enskild firma eller AB]</span></li>
+        <li><b>Org.nr</b><span class="beslut">[ORGANISATIONSNUMMER — vid enskild firma är detta ditt personnummer]</span></li>
+        <li><b>Adress</b><span class="beslut">[GATUADRESS, POSTNUMMER LINDESBERG]</span></li>
+        <li><b>Ansvarig person</b>Mikael Glänne</li>
+        <li><b>E-post</b><a href="mailto:info@mittaiteam.se">info@mittaiteam.se</a></li>
+        <li><b>Webbplats</b>mittaiteam.se</li>
+      </ul>
+    </div>
+    <p>Verksamheten har inget dataskyddsombud, och behöver inte ha det. Frågor om
+    personuppgifter går till adressen ovan.</p>
+
+    <!-- ============ 2. ANSVARSFÖRDELNINGEN ============ -->
+    <h3 id="ansvar">Så delas ansvaret</h3>
+    <p>Det här avsnittet är viktigare än det låter, för det avgör vem du ska vända
+    dig till med vad.</p>
+
+    <h4>För webbplatsen ansvarar vi</h4>
+    <p>Besök på mittaiteam.se, mejl till oss och den frivilliga molnlagringen av ett
+    team — där är vi personuppgiftsansvariga och den här sidan beskriver hur.</p>
+
+    <h4>För det du matar in i portalen ansvarar du</h4>
+    <p>När du använder portalen med din egen API-nyckel är det du, eller det företag
+    du arbetar för, som är personuppgiftsansvarig för allt du skriver, klistrar in
+    eller lägger som underlag. Vi ser det inte, lagrar det inte och kan inte hämta
+    ut det. Det går direkt från din webbläsare till den AI-leverantör vars nyckel
+    du har lagt in.</p>
+
+    <h4>Din AI-leverantör är ditt biträde, inte vårt</h4>
+    <p>Anthropic respektive OpenRouter behandlar dina uppgifter under det avtal
+    <em>du</em> har tecknat med dem när du skapade nyckeln. Vi är inte part i det
+    avtalet och kan inte ge dig rättigheter i det. Läser du deras villkor och
+    databehandlingsavtal är det de villkoren som gäller för innehållet i dina
+    frågor. Behöver ditt företag ett biträdesavtal för AI-behandlingen tecknar ni
+    det direkt med leverantören.</p>
+
+    <div class="varning">
+      <h4>Klistra inte in känsliga personuppgifter</h4>
+      <p style="margin-bottom:10px">Portalen skickar vidare det du skriver. Den
+      filtrerar ingenting. Fyra av branschsidorna riktar sig till yrken där det
+      finns tystnadsplikt, och därför är den här punkten inte teoretisk.</p>
+      <p style="margin-bottom:10px">Undvik att mata in uppgifter om hälsa, etniskt
+      ursprung, religiös eller politisk uppfattning, fackligt medlemskap,
+      sexualliv eller uppgifter om lagöverträdelser. Sådana uppgifter har
+      särskilt skydd i artikel 9 och 10 i dataskyddsförordningen och kräver egen
+      rättslig grund som du måste kunna peka på.</p>
+      <p style="margin-bottom:10px">Undvik också personnummer. De får bara
+      användas när det är klart motiverat, och en AI-fråga är sällan det.</p>
+      <p style="margin-bottom:0">Behöver du arbeta med ett verkligt fall: ta bort
+      namn, personnummer och andra identifierande uppgifter först. Ett ärende
+      beskrivet som "kund A" fungerar lika bra för att få hjälp med formuleringen,
+      och ändrar hela riskbilden.</p>
+    </div>
+
+    <!-- ============ 3. BEHANDLING 1 ============ -->
+    <h3 id="besok">1. När du besöker webbplatsen</h3>
+    <p>Webbplatsen består av statiska filer som ligger hos Cloudflare. För att
+    kunna leverera en sida måste Cloudflare hantera din IP-adress, vilken sida du
+    bad om och tekniska uppgifter om din webbläsare. Det är oundvikligt — det är
+    så en förfrågan över internet fungerar.</p>
+    <ul class="fakta">
+      <li><b>Uppgifter</b>IP-adress, tidpunkt, begärd sida, webbläsare och
+      operativsystem, ungefärligt land.</li>
+      <li><b>Ändamål</b>Att leverera sidan, skydda mot överbelastning och missbruk,
+      och kunna felsöka driftstörningar.</li>
+      <li><b>Rättslig grund</b>Berättigat intresse (artikel 6.1 f) — att kunna
+      driva en webbplats som fungerar och inte missbrukas.</li>
+      <li><b>Mottagare</b>Cloudflare, Inc., som levererar webbhotell och
+      skyddsfunktioner.</li>
+      <li><b>Lagringstid</b>Loggarna hanteras av Cloudflare enligt deras egna
+      rutiner och gallras löpande. Vi läser dem inte rutinmässigt och sparar inga
+      egna kopior.</li>
+      <li><b>Kakor</b>Webbplatsen sätter inga kakor för att följa dig. Typsnitten
+      ligger på vår egen server, så inga externa leverantörer får din IP-adress när
+      en sida laddas.</li>
+    </ul>
+    <p>Portalen sparar dina inställningar och samtal lokalt i din webbläsare med
+    tekniker som liknar kakor. Det beskrivs under punkt 3 nedan. Den lagringen
+    lämnar aldrig din dator och används inte för att följa dig.</p>
+
+    <!-- ============ 4. BEHANDLING 2 ============ -->
+    <h3 id="epost">2. När du mejlar oss</h3>
+    <ul class="fakta">
+      <li><b>Uppgifter</b>Din e-postadress, ditt namn och det du väljer att skriva
+      i meddelandet.</li>
+      <li><b>Ändamål</b>Att svara dig, lämna offert och sköta kontakten före och
+      under ett uppdrag.</li>
+      <li><b>Rättslig grund</b>Berättigat intresse (artikel 6.1 f) vid allmänna
+      frågor. Rör mejlet ett avtal eller förberedelser för ett avtal är grunden i
+      stället att fullgöra avtalet (artikel 6.1 b).</li>
+      <li><b>Mottagare</b>Cloudflare, som vidarebefordrar post till mittaiteam.se,
+      och Google, som levererar den brevlåda posten hamnar i.</li>
+      <li><b>Lagringstid</b>Förfrågningar som inte leder någonstans raderas inom
+      <span class="beslut">[FÖRSLAG: 12 månader — bekräfta]</span>. Korrespondens
+      som hör till ett uppdrag sparas så länge uppdraget pågår och därefter så
+      länge bokföringslagen kräver.</li>
+    </ul>
+    <p>Mejl är inte en säker kanal. Skicka inte känsliga uppgifter eller
+    personnummer i ett mejl till oss.</p>
+
+    <!-- ============ 5. BEHANDLING 3 ============ -->
+    <h3 id="portalen">3. När du använder portalen med din egen nyckel</h3>
+    <p>Det här är det vanliga sättet att använda tjänsten, och här har vi ingen
+    roll alls i behandlingen.</p>
+    <p>Portalen är en webbsida som körs i din webbläsare. Du lägger in en egen
+    API-nyckel från Anthropic eller OpenRouter. När du ställer en fråga skickas den
+    direkt från din dator till den leverantören. Den passerar inte våra servrar,
+    och det finns ingen server hos oss som skulle kunna ta emot den.</p>
+    <h4>Var ditt material hamnar</h4>
+    <ul>
+      <li><b>I din webbläsare.</b> Samtal, företagsminne, inklistrade underlag och
+      din API-nyckel sparas i webbläsarens lokala lagring, i klartext, på din egen
+      dator. De ligger kvar tills du rensar dem. I portalen finns knapparna
+      "Rensa samtal" och "Töm allt".</li>
+      <li><b>I en mapp du själv väljer.</b> Kopplar du en mapp på datorn läser och
+      skriver portalen i just den mappen. Väljer du en mapp som synkas till
+      OneDrive eller Dropbox följer materialet med dit, under ditt eget avtal med
+      den tjänsten.</li>
+      <li><b>Hos din AI-leverantör.</b> Frågan och de underlag som skickas med den
+      behandlas av Anthropic eller OpenRouter enligt deras villkor och det avtal du
+      har med dem.</li>
+    </ul>
+    <ul class="fakta">
+      <li><b>Vår roll</b>Ingen. Vi är varken personuppgiftsansvariga eller
+      personuppgiftsbiträden för det du matar in i portalen i det här läget.</li>
+      <li><b>Din roll</b>Du, eller din arbetsgivare, är personuppgiftsansvarig för
+      innehållet och avgör vad som får matas in.</li>
+      <li><b>Lagringstid</b>Bestäms av dig. Vi kan varken radera eller hämta ut
+      något åt dig, eftersom vi inte har det.</li>
+    </ul>
+    <p>Använder du en dator som delas med andra: den som öppnar portalen på samma
+    dator och i samma webbläsare kommer åt både historiken och nyckeln.</p>
+
+    <!-- ============ 6. BEHANDLING 4 ============ -->
+    <h3 id="moln">4. När ett team sparas i molnet</h3>
+    <p>Det finns en frivillig funktion där en färdig teamkonfiguration kan sparas
+    hos oss och öppnas via en lång, slumpad länk. En teamkonfiguration innehåller
+    rollbeskrivningar och instruktioner — inte dina samtal, inte dina underlag och
+    inte din nyckel.</p>
+    <ul class="fakta">
+      <li><b>Uppgifter</b>Företagets namn, teamets innehåll och de personuppgifter
+      som råkar förekomma i beskrivningarna, till exempel namn på en kontaktperson.</li>
+      <li><b>Ändamål</b>Att leverera det köpta teamet och göra det åtkomligt för
+      dig och dina kollegor.</li>
+      <li><b>Rättslig grund</b>Att fullgöra avtalet med dig (artikel 6.1 b).</li>
+      <li><b>Mottagare</b>Cloudflare, som lagrar databasen.</li>
+      <li><b>Lagringstid</b>Så länge du har tjänsten, och därefter
+      <span class="beslut">[FÖRSLAG: 90 dagar — bekräfta]</span> innan posten
+      raderas.</li>
+      <li><b>Var</b>Databasen ligger inom EU.
+      <span class="beslut">[BEKRÄFTA D1-REGION INNAN PUBLICERING]</span></li>
+    </ul>
+    <p>Innehåller ditt team personuppgifter som du är ansvarig för blir vi ditt
+    personuppgiftsbiträde för just den lagringen. Då tecknar vi ett
+    personuppgiftsbiträdesavtal med dig innan lagringen börjar. Hör av dig om du
+    vill se det i förväg.</p>
+    <p><b>I dag är funktionen bara läsning.</b> Ingenting sparas hos oss förrän du
+    har köpt ett team och vi tillsammans har lagt upp det. Det sker inte
+    automatiskt när du bygger ett team i Builder — det utkastet ligger i din egen
+    webbläsare.</p>
+
+    <!-- ============ 7. BEHANDLING 5 ============ -->
+    <h3 id="statistik">5. Besöksstatistik</h3>
+    <p><b>I dag mäter webbplatsen ingenting.</b> Det finns inget analysverktyg, inga
+    spårningsskript och inga kakor för statistik.</p>
+    <p>När besöksstatistik införs blir den kakfri och räknar inte enskilda besökare
+    över tid. Ändamålet är att se vilka sidor som läses, den rättsliga grunden är
+    berättigat intresse (artikel 6.1 f), och den här sidan uppdateras innan mätningen
+    startar.</p>
+
+    <!-- ============ 8. TREDJE LAND ============ -->
+    <h3 id="tredjeland">Överföring utanför EU och EES</h3>
+    <p>Cloudflare och Google är amerikanska bolag, och deras behandling kan innebära
+    överföring till länder utanför EU och EES. Överföringarna vilar på EU-kommissionens
+    standardavtalsklausuler och, i förekommande fall, på beslutet om adekvat
+    skyddsnivå för företag anslutna till EU–US Data Privacy Framework.</p>
+    <p>Använder du portalen med egen nyckel sker överföringen till din AI-leverantör
+    under ditt eget avtal med dem. Vilka garantier som gäller där bestäms av det
+    avtalet, inte av oss.</p>
+
+    <!-- ============ 9. RÄTTIGHETER ============ -->
+    <h3 id="rattigheter">Dina rättigheter</h3>
+    <p>För de behandlingar där vi är personuppgiftsansvariga — punkt 1, 2 och 4 —
+    har du rätt att:</p>
+    <ul>
+      <li>få veta om vi behandlar uppgifter om dig och få en kopia av dem,</li>
+      <li>få felaktiga uppgifter rättade,</li>
+      <li>få uppgifter raderade, när vi inte har kvar en giltig grund att behålla dem,</li>
+      <li>begära att behandlingen begränsas medan en invändning prövas,</li>
+      <li>invända mot behandling som vilar på berättigat intresse,</li>
+      <li>få ut uppgifter du lämnat i ett maskinläsbart format, när behandlingen
+      vilar på avtal eller samtycke.</li>
+    </ul>
+    <p>Begäran skickas till <a href="mailto:info@mittaiteam.se">info@mittaiteam.se</a>.
+    Du får svar inom en månad. Vi kan behöva ställa en kontrollfråga för att vara
+    säkra på att det är du som frågar. Rättigheterna är kostnadsfria att använda.</p>
+    <p>För det du matar in i portalen med egen nyckel kan vi inte hjälpa dig — det
+    materialet finns inte hos oss. Rensa det i portalen, i din mapp och hos din
+    AI-leverantör.</p>
+
+    <h4>Om du är missnöjd</h4>
+    <p>Hör gärna av dig till oss först, det brukar gå snabbast. Du har också alltid
+    rätt att klaga hos Integritetsskyddsmyndigheten, IMY, som är tillsynsmyndighet i
+    Sverige: <a href="https://www.imy.se/" rel="noopener">imy.se</a>, telefon
+    08-657 61 00.</p>
+
+    <!-- ============ 10. ÄNDRINGAR ============ -->
+    <h3 id="andringar">Ändringar</h3>
+    <p>Ändras hur tjänsten fungerar ändras den här sidan. Datumet högst upp visar
+    när den senast skrevs om. Rör ändringen något väsentligt för dig som kund
+    meddelar vi det per mejl.</p>
+
+    <!-- KONSUMENTBLOCK — behåll om beslut 2 landar i att konsumenter får köpa,
+         ta annars bort hela .valfritt-blocket. -->
+    <div class="valfritt">
+      <span class="flagga">Gäller bara om privatpersoner får köpa — beror på beslut 2</span>
+      <p style="margin-bottom:0">Köper du som privatperson gäller samma behandlingar
+      som ovan. Uppgifter om ditt köp sparas dessutom så länge bokföringslagen kräver,
+      och information om ångerrätten finns i <a href="villkor.html">villkoren</a>.</p>
+    </div>
+
+    <p style="margin-top:34px"><a href="villkor.html">Läs villkoren →</a></p>
+
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="built"><span class="dot"></span> Mitt AI-team</div>
+    <div class="fstats"><a href="./" style="color: var(--accent-2);">Till startsidan</a> ·
+      <a href="villkor.html" style="color: var(--accent-2);">Villkor</a> ·
+      <a href="mailto:info@mittaiteam.se" style="color: var(--accent-2);">info@mittaiteam.se</a></div>
+  </div>
+</footer>
+
+</body>
+</html>

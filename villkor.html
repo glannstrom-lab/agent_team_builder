@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Villkor · Mitt AI-team</title>
+<meta name="description" content="Allmänna villkor för Mitt AI-team — vad som levereras, vad kunden själv ansvarar för, priser, immaterialrätt och ansvarsbegränsning." />
+<meta name="robots" content="noindex" />
+<link rel="stylesheet" href="/fonts/fonts.css" />
+<link rel="stylesheet" href="site/showcase.css" />
+
+<!--
+  ============================================================
+  KÄLLOR SOM TEXTEN VILAR PÅ (kontrollerade 2026-08-05)
+  ············································································
+  8–11 §§ lagen (2002:562) om elektronisk handel. 8 § kräver att namn, adress i
+  etableringsstaten och e-postadress samt i förekommande fall organisationsnummer
+  och registreringsnummer för mervärdesskatt hålls tillgängliga "på ett enkelt,
+  direkt och stadigvarande sätt". 9 § kräver att pris anges klart med skatter och
+  leveranskostnader angivna för sig:
+    https://www.riksdagen.se/sv/dokument-och-lagar/dokument/svensk-forfattningssamling/
+      lag-2002562-om-elektronisk-handel-och-andra_sfs-2002-562/
+  Informationskrav vid distansavtal (gäller konsument, inte B2B):
+    https://www.konsumentverket.se/marknadsratt-foretag/informationskrav-vid-distansavtal-regler-for-foretag/
+  Ångerknapp: ändringar i distansavtalslagen i kraft 19 juni 2026 — tydlig och
+  lättåtkomlig ångerfunktion i samma gränssnitt där avtalet ingicks, tillgänglig
+  under hela ångerfristen. Genomför EU-direktiv 2023/2673 m.fl.:
+    https://cms.law/sv/swe/legal-updates/ny-aangerknapp-kraevs-paa-e-handelsplattformar-fraan-den-19-juni-2026
+    Moll Wendén, "Nya krav på ångerknapp vid distansavtal" (mollwenden.se/aktuellt/)
+  Momsbefrielse: omsättningsgränsen är 120 000 kr sedan 1 januari 2025; frivillig;
+  den befriade får varken lägga på utgående eller lyfta ingående moms:
+    https://www.skatteverket.se/omoss/pressochmedia/nyheter/2024/nyheter/
+      hojdomsattningsgransformoms.5.262c54c219391f2e9633e61.html
+  AI Act artikel 50.1: den som tillhandahåller ett AI-system avsett att interagera
+  direkt med fysiska personer ska se till att de informeras om att de interagerar
+  med ett AI-system, om det inte är uppenbart. Art. 50.5: informationen ska ges
+  klart och urskiljbart senast vid första interaktionen. Tillämplig 2026-08-02:
+    https://ai-at.eu/en/news/article-50-of-the-eu-ai-act-transparency-obligations-become-applicable-on-2-august-2026/
+    https://www.stibbe.com/publications-and-insights/the-ai-acts-transparency-obligations-rules-scope-and-timeline
+  ============================================================
+
+  TEKNISKA PÅSTÅENDEN SOM MÅSTE HÅLLAS SYNKRONISERADE MED KODEN
+  ············································································
+  - "Ingen drift att utlova" stämmer så länge portalen är statiska filer på
+    Cloudflare Pages och anropen går direkt från kundens webbläsare
+    (atb-claude.js rad 10–12). Byggs en proxy eller en hostad nivå måste
+    avsnitt 12 och 13 skrivas om.
+  - Moln-sparat team: functions/api/teams/[slug].js är i dag endast läsning.
+  - Kunden behåller markdown-filerna för att teamet är filer i kundens egen
+    mapp/nedladdning — inte en databaspost hos oss. Ändras det ändras § 9.
+-->
+
+<style>
+  /* Sidspecifikt: juridisk brödtext, utkastruta, beslutmarkering */
+  .legal { max-width: 780px; }
+  .legal h3 { font-size: clamp(19px, 2.2vw, 23px); margin: 44px 0 10px; }
+  .legal h4 { font-family: var(--font-display); font-size: 16px; font-weight: 600; letter-spacing: -0.01em; margin: 22px 0 6px; }
+  .legal p, .legal li { font-size: 16px; line-height: 1.7; }
+  .legal p { margin: 0 0 14px; }
+  .legal ul { margin: 0 0 16px 20px; display: flex; flex-direction: column; gap: 6px; }
+  .legal a { color: var(--accent-2); }
+  .lead-meta { font-family: var(--font-mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 20px; }
+  .kort { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 20px 22px; margin: 0 0 18px; }
+  .kort h4 { margin-top: 0; }
+  .fakta { list-style: none; margin: 10px 0 0; padding: 0; display: flex; flex-direction: column; gap: 7px; }
+  .fakta li { display: grid; grid-template-columns: 190px 1fr; gap: 10px; font-size: 15px; }
+  .fakta li b { font-family: var(--font-mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--text-dim); font-weight: 500; padding-top: 4px; }
+  @media (max-width: 640px) { .fakta li { grid-template-columns: 1fr; gap: 2px; } }
+  .varning { border-left: 3px solid var(--red); background: var(--surface-2); padding: 16px 20px; margin: 0 0 18px; border-radius: 0 6px 6px 0; }
+  .varning h4 { margin-top: 0; color: var(--red); }
+  .beslut { background: #FFF0A8; box-shadow: 0 0 0 2px #FFF0A8; border-bottom: 2px solid #C9A200; }
+  .valfritt { border: 1px dashed var(--accent); border-radius: 6px; padding: 16px 20px; margin: 0 0 18px; background: rgba(169,116,31,0.05); }
+  .valfritt > .flagga { font-family: var(--font-mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--accent-2); display: block; margin-bottom: 8px; }
+  .valfritt h4:first-of-type { margin-top: 0; }
+  .utkast { border: 2px solid #C9A200; background: #FFF7D6; border-radius: 6px; padding: 22px 24px; margin: 0 0 40px; color: #1E1913; }
+  .utkast h2 { font-size: 20px; margin-bottom: 10px; }
+  .utkast p { margin: 0 0 10px; font-size: 15.5px; line-height: 1.65; }
+  .utkast ol { margin: 0 0 10px 20px; display: flex; flex-direction: column; gap: 5px; font-size: 15.5px; }
+  .utkast p:last-child { margin-bottom: 0; }
+</style>
+</head>
+<body>
+
+<!-- ===== NAV ===== -->
+<div class="hubnav">
+  <div class="inner">
+    <a class="home" href="./"><span class="dot"></span> Mitt AI-team</a>
+    <a class="np" href="integritet.html">Integritet</a>
+    <a class="np nav-cta" href="./#kontakt">Kontakt</a>
+  </div>
+</div>
+
+<section>
+  <div class="wrap narrow legal">
+
+<!-- ============================================================
+     UTKASTRUTA — TA BORT HELA BLOCKET MELLAN DESSA KOMMENTARER
+     när dokumentet är läst av jurist och de tre besluten är fattade.
+     Sök samtidigt efter class="beslut" och class="valfritt" i filen.
+     ============================================================ -->
+<div class="utkast">
+  <h2>Utkast — får inte publiceras som det är</h2>
+  <p>Det här dokumentet är ett arbetsutkast. Det är inte granskat av jurist, och
+  det ska läsas av en jurist innan det publiceras. Villkor är det dokument som
+  avgör vad som gäller den dag något går fel, och det tål inte att gissas.</p>
+  <p>Tre beslut måste vara fattade först. Alla ställen där de slår igenom är
+  gulmarkerade nedan, och de konsumentspecifika delarna ligger i egna, streckade
+  block som antingen behålls eller stryks i sin helhet.</p>
+  <ol>
+    <li><b>Enskild firma eller aktiebolag?</b> Avgör vem som är avtalspart, vilket
+    identitetsnummer som publiceras och hur det personliga ansvaret ser ut.</li>
+    <li><b>Bara företagskunder, eller får konsumenter köpa?</b> Säljs tjänsten bara
+    till företag faller distansavtalslagen, ångerrätten och kravet på ångerknapp
+    bort. Släpps privatpersoner in måste de streckade blocken behållas och en
+    ångerfunktion byggas i köpflödet.</li>
+    <li><b>Momsregistrering eller undantaget för omsättning under 120 000 kr?</b>
+    Avgör om priser får anges exklusive moms och vad som ska stå på fakturan.</li>
+  </ol>
+  <p>Alla belopp, fristar och tider nedan är förslag som behöver bekräftas.</p>
+</div>
+<!-- ===== SLUT UTKASTRUTA ===== -->
+
+    <div class="lead-meta">Allmänna villkor · Version <span class="beslut">[1.0]</span> · Gäller från <span class="beslut">[DATUM]</span></div>
+    <h1 class="section-title" style="font-size:clamp(30px,4vw,44px)">Villkor</h1>
+    <p class="section-lead" style="margin-bottom:10px">Vad du köper, vad du själv ansvarar för och vad som gäller om något går fel.
+    Skrivet för att gå att läsa igenom på tio minuter.</p>
+
+    <!-- ============ 1 ============ -->
+    <h3 id="parterna">1. Parterna</h3>
+    <!-- BESLUT 1: firmanamn, identitetsnummer och adress. 8 § e-handelslagen
+         kräver att detta hålls tillgängligt "på ett enkelt, direkt och
+         stadigvarande sätt". Vid enskild firma är personnumret
+         identitetsbeteckningen. -->
+    <div class="kort">
+      <h4>Leverantör</h4>
+      <ul class="fakta">
+        <li><b>Verksamhet</b><span class="beslut">[FIRMANAMN — beror på beslut 1]</span></li>
+        <li><b>Org.nr</b><span class="beslut">[ORGANISATIONSNUMMER — vid enskild firma personnumret]</span></li>
+        <li><b>Adress</b><span class="beslut">[GATUADRESS, POSTNUMMER LINDESBERG]</span></li>
+        <li><b>Momsreg.nr</b><span class="beslut">[SE… — utelämnas om undantaget för omsättning under 120 000 kr tillämpas, beslut 3]</span></li>
+        <li><b>E-post</b><a href="mailto:info@mittaiteam.se">info@mittaiteam.se</a></li>
+      </ul>
+    </div>
+    <p>Nedan kallas leverantören "vi" och den som köper tjänsten "du" eller
+    "kunden". Villkoren gäller mellan oss och dig från det att du beställer.</p>
+
+    <!-- BESLUT 2 -->
+    <p><span class="beslut">Tjänsten säljs till företag och andra
+    näringsidkare, inte till privatpersoner. Beställer du för ett företags räkning
+    intygar du att du får göra det.</span> <!-- Stryk meningen och behåll de
+    streckade konsumentblocken om beslut 2 landar i att konsumenter får köpa. --></p>
+
+    <!-- ============ 2 ============ -->
+    <h3 id="vad">2. Vad du får</h3>
+    <p>Beroende på vad du har beställt levererar vi ett eller flera av följande:</p>
+    <ul>
+      <li><b>En teamkonfiguration</b> — en uppsättning AI-roller framtagen utifrån
+      hur ditt företag faktiskt arbetar, med uppdrag, avgränsningar och
+      leveransbeskrivning per roll. Den levereras som markdown-filer, alltså vanlig
+      text som du kan läsa, ändra och spara var du vill.</li>
+      <li><b>Åtkomst till portalen</b> — webbgränssnittet där teamet används, med
+      veckostart, rutiner, möten och delat minne.</li>
+      <li><b>Ett dokumenterat första projekt</b>, när det ingår i paketet — ett
+      konkret arbetsmoment att börja med och hur det ska följas upp.</li>
+      <li><b>Genomgång och överlämning</b>, när det ingår i paketet.</li>
+    </ul>
+
+    <h4>Vad du inte får</h4>
+    <p>Du får inte AI-modellen. Vi varken utvecklar, driver eller vidareförsäljer
+    någon språkmodell. Det du köper är arbetet med att ta fram rollerna, plus
+    gränssnittet som gör dem användbara. Motorn kommer från Anthropic, OpenRouter
+    eller den leverantör du väljer, och du hämtar den själv.</p>
+    <p>Du får inte heller en garanterad tidsbesparing, ett visst resultat eller
+    någon utfästelse om vad AI kommer att kunna göra i din verksamhet. Vi beskriver
+    vad verktyget gör; vad det ger beror på hur ni använder det.</p>
+
+    <!-- ============ 3 ============ -->
+    <h3 id="nyckel">3. Din API-nyckel och din leverantör</h3>
+    <p>För att använda portalen behöver du ett eget konto hos en AI-leverantör och
+    en egen API-nyckel. Du skaffar den själv, betalar den själv och lyder den
+    leverantörens villkor.</p>
+    <ul>
+      <li>Användningen debiteras av leverantören direkt mot ditt konto. Vi ser
+      varken din förbrukning eller dina fakturor, och vi tar inget påslag.</li>
+      <li>Vad din leverantör gör med innehållet i dina frågor styrs av deras avtal
+      med dig. Behöver ditt företag ett databehandlingsavtal för den behandlingen
+      tecknar ni det med leverantören.</li>
+      <li>Ändrar leverantören sina priser, sina villkor eller sina modeller påverkar
+      det dig direkt. Vi kan inte hindra det och ersätter inte kostnader som
+      uppstår ur det.</li>
+      <li>Nyckeln är din. Sätt ett utgiftstak hos leverantören, och lägg inte in en
+      nyckel på en dator som andra använder utan att du vet vilka.</li>
+    </ul>
+
+    <!-- ============ 4 ============ -->
+    <h3 id="pris">4. Priser och betalning</h3>
+    <!-- BESLUT 3: momsformulering. Är verksamheten momsregistrerad anges pris
+         exkl. moms + momssats. Tillämpas 120 000-undantaget får ingen moms läggas
+         på, och fakturan ska hänvisa till undantaget i stället för att ange 0 %.
+         9 § e-handelslagen: pris ska anges klart, med skatter angivna för sig. -->
+    <p><span class="beslut">Priser anges exklusive moms, som tillkommer med 25 %.
+    [ALTERNATIV, om undantaget tillämpas: "Vi tillämpar undantaget från moms för
+    omsättning under 120 000 kronor. Ingen moms tillkommer, och fakturan innehåller
+    därför ingen moms."]</span></p>
+    <p>Gällande priser är de som anges på mittaiteam.se vid beställningstillfället.
+    Betalning sker mot faktura med <span class="beslut">[FÖRSLAG: 15 dagars]</span>
+    betalningsvillkor, om inget annat avtalats. Vid försenad betalning tas
+    dröjsmålsränta enligt räntelagen ut samt lagstadgad påminnelseavgift.</p>
+
+    <!-- ============ 5 ============ -->
+    <h3 id="engang">5. Engångsköp</h3>
+    <p>Ett engångsköp omfattar framtagning och leverans av teamet, samt det som
+    uttryckligen står i offerten.</p>
+    <ul>
+      <li>Arbetet påbörjas när du har bekräftat beställningen och lämnat det
+      underlag vi behöver.</li>
+      <li>Leverans sker <span class="beslut">[FÖRSLAG: inom 10 arbetsdagar]</span>
+      från bekräftad beställning, om inget annat avtalats.</li>
+      <li>I priset ingår <span class="beslut">[FÖRSLAG: en justeringsrunda inom 30
+      dagar]</span> efter leverans. Därefter debiteras ändringar löpande.</li>
+      <li>När teamet är levererat är köpet slutfört. Det finns ingen löpande
+      kostnad, och heller ingen löpande tjänst.</li>
+    </ul>
+
+    <!-- ============ 6 ============ -->
+    <h3 id="abonnemang">6. Abonnemang</h3>
+    <p>Väljer du en löpande tjänst gäller följande.</p>
+    <h4>Vad som ingår per månad</h4>
+    <ul>
+      <li>Molnlagring av teamet och en delbar länk till portalen.</li>
+      <li><span class="beslut">[FYLL I: exempelvis en uppdateringsrunda per kvartal,
+      supportsvar inom X arbetsdagar, tillgång till nya funktioner]</span></li>
+    </ul>
+    <p>Ingår inte: din API-förbrukning, egna utvecklingsuppdrag och arbete utöver
+    det som räknas upp ovan.</p>
+    <h4>Bindningstid och uppsägning</h4>
+    <ul>
+      <li>Abonnemanget löper per kalendermånad utan bindningstid, om inget annat
+      avtalats skriftligt. <span class="beslut">[BEKRÄFTA — om bindningstid införs
+      måste den anges här och i beställningsflödet]</span></li>
+      <li>Uppsägning görs skriftligt till
+      <a href="mailto:info@mittaiteam.se">info@mittaiteam.se</a> och gäller från
+      utgången av innevarande betalperiod. Redan betald avgift återbetalas inte.</li>
+      <li>Vi kan säga upp abonnemanget med <span class="beslut">[FÖRSLAG: en
+      månads]</span> varsel. Har du betalat i förskott för tid efter uppsägningen
+      återbetalas den delen.</li>
+      <li>Prisändring aviseras minst 30 dagar i förväg och gäller från nästa
+      betalperiod. Accepterar du inte den kan du säga upp innan den träder i kraft.</li>
+    </ul>
+    <h4>Vad som händer med teamet när du säger upp</h4>
+    <p>Du behåller ditt team. Teamet är markdown-filer, och de filerna är dina —
+    du får ut dem vid leverans och kan alltid ladda ner dem från portalen. De går
+    att läsa i vilken textredigerare som helst och att använda i andra AI-verktyg.</p>
+    <p>Det du förlorar vid uppsägning är molnlagringen och den delbara länken. Dina
+    samtal, ditt företagsminne och dina underlag berörs inte alls, eftersom de
+    ligger i din egen webbläsare och i din egen mapp. Molnposten raderas
+    <span class="beslut">[FÖRSLAG: 90 dagar]</span> efter att abonnemanget upphört.
+    Vill du ha den raderad direkt säger du bara till.</p>
+
+    <!-- ============ 7 ============ -->
+    <h3 id="ip">7. Immaterialrätt</h3>
+    <h4>Det du äger</h4>
+    <p>Den teamkonfiguration vi tar fram åt dig är din att använda, ändra, kopiera
+    inom din verksamhet och behålla utan tidsgräns. Det du och dina medarbetare
+    producerar med teamet — texter, underlag, sammanställningar — är ert. Vi gör
+    inga anspråk på det och har ingen åtkomst till det.</p>
+    <h4>Det vi äger</h4>
+    <p>Verktyget bakom leveransen är vårt: metoden, prompterna, mallarna, portalen,
+    Builder och webbplatsen. Att köpa ett team ger dig inte rätt att vidaresälja,
+    licensiera eller bygga en konkurrerande tjänst på vårt underlag. Intern
+    användning i din egen verksamhet, i hur många led som helst, är däremot fri.</p>
+    <h4>Referenser</h4>
+    <p>Vi nämner dig som kund eller använder ditt uppdrag som exempel bara om du
+    har sagt ja till det skriftligt. Säger du nej påverkar det varken pris eller
+    leverans.</p>
+
+    <!-- ============ 8 ============ -->
+    <h3 id="ai">8. Om svaren från AI</h3>
+    <p>Det här avsnittet är det viktigaste i hela dokumentet.</p>
+    <div class="varning">
+      <h4>Svaren är utkast, inte fakta</h4>
+      <p style="margin-bottom:10px">Språkmodeller producerar text som låter säker
+      även när den är fel. De hittar på källor, missar undantag och blandar ihop
+      årtal. Det gäller alla modeller, alla leverantörer och alla prisnivåer, och
+      det går inte att bygga bort med bättre roller.</p>
+      <p style="margin-bottom:0">Allt som kommer ur portalen ska läsas och godkännas
+      av en människa innan det används, skickas, bokförs eller lämnas vidare. Ansvaret
+      för det du gör med ett svar är ditt.</p>
+    </div>
+    <p>Tjänsten lämnar ingen juridisk, medicinsk, skatterättslig, redovisningsmässig
+    eller finansiell rådgivning. Att en agent i ditt team kan formulera sig om
+    bokföring, avtal eller vård betyder inte att den ger råd i lagens mening, och
+    den ersätter inte den yrkeskunskap ni redan har. Arbetar du i ett reglerat yrke
+    kvarstår ditt yrkesansvar, din tystnadsplikt och dokumentationskraven oförändrade
+    — verktyget varken lättar på dem eller känner till dem.</p>
+    <p>Se också avsnittet om känsliga uppgifter i
+    <a href="integritet.html#ansvar">integritetspolicyn</a>.</p>
+    <h4>Upplysning om AI</h4>
+    <p>Portalen är ett AI-system som du interagerar med direkt. Alla svar i portalen
+    genereras av en språkmodell, inte av en människa. Det ska framgå av gränssnittet,
+    och vi skriver det även här — sedan den 2 augusti 2026 gäller artikel 50 i
+    EU:s AI-förordning, som kräver att den som interagerar med ett AI-system
+    informeras om det.</p>
+    <p>Använder du texter från portalen externt ansvarar du för att märka dem när
+    märkning krävs, till exempel bilder eller ljud som kan tas för äkta.</p>
+
+    <!-- ============ 9 ============ -->
+    <h3 id="tillgang">9. Tillgänglighet och support</h3>
+    <p>Vi lämnar ingen servicenivågaranti, och det är ett medvetet val som följer
+    av hur tjänsten är byggd.</p>
+    <p>Portalen är statiska filer som körs i din webbläsare. Det finns ingen server
+    hos oss som behandlar dina frågor och därför ingen drift att utlova. Går något
+    ned är det antingen din internetuppkoppling, din AI-leverantör eller
+    webbhotellet som levererar filerna — inget av det styr vi över. Fördelen är
+    den motsatta: skulle vår verksamhet upphöra fortsätter ditt team att fungera,
+    eftersom filerna är dina och motorn är din.</p>
+    <p>Support ges via <a href="mailto:info@mittaiteam.se">info@mittaiteam.se</a>
+    på svenska, under kontorstid.
+    <span class="beslut">[FÖRSLAG: svar inom två arbetsdagar — bekräfta, och lova
+    inte kortare än du kan hålla]</span></p>
+    <p>Vi utvecklar verktyget löpande och kan ändra eller ta bort funktioner.
+    Funktioner som du betalar för i ett abonnemang tas inte bort utan att du
+    meddelas i förväg och får möjlighet att säga upp.</p>
+
+    <!-- ============ 10 ============ -->
+    <h3 id="ansvar">10. Ansvarsbegränsning</h3>
+    <p>Vi ansvarar för att det vi levererar motsvarar det som avtalats, och rättar
+    fel i leveransen utan kostnad.</p>
+    <p>Vi ansvarar inte för:</p>
+    <ul>
+      <li>innehållet i svar som genereras av en AI-modell, eller vad du gör med dem,</li>
+      <li>beslut som fattas med stöd av tjänsten,</li>
+      <li>avbrott, prisändringar eller ändrade villkor hos din AI-leverantör,</li>
+      <li>förlust av material som du själv lagrar lokalt eller i din egen mapp,</li>
+      <li>indirekt skada, utebliven vinst, produktionsbortfall eller förlorade data.</li>
+    </ul>
+    <p>Vårt sammanlagda ansvar är begränsat till vad du har betalat oss under de
+    tolv månader som föregick skadan. Begränsningen gäller inte vid uppsåt eller
+    grov vårdslöshet, eller där tvingande lag säger annat.</p>
+    <p>Krav ska framställas skriftligt inom skälig tid, dock senast tolv månader
+    från det att du märkte eller borde ha märkt felet.</p>
+
+    <!-- ============ 11 ============ -->
+    <h3 id="personuppgifter">11. Personuppgifter</h3>
+    <p>Hur personuppgifter behandlas beskrivs i
+    <a href="integritet.html">integritetspolicyn</a>, som är en del av dessa villkor.</p>
+    <p>Kortfattat: använder du portalen med din egen nyckel är du
+    personuppgiftsansvarig för det du matar in, och vi har ingen roll i den
+    behandlingen. Sparar vi ett team åt dig i molnet blir vi ditt
+    personuppgiftsbiträde för den lagringen, och då tecknar vi ett
+    personuppgiftsbiträdesavtal innan lagringen börjar.</p>
+
+    <!-- ============ 12 ============ -->
+    <h3 id="sekretess">12. Sekretess</h3>
+    <p>Det du berättar om din verksamhet under ett uppdrag behandlas förtroligt och
+    används bara för att utföra uppdraget. Vi får dra allmänna lärdomar av arbetet
+    och använda dem i andra uppdrag, men aldrig så att din verksamhet, dina kunder
+    eller dina uppgifter går att känna igen.</p>
+
+    <!-- ============ 13 ============ -->
+    <h3 id="andring">13. Ändring av villkoren</h3>
+    <p>Vi kan ändra dessa villkor. Har du ett pågående abonnemang meddelas ändringen
+    minst 30 dagar i förväg, och du kan säga upp innan den träder i kraft. För
+    engångsköp gäller de villkor som fanns när du beställde.</p>
+
+    <!-- ============ 14 ============ -->
+    <h3 id="lag">14. Tillämplig lag och tvist</h3>
+    <p>Svensk rätt gäller för avtalet.</p>
+    <p>Uppstår en tvist försöker vi lösa den genom samtal först. Går det inte
+    prövas den av allmän domstol med
+    <span class="beslut">[FÖRSLAG: Örebro tingsrätt]</span> som första instans.</p>
+
+    <!-- ============================================================
+         KONSUMENTBLOCK — behåll bara om beslut 2 landar i att
+         privatpersoner får köpa. Ska det bort: ta bort hela
+         .valfritt-blocket nedan, och ta även bort meningen om att
+         tjänsten bara säljs till företag i avsnitt 1.
+         Behålls det: en ångerfunktion ("ångerknapp") måste också
+         byggas i köpflödet — krav i distansavtalslagen sedan
+         2026-06-19 — och priser ska anges inklusive moms.
+         ============================================================ -->
+    <div class="valfritt">
+      <span class="flagga">Gäller bara privatpersoner — beror på beslut 2, stryk annars hela blocket</span>
+      <h4>K1. Ångerrätt</h4>
+      <p>Köper du som privatperson har du enligt distansavtalslagen rätt att ångra
+      köpet inom 14 dagar från det att avtalet ingicks. Du behöver inte ange något
+      skäl.</p>
+      <p>Ångerrätten utövas antingen med ångerfunktionen i köpflödet
+      <span class="beslut">[MÅSTE BYGGAS — lagkrav sedan 19 juni 2026: en tydlig och
+      lättåtkomlig funktion i samma gränssnitt där avtalet ingicks, tillgänglig under
+      hela ångerfristen]</span> eller genom ett meddelande till
+      <a href="mailto:info@mittaiteam.se">info@mittaiteam.se</a>. Konsumentverkets
+      standardblankett går också bra.</p>
+      <p>Har du bett oss påbörja arbetet under ångerfristen och sedan ångrar dig,
+      ska du betala för den del som redan utförts. Är tjänsten helt utförd under
+      fristen med ditt uttryckliga samtycke, och du samtidigt har informerats om att
+      ångerrätten då upphör, finns ingen ångerrätt kvar.</p>
+      <p>Återbetalning sker inom 14 dagar från att vi tagit emot din anmälan, med
+      samma betalsätt som du använde.</p>
+      <h4>K2. Priser inklusive moms</h4>
+      <p>Priser till privatpersoner anges inklusive moms.
+      <span class="beslut">[Tillämpas 120 000-undantaget innehåller priset ingen
+      moms — formuleringen måste då justeras, beslut 3]</span></p>
+      <h4>K3. Reklamation och tvistlösning</h4>
+      <p>Fel i tjänsten ska reklameras inom skälig tid från det att du märkte
+      felet. Ett meddelande inom två månader räknas alltid som i tid.
+      Är vi oense kan du vända dig till Allmänna reklamationsnämnden,
+      Box 174, 101 23 Stockholm, <a href="https://www.arn.se/" rel="noopener">arn.se</a>.
+      Vi följer ARN:s rekommendationer. Du kan också använda EU-kommissionens
+      plattform för tvistlösning online.
+      <span class="beslut">[BEKRÄFTA att ODR-plattformen fortfarande används vid
+      publicering — den har varit under avveckling]</span></p>
+      <p>Ansvarsbegränsningen i avsnitt 10 gäller inte i den mån den inskränker dina
+      tvingande rättigheter som konsument.</p>
+    </div>
+    <!-- ===== SLUT KONSUMENTBLOCK ===== -->
+
+    <p style="margin-top:34px"><a href="integritet.html">Läs integritetspolicyn →</a></p>
+
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="built"><span class="dot"></span> Mitt AI-team</div>
+    <div class="fstats"><a href="./" style="color: var(--accent-2);">Till startsidan</a> ·
+      <a href="integritet.html" style="color: var(--accent-2);">Integritet</a> ·
+      <a href="mailto:info@mittaiteam.se" style="color: var(--accent-2);">info@mittaiteam.se</a></div>
+  </div>
+</footer>
+
+</body>
+</html>

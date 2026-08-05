@@ -109,11 +109,11 @@ sanna. **Kvar:** sajten saknar helt integritetspolicy och villkor.
   utan samtycke och utan policy. Det är den enda konkreta GDPR-risken vi själva
   bär, och den motsäger "inga personuppgifter hos oss". Åtgärd: självhosta de
   fyra typsnitten (~200 kB woff2) och ta bort `fonts.*` ur `_headers`.
-- `portal/vendor/pdf.min.js` är **3.11.174 — CVE-2024-4367** (godtycklig JS via
-  preparerad PDF, fixad i 4.2.67). Sannolikt bruten av att CSP:n saknar
-  `'unsafe-eval'`, men skyddet är oavsiktligt. Sätt även `isEvalSupported: false`.
-- `portal/vendor/xlsx.full.min.js` är **0.18.5 — CVE-2023-30533**
-  (prototypförgiftning, fixad i 0.19.3). Stoppas **inte** av CSP:n.
+- ~~`portal/vendor/pdf.min.js` var **3.11.174 — CVE-2024-4367** (godtycklig JS via
+  preparerad PDF).~~ **Åtgärdat:** 6.2.108 som ES-modul, `isEvalSupported: false`,
+  verifierad riktig modulworker (inte tyst fallback till huvudtråden).
+- ~~`portal/vendor/xlsx.full.min.js` var **0.18.5 — CVE-2023-30533**
+  (prototypförgiftning). Stoppades **inte** av CSP:n.~~ **Åtgärdat:** 0.20.3.
 - **HSTS saknades** — åtgärdat i den här omgången, tillsammans med
   `form-action 'self'` (utan den kan injicerad HTML exfiltrera nyckeln via ett
   formulär, förbi `connect-src`).
@@ -404,6 +404,33 @@ långa samtal — men publicera inget kostnadslöfte innan dess.
   galleri-sida) tillagd — den saknades, så en session som följde kommandot hoppade
   över den.
 - `build-dist.mjs`: kommentaren nämner `design/` så utelämnandet syns som avsikt.
+**Vecka 0 genomförd samma dag (fyra byggagenter, strikt uppdelat filägarskap):**
+
+- **Självhostade typsnitt.** `fonts/` med åtta woff2-subset; Google Fonts borta ur
+  samtliga elva HTML-filer och ur CSP:n. Stänger den enda GDPR-risk projektet
+  självt bär. Bonus: Archivo 700 fungerar nu (hotlänken saknade den vikten).
+- **OG-taggar + delningsbild** (`og.png`) på hub, galleri, branscher och portal.
+  Bilden visar personalliggaren med fyra anställda och ett avslag — produktens
+  argument, inte en logotyp. Kollegadelning är huvudkanalen; förhandsvisningen
+  var tom före idag.
+- **Galleriet fick nav och CTA.** Utvecklarinstruktionen "/build-team" som sista
+  rad i säljmaterialet är ersatt.
+- **`scroll-margin-top`**, `sitemap.xml` (11 URL:er), `robots.txt`.
+- **Riktiga demosvar.** 63 förskrivna svar över bokförings- och coachteamet, plus
+  `why`/`starters`/`rejected`/`routines`/`job`/`capabilities` — schemat som
+  saknades i alla fem teamfiler. "Därför detta team" visas nu i demon för första
+  gången. Uppslaget kopplat in i `demoReply()`, med den gamla mallgeneratorn kvar
+  som fallback; strömningstakten skalar efter svarslängd.
+- **Säkerhetsposterna:** pdf.js 3.11.174 → 6.2.108 (CVE-2024-4367) med ES-modul
+  och verifierad riktig worker, SheetJS 0.18.5 → 0.20.3 (CVE-2023-30533),
+  `functions/_middleware.js` som stämplar säkerhetsheaders på `/api/*` och
+  405:ar allt utom GET, service worker v8 med `res.ok`-kontroll och typsnitten
+  i skalet. Filimport testad end-to-end med riktig PDF och riktigt kalkylark.
+- **Utkast till `integritet.html`, `villkor.html` och `docs/pub-avtal-mall.md`** —
+  med `noindex`, utkastruta och 28 beslutsmarkeringar. **Ligger medvetet utanför
+  `build-dist.mjs` och sitemapen** tills besluten är fattade och en jurist läst
+  dem.
+
 - **Riktig kontaktväg:** info@mittaiteam.se satt upp via Cloudflare Email Routing
   (MX + SPF live, catch-all på, vidarebefordran till Gmail, leverans verifierad i
   Activity Log). Platshållaren `din@email.se` finns inte kvar någonstans i repot.

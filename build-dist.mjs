@@ -9,7 +9,10 @@
 import { rmSync, mkdirSync, cpSync } from "node:fs";
 import { dirname } from "node:path";
 
-const ITEMS = ["index.html", "avatars.js", "atb-claude.js", "builder", "site", "portal", "verticals", "_headers"];
+// OBS: integritet.html och villkor.html ligger MEDVETET inte här. De är utkast
+// med öppna beslutsmarkeringar (firmaform, B2B/konsument, moms) och ska läsas av
+// jurist först. Lägg in dem — och i sitemap.xml — samma dag de är klara.
+const ITEMS = ["index.html", "avatars.js", "atb-claude.js", "builder", "site", "verticals", "portal", "fonts", "og.png", "sitemap.xml", "robots.txt", "_headers"];
 
 // Buildern kör exakt dessa filer verbatim (builder/builder.js). Resten av
 // prompts/ — intake, pedagogik, generate, handoff — är konsult-IP och

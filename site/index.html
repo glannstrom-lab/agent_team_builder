@@ -7,12 +7,48 @@ if (location.hostname === 'agent-team-builder-2xy.pages.dev') location.replace('
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Mitt AI-team — skräddarsydda AI-team</title>
 <link rel="icon" type="image/svg+xml" href="../portal/icon.svg" />
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;800&family=Karla:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<meta name="theme-color" content="#F1ECE3" />
+<meta name="description" content="Fem verkliga körningar, steg för steg: intake, research, skalning och det färdiga teamet. Samma metod, meningsfullt olika svar — inklusive agenterna som fick nej." />
+<link rel="canonical" href="https://mittaiteam.se/site/" />
+<!-- Delning -->
+<meta property="og:site_name" content="Mitt AI-team" />
+<meta property="og:title" content="Tre företag. Tre olika team. Samma metod." />
+<meta property="og:description" content="Fem verkliga körningar, steg för steg: intake, research, skalning och det färdiga teamet — inklusive agenterna som verktyget sa nej till." />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://mittaiteam.se/site/" />
+<meta property="og:locale" content="sv_SE" />
+<meta property="og:image" content="https://mittaiteam.se/og.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content="Mitt AI-team: fyra föreslagna agenter i en personalliggare, och en femte som fick nej." />
+<meta name="twitter:card" content="summary_large_image" />
+<!-- Självhostade typsnitt: inga anrop till tredje part -->
+<link rel="preload" href="/fonts/karla-var-latin.woff2" as="font" type="font/woff2" crossorigin />
+<link rel="preload" href="/fonts/archivo-var-latin.woff2" as="font" type="font/woff2" crossorigin />
+<link rel="stylesheet" href="/fonts/fonts.css" />
 <link rel="stylesheet" href="showcase.css" />
+<style>
+  /* Sidspecifikt: avslutande CTA-band. Samma idiom som hubbens kontaktkort. */
+  .cta-band { text-align: center; background: var(--surface); border: 1px solid var(--border); border-top: 3px solid var(--accent); border-radius: 6px; padding: clamp(34px, 5vw, 62px); }
+  .cta-band h2 { font-size: clamp(26px, 4vw, 40px); }
+  .cta-band p { color: var(--text-dim); font-size: 17px; margin: 15px auto 0; max-width: 560px; }
+  .cta-band .cta-row { display: flex; flex-wrap: wrap; gap: 13px; justify-content: center; margin-top: 30px; }
+  .cta-band .cta-mail { font-size: 14.5px; margin-top: 18px; }
+  .cta-band .cta-mail a { color: var(--accent-2); }
+</style>
 </head>
 <body>
+
+<!-- ===== NAV (samma .hubnav som hubben och branschsidorna) ===== -->
+<div class="hubnav">
+  <div class="inner">
+    <a class="home" href="../"><span class="dot"></span> Mitt AI-team</a>
+    <a class="np hideable" href="en-vecka.html">En vecka med teamet</a>
+    <a class="np hideable" href="../verticals/">Branscher</a>
+    <a class="np" href="../#priser">Priser</a>
+    <a class="nav-cta" href="../portal/?team=coachonline&amp;demo=1">Prova demo</a>
+  </div>
+</div>
 
 <!-- ===== HERO ===== -->
 <section class="hero">
@@ -129,11 +165,27 @@ if (location.hostname === 'agent-team-builder-2xy.pages.dev') location.replace('
   </div>
 </section>
 
+<!-- ===== CTA ===== -->
+<section id="prova">
+  <div class="wrap narrow">
+    <div class="cta-band reveal">
+      <h2>Hur skulle ert team se ut?</h2>
+      <p>Öppna ett av teamen ovan och ställ en riktig fråga — eller skriv ett par rader om vad ni gör, så hör vi av oss med ett förslag på ett första team.</p>
+      <div class="cta-row">
+        <a class="btn-lg btn-primary-lg" href="../portal/?team=coachonline&amp;demo=1">Prova ett team live →</a>
+        <a class="btn-lg btn-ghost" href="mailto:info@mittaiteam.se?subject=Ett%20AI-team%20f%C3%B6r%20mitt%20f%C3%B6retag&amp;body=Hej!%20Vi%20%C3%A4r%20ett%20f%C3%B6retag%20som%20jobbar%20med%20...%20och%20det%20som%20tar%20mest%20tid%20i%20veckan%20%C3%A4r%20...">Mejla oss</a>
+      </div>
+      <p class="cta-mail">Eller skriv direkt till <a href="mailto:info@mittaiteam.se">info@mittaiteam.se</a></p>
+    </div>
+  </div>
+</section>
+
 <!-- ===== FOOTER ===== -->
 <footer>
   <div class="wrap">
-    <div class="built"><span class="dot"></span> Byggt med Mitt AI-team</div>
-    <div class="fstats">Kör det själv i Claude Code: <b>/build-team</b> (team-builder) eller <b>/consult</b> (AI-konsult)</div>
+    <div class="built"><span class="dot"></span> Mitt AI-team</div>
+    <div class="fstats">Skräddarsydda AI-team för små och medelstora företag.<br />
+      <a href="mailto:info@mittaiteam.se" style="color: var(--accent-2);">info@mittaiteam.se</a></div>
   </div>
 </footer>
 

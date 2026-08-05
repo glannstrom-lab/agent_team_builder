@@ -33,7 +33,9 @@
   --red: #B4542F;         /* rost */
   --cyan: #2E6A75;        /* tredje hue: dov blågrön (VD-assistent, skills) */
 
-  /* typografi */
+  /* typografi — @font-face-reglerna (självhostade woff2) ligger i
+     /fonts/fonts.css, som varje sida länkar in före sin egen css.
+     Ingen sida hämtar typsnitt från Google: besökarens IP stannar hos oss. */
   --font-display: 'Archivo', system-ui, sans-serif;
   --font-body: 'Karla', system-ui, sans-serif;
   --font-mono: 'IBM Plex Mono', ui-monospace, Menlo, monospace;
@@ -56,6 +58,8 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 800; letter-spac
 .wrap { position: relative; z-index: 1; max-width: 1160px; margin: 0 auto; padding: 0 28px; }
 .narrow { max-width: 780px; }
 section { padding: clamp(56px, 7vw, 104px) 0; position: relative; z-index: 1; }
+/* Ankarhopp: håll målet under den sticky headern (.hubnav/.stepnav ≈ 64 px). */
+section[id], [id].anchor-offset { scroll-margin-top: 84px; }
 
 /* ---------- shared headings ---------- */
 .eyebrow {
