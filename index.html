@@ -322,7 +322,18 @@ if (location.hostname === 'agent-team-builder-2xy.pages.dev') location.replace('
 </section>
 
 <!-- ===== PRISER ===== -->
-<!-- PRISER: siffrorna nedan är placeholders — justera fritt. -->
+<!--
+  PRISLISTAN ÄR BESLUTAD 2026-08-05 och ska hållas identisk med avsnitt 4 i
+  villkor.html. Ändras den ena måste den andra följa med samma dag.
+  Belopp inkl. moms (25 %): 0 / 90 / 190 / 4 990 / 490 per mån.
+  Motsvarande exkl. moms:        0 / 72 / 152 / 3 992 / 392.
+
+  INTE SÄLJBART ÄNNU: nivån utan egen nyckel (190 kr och 490 kr/mån) kräver en
+  proxy på vår nyckel med kvot- och takräkning. Den finns inte. Kortet nedan
+  säger därför "öppnar senare" — ta bort den märkningen samma dag proxyn är
+  byggd, inte innan. Att lägga in en egen nyckel i kundens webbläsare är INTE
+  en genväg: nyckeln blir läsbar för kunden.
+-->
 <section id="priser">
   <div class="wrap">
     <div class="section-head center">
@@ -333,48 +344,47 @@ if (location.hostname === 'agent-team-builder-2xy.pages.dev') location.replace('
     <div class="pricing">
 
       <div class="price-card reveal">
-        <div class="price-name">Bygg själv</div>
-        <div class="price-for">För er som vill komma igång snabbt på egen hand.</div>
-        <div class="price-amount">2 900 kr <span class="per">/ engång</span></div>
+        <div class="price-name">Bygg ert team</div>
+        <div class="price-for">Se vilka fyra roller er verksamhet faktiskt behöver.</div>
+        <div class="price-amount">0 kr</div>
         <ul class="price-list">
-          <li>Bygg ert team direkt i webbläsaren</li>
-          <li>En egen kundportal att chatta i</li>
-          <li>Fem färdiga mallar att utgå från</li>
-          <li>Ni äger och behåller allt</li>
+          <li>Hela bygget, live i webbläsaren</li>
+          <li>Ni ser vilka förslag som fick nej, och varför</li>
+          <li>Färdigt teamunderlag att läsa och ta med er</li>
+          <li>Inget konto, ingen bindning, ingen betalning</li>
         </ul>
         <a class="price-cta outline" href="builder/">Bygg ert team →</a>
       </div>
 
       <div class="price-card featured reveal d1">
-        <div class="price-ribbon">Populärast</div>
-        <div class="price-name">Vi bygger åt er</div>
-        <div class="price-for">För er som vill ha det gjort rätt från start.</div>
-        <div class="price-amount">14 900 kr <span class="per">/ engång</span></div>
+        <div class="price-ribbon">Börja här</div>
+        <div class="price-name">Provmånad</div>
+        <div class="price-for">Använd teamet på riktigt i en månad innan ni bestämmer er.</div>
+        <div class="price-amount">90 kr <span class="per">/ månaden</span></div>
         <ul class="price-list">
-          <li>Vi kartlägger er verksamhet tillsammans</li>
-          <li>Skräddarsytt team + ett skarpt första AI-projekt</li>
-          <li>Färdig portal, driftsatt och klar att använda</li>
-          <li>Genomgång och utbildning av teamet</li>
-          <li>30 dagars support efter leverans</li>
+          <li>Hela portalen: veckostart, rutiner, möten och delat minne</li>
+          <li>Ni använder er egen AI-nyckel och betalar förbrukningen själva — i praktiken några kronor</li>
+          <li>Utan egen nyckel: 190 kr med allt inkluderat <em>(öppnar senare i höst)</em></li>
+          <li>Slutar automatiskt. Vill ni fortsätta väljer ni det aktivt</li>
         </ul>
-        <a class="price-cta solid" href="#kontakt">Boka ett samtal →</a>
+        <a class="price-cta solid" href="#kontakt">Kom igång →</a>
       </div>
 
       <div class="price-card reveal d2">
-        <div class="price-name">Löpande partner</div>
-        <div class="price-for">För er som vill att teamet växer med verksamheten.</div>
-        <div class="price-amount">2 900 kr <span class="per">/ mån</span></div>
+        <div class="price-name">Fortsätt efteråt</div>
+        <div class="price-for">Två sätt, beroende på om ni vill äga det eller slippa hålla i det.</div>
+        <div class="price-amount">4 990 kr <span class="per">/ engång</span></div>
         <ul class="price-list">
-          <li>Vi uppdaterar teamet löpande</li>
-          <li>Nya agenter när behoven ändras</li>
-          <li>Prioriterad support</li>
-          <li>Vi sköter driften av portalen</li>
+          <li><b>Köp teamet</b> — er egen nyckel, inga fler avgifter, ert för alltid</li>
+          <li><b>Eller 490 kr i månaden</b> — vi kör det åt er, ingen nyckel behövs, uppdateringar och support ingår</li>
+          <li>Nya agenter när verksamheten förändras</li>
+          <li>Fler användare eller team i molnet: hör av er så räknar vi på det</li>
         </ul>
-        <a class="price-cta outline" href="#kontakt">Boka ett samtal →</a>
+        <a class="price-cta outline" href="#kontakt">Prata med oss →</a>
       </div>
 
     </div>
-    <p class="price-note">Priser exkl. moms. Claude-användningen i portalen betalas via er egen API-nyckel (ofta några tior till hundralappar i månaden beroende på användning).</p>
+    <p class="price-note">Alla priser inklusive moms. Köper ni som företag och drar av momsen blir det 72, 152, 392 respektive 3 992 kr. Villkoren står i sin helhet i <a href="villkor.html" style="color: var(--accent-2);">våra villkor</a>.</p>
   </div>
 </section>
 
@@ -500,15 +510,40 @@ if (location.hostname === 'agent-team-builder-2xy.pages.dev') location.replace('
       <a class="btn-lg btn-primary-lg" href="mailto:info@mittaiteam.se?subject=Ett%20AI-team%20f%C3%B6r%20mitt%20f%C3%B6retag&amp;body=Hej!%20Vi%20%C3%A4r%20ett%20f%C3%B6retag%20som%20jobbar%20med%20...%20och%20det%20som%20tar%20mest%20tid%20i%20veckan%20%C3%A4r%20...">Mejla oss →</a>
       <p class="contact-mail">Eller skriv direkt till <a href="mailto:info@mittaiteam.se">info@mittaiteam.se</a></p>
     </div>
+
+    <!-- VEM STÅR BAKOM: skriv om den här texten i din egen röst när du orkar —
+         men ta inte bort den. En sajt som säljer AI till småföretag utan att
+         säga vem som står bakom är exakt det köparen är rädd för. -->
+    <div class="contact reveal" style="margin-top:20px; text-align:left">
+      <h2 style="font-size:22px">Vem står bakom</h2>
+      <p style="margin-bottom:0">Mitt AI-team drivs av mig, Mikael Glänne, från
+      Lindesberg. Jag har byggt verktyget själv och det är jag du pratar med — det
+      finns ingen säljavdelning och ingen supportkö. Jag bygger teamet, visar hur
+      det används och finns kvar när något krånglar. Vill du veta om det passar er
+      innan ni betalar något: bygg ett team på sidan, det kostar ingenting, och
+      hör av dig om det såg vettigt ut.</p>
+    </div>
   </div>
 </section>
 
 <!-- ===== FOOTER ===== -->
+<!--
+  IDENTITETSUPPGIFTERNA NEDAN ÄR ETT LAGKRAV, inte dekoration: 8 § lagen
+  (2002:562) om elektronisk handel kräver att namn, adress, e-post,
+  organisationsnummer och momsreg.nr hålls tillgängliga "på ett enkelt, direkt
+  och stadigvarande sätt". Enskild firma = personnumret är organisationsnumret.
+  Ta inte bort raderna för att sidfoten ska se renare ut.
+-->
 <footer>
   <div class="wrap">
     <div class="built"><span class="dot"></span> Mitt AI-team</div>
     <div class="fstats">Skräddarsydda AI-team för små och medelstora företag.<br />
-      <a href="mailto:info@mittaiteam.se" style="color: var(--accent-2);">info@mittaiteam.se</a></div>
+      Drivs av <b>Glänne &amp; Söner</b>, enskild firma · Innehavare Mikael Glänne<br />
+      Org.nr 771110-5655 · Momsreg.nr SE771110565501<br />
+      Kompassvägen 10, 711 35 Lindesberg<br />
+      <a href="mailto:info@mittaiteam.se" style="color: var(--accent-2);">info@mittaiteam.se</a> ·
+      <a href="villkor.html" style="color: var(--accent-2);">Villkor</a> ·
+      <a href="integritet.html" style="color: var(--accent-2);">Integritet</a></div>
   </div>
 </footer>
 

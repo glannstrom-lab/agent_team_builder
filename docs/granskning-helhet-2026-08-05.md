@@ -431,6 +431,86 @@ långa samtal — men publicera inget kostnadslöfte innan dess.
   `build-dist.mjs` och sitemapen** tills besluten är fattade och en jurist läst
   dem.
 
+## De tre besluten — fattade 2026-08-05
+
+Planen kallade dem "tre beslut som blockerar allt annat". De är tagna:
+
+1. **Enskild firma**, namn **Glänne & Söner**. Konsekvens som måste accepteras:
+   personnumret *är* organisationsnumret, och momsreg.nr blir `SE`+pnr+`01`.
+   Båda är lagkrav att publicera (8 § e-handelslagen) när verksamheten är
+   momspliktig. Firmanamnet skyddar namnet, inte identiteten.
+2. **B2B och privatpersoner.** Dyraste av de tre: drar in distansavtalslagen —
+   14 dagars ångerrätt, priser inkl. moms, ARN, och ångerknapp i köpflödet
+   så snart ett sådant byggs (lagkrav sedan 2026-06-19).
+3. **Momsregistrerat.** Priser anges inkl. moms som huvudtal, med exkl.-talet
+   utsatt för företagskunder.
+
+### Prisstegen — beslutad, ersätter tabellen längre upp
+
+Nyckeln är skiljelinjen, inte antalet användare. Belopp inkl. moms:
+
+| Nivå | Pris | Skiljer sig genom |
+|---|---|---|
+| Bygg ditt team | 0 kr | Resultatsida, inget konto, ditt att ta med |
+| Provmånad, egen nyckel | 90 kr | Full portal, kunden betalar sin förbrukning |
+| Provmånad, utan nyckel | 190 kr | Allt ingår, tydligt tak |
+| Köp teamet | 4 990 kr | Egen nyckel, inga fler avgifter |
+| Vi kör det åt er | 490 kr/mån | Ingen nyckel, uppdateringar + support ingår |
+| Team i molnet, flera användare | offert | Som idag |
+
+Det tidigare förslaget hade 4 990 engång och 490/mån som samma sak (båda
+"lokalt, egen nyckel, en användare") — break-even på tio månader, alltså en
+uppmaning att välja abonnemanget och sluta i månad tre. Nu är valet *äga eller
+slippa hålla i det*, vilket är ett val kunder kan.
+
+**Kostnadsunderlaget:** en teamgenerering via OpenRouter + DeepSeek V4 Flash
+($0,09/M in, $0,18/M ut) kostar ~$0,0045 — knappt 5 öre. Mätt mot faktiska
+promptfiler: ~26 000 in, ~12 000 ut över fyra anrop. Ett portalsvar kostar ~1 öre.
+En storanvändare i den nyckelfria provmånaden landar på ~26 kr mot 190 kr intäkt.
+**På Sonnet blir samma användare ~1 000 kr.** Den nyckelfria nivån går alltså
+bara ihop på en billig modell — modellvalet är en del av priset, inte en
+inställning kunden får ändra.
+
+### Vad som byggdes i samma pass
+
+- **`villkor.html` och `integritet.html` färdigskrivna.** Alla 28
+  beslutsmarkeringar stängda, utkastrutorna och `noindex` borta. Nya/ändrade
+  avsnitt: nyckelfritt läge (villkor § 3 och integritet § 5), prislista i
+  villkor § 4, konsumentavsnitt som riktig § 15, ångerrätt via mejl,
+  bokföringslagens sju år för konsumentköp.
+- **Två sanningsrättningar mot utkastet:** EU:s ODR-plattform är avvecklad och
+  hänvisas inte längre till; påståendet "databasen ligger inom EU" är struket
+  eftersom regionen inte går att utläsa ur `wrangler.toml` — kör
+  `npx wrangler d1 info` och skriv in den verifierade regionen innan kunddata lagras.
+- **Prislistan på hubben** ersatt enligt tabellen ovan. Bort: "Populärast" (ett
+  faktapåstående om marknaden med noll kunder), "Vi sköter driften" (ingen drift
+  finns i BYO), de två identiska 2 900-talen, och länken som sålde builder-
+  åtkomst för 2 900 kr fast den var gratis.
+- **Identitet i sidfoten** + "Vem står bakom" i kontaktsektionen. Sajten nämnde
+  tidigare inte Mikael någonstans.
+- **Publiceringsspärr i `build-dist.mjs`:** juridiksidorna kopieras till `dist/`
+  först när `[FYLL I]` är borta. Spärren fäller inte bygget, den hoppar över
+  sidorna och varnar — så orelaterade rättningar går fortfarande att deploya.
+  Sitemap-posterna ligger färdigskrivna men bortkommenterade.
+
+### Kvar innan något kan säljas
+
+1. **Org.nr, momsreg.nr och adress** fylls i för hand på tre ställen
+   (`villkor.html`, `integritet.html`, `index.html`). Tills dess är sajten
+   fortfarande prislista utan villkor.
+2. **En jurist bör läsa villkoren.** Texten är skriven mot rätt lagrum med
+   källor i filhuvudet, men är inte granskad. Tyngst att få läst: § 10
+   ansvarsbegränsning och § 15 ångerrätt vid påbörjad digital tjänst.
+3. **Den nyckelfria nivån är inte byggbar än** — kräver `/api/chat` på vår
+   nyckel med kvot- och takräkning. Sajten märker den "öppnar senare i höst".
+   Att lägga in en egen nyckel i kundens webbläsare är ingen genväg: nyckeln
+   blir läsbar. Kontextbudget-buggen (`portal/app.js:2684`) blir vår kostnad
+   i det läget och måste fixas först.
+4. **"Utveckla teamet" tappar sitt resultat.** Tillägg sparas bara i
+   `localStorage` (`atb_teamext_<slug>`) — inte till mappen, inte till molnet.
+   Rensad webbläsare eller ny dator = borta. Måste lösas innan någon betalar
+   490 kr/mån för att "uppdateringar ingår".
+
 - **Riktig kontaktväg:** info@mittaiteam.se satt upp via Cloudflare Email Routing
   (MX + SPF live, catch-all på, vidarebefordran till Gmail, leverans verifierad i
   Activity Log). Platshållaren `din@email.se` finns inte kvar någonstans i repot.

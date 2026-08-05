@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Integritetspolicy · Mitt AI-team</title>
 <meta name="description" content="Hur Mitt AI-team behandlar personuppgifter — per behandling, med rättslig grund, lagringstid och dina rättigheter." />
-<meta name="robots" content="noindex" />
 <link rel="stylesheet" href="/fonts/fonts.css" />
 <link rel="stylesheet" href="site/showcase.css" />
 
@@ -61,16 +60,6 @@
   @media (max-width: 640px) { .fakta li { grid-template-columns: 1fr; gap: 2px; } }
   .varning { border-left: 3px solid var(--red); background: var(--surface-2); padding: 16px 20px; margin: 0 0 18px; border-radius: 0 6px 6px 0; }
   .varning h4 { margin-top: 0; color: var(--red); }
-  /* Beslutmarkering: gul så att ingen råkar publicera ett halvfärdigt dokument.
-     Tas bort tillsammans med utkastrutan när besluten är fattade. */
-  .beslut { background: #FFF0A8; box-shadow: 0 0 0 2px #FFF0A8; border-bottom: 2px solid #C9A200; }
-  .valfritt { border: 1px dashed var(--accent); border-radius: 6px; padding: 16px 20px; margin: 0 0 18px; background: rgba(169,116,31,0.05); }
-  .valfritt > .flagga { font-family: var(--font-mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--accent-2); display: block; margin-bottom: 8px; }
-  .utkast { border: 2px solid #C9A200; background: #FFF7D6; border-radius: 6px; padding: 22px 24px; margin: 0 0 40px; color: #1E1913; }
-  .utkast h2 { font-size: 20px; margin-bottom: 10px; }
-  .utkast p { margin: 0 0 10px; font-size: 15.5px; line-height: 1.65; }
-  .utkast ol { margin: 0 0 10px 20px; display: flex; flex-direction: column; gap: 5px; font-size: 15.5px; }
-  .utkast p:last-child { margin-bottom: 0; }
 </style>
 </head>
 <body>
@@ -87,52 +76,27 @@
 <section>
   <div class="wrap narrow legal">
 
-<!-- ============================================================
-     UTKASTRUTA — TA BORT HELA BLOCKET MELLAN DESSA KOMMENTARER
-     när dokumentet är läst av jurist och de tre besluten är fattade.
-     Sök samtidigt efter class="beslut" och class="valfritt" i filen.
-     ============================================================ -->
-<div class="utkast">
-  <h2>Utkast — får inte publiceras som det är</h2>
-  <p>Det här dokumentet är ett arbetsutkast skrivet av verktygets egen
-  utvecklingsprocess. Det är inte granskat av jurist, och det ska läsas av en
-  jurist innan det publiceras.</p>
-  <p>Tre beslut måste dessutom vara fattade först, eftersom texten ändras av dem.
-  Alla ställen där de slår igenom är gulmarkerade nedan.</p>
-  <ol>
-    <li><b>Enskild firma eller aktiebolag?</b> En enskild näringsidkare har inget
-    separat organisationsnummer — personnumret är identitetsbeteckningen, och
-    e-handelslagen kräver att namn och adress i etableringsstaten hålls
-    tillgängliga.</li>
-    <li><b>Bara företagskunder, eller får konsumenter köpa?</b> Texten nedan utgår
-    från att tjänsten säljs till företag.</li>
-    <li><b>Momsregistrering eller undantaget för omsättning under 120 000 kr?</b></li>
-  </ol>
-  <p>Alla lagringstider nedan är förslag och behöver bekräftas mot hur du faktiskt
-  arbetar.</p>
-</div>
-<!-- ===== SLUT UTKASTRUTA ===== -->
-
-    <div class="lead-meta">Integritetspolicy · Senast ändrad <span class="beslut">[DATUM FYLLS I VID PUBLICERING]</span></div>
+    <div class="lead-meta">Integritetspolicy · Senast ändrad 2026-08-05</div>
     <h1 class="section-title" style="font-size:clamp(30px,4vw,44px)">Så behandlas personuppgifter</h1>
     <p class="section-lead" style="margin-bottom:10px">Mitt AI-team är byggt så att så lite som möjligt passerar oss. Den här sidan
-    beskriver de fem behandlingar som faktiskt finns, en i taget, med vad som samlas in, varför, hur länge och vad du kan
+    beskriver de sex behandlingar som faktiskt finns, en i taget, med vad som samlas in, varför, hur länge och vad du kan
     kräva. Är något oklart går det bra att fråga.</p>
 
     <!-- ============ 1. VEM ANSVARAR ============ -->
     <h3 id="ansvarig">Vem som ansvarar</h3>
 
-    <!-- BESLUT 1: Enskild firma eller AB. Vid enskild firma är personnumret
-         identitetsbeteckningen och adressen som publiceras är den registrerade
-         verksamhetsadressen. Vid AB: eget organisationsnummer, ingen personuppgift.
-         8 § e-handelslagen kräver namn, adress i etableringsstaten och e-postadress. -->
+    <!-- Beslutat 2026-08-05: enskild firma, momsregistrerad. Personnumret ÄR
+         organisationsnumret. Uppgifterna nedan är lagkrav (8 § e-handelslagen),
+         inte dekoration. Ändras adressen måste den ändras i index.html och
+         villkor.html samtidigt. -->
     <div class="kort">
       <h4>Personuppgiftsansvarig</h4>
       <ul class="fakta">
-        <li><b>Verksamhet</b><span class="beslut">[FIRMANAMN — beror på beslut 1: enskild firma eller AB]</span></li>
-        <li><b>Org.nr</b><span class="beslut">[ORGANISATIONSNUMMER — vid enskild firma är detta ditt personnummer]</span></li>
-        <li><b>Adress</b><span class="beslut">[GATUADRESS, POSTNUMMER LINDESBERG]</span></li>
+        <li><b>Verksamhet</b>Glänne &amp; Söner (enskild firma)</li>
         <li><b>Ansvarig person</b>Mikael Glänne</li>
+        <li><b>Org.nr</b>771110-5655</li>
+        <li><b>Momsreg.nr</b>SE771110565501</li>
+        <li><b>Adress</b>Kompassvägen 10, 711 35 Lindesberg</li>
         <li><b>E-post</b><a href="mailto:info@mittaiteam.se">info@mittaiteam.se</a></li>
         <li><b>Webbplats</b>mittaiteam.se</li>
       </ul>
@@ -155,6 +119,9 @@
     eller lägger som underlag. Vi ser det inte, lagrar det inte och kan inte hämta
     ut det. Det går direkt från din webbläsare till den AI-leverantör vars nyckel
     du har lagt in.</p>
+    <p>Använder du en nivå <em>utan</em> egen nyckel gäller det motsatta: då går
+    frågorna via oss, och vi blir ditt personuppgiftsbiträde. Det beskrivs under
+    <a href="#proxy">punkt 5</a>.</p>
 
     <h4>Din AI-leverantör är ditt biträde, inte vårt</h4>
     <p>Anthropic respektive OpenRouter behandlar dina uppgifter under det avtal
@@ -221,7 +188,7 @@
       <li><b>Mottagare</b>Cloudflare, som vidarebefordrar post till mittaiteam.se,
       och Google, som levererar den brevlåda posten hamnar i.</li>
       <li><b>Lagringstid</b>Förfrågningar som inte leder någonstans raderas inom
-      <span class="beslut">[FÖRSLAG: 12 månader — bekräfta]</span>. Korrespondens
+      12 månader. Korrespondens
       som hör till ett uppdrag sparas så länge uppdraget pågår och därefter så
       länge bokföringslagen kräver.</li>
     </ul>
@@ -274,11 +241,15 @@
       dig och dina kollegor.</li>
       <li><b>Rättslig grund</b>Att fullgöra avtalet med dig (artikel 6.1 b).</li>
       <li><b>Mottagare</b>Cloudflare, som lagrar databasen.</li>
-      <li><b>Lagringstid</b>Så länge du har tjänsten, och därefter
-      <span class="beslut">[FÖRSLAG: 90 dagar — bekräfta]</span> innan posten
-      raderas.</li>
-      <li><b>Var</b>Databasen ligger inom EU.
-      <span class="beslut">[BEKRÄFTA D1-REGION INNAN PUBLICERING]</span></li>
+      <li><b>Lagringstid</b>Så länge du har tjänsten, och därefter 90 dagar innan
+      posten raderas.</li>
+      <!-- Regionen är inte satt explicit i wrangler.toml och går därför inte att
+           utläsa ur konfigurationen. Kör `npx wrangler d1 info agent-team-builder`
+           och skriv in den verifierade regionen här INNAN något kunddata lagras.
+           Påstå ingenting om EU förrän det är kontrollerat. -->
+      <li><b>Var</b>Databasen driftas av Cloudflare. Vill du veta i vilken region
+      din post ligger innan du beställer, fråga oss så kontrollerar vi det och
+      svarar skriftligt.</li>
     </ul>
     <p>Innehåller ditt team personuppgifter som du är ansvarig för blir vi ditt
     personuppgiftsbiträde för just den lagringen. Då tecknar vi ett
@@ -289,8 +260,39 @@
     automatiskt när du bygger ett team i Builder — det utkastet ligger i din egen
     webbläsare.</p>
 
-    <!-- ============ 7. BEHANDLING 5 ============ -->
-    <h3 id="statistik">5. Besöksstatistik</h3>
+    <!-- ============ BEHANDLING 5 — NYCKELFRITT LÄGE ============ -->
+    <!-- OBS FÖR UTVECKLING: det här avsnittet beskriver en proxy (/api/chat) som
+         INTE är byggd. Så länge den inte finns säljs ingen nyckelfri nivå, och
+         då är avsnittet en beskrivning av vad som kommer att gälla. Byggs den:
+         bestäm och skriv in den faktiska loggningen (vad, hur länge, var) —
+         gissa inte, och lova inte "ingen loggning" om servern loggar. -->
+    <h3 id="proxy">5. När du använder portalen utan egen nyckel</h3>
+    <p>På de nivåer där ingen egen nyckel behövs går dina frågor via vår server,
+    på vårt konto hos AI-leverantören. Det är den enda situationen där innehållet
+    i dina frågor passerar oss, och därför beskrivs den för sig.</p>
+    <ul class="fakta">
+      <li><b>Uppgifter</b>Din fråga, det företagsminne och de underlag som skickas
+      med den, och svaret tillbaka — alltså de personuppgifter du själv väljer att
+      mata in.</li>
+      <li><b>Ändamål</b>Att leverera svaret till dig, och att räkna av din
+      förbrukning mot det tak som ingår i priset.</li>
+      <li><b>Vår roll</b>Personuppgiftsbiträde. Du, eller din arbetsgivare, är
+      personuppgiftsansvarig för innehållet. Ett personuppgiftsbiträdesavtal
+      tecknas innan du börjar använda tjänsten.</li>
+      <li><b>Rättslig grund</b>Vi behandlar uppgifterna på ditt uppdrag, enligt
+      biträdesavtalet. Grunden för din egen behandling bestämmer du.</li>
+      <li><b>Mottagare</b>Cloudflare, som kör servern, och den AI-leverantör vi
+      använder för nivån. Vilken det är framgår i portalen.</li>
+      <li><b>Lagringstid</b>Frågan och svaret mellanlagras bara så länge anropet
+      pågår och sparas inte av oss efteråt. Det vi behåller är räkneverket:
+      antal anrop och förbrukad mängd, som behövs för att taket ska fungera och
+      för att kunna fakturera rätt.</li>
+    </ul>
+    <p>Vill du inte att något av ditt innehåll passerar oss, välj en nivå med egen
+    nyckel. Då gäller punkt 3 i stället, och vi har ingen roll alls.</p>
+
+    <!-- ============ BEHANDLING 6 ============ -->
+    <h3 id="statistik">6. Besöksstatistik</h3>
     <p><b>I dag mäter webbplatsen ingenting.</b> Det finns inget analysverktyg, inga
     spårningsskript och inga kakor för statistik.</p>
     <p>När besöksstatistik införs blir den kakfri och räknar inte enskilda besökare
@@ -340,14 +342,14 @@
     när den senast skrevs om. Rör ändringen något väsentligt för dig som kund
     meddelar vi det per mejl.</p>
 
-    <!-- KONSUMENTBLOCK — behåll om beslut 2 landar i att konsumenter får köpa,
-         ta annars bort hela .valfritt-blocket. -->
-    <div class="valfritt">
-      <span class="flagga">Gäller bara om privatpersoner får köpa — beror på beslut 2</span>
-      <p style="margin-bottom:0">Köper du som privatperson gäller samma behandlingar
-      som ovan. Uppgifter om ditt köp sparas dessutom så länge bokföringslagen kräver,
-      och information om ångerrätten finns i <a href="villkor.html">villkoren</a>.</p>
-    </div>
+    <h3 id="privatperson">Om du köper som privatperson</h3>
+    <p>Samma behandlingar som ovan gäller. Uppgifter om ditt köp — namn, adress,
+    belopp och vad som köpts — sparas dessutom så länge bokföringslagen kräver,
+    alltså sju år efter utgången av det räkenskapsår köpet hörde till. Den
+    lagringen vilar på rättslig förpliktelse (artikel 6.1 c) och kan därför inte
+    raderas på begäran under den tiden.</p>
+    <p>Information om ångerrätten finns i
+    <a href="villkor.html#konsument">villkoren, avsnitt 15</a>.</p>
 
     <p style="margin-top:34px"><a href="villkor.html">Läs villkoren →</a></p>
 

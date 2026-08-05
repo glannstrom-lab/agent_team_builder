@@ -337,8 +337,15 @@ ny kund dyker upp i både galleri och portal automatiskt.
 > nedanför. Projektet arbetar i skurar (38 commits på sex dagar), så scopet
 > måste laddas i förväg — annars väljs det som är roligast under första timmen.
 >
-> **Nästa pass:** ta de tre besluten (enskild firma/AB, B2B-only, moms) och
-> skriv listan på 40 företag. Ingen kod.
+> De tre besluten är tagna 2026-08-05: **enskild firma Glänne & Söner**, **B2B
+> och privatpersoner**, **momsregistrerat**. Prisstegen är spikad (0 / 90 / 190 /
+> 4 990 / 490 per mån / offert) och står i lägesdokumentet — prislistan i
+> `index.html` och avsnitt 4 i `villkor.html` måste alltid ändras tillsammans.
+>
+> **Nästa pass:** fyll i org.nr, momsreg.nr och adress på de tre ställen där det
+> står `[FYLL I]`, kör `npm run build` (spärren släpper igenom juridiksidorna
+> först då), avkommentera sitemap-posterna — och skriv sedan listan på 40
+> företag. Ingen funktionskod.
 >
 > Fas 1–3 nedan står kvar som historik över hur kärnan byggdes.
 

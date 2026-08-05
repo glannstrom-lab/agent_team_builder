@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Villkor · Mitt AI-team</title>
 <meta name="description" content="Allmänna villkor för Mitt AI-team — vad som levereras, vad kunden själv ansvarar för, priser, immaterialrätt och ansvarsbegränsning." />
-<meta name="robots" content="noindex" />
 <link rel="stylesheet" href="/fonts/fonts.css" />
 <link rel="stylesheet" href="site/showcase.css" />
 
@@ -68,15 +67,10 @@
   @media (max-width: 640px) { .fakta li { grid-template-columns: 1fr; gap: 2px; } }
   .varning { border-left: 3px solid var(--red); background: var(--surface-2); padding: 16px 20px; margin: 0 0 18px; border-radius: 0 6px 6px 0; }
   .varning h4 { margin-top: 0; color: var(--red); }
-  .beslut { background: #FFF0A8; box-shadow: 0 0 0 2px #FFF0A8; border-bottom: 2px solid #C9A200; }
-  .valfritt { border: 1px dashed var(--accent); border-radius: 6px; padding: 16px 20px; margin: 0 0 18px; background: rgba(169,116,31,0.05); }
-  .valfritt > .flagga { font-family: var(--font-mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--accent-2); display: block; margin-bottom: 8px; }
-  .valfritt h4:first-of-type { margin-top: 0; }
-  .utkast { border: 2px solid #C9A200; background: #FFF7D6; border-radius: 6px; padding: 22px 24px; margin: 0 0 40px; color: #1E1913; }
-  .utkast h2 { font-size: 20px; margin-bottom: 10px; }
-  .utkast p { margin: 0 0 10px; font-size: 15.5px; line-height: 1.65; }
-  .utkast ol { margin: 0 0 10px 20px; display: flex; flex-direction: column; gap: 5px; font-size: 15.5px; }
-  .utkast p:last-child { margin-bottom: 0; }
+  .prisrad { display: grid; grid-template-columns: 1fr auto; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--border); font-size: 15px; }
+  .prisrad:last-child { border-bottom: 0; }
+  .prisrad b { font-weight: 600; }
+  .prisrad span { font-family: var(--font-mono); font-size: 13px; white-space: nowrap; padding-top: 2px; }
 </style>
 </head>
 <body>
@@ -93,62 +87,39 @@
 <section>
   <div class="wrap narrow legal">
 
-<!-- ============================================================
-     UTKASTRUTA — TA BORT HELA BLOCKET MELLAN DESSA KOMMENTARER
-     när dokumentet är läst av jurist och de tre besluten är fattade.
-     Sök samtidigt efter class="beslut" och class="valfritt" i filen.
-     ============================================================ -->
-<div class="utkast">
-  <h2>Utkast — får inte publiceras som det är</h2>
-  <p>Det här dokumentet är ett arbetsutkast. Det är inte granskat av jurist, och
-  det ska läsas av en jurist innan det publiceras. Villkor är det dokument som
-  avgör vad som gäller den dag något går fel, och det tål inte att gissas.</p>
-  <p>Tre beslut måste vara fattade först. Alla ställen där de slår igenom är
-  gulmarkerade nedan, och de konsumentspecifika delarna ligger i egna, streckade
-  block som antingen behålls eller stryks i sin helhet.</p>
-  <ol>
-    <li><b>Enskild firma eller aktiebolag?</b> Avgör vem som är avtalspart, vilket
-    identitetsnummer som publiceras och hur det personliga ansvaret ser ut.</li>
-    <li><b>Bara företagskunder, eller får konsumenter köpa?</b> Säljs tjänsten bara
-    till företag faller distansavtalslagen, ångerrätten och kravet på ångerknapp
-    bort. Släpps privatpersoner in måste de streckade blocken behållas och en
-    ångerfunktion byggas i köpflödet.</li>
-    <li><b>Momsregistrering eller undantaget för omsättning under 120 000 kr?</b>
-    Avgör om priser får anges exklusive moms och vad som ska stå på fakturan.</li>
-  </ol>
-  <p>Alla belopp, fristar och tider nedan är förslag som behöver bekräftas.</p>
-</div>
-<!-- ===== SLUT UTKASTRUTA ===== -->
-
-    <div class="lead-meta">Allmänna villkor · Version <span class="beslut">[1.0]</span> · Gäller från <span class="beslut">[DATUM]</span></div>
+    <div class="lead-meta">Allmänna villkor · Version 1.0 · Gäller från 2026-08-05</div>
     <h1 class="section-title" style="font-size:clamp(30px,4vw,44px)">Villkor</h1>
     <p class="section-lead" style="margin-bottom:10px">Vad du köper, vad du själv ansvarar för och vad som gäller om något går fel.
     Skrivet för att gå att läsa igenom på tio minuter.</p>
 
     <!-- ============ 1 ============ -->
     <h3 id="parterna">1. Parterna</h3>
-    <!-- BESLUT 1: firmanamn, identitetsnummer och adress. 8 § e-handelslagen
-         kräver att detta hålls tillgängligt "på ett enkelt, direkt och
-         stadigvarande sätt". Vid enskild firma är personnumret
-         identitetsbeteckningen. -->
+    <!-- Beslutat 2026-08-05: enskild firma. Personnumret ÄR identitetsbeteckningen
+         och momsreg.nr är SE + tiosiffrigt org.nr + 01. 8 § e-handelslagen kräver
+         att detta hålls tillgängligt "på ett enkelt, direkt och stadigvarande
+         sätt" — ta inte bort raderna för att sidan ska se renare ut. Ändras
+         adressen måste den ändras i index.html och integritet.html samtidigt. -->
     <div class="kort">
       <h4>Leverantör</h4>
       <ul class="fakta">
-        <li><b>Verksamhet</b><span class="beslut">[FIRMANAMN — beror på beslut 1]</span></li>
-        <li><b>Org.nr</b><span class="beslut">[ORGANISATIONSNUMMER — vid enskild firma personnumret]</span></li>
-        <li><b>Adress</b><span class="beslut">[GATUADRESS, POSTNUMMER LINDESBERG]</span></li>
-        <li><b>Momsreg.nr</b><span class="beslut">[SE… — utelämnas om undantaget för omsättning under 120 000 kr tillämpas, beslut 3]</span></li>
+        <li><b>Verksamhet</b>Glänne &amp; Söner (enskild firma)</li>
+        <li><b>Innehavare</b>Mikael Glänne</li>
+        <li><b>Org.nr</b>771110-5655</li>
+        <li><b>Momsreg.nr</b>SE771110565501</li>
+        <li><b>Adress</b>Kompassvägen 10, 711 35 Lindesberg</li>
         <li><b>E-post</b><a href="mailto:info@mittaiteam.se">info@mittaiteam.se</a></li>
+        <li><b>Webbplats</b>mittaiteam.se</li>
       </ul>
     </div>
-    <p>Nedan kallas leverantören "vi" och den som köper tjänsten "du" eller
-    "kunden". Villkoren gäller mellan oss och dig från det att du beställer.</p>
+    <p>Verksamheten drivs som enskild firma, vilket innebär att innehavaren är
+    avtalspart personligen. Nedan kallas leverantören "vi" och den som köper
+    tjänsten "du" eller "kunden". Villkoren gäller mellan oss och dig från det att
+    du beställer.</p>
 
-    <!-- BESLUT 2 -->
-    <p><span class="beslut">Tjänsten säljs till företag och andra
-    näringsidkare, inte till privatpersoner. Beställer du för ett företags räkning
-    intygar du att du får göra det.</span> <!-- Stryk meningen och behåll de
-    streckade konsumentblocken om beslut 2 landar i att konsumenter får köpa. --></p>
+    <p>Tjänsten säljs både till företag och till privatpersoner. Köper du som
+    privatperson gäller dessutom avsnitt 15, som ger dig rättigheter enligt
+    konsumentlagstiftningen. Beställer du för ett företags räkning intygar du att
+    du får göra det, och då gäller inte avsnitt 15.</p>
 
     <!-- ============ 2 ============ -->
     <h3 id="vad">2. Vad du får</h3>
@@ -175,9 +146,14 @@
     vad verktyget gör; vad det ger beror på hur ni använder det.</p>
 
     <!-- ============ 3 ============ -->
-    <h3 id="nyckel">3. Din API-nyckel och din leverantör</h3>
-    <p>För att använda portalen behöver du ett eget konto hos en AI-leverantör och
-    en egen API-nyckel. Du skaffar den själv, betalar den själv och lyder den
+    <h3 id="nyckel">3. Motorn bakom portalen</h3>
+    <p>Portalen behöver en språkmodell för att svara. Det finns två sätt att lösa
+    det, och de skiljer sig i vem som betalar förbrukningen och vem som är ansvarig
+    för behandlingen.</p>
+
+    <h4>Med din egen nyckel</h4>
+    <p>Du skaffar ett eget konto hos en AI-leverantör och lägger in en egen
+    API-nyckel i portalen. Du betalar förbrukningen själv och lyder den
     leverantörens villkor.</p>
     <ul>
       <li>Användningen debiteras av leverantören direkt mot ditt konto. Vi ser
@@ -192,20 +168,60 @@
       nyckel på en dator som andra använder utan att du vet vilka.</li>
     </ul>
 
+    <!-- OBS FÖR UTVECKLING: styckena nedan beskriver ett läge där anropen går via
+         vår server på vår nyckel. Det kräver en proxy (/api/chat) med kvot- och
+         takräkning som INTE är byggd ännu. Sälj ingen nyckelfri nivå förrän den
+         finns — då är texten här sann, inte innan. Se även avsnitt 9 och 11. -->
+    <h4>Utan egen nyckel</h4>
+    <p>På de nivåer där ingen nyckel behövs går anropen i stället via oss, på vårt
+    konto hos leverantören. Då gäller följande:</p>
+    <ul>
+      <li>Förbrukningen ingår i priset. Du får ingen separat räkning för den.</li>
+      <li>Användningen har ett tak, som anges när du beställer. Taket finns för att
+      priset ska gå att hålla, och du ser hur mycket av det du har använt i
+      portalen. När taket är nått pausas svaren till nästa period, eller så kan du
+      välja att lägga in en egen nyckel och fortsätta obegränsat.</li>
+      <li>Vi väljer vilken modell som används, och kan byta den. Vi meddelar i
+      förväg om bytet märkbart påverkar hur tjänsten fungerar.</li>
+      <li>I det här läget passerar dina frågor vår server. Vi blir då ditt
+      personuppgiftsbiträde för den överföringen, och ett
+      personuppgiftsbiträdesavtal tecknas innan du börjar använda tjänsten. Se
+      <a href="integritet.html#proxy">integritetspolicyn</a>.</li>
+      <li>Automatiserad eller maskinell användning, vidareförsäljning av
+      åtkomsten och delning av inloggningen utanför din egen verksamhet är inte
+      tillåtet. Vi får stänga av vid missbruk.</li>
+    </ul>
+
     <!-- ============ 4 ============ -->
     <h3 id="pris">4. Priser och betalning</h3>
-    <!-- BESLUT 3: momsformulering. Är verksamheten momsregistrerad anges pris
-         exkl. moms + momssats. Tillämpas 120 000-undantaget får ingen moms läggas
-         på, och fakturan ska hänvisa till undantaget i stället för att ange 0 %.
-         9 § e-handelslagen: pris ska anges klart, med skatter angivna för sig. -->
-    <p><span class="beslut">Priser anges exklusive moms, som tillkommer med 25 %.
-    [ALTERNATIV, om undantaget tillämpas: "Vi tillämpar undantaget från moms för
-    omsättning under 120 000 kronor. Ingen moms tillkommer, och fakturan innehåller
-    därför ingen moms."]</span></p>
+    <!-- Beslutat 2026-08-05: momsregistrerat. Priser anges inklusive moms som
+         huvudtal (krav mot konsument) med exkl.-talet utsatt för företagskunder.
+         9 § e-handelslagen: pris ska anges klart, med skatter angivna för sig.
+         Ändras prislistan här måste den ändras i index.html samtidigt. -->
+    <p>Verksamheten är momsregistrerad. Priserna nedan anges <b>inklusive moms om
+    25 %</b>, med beloppet exklusive moms angivet för dig som köper som företag och
+    drar av den.</p>
+
+    <div class="kort">
+      <h4>Prislista</h4>
+      <div class="prisrad"><b>Bygga ett team</b><span>0 kr</span></div>
+      <div class="prisrad"><b>Provmånad med egen nyckel</b><span>90 kr (72 kr exkl.)</span></div>
+      <div class="prisrad"><b>Provmånad utan nyckel</b><span>190 kr (152 kr exkl.)</span></div>
+      <div class="prisrad"><b>Köp teamet, egen nyckel</b><span>4 990 kr (3 992 kr exkl.)</span></div>
+      <div class="prisrad"><b>Vi kör det åt er, per månad</b><span>490 kr (392 kr exkl.)</span></div>
+      <div class="prisrad"><b>Team i molnet, flera användare</b><span>offert</span></div>
+    </div>
+
+    <p>Provmånaden löper i en månad från beställningen och övergår inte automatiskt
+    i något annat. Vill du fortsätta väljer du själv aktivt, och vill du inte det
+    behöver du inte göra någonting.</p>
     <p>Gällande priser är de som anges på mittaiteam.se vid beställningstillfället.
-    Betalning sker mot faktura med <span class="beslut">[FÖRSLAG: 15 dagars]</span>
-    betalningsvillkor, om inget annat avtalats. Vid försenad betalning tas
-    dröjsmålsränta enligt räntelagen ut samt lagstadgad påminnelseavgift.</p>
+    Betalning sker mot faktura med 15 dagars betalningsvillkor, om inget annat
+    avtalats. Vid försenad betalning tas dröjsmålsränta enligt räntelagen ut samt
+    lagstadgad påminnelseavgift.</p>
+    <p>Att bygga ett team på webbplatsen är kostnadsfritt och förutsätter inget
+    köp. Bygger du med din egen nyckel betalar du din leverantörs förbrukning för
+    den byggkörningen, vilket i skrivande stund rör sig om ören.</p>
 
     <!-- ============ 5 ============ -->
     <h3 id="engang">5. Engångsköp</h3>
@@ -214,10 +230,11 @@
     <ul>
       <li>Arbetet påbörjas när du har bekräftat beställningen och lämnat det
       underlag vi behöver.</li>
-      <li>Leverans sker <span class="beslut">[FÖRSLAG: inom 10 arbetsdagar]</span>
-      från bekräftad beställning, om inget annat avtalats.</li>
-      <li>I priset ingår <span class="beslut">[FÖRSLAG: en justeringsrunda inom 30
-      dagar]</span> efter leverans. Därefter debiteras ändringar löpande.</li>
+      <li>Leverans sker inom 10 arbetsdagar från bekräftad beställning, om inget
+      annat avtalats. Köper du ett team du redan har byggt och provkört är
+      leveransen normalt samma eller nästa arbetsdag.</li>
+      <li>I priset ingår en justeringsrunda inom 30 dagar efter leverans. Därefter
+      debiteras ändringar löpande.</li>
       <li>När teamet är levererat är köpet slutfört. Det finns ingen löpande
       kostnad, och heller ingen löpande tjänst.</li>
     </ul>
@@ -228,22 +245,24 @@
     <h4>Vad som ingår per månad</h4>
     <ul>
       <li>Molnlagring av teamet och en delbar länk till portalen.</li>
-      <li><span class="beslut">[FYLL I: exempelvis en uppdateringsrunda per kvartal,
-      supportsvar inom X arbetsdagar, tillgång till nya funktioner]</span></li>
+      <li>AI-förbrukningen upp till det tak som anges vid beställning — du behöver
+      alltså ingen egen nyckel.</li>
+      <li>Löpande uppdatering av teamet: nya agenter när verksamheten förändras,
+      och justering av befintliga roller. En uppdateringsrunda per kvartal ingår,
+      och görs på din begäran.</li>
+      <li>Support via e-post med svar inom två arbetsdagar under kontorstid.</li>
+      <li>Nya funktioner i portalen allteftersom de släpps.</li>
     </ul>
-    <p>Ingår inte: din API-förbrukning, egna utvecklingsuppdrag och arbete utöver
-    det som räknas upp ovan.</p>
+    <p>Ingår inte: egna utvecklingsuppdrag, arbete utöver en uppdateringsrunda per
+    kvartal, och förbrukning över taket.</p>
     <h4>Bindningstid och uppsägning</h4>
     <ul>
-      <li>Abonnemanget löper per kalendermånad utan bindningstid, om inget annat
-      avtalats skriftligt. <span class="beslut">[BEKRÄFTA — om bindningstid införs
-      måste den anges här och i beställningsflödet]</span></li>
+      <li>Abonnemanget löper per kalendermånad utan bindningstid.</li>
       <li>Uppsägning görs skriftligt till
       <a href="mailto:info@mittaiteam.se">info@mittaiteam.se</a> och gäller från
       utgången av innevarande betalperiod. Redan betald avgift återbetalas inte.</li>
-      <li>Vi kan säga upp abonnemanget med <span class="beslut">[FÖRSLAG: en
-      månads]</span> varsel. Har du betalat i förskott för tid efter uppsägningen
-      återbetalas den delen.</li>
+      <li>Vi kan säga upp abonnemanget med en månads varsel. Har du betalat i
+      förskott för tid efter uppsägningen återbetalas den delen.</li>
       <li>Prisändring aviseras minst 30 dagar i förväg och gäller från nästa
       betalperiod. Accepterar du inte den kan du säga upp innan den träder i kraft.</li>
     </ul>
@@ -253,9 +272,13 @@
     att läsa i vilken textredigerare som helst och att använda i andra AI-verktyg.</p>
     <p>Det du förlorar vid uppsägning är molnlagringen och den delbara länken. Dina
     samtal, ditt företagsminne och dina underlag berörs inte alls, eftersom de
-    ligger i din egen webbläsare och i din egen mapp. Molnposten raderas
-    <span class="beslut">[FÖRSLAG: 90 dagar]</span> efter att abonnemanget upphört.
-    Vill du ha den raderad direkt säger du bara till.</p>
+    ligger i din egen webbläsare och i din egen mapp. Molnposten raderas 90 dagar
+    efter att abonnemanget upphört. Vill du ha den raderad direkt säger du bara
+    till.</p>
+    <p>Har du lagt till egna agenter i portalen med "Utveckla teamet" sparas de i
+    den webbläsare du använde. Rensar du webbläsarens lagring försvinner de, och
+    de följer inte automatiskt med till en annan dator. Vill du ha dem bevarade:
+    koppla en mapp på datorn, eller säg till så lägger vi in dem i teamfilen.</p>
 
     <!-- ============ 7 ============ -->
     <h3 id="ip">7. Immaterialrätt</h3>
@@ -308,16 +331,18 @@
     <h3 id="tillgang">9. Tillgänglighet och support</h3>
     <p>Vi lämnar ingen servicenivågaranti, och det är ett medvetet val som följer
     av hur tjänsten är byggd.</p>
-    <p>Portalen är statiska filer som körs i din webbläsare. Det finns ingen server
-    hos oss som behandlar dina frågor och därför ingen drift att utlova. Går något
-    ned är det antingen din internetuppkoppling, din AI-leverantör eller
-    webbhotellet som levererar filerna — inget av det styr vi över. Fördelen är
-    den motsatta: skulle vår verksamhet upphöra fortsätter ditt team att fungera,
-    eftersom filerna är dina och motorn är din.</p>
+    <p>Portalen är statiska filer som körs i din webbläsare. Använder du din egen
+    nyckel finns ingen server hos oss som behandlar dina frågor, och därför ingen
+    drift att utlova. Går något ned är det antingen din internetuppkoppling, din
+    AI-leverantör eller webbhotellet som levererar filerna — inget av det styr vi
+    över. Fördelen är den motsatta: skulle vår verksamhet upphöra fortsätter ditt
+    team att fungera, eftersom filerna är dina och motorn är din.</p>
+    <p>Använder du en nivå utan egen nyckel går anropen via oss, och då är vi
+    beroende av att vår leverantör fungerar. Vi lämnar ingen garanterad
+    tillgänglighet för det heller, men ligger tjänsten nere mer än några dagar i
+    följd under en betald period förlänger vi perioden i motsvarande mån.</p>
     <p>Support ges via <a href="mailto:info@mittaiteam.se">info@mittaiteam.se</a>
-    på svenska, under kontorstid.
-    <span class="beslut">[FÖRSLAG: svar inom två arbetsdagar — bekräfta, och lova
-    inte kortare än du kan hålla]</span></p>
+    på svenska, under kontorstid, med svar inom två arbetsdagar.</p>
     <p>Vi utvecklar verktyget löpande och kan ändra eller ta bort funktioner.
     Funktioner som du betalar för i ett abonnemang tas inte bort utan att du
     meddelas i förväg och får möjlighet att säga upp.</p>
@@ -348,7 +373,8 @@
     personuppgiftsansvarig för det du matar in, och vi har ingen roll i den
     behandlingen. Sparar vi ett team åt dig i molnet blir vi ditt
     personuppgiftsbiträde för den lagringen, och då tecknar vi ett
-    personuppgiftsbiträdesavtal innan lagringen börjar.</p>
+    personuppgiftsbiträdesavtal innan lagringen börjar. Detsamma gäller om du
+    använder en nivå utan egen nyckel, eftersom dina frågor då passerar oss.</p>
 
     <!-- ============ 12 ============ -->
     <h3 id="sekretess">12. Sekretess</h3>
@@ -367,53 +393,56 @@
     <h3 id="lag">14. Tillämplig lag och tvist</h3>
     <p>Svensk rätt gäller för avtalet.</p>
     <p>Uppstår en tvist försöker vi lösa den genom samtal först. Går det inte
-    prövas den av allmän domstol med
-    <span class="beslut">[FÖRSLAG: Örebro tingsrätt]</span> som första instans.</p>
+    prövas den av allmän domstol med Örebro tingsrätt som första instans. Köper du
+    som privatperson kan du alltid väcka talan vid domstolen på din egen hemort,
+    och vända dig till Allmänna reklamationsnämnden — se avsnitt 15.</p>
 
-    <!-- ============================================================
-         KONSUMENTBLOCK — behåll bara om beslut 2 landar i att
-         privatpersoner får köpa. Ska det bort: ta bort hela
-         .valfritt-blocket nedan, och ta även bort meningen om att
-         tjänsten bara säljs till företag i avsnitt 1.
-         Behålls det: en ångerfunktion ("ångerknapp") måste också
-         byggas i köpflödet — krav i distansavtalslagen sedan
-         2026-06-19 — och priser ska anges inklusive moms.
-         ============================================================ -->
-    <div class="valfritt">
-      <span class="flagga">Gäller bara privatpersoner — beror på beslut 2, stryk annars hela blocket</span>
-      <h4>K1. Ångerrätt</h4>
-      <p>Köper du som privatperson har du enligt distansavtalslagen rätt att ångra
-      köpet inom 14 dagar från det att avtalet ingicks. Du behöver inte ange något
-      skäl.</p>
-      <p>Ångerrätten utövas antingen med ångerfunktionen i köpflödet
-      <span class="beslut">[MÅSTE BYGGAS — lagkrav sedan 19 juni 2026: en tydlig och
-      lättåtkomlig funktion i samma gränssnitt där avtalet ingicks, tillgänglig under
-      hela ångerfristen]</span> eller genom ett meddelande till
-      <a href="mailto:info@mittaiteam.se">info@mittaiteam.se</a>. Konsumentverkets
-      standardblankett går också bra.</p>
-      <p>Har du bett oss påbörja arbetet under ångerfristen och sedan ångrar dig,
-      ska du betala för den del som redan utförts. Är tjänsten helt utförd under
-      fristen med ditt uttryckliga samtycke, och du samtidigt har informerats om att
-      ångerrätten då upphör, finns ingen ångerrätt kvar.</p>
-      <p>Återbetalning sker inom 14 dagar från att vi tagit emot din anmälan, med
-      samma betalsätt som du använde.</p>
-      <h4>K2. Priser inklusive moms</h4>
-      <p>Priser till privatpersoner anges inklusive moms.
-      <span class="beslut">[Tillämpas 120 000-undantaget innehåller priset ingen
-      moms — formuleringen måste då justeras, beslut 3]</span></p>
-      <h4>K3. Reklamation och tvistlösning</h4>
-      <p>Fel i tjänsten ska reklameras inom skälig tid från det att du märkte
-      felet. Ett meddelande inom två månader räknas alltid som i tid.
-      Är vi oense kan du vända dig till Allmänna reklamationsnämnden,
-      Box 174, 101 23 Stockholm, <a href="https://www.arn.se/" rel="noopener">arn.se</a>.
-      Vi följer ARN:s rekommendationer. Du kan också använda EU-kommissionens
-      plattform för tvistlösning online.
-      <span class="beslut">[BEKRÄFTA att ODR-plattformen fortfarande används vid
-      publicering — den har varit under avveckling]</span></p>
-      <p>Ansvarsbegränsningen i avsnitt 10 gäller inte i den mån den inskränker dina
-      tvingande rättigheter som konsument.</p>
-    </div>
-    <!-- ===== SLUT KONSUMENTBLOCK ===== -->
+    <!-- ============ 15 ============ -->
+    <!-- OBS FÖR UTVECKLING: när ett köpflöde med direktbetalning byggs på
+         webbplatsen måste en ångerknapp läggas i samma gränssnitt — tydlig,
+         lättåtkomlig och tillgänglig under hela ångerfristen (distansavtalslagen
+         sedan 2026-06-19). Så länge avtal ingås via mejl och faktura är
+         mejlvägen nedan den funktion lagen pekar på. Uppdatera stycket samtidigt.
+         EU:s ODR-plattform är avvecklad och ska inte hänvisas till. -->
+    <h3 id="konsument">15. Om du köper som privatperson</h3>
+    <p>Det här avsnittet gäller bara dig som köper för privat bruk, alltså inte i
+    en näringsverksamhet. Det ger dig rättigheter utöver resten av villkoren, och
+    väger tyngre än dem om något skulle stå i strid.</p>
+
+    <h4>Ångerrätt</h4>
+    <p>Du har enligt distansavtalslagen rätt att ångra köpet inom 14 dagar från
+    det att avtalet ingicks. Du behöver inte ange något skäl.</p>
+    <p>Ångerrätten utövas genom ett meddelande till
+    <a href="mailto:info@mittaiteam.se">info@mittaiteam.se</a> — det räcker med en
+    mening om att du ångrar dig. Konsumentverkets standardblankett går också bra.
+    Vi bekräftar att vi tagit emot den.</p>
+    <p>Har du bett oss påbörja arbetet under ångerfristen och sedan ångrar dig,
+    ska du betala för den del som redan utförts. Är tjänsten helt utförd under
+    fristen med ditt uttryckliga samtycke, och du samtidigt har informerats om att
+    ångerrätten då upphör, finns ingen ångerrätt kvar. Vi ber om det samtycket
+    uttryckligen, och du kan alltid välja att i stället vänta ut fristen.</p>
+    <p>Återbetalning sker inom 14 dagar från att vi tagit emot din anmälan, med
+    samma betalsätt som du använde.</p>
+
+    <h4>Priser</h4>
+    <p>Priser till dig som privatperson anges inklusive moms, och det pris som
+    står är det du betalar. Se prislistan i avsnitt 4.</p>
+
+    <h4>Reklamation</h4>
+    <p>Fel i tjänsten ska reklameras inom skälig tid från det att du märkte felet.
+    Ett meddelande inom två månader räknas alltid som i tid.</p>
+
+    <h4>Om vi inte kommer överens</h4>
+    <p>Hör av dig till oss först. Löser det sig inte kan du vända dig till
+    Allmänna reklamationsnämnden, Box 174, 101 23 Stockholm,
+    <a href="https://www.arn.se/" rel="noopener">arn.se</a>. Vi följer ARN:s
+    rekommendationer. Du kan också vända dig till kommunens konsumentvägledning
+    eller till Hallå konsument.</p>
+
+    <h4>Dina tvingande rättigheter</h4>
+    <p>Ansvarsbegränsningen i avsnitt 10 gäller inte i den mån den inskränker
+    dina tvingande rättigheter som konsument. Detsamma gäller varje annan del av
+    dessa villkor.</p>
 
     <p style="margin-top:34px"><a href="integritet.html">Läs integritetspolicyn →</a></p>
 
