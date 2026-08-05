@@ -18,7 +18,13 @@
 
   /* text */
   --text: #1E1913;        /* bläck */
-  --text-dim: #6E6557;    /* dämpad */
+  /* Dämpad text. Var #6E6557 (5,5:1 mot papper) — godkänt enligt AA, men
+     läsarna är småföretagare 40+ på kontorsskärm mitt i en arbetsdag, och
+     dämpad text bär det mesta av portalens och sajtens förklaringar. 7,2:1
+     ger marginal utan att tonen tappar sin dämpning. OBS: samma värde står i
+     portal/portal.css — ändras det ena måste det andra följa med, annars
+     glider portalen från designsystemet. */
+  --text-dim: #5C5446;
 
   /* accent: ockra. --accent till ytor/linjer, --accent-2 till text
      (mörkare, klarar liten grad mot ljus botten). */

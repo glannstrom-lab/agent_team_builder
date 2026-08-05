@@ -11,7 +11,9 @@
   --surface-3: #EDE6DA;
   --border: #DFD6C7;
   --text: #1E1913;
-  --text-dim: #6E6557;
+  /* Höjd från #6E6557 (5,5:1) till 7,2:1 mot papper — se motiveringen i
+     site/showcase.css. Värdet måste vara identiskt i båda filerna. */
+  --text-dim: #5C5446;
   --accent: #A9741F;
   --accent-glow: rgba(169, 116, 31, 0.22);
   --accent-soft: rgba(169, 116, 31, 0.10);
@@ -226,7 +228,12 @@ a { color: inherit; }
   overflow: hidden;
 }
 
-.side-foot { padding: 12px 16px 14px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 2px; }
+/* Sidfoten byggs sist i .ws (se renderSidebar i app.js) — den hör till
+   arbetsytan i högerspalten, inte till laget i vänsterspalten. Därför ingen
+   egen sidopadding: arbetsytan har redan sin, och foten ska stå i linje med
+   knapparna ovanför. margin-top:auto trycker ner den till spaltens botten, så
+   att den tomma ytan under arbetsytan fylls i stället för att bara sluta. */
+.side-foot { margin-top: auto; padding: 14px 0 2px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 2px; }
 /* Etiketter i mono, som i designsystemet ("IBM Plex Mono i etiketter").
    Mono bär 11,5 px bättre än Karla gör — versalgemenerna är bredare och
    står isär. Vikt 500, för mono finns bara i 400/500. */
@@ -252,6 +259,12 @@ a { color: inherit; }
   font-family: inherit;
 }
 .link-btn:hover { color: var(--text); text-decoration: underline; }
+/* Pekskärm i valfri bredd — inte bara mobilbrytpunkten. En surfplatta i
+   liggande läge är bredare än 880 px men styrs fortfarande med tummen, och
+   foten har numera högerspaltens botten för sig själv, så plats finns. */
+@media (hover: none) {
+  .side-foot .hub-foot, .side-foot .link-btn { min-height: 44px; }
+}
 
 /* ---------- MAIN / CHAT ---------- */
 .main { display: flex; flex-direction: column; min-height: 0; height: 100%; }
@@ -322,8 +335,9 @@ a { color: inherit; }
      mitt i ett kort (190 px ruta, 292 px innehåll) utan att något antydde att
      det fanns mer. Nu växer allt fritt och hela drawern rullar som ett svep. */
   .sidebar .agent-list { flex: 0 0 auto; overflow: visible; min-height: auto; }
+  /* Foten ligger sist i .ws, så drawern rullar ner till "Töm allt härifrån"
+     i samma svep — inget behöver tryckas ner med margin-top:auto här. */
   .sidebar .ws { max-height: none; overflow: visible; flex: 0 0 auto; }
-  .sidebar .side-foot { margin-top: auto; }
   body.drawer-open .sidebar { transform: none; }
   body.drawer-open .drawer-backdrop {
     display: block; position: fixed; inset: 0; z-index: 55; background: rgba(30, 25, 19, 0.4);
@@ -346,7 +360,17 @@ a { color: inherit; }
     max-height: none; height: auto; overflow-y: auto; overscroll-behavior: contain;
     background: var(--surface); border-top: none; border-left: 1px solid var(--border);
     padding: 14px 12px 24px; gap: 2px;
+    /* Sidfoten sitter längst ner i den här spalten. På en låg skärm (1366x768
+       med åtta agenter och sex rutiner) hamnar den under kanten, och då måste
+       det synas att spalten går att rulla. Samma lösning som agentlistan
+       redan har: tunn scrollbar i systemets egna färger, med reserverad
+       plats så att innehållet inte hoppar i sidled när den dyker upp. */
+    scrollbar-gutter: stable;
   }
+  .app .ws::-webkit-scrollbar { width: 8px; }
+  .app .ws::-webkit-scrollbar-track { background: transparent; }
+  .app .ws::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+  .app .ws::-webkit-scrollbar-thumb:hover { background: var(--accent); }
   /* Sidopanelen kan nu använda hela höjden till laget. */
   .app .agent-list { padding: 12px 8px; }
   .demo-text { flex: 1 1 260px; }
@@ -359,13 +383,11 @@ a { color: inherit; }
   .app { padding-right: 336px; grid-template-columns: 320px minmax(0, 1fr); }
   .app .ws { width: 336px; padding: 16px 16px 28px; }
 }
-/* Låg skärm (t.ex. 1366x768 eller ett fönster som inte är maximerat): sidfoten
-   får krympa så att laget behåller sin plats. Bara i trekolumnsläget — på
-   mobil ska träffytorna vara kvar på 44 px. */
+/* Låg skärm (t.ex. 1366x768 eller ett fönster som inte är maximerat): laget
+   ska få plats i vänsterspalten. Sidfoten krymps inte längre — den delar
+   inte utrymme med agentlistan sedan den flyttade till högerspalten, och de
+   29 px höga raderna den hade här var under alla rimliga träffytor. */
 @media (min-width: 880px) and (max-height: 980px) {
-  .side-foot { padding: 5px 16px 8px; }
-  .side-foot .hub-foot, .side-foot .link-btn { min-height: 29px; }
-  .side-foot .side-label { padding: 2px 0 0; }
   .app .agent-list { padding: 8px 8px 10px; }
   .brand { padding: 15px 20px 14px; }
 }
@@ -650,7 +672,8 @@ a { color: inherit; }
   .composer { padding: 12px 14px 18px; gap: 8px; }
   .ovl { padding: 4vh 12px 12px; }
   .ovl-box { padding: 18px 16px; border-radius: 14px; }
-  .side-foot { padding: 12px 16px 20px; }
+  /* Sidopaddingen kommer från .ws; foten får bara luft uppåt och nedåt. */
+  .side-foot { padding: 14px 0 20px; }
   .side-foot .hub-foot,
   .link-btn { min-height: 44px; }
   .hublink { min-height: 44px; }

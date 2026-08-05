@@ -1196,8 +1196,14 @@ function renderSidebar() {
   beta.appendChild(betaLink);
   beta.appendChild(document.createTextNode("."));
   ws.appendChild(beta);
-  side.appendChild(ws);
 
+  // ---- Sidfot: hör hemma i arbetsytan, inte i sidopanelen ----
+  // Två skäl. Vänsterspalten blir helt och hållet laget, vilket var hela
+  // poängen med trekolumnen — inga hublänkar eller nyckelknappar som delar
+  // plats med de anställda. Och högerspalten, som annars tog slut ungefär två
+  // tredjedelar ner och lämnade en stor tom yta, får något att avsluta med.
+  // .ws ligger kvar som barn till .sidebar, så på mobil följer foten med in i
+  // drawern precis som förut — ingen rad hamnar utom räckhåll bakom ☰.
   const foot = el("div", "side-foot");
   const hub = el("a", "hub-foot", "← Till hubben"); hub.href = "../";
   foot.appendChild(hub);
@@ -1248,7 +1254,8 @@ function renderSidebar() {
   wipe.title = "Tar bort nyckel, chatthistorik och team-utkast från den här webbläsaren";
   wipe.onclick = wipeAll;
   foot.appendChild(wipe);
-  side.appendChild(foot);
+  ws.appendChild(foot);
+  side.appendChild(ws);
 
   return side;
 }
