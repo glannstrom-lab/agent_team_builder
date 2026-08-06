@@ -44,6 +44,26 @@ Kvarstår på kvalitet: systemprompterna är i snitt 1 319 tecken mot DeepSeeks
 "AI:n ingår" och Buildern frågar inte längre kunden om någon nyckel — utan vår
 svarar `/api/ai` 503 och produkten är död i vattnet.
 
+## Nästa uppgift: fem gratissvar, sedan provmånad
+
+Beslutat av Mikael 2026-08-06: **fem svar gratis i portalen**, därefter krävs
+provmånaden. Bygget förblir gratis och obegränsat — det är säljargumentet.
+
+Tre saker måste stämma, annars blir spärren värre än ingen spärr:
+
+1. **Bygget får inte räknas.** Det går genom samma `/api/ai` men ska förbli
+   fritt. Räkningen måste alltså kunna skilja på ett bygge och ett portalsvar,
+   och det får inte avgöras av en flagga klienten sätter — då är betalväggen
+   en rad JavaScript att ta bort.
+2. **En betalande kund får aldrig mötas av den.** `teams.plan` säger vad som
+   köpts; fem-gränsen ska bara gälla team utan betald plan.
+3. **Kunden ska se hur många som är kvar** innan de tar slut. En spärr som
+   kommer utan förvarning läses som ett fel, inte som ett erbjudande.
+
+Rekommenderad lösning: portalen skickar teamets slug, proxyn slår upp
+`teams.plan`, och räkningen sker per team i `ai_usage` (subject `team:<slug>`).
+Demo- och utkastteam räknas mot IP-hinken som i dag.
+
 ## Läget just nu
 
 Köpflödet fungerar hela vägen och är verifierat i riktig webbläsare: bygge →
