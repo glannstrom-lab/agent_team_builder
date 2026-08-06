@@ -194,13 +194,28 @@ nivåerna 190/490 är strukna — ingen molnstruktur för underhåll finns, och
 `functions/api/_stripe.js` måste alltid ändras samma dag** (ett test i
 `test/stripe.mjs` fäller bygget om nivålistan växer).
 
-**En modell, inga alternativ (2026-08-05):** hela produkten kör
-`deepseek/deepseek-v4-flash` via OpenRouter. Valet bor i `atb-claude.js`, och
-`stream()` ignorerar vilken modell anropet än skickar med — det gick inte att
-lita på att varje anropsställe skickade rätt. Anthropic-nycklar avvisas med ett
-förklarande fel. Ändras modellraden måste prisantagandena i `index.html` och
-avsnitt 3–4 i `villkor.html` följa med; de bygger på kostnadsnivån
-$0,14/$0,28 per miljon tokens.
+**En modell, inga alternativ (bytt 2026-08-06):** hela produkten kör
+`openai/gpt-oss-120b` via OpenRouter. Valet bor i `atb-claude.js` och i
+`functions/api/ai.js`, och `stream()` ignorerar vilken modell anropet än
+skickar med.
+
+Bytet från `deepseek/deepseek-v4-flash` gjordes efter mätning över hela
+pipelinen med samma underlag: **9,1 s mot 241 s och 0,025 kr mot 0,076 kr per
+bygge.** DeepSeek klarade dessutom inte att producera ett stort nästlat
+JSON-dokument — sammanställningssteget föll 0 av 4 gånger, och varken högre
+tokentak, `response_format`, `require_parameters` eller avstängt resonemang
+hjälpte. Felen varierade mellan körningar, så inläsningen gick inte att laga.
+
+**Sammanställningssteget använder ett riktigt JSON-schema i strict-läge**
+(`TEAM_SCHEMA` i `builder/builder.js`), inte bara `json_object`. Skillnaden
+är avgörande: `json_object` garanterar syntax, inte innehåll — utan schema
+utelämnade modellen `starters` och `routines`, alltså portalens agentkort och
+veckorutiner. Med `required` och `minItems` kan den inte göra det.
+
+Ändras modellraden måste kostnadssiffrorna i `index.html` (`#forbrukning`)
+och avsnitt 3–4 i `villkor.html` följa med. Nuvarande nivå: $0,037/$0,170 per
+miljon tokens, vilket ger cirka 0,25 öre per svar och under 50 öre i månaden
+för en normalanvändande kund.
 
 **Konton (M3, 2026-08-05):** portalen har två dörrar. Exempelteamen nås som förut
 med `?team=` i adressen; den nakna adressen frågar kontot först. Inloggning sker

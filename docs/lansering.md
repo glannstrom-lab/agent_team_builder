@@ -26,6 +26,20 @@ fair use) och ett globalt dygnstak som skyddar kassan.
 molnstruktur för att underhålla team åt kunder, och "ert för alltid" vore ett
 löfte utan drift bakom sig. Molnstrukturen byggs ut när det finns intäkt.
 
+**3. Modellen är bytt till `openai/gpt-oss-120b`** (2026-08-06 kväll). Mätt över
+hela pipelinen med samma underlag: **9,1 s mot 241 s, 0,025 kr mot 0,076 kr**.
+DeepSeek klarade dessutom inte att producera teamet som JSON — 0 av 4 försök,
+och varken högre tokentak, `response_format`, `require_parameters` eller
+avstängt resonemang hjälpte. Sammanställningen använder nu ett riktigt
+JSON-schema i strict-läge, vilket också var det som fick tillbaka `starters`
+och `routines`: `json_object` garanterar syntax, inte innehåll.
+
+Verifierat i webbläsare: bygge utan nyckel → följdfrågor → färdigt team på
+**28 sekunder**, fyra agenter, tre startförslag var, tre rutiner, två avvisade.
+
+Kvarstår på kvalitet: systemprompterna är i snitt 1 319 tecken mot DeepSeeks
+2 100. Åtgärdas med `minLength` i schemat — inte gjort, inte verifierat.
+
 **Detta får inte deployas förrän `OPENROUTER_KEY` är satt.** Sajten säljer nu
 "AI:n ingår" och Buildern frågar inte längre kunden om någon nyckel — utan vår
 svarar `/api/ai` 503 och produkten är död i vattnet.

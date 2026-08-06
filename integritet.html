@@ -33,10 +33,19 @@
   ············································································
   - ETT DRIFTLÄGE sedan 2026-08-06. Kunden har ingen egen API-nyckel. Alla
     anrop går kundens webbläsare → vår Cloudflare-funktion → OpenRouter → den
-    leverantör som driftar DeepSeek V4 Flash. Vi är därmed ALLTID
-    personuppgiftsbiträde för innehållet i frågorna. Skriv aldrig in text om
-    att kunden lägger in en egen nyckel, eller att inget passerar oss — den
-    produkten finns inte längre.
+    leverantör som kör modellen. Vi är därmed ALLTID personuppgiftsbiträde för
+    innehållet i frågorna. Skriv aldrig in text om att kunden lägger in en egen
+    nyckel, eller att inget passerar oss — den produkten finns inte längre.
+  - MODELLEN är openai/gpt-oss-120b, bytt och verifierad i drift 2026-08-06.
+    Sanningen står i MODEL_ID i functions/api/ai.js (och MODEL_ID/MODEL_LABEL i
+    atb-claude.js) — läs den raden innan modellnamnet ändras här. Öppna vikter
+    från OpenAI (USA); OpenAI kör den INTE åt oss. Körningen sker hos den
+    leverantör OpenRouter dirigerar till, i mätningarna Cerebras (USA), och
+    listan kan variera eftersom koden styr mot snabbaste leverantör
+    (provider: { sort: "throughput" }), inte mot en namngiven.
+    HISTORIK: fram till 2026-08-06 kördes DeepSeek V4 Flash, och texten
+    resonerade om Kina. Det resonemanget är struket, inte mildrat — skriv inte
+    tillbaka det utan att modellraden i koden säger något annat.
   - Proxyn heter /api/ai (functions/api/ai.js), byggd 2026-08-06. Punkt 3 är
     skriven mot den koden. Ändras vad som lagras eller loggas där måste punkt 3
     skrivas om samma dag. Lova aldrig "ingen loggning" om servern loggar.
@@ -230,7 +239,7 @@
     <p>Portalen är en webbsida som körs i din webbläsare. När du ställer en fråga
     skickas den till en funktion på vår server hos Cloudflare, som skickar den
     vidare till tjänsten OpenRouter på vårt konto. OpenRouter dirigerar anropet
-    till den leverantör som driftar språkmodellen DeepSeek V4 Flash, och svaret tar
+    till den leverantör som kör språkmodellen GPT-OSS 120B, och svaret tar
     samma väg tillbaka till din skärm. Med frågan följer det du har lagt in som
     företagsminne och de underlag du har slagit på.</p>
     <p>Du behöver alltså inget eget konto och ingen egen API-nyckel hos någon
@@ -258,7 +267,7 @@
       innan du matar in något.</li>
       <li><b>Underbiträden</b>Cloudflare, Inc. (kör funktionen och databasen),
       OpenRouter, Inc. (förmedlar anropet till en modell) och den leverantör som
-      driftar DeepSeek V4 Flash och utför själva beräkningen.</li>
+      kör språkmodellen och utför själva beräkningen.</li>
       <li><b>Lagringstid</b>Frågan och svaret finns hos oss bara så länge anropet
       pågår. De skrivs inte till vår databas och finns inte kvar när svaret är
       levererat.</li>
@@ -293,12 +302,14 @@
 
     <div class="varning">
       <h4>Om modellen och var den körs</h4>
-      <p style="margin-bottom:10px">Modellen heter DeepSeek V4 Flash och är
-      utvecklad av DeepSeek, ett kinesiskt AI-bolag. Vi når den via OpenRouter,
-      som är ett amerikanskt bolag. Själva beräkningen sker hos den
-      datacenterleverantör OpenRouter dirigerar anropet till, och <b>den kan ligga
-      utanför EU och EES</b>. Vår egen funktion körs i Cloudflares nät, som når
-      hela världen.</p>
+      <p style="margin-bottom:10px">Modellen heter GPT-OSS 120B och är en
+      öppenviktsmodell från OpenAI, ett amerikanskt bolag. Att den kommer från
+      OpenAI betyder inte att OpenAI kör den åt oss — vikterna är öppna, och
+      beräkningen utförs av den leverantör OpenRouter dirigerar anropet till. Vid
+      våra mätningar har det varit Cerebras, i USA, men vilka leverantörer som är
+      aktuella kan variera över tid. <b>Beräkningen kan alltså ske utanför EU och
+      EES.</b> Vi når modellen via OpenRouter, som också är ett amerikanskt bolag,
+      och vår egen funktion körs i Cloudflares nät, som når hela världen.</p>
       <!-- SANNINGSKRAV: koden (functions/api/ai.js) skickar provider:
            { sort: "throughput" } — alltså INGEN vitlista. Skriv inte att urvalet
            är begränsat förrän koden begränsar det. Att anrop inte får sparas för
@@ -421,15 +432,14 @@
     <h3 id="tredjeland">Överföring utanför EU och EES</h3>
     <p>Det här avsnittet är det som brukar avgöra om en byrå eller mottagning kan
     använda tjänsten, så det står rakt.</p>
-    <p><b>Dina frågor kan behandlas utanför EU och EES.</b> Vi skickar dem via
-    OpenRouter, ett amerikanskt bolag, till den leverantör som driftar DeepSeek V4
-    Flash. Modellen är utvecklad av DeepSeek, ett kinesiskt AI-bolag, och den
-    leverantör som utför beräkningen kan finnas i eller utanför EU beroende på
-    vart anropet dirigeras. I dag styr vi anropet efter vilken leverantör som
-    svarar snabbast, och vi kan alltså inte lova att all behandling sker inom
-    EU. Behöver din verksamhet den garantin ska du
-    inte mata in materialet i portalen — hör av dig i stället, så säger vi rakt ut
-    om vi kan lösa det eller inte.</p>
+    <p><b>Dina frågor behandlas i dag utanför EU och EES.</b> Vi skickar dem via
+    OpenRouter, ett amerikanskt bolag, till den leverantör som kör språkmodellen
+    GPT-OSS 120B. Vid våra mätningar har den leverantören varit Cerebras, i USA.
+    Eftersom vi styr anropet efter vilken leverantör som svarar snabbast kan det
+    bli en annan leverantör, i USA eller i ett annat land, och vi kan alltså inte
+    lova att all behandling sker inom EU. Behöver din verksamhet den garantin ska
+    du inte mata in materialet i portalen — hör av dig i stället, så säger vi rakt
+    ut om vi kan lösa det eller inte.</p>
     <p>Cloudflare och Google är amerikanska bolag, och deras behandling kan innebära
     överföring till länder utanför EU och EES. Överföringarna vilar på EU-kommissionens
     standardavtalsklausuler och, i förekommande fall, på beslutet om adekvat

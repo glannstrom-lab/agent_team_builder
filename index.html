@@ -350,7 +350,7 @@ if (location.hostname === 'agent-team-builder-2xy.pages.dev') location.replace('
   inte innan.
 
   NYCKELN: ingen kund har någonsin en egen API-nyckel. Vi kör AI:n på vår nyckel
-  (DeepSeek V4 Flash via OpenRouter) på alla tre nivåerna, med ett fair use-tak på
+  (openai/gpt-oss-120b via OpenRouter) på alla tre nivåerna, med ett fair use-tak på
   1 000 svar per konto och månad. Det finns inget lokalt läge att sälja. Ändras
   taket ska det ändras här, i avsnitt 3 i villkor.html och i #forbrukning nedan
   samma dag.
@@ -417,11 +417,15 @@ if (location.hostname === 'agent-team-builder-2xy.pages.dev') location.replace('
   Id:t heter fortfarande "forbrukning" med flit: villkor.html, branschsidorna
   och portalen länkar hit. Byt det inte utan att söka igenom repot först.
 
-  Siffrorna nedan bygger på deepseek/deepseek-v4-flash via OpenRouter till
-  $0,14 in / $0,28 ut per miljon tokens och 10,50 kr per dollar — samma
-  antaganden som SEK_PER_USD i portal/app.js och som modellraden i
-  atb-claude.js. Byts modellen måste den här sektionen, prislistan ovan och
-  avsnitt 3–4 i villkor.html ändras samma dag.
+  MODELLBYTE 2026-08-06: openai/gpt-oss-120b via OpenRouter ersatte
+  deepseek/deepseek-v4-flash, med snabbaste leverantör (i mätningarna Cerebras,
+  USA). Ett helt teambygge tar 28 sekunder mot fyra minuter förut.
+  Siffrorna nedan bygger på $0,037 in / $0,170 ut per miljon tokens och
+  10,50 kr per dollar — samma antaganden som SEK_PER_USD i portal/app.js och som
+  modellraden i atb-claude.js. Byts modellen igen måste den här sektionen,
+  prislistan ovan och avsnitt 3–4 i villkor.html ändras samma dag. De gamla
+  DeepSeek-talen (0,5–1 öre per fråga, 2–4 kr i månaden) låg alltså för högt —
+  hittar du dem någonstans är den texten inte omräknad.
 
   2026-08-06: kunden har ingen egen nyckel längre, så de fem stegen för att
   skaffa en OpenRouter-nyckel är borttagna härifrån — de beskrev något ingen
@@ -438,19 +442,19 @@ if (location.hostname === 'agent-team-builder-2xy.pages.dev') location.replace('
     </div>
 
     <div class="reveal" style="background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 26px 28px">
-      <p style="margin: 0 0 18px"><b>Kort svar: ett par kronor i månaden per kund.</b> Vi kör DeepSeek V4 Flash, som kostar ungefär en tvåhundradel av vad de dyraste modellerna gör. Ett svar landar på ett halvt öre till tre öre — vår kostnad, inte er.</p>
+      <p style="margin: 0 0 18px"><b>Kort svar: några tioöringar i månaden per kund.</b> Vi kör gpt-oss-120b, OpenAI:s öppenviktsmodell, hos den leverantör som svarar snabbast. Den kostar ungefär en fyrahundradel av vad de dyraste modellerna gör, och ett svar landar på en fjärdedels öre — vår kostnad, inte er.</p>
 
       <div style="display: grid; gap: 12px; border-top: 1px solid var(--border); padding-top: 18px">
-        <div style="display: flex; justify-content: space-between; gap: 18px"><span>En fråga till en agent</span><b style="white-space: nowrap">≈ 0,5–1 öre</b></div>
-        <div style="display: flex; justify-content: space-between; gap: 18px"><span>En lång tråd med era egna underlag inlästa</span><b style="white-space: nowrap">≈ 2–3 öre</b></div>
-        <div style="display: flex; justify-content: space-between; gap: 18px"><span>Ett möte där fem agenter tycker till</span><b style="white-space: nowrap">≈ 10–15 öre</b></div>
-        <div style="display: flex; justify-content: space-between; gap: 18px"><span>Att bygga ett helt nytt team</span><b style="white-space: nowrap">≈ 8 öre</b></div>
+        <div style="display: flex; justify-content: space-between; gap: 18px"><span>En fråga till en agent</span><b style="white-space: nowrap">≈ 0,25 öre</b></div>
+        <div style="display: flex; justify-content: space-between; gap: 18px"><span>En lång tråd med era egna underlag inlästa</span><b style="white-space: nowrap">≈ 0,75 öre</b></div>
+        <div style="display: flex; justify-content: space-between; gap: 18px"><span>Ett möte där fem agenter tycker till</span><b style="white-space: nowrap">≈ 2 öre</b></div>
+        <div style="display: flex; justify-content: space-between; gap: 18px"><span>Att bygga ett helt nytt team</span><b style="white-space: nowrap">≈ 2,5 öre</b></div>
       </div>
 
       <div style="display: grid; gap: 12px; border-top: 1px solid var(--border); margin-top: 18px; padding-top: 18px">
-        <div style="display: flex; justify-content: space-between; gap: 18px"><span><b>Lugn månad</b> — någon fråga om dagen</span><b style="white-space: nowrap">under 1 kr</b></div>
-        <div style="display: flex; justify-content: space-between; gap: 18px"><span><b>Normal månad</b> — fem frågor om dagen och ett möte i veckan</span><b style="white-space: nowrap">2–4 kr</b></div>
-        <div style="display: flex; justify-content: space-between; gap: 18px"><span><b>Intensiv månad</b> — tjugo frågor om dagen, dagliga rutiner</span><b style="white-space: nowrap">8–12 kr</b></div>
+        <div style="display: flex; justify-content: space-between; gap: 18px"><span><b>Lugn månad</b> — någon fråga om dagen</span><b style="white-space: nowrap">under 10 öre</b></div>
+        <div style="display: flex; justify-content: space-between; gap: 18px"><span><b>Normal månad</b> — fem frågor om dagen och ett möte i veckan</span><b style="white-space: nowrap">under 50 öre</b></div>
+        <div style="display: flex; justify-content: space-between; gap: 18px"><span><b>Intensiv månad</b> — tjugo frågor om dagen, dagliga rutiner</span><b style="white-space: nowrap">cirka 2 kr</b></div>
       </div>
 
       <p style="color: var(--text-dim); font-size: 14.5px; margin: 18px 0 0; line-height: 1.6">Det är alltså vad en aktiv kund kostar oss i AI — några kronor mot en månadsavgift på 290. Marginalen ligger i månadsavgiften, inte i att ni ska hålla igen på frågorna, och det är därför vi kan säga att användningen ingår utan att sedan börja räkna. Siffrorna är räknade på $0,14 in och $0,28 ut per miljon tokens och 10,50 kr per dollar, och gäller i skrivande stund — modellpriser har hittills bara sjunkit.</p>
