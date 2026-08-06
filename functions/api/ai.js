@@ -38,7 +38,17 @@ const MAX_CALLS_PER_DAY = 4000;       // globalt; ~ett par hundra kronor i värs
 
 // Klientens maxTokens tas emot men klampas: en klient är inte att lita på, och
 // det är vi som betalar för svaret.
-const MAX_OUTPUT_TOKENS = 4096;
+//
+// 16384 och inte 4096, vilket var första gissningen. Buildern begär 16000 för
+// sammanställningssteget, som ska skriva ut hela teamet som JSON — fem agenter
+// med systemprompter blir långt. Med taket på 4096 kapades svaret mitt i, och
+// kapad JSON är ogiltig JSON: hela bygget föll på "Modellen returnerade ogiltig
+// JSON", vilket pekade på modellen i stället för på taket. Det tog ett helt
+// bygge i webbläsaren att hitta, för felet syns inte i något API-svar.
+//
+// Kostnaden i värsta fall är 16384 × $0,28/M ≈ 5 öre. Ett misslyckat bygge
+// kostar en kund.
+const MAX_OUTPUT_TOKENS = 16384;
 // Ett normalt anrop med systemprompt, underlag och historik ligger långt under.
 // Taket finns för att en manipulerad klient inte ska kunna skicka en roman.
 const MAX_INPUT_CHARS = 200000;
@@ -120,7 +130,33 @@ export async function onRequestPost(context) {
       // i sekunden — uppmätt i Buildern 2026-08-06, där ett researchsteg tog
       // över fem minuter och användaren avbröt. Det kostar något mer per token;
       // en kund som lägger ner kostar allt.
-      provider: { sort: "throughput" },
+      // require_parameters i JSON-läget: OpenRouter dirigerar annars till
+      // snabbaste leverantör oavsett om den stödjer response_format, och den
+      // som inte gör det IGNORERAR det tyst. Uppmätt 2026-08-06: Baidu
+      // returnerade `,\ntagline": ...` — ett tappat inledande citattecken mitt
+      // i ett i övrigt komplett svar. Ett garanterat format som inte
+      // garanteras är värre än inget, för då litar koden på det.
+      provider: body.json
+        ? { sort: "throughput", require_parameters: true }
+        : { sort: "throughput" },
+      // JSON-läge när anroparen begär det. Buildern ber modellen om ett helt
+      // team som JSON, och "returnera ENBART giltig JSON" i systemprompten
+      // räcker inte: DeepSeek lägger till prosa, staket eller oescapade
+      // radbrytningar och hela bygget faller på sista steget. Med
+      // response_format garanterar leverantören syntaxen i stället för att vi
+      // hoppas på den.
+      // Resonemanget stängs av i JSON-läget. DeepSeek V4 Flash är en
+      // resonerande modell och tänker FÖRE svaret — uppmätt 2026-08-06: 419 av
+      // 467 utdatatokens gick till resonemang för en trivial JSON-uppgift.
+      // Resonemangstokens räknas mot max_tokens, så de kapade teamet mitt i:
+      // det var den egentliga orsaken till "ogiltig JSON", inte modellens
+      // formatvilja. Att formatera färdig text till JSON kräver inget tänkande.
+      //
+      // Kvar PÅ i de andra stegen (research, skalning, förslag) — där är
+      // resonemanget själva arbetet, och det är dem produkten säljer.
+      ...(body.json
+        ? { response_format: { type: "json_object" }, reasoning: { enabled: false } }
+        : {}),
       messages: system ? [{ role: "system", content: system }, ...messages] : messages,
     }),
   });
@@ -130,26 +166,69 @@ export async function onRequestPost(context) {
     // Detaljen loggas, inte returneras: den kan innehålla vår nyckels status
     // och leverantörsnamn som kunden inte har med att göra.
     console.error("[ai] uppströmsfel", upstream.status, detalj.slice(0, 400));
+
+    // Slut på pengar är inte samma sak som "försök igen om en stund" — det
+    // löser sig aldrig av sig självt, och ett svar som ber kunden vänta gör
+    // att ingen hör av sig medan tjänsten står stilla. 402 är OpenRouters
+    // kod för tömd kredit; texten kan också nämna det vid andra statusar.
+    if (upstream.status === 402 || /insufficient|credit|quota/i.test(detalj)) {
+      console.error("[ai] KREDITEN ÄR SLUT hos OpenRouter — fyll på, tjänsten står stilla");
+      return json({
+        error: "Tjänsten ligger nere på grund av ett fel hos oss, inte hos er. Vi är meddelade och åtgärdar det. Hör gärna av er till info@mittaiteam.se om det inte fungerar inom kort.",
+      }, 503);
+    }
     return json({ error: "AI-tjänsten svarade inte. Försök igen om en stund." }, 502);
   }
 
   // Räkna medan strömmen passerar. Alternativet — att låta klienten rapportera
   // sin förbrukning — vore att låta den som ska begränsas skriva räkningen.
-  let tail = "";
+  //
+  // Raderna parsas som SSE, inte med en regex över svansen. Första försöket
+  // gjorde det senare och räknade noll tokens i skarp drift: usage-objektet
+  // innehåller nästlade objekt (prompt_tokens_details, cost_details), så ett
+  // `[^}]*` slutar vid fel klammer. Felet syntes inte i något svar — bara som
+  // nollor i databasen, vilket är precis den sortens tystnad som gör att ett
+  // tak aldrig slår till när det behövs.
   let used = null;
+  let lineBuf = "";
+  const decoder = new TextDecoder();
+  let klar;
+  const mätningKlar = new Promise((r) => { klar = r; });
+
+  const läsRad = (rad) => {
+    const t = rad.trim();
+    if (!t.startsWith("data:")) return;
+    const data = t.slice(5).trim();
+    if (!data || data === "[DONE]") return;
+    try {
+      const evt = JSON.parse(data);
+      if (evt.usage) {
+        used = {
+          input: evt.usage.prompt_tokens || 0,
+          output: evt.usage.completion_tokens || 0,
+        };
+      }
+    } catch (_) { /* ofullständig rad — nästa chunk fyller på */ }
+  };
+
   const meter = new TransformStream({
     transform(chunk, controller) {
-      controller.enqueue(chunk);
-      tail = (tail + new TextDecoder().decode(chunk, { stream: true })).slice(-4000);
+      controller.enqueue(chunk); // kunden får sitt svar först, alltid
+      lineBuf += decoder.decode(chunk, { stream: true });
+      let i;
+      while ((i = lineBuf.indexOf("\n")) >= 0) {
+        läsRad(lineBuf.slice(0, i));
+        lineBuf = lineBuf.slice(i + 1);
+      }
     },
     flush() {
-      // Usage-blocket kommer sist i strömmen när include_usage är på.
-      const m = tail.match(/"usage"\s*:\s*\{[^}]*\}/g);
-      if (!m) return;
-      try {
-        const u = JSON.parse("{" + m[m.length - 1] + "}").usage;
-        used = { input: u.prompt_tokens || 0, output: u.completion_tokens || 0 };
-      } catch (_) { /* ingen mätning den här gången — hellre det än ett brutet svar */ }
+      läsRad(lineBuf);
+      klar();
+    },
+    cancel() {
+      // Kunden avbröt. Anropet har ändå kostat oss det som hunnit genereras,
+      // så det ska räknas — annars är taket kringgåbart genom att avbryta.
+      klar();
     },
   });
 
@@ -158,10 +237,13 @@ export async function onRequestPost(context) {
   waitUntil((async () => {
     // Anropet räknas oavsett hur det gick — annars blir ett trasigt anrop
     // gratis, och då är taket kringgåbart genom att avbryta strömmen.
-    const inTok = () => (used ? used.input : 0);
-    const outTok = () => (used ? used.output : 0);
     try {
-      await new Promise((r) => setTimeout(r, 0)); // låt flush() hinna köra
+      // Vänta in mätningen i stället för att hoppas att den hunnit. Ett
+      // setTimeout(0) räckte inte: strömmen är inte klar när svaret lämnar
+      // funktionen, den är klar när sista chunken passerat.
+      await mätningKlar;
+      const inTok = () => (used ? used.input : 0);
+      const outTok = () => (used ? used.output : 0);
       await db.batch([
         db.prepare(
           "INSERT INTO ai_budget (day, calls, input_tok, output_tok) VALUES (?, 1, ?, ?) " +

@@ -88,7 +88,7 @@
   // Väljer Anthropic- eller OpenRouter-format utifrån nyckelns prefix.
   // opts: { apiKey, model, system, messages, maxTokens?, signal?, onDelta }
   async function stream(opts) {
-    const { apiKey, system, messages, maxTokens, signal, onDelta } = opts;
+    const { apiKey, system, messages, maxTokens, signal, onDelta, json } = opts;
     // opts.model ignoreras med flit. Anropsställena får fortsätta skicka
     // den — det är en modell som gäller, och den bestäms här.
     const model = MODEL_ID;
@@ -114,7 +114,7 @@
         signal: signal || undefined,
         credentials: "same-origin", // sessionen avgör om förbrukningen räknas per konto
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ system, messages, maxTokens: maxTokens || 4096 }),
+        body: JSON.stringify({ system, messages, maxTokens: maxTokens || 4096, json: !!json }),
       };
     } else if (openrouter) {
       // OpenAI-kompatibelt format: system som första message, Bearer-auth.

@@ -996,10 +996,12 @@ ${schema}`;
   const fpBlock = r.firstproject ? `\n\nFÖRSTA PROJEKTET:\n${r.firstproject}` : "";
   const user = `RESEARCH-DOKUMENT:\n${r.research}\n\nSKALNINGSBESLUT:\n${r.scaling}\n\nFÖRSLAG (agenterna):\n${r.proposal}${fpBlock}\n\nSammanställ som JSON.`;
 
-  const raw = await callClaude(sys, [{ role: "user", content: user }], 16000);
+  // json: true — se kommentaren i functions/api/ai.js. Det här steget är det
+  // enda i pipelinen som måste ge maskinläsbart svar, och det var det som föll.
+  const raw = await callClaude(sys, [{ role: "user", content: user }], 16000, true);
   let team;
   try {
-    team = JSON.parse(extractJson(raw));
+    team = parseTeamJson(raw);
   } catch (e) {
     const err = new Error("Modellen returnerade ogiltig JSON i sammanställningen. Research och förslag finns kvar — försök sammanställa igen.");
     err.stage = "structure";
@@ -1018,6 +1020,41 @@ ${schema}`;
   team.workstyle = intake.workstyle === "coach" ? "coach" : null;
   team.entryAgent = (team.agents.find((a) => a.id === "vd-assistent") || team.agents[0]).id;
   return team;
+}
+
+// Läser modellens svar som JSON, och lagar det om det behövs.
+//
+// Bakgrund, uppmätt 2026-08-06: DeepSeek V4 Flash producerar trasig JSON i
+// sammanställningssteget, konsekvent och oberoende av allt vi kan be om.
+// Vi provade i tur och ordning: ett högre tokentak (svaret var inte kapat),
+// response_format: json_object (leverantören ignorerar det tyst),
+// require_parameters så bara leverantörer som stödjer formatet väljs (samma
+// leverantör, samma fel), och att stänga av resonemanget (billigare, men lika
+// trasigt). Tre av tre försök misslyckades i varje variant.
+//
+// Felet är däremot regelbundet: modellen tappar det INLEDANDE citattecknet på
+// ett fältnamn — `,\ntagline": "…"` i stället för `,\n"tagline": "…"`. Det
+// går att laga deterministiskt, till skillnad från att hoppas på modellen.
+//
+// Lagningen körs BARA om en rak tolkning misslyckats. Ett svar som redan är
+// giltigt rörs aldrig, så en framtida bättre modell märker inte att koden finns.
+function parseTeamJson(raw) {
+  const text = extractJson(raw);
+  try {
+    return JSON.parse(text);
+  } catch (_) {
+    return JSON.parse(repairJson(text));
+  }
+}
+
+function repairJson(t) {
+  return t
+    // Fältnamn som tappat sitt inledande citattecken. Ankaret är `{` eller `,`
+    // följt av radbrytning/blanksteg — inuti en sträng står aldrig en klammer
+    // eller ett komma i den positionen, så mönstret träffar inte innehåll.
+    .replace(/([{,]\s*)([A-Za-zÅÄÖåäö_][A-Za-z0-9ÅÄÖåäö_-]*)"(\s*):/g, '$1"$2"$3:')
+    // Efterföljande komma före avslutande klammer — den andra vanliga slarven.
+    .replace(/,(\s*[}\]])/g, "$1");
 }
 
 // Balansera klamrar för att plocka exakt ett JSON-objekt även om modellen lägger till prosa.
@@ -1469,9 +1506,9 @@ function renderError(msg, canRetryStructure, canResume) {
 // Tunna omslag runt den delade klienten (../atb-claude.js). callClaude samlar
 // hela svaret; streamClaude strömmar via onDelta. Abort-signalen kommer från
 // "Avbryt körningen"-knappen.
-async function callClaude(system, messages, maxTokens) {
+async function callClaude(system, messages, maxTokens, json) {
   return window.ATBClaude.collect({
-    apiKey: state.apiKey, model: state.model, system, messages, maxTokens,
+    apiKey: state.apiKey, model: state.model, system, messages, maxTokens, json,
     signal: state.abort ? state.abort.signal : undefined,
   });
 }
