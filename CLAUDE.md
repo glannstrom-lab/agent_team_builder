@@ -171,7 +171,7 @@ skisser i `design/` (deployas inte).
   `från-teamet/`; handtag i IndexedDB, localStorage förblir fallback. Mapp i
   OneDrive/Dropbox ger kunden synk/delning via egen infra, och `teamstatus.json`
   i mappen gör status delad mellan kollegor. **Ackumulering över tid** (etapp
-  1–4, juli 2026): kostnad per svar, kom igång-checklista, puls-kort,
+  1–4, juli 2026): kom igång-checklista, puls-kort,
   vecko-streak, "Veckan som gick", auto-körda rutiner, minnesförslag med
   godkännande, sök i historik + arkiv till mappen, "Utveckla teamet" (växtväg
   via tidigare avvisade agenter), Dela & exportera team, kvartalsöverblick,
@@ -208,6 +208,13 @@ chatta med sitt eget team är det som säljs — vore det gratis vore köpet val
 Den som vill se portalen först tittar på ett demoteam. Därför finns heller ingen
 "prova teamet live"-knapp: villkoret sägs i stället *före* köpet, i Builderns
 avslut och i portalens låsta vy.
+
+**Ingen kostnadsvisning för kunden (2026-08-06).** Kronbeloppet under varje svar
+är borttaget, liksom hela prisberäkningen och modellkatalogen i klienten. Det var
+en BYO-funktion: när kunden betalade sin egen förbrukning hade hon rätt att se
+den. Med AI:n inkluderad i ett fast pris är samma siffra brus, och den inbjuder
+till frågan "varför debiteras jag?". Förbrukningen bokförs serversidan i
+`ai_usage`/`ai_budget` — det är vår sida av affären, inte kundens.
 
 **Men planen tar aldrig slut:** ingen kod skriver `expired`/`cancelled`/
 `refunded`, och webhooken lyssnar bara på `checkout.session.completed`. 90 kr

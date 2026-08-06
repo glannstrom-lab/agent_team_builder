@@ -9,7 +9,6 @@
 (function () {
   // Klienten kanner inte langre nagon leverantors-URL. Allt gar till /api/ai;
   // vart eget lager ager valet av leverantor och modell.
-  const OPENROUTER_MODELS_URL = "https://openrouter.ai/api/v1/models";
 
   // ── EN MODELL, INGA ALTERNATIV (beslutat 2026-08-05) ──────────────────
   // Hela produkten kör DeepSeek V4 Flash via OpenRouter. Det är ~1/30 av
@@ -26,12 +25,6 @@
   //    leverantör kundens data går till. Ändras raden nedan måste de med.
   const MODEL_ID = "openai/gpt-oss-120b"; // stabilt id: varken tilde-alias (~...-latest, uppdateras utan forvarning) eller datumsuffix (-0731, ruttnar)
   const MODEL_LABEL = "GPT-OSS 120B";
-
-  // Kvar som funktion för att anropsställena ska slippa ändras, men den
-  // har bara ett svar numera: allt går via OpenRouter.
-  function providerFor() {
-    return "openrouter";
-  }
 
   // Vilket team anropen gäller. Portalen sätter den när ett team laddats;
   // Buildern rör den aldrig. Den skiljer ett portalsvar (kräver köpt team och
@@ -186,50 +179,10 @@
   // det finns inget att validera — och en kvarlämnad validering hade bara
   // gjort det lätt att återinföra nyckelvägen som en genväg förbi köpet.
 
-  // Hämtar OpenRouters modellkatalog (publik endpoint, ingen nyckel krävs)
-  // och kurerar den till en dropdown-vänlig lista: Auto-routern först, sedan
-  // alla Claude-modeller (produktens hemmaplan), sedan övriga flaggskepp.
-  // Cachas i sessionStorage ett dygn så portalen inte hämtar i onödan.
-  let orModelsPromise = null;
-  // Returnerar den enda modell som används. Behåller formen (en lista med
-  // {id,name,pricing}) så att anropande kod inte behöver skrivas om — men
-  // listan har numera exakt ett element och hämtar ingenting över nätet.
-  async function openrouterModels() {
-    return [{ id: MODEL_ID, name: MODEL_LABEL, pricing: { prompt: "0.00000009", completion: "0.00000018" } }];
-  }
-
-  async function openrouterModelsUnused() {
-    if (orModelsPromise) return orModelsPromise;
-    orModelsPromise = (async () => {
-      const CACHE_KEY = "atb_or_models_v2"; // v2: inkluderar pricing (kostnadsvisningen)
-      try {
-        const cached = JSON.parse(sessionStorage.getItem(CACHE_KEY) || "null");
-        if (cached && Date.now() - cached.at < 24 * 3600 * 1000) return cached.models;
-      } catch (_) { /* trasig cache — hämta om */ }
-
-      const res = await fetchWithTimeout(OPENROUTER_MODELS_URL, {}, 8000);
-      if (!res.ok) throw new Error("Kunde inte hämta OpenRouters modellista");
-      const j = await res.json();
-      const all = (j.data || []).filter((m) => m && m.id);
-      const byId = (a, b) => a.id.localeCompare(b.id);
-      const anthropic = all.filter((m) => m.id.startsWith("anthropic/")).sort(byId);
-      const flagships = all
-        .filter((m) => /^(openai|google|mistralai|meta-llama|deepseek|x-ai)\//.test(m.id))
-        .sort(byId);
-      // pricing (USD per token) följer med så portalen kan visa ~kr per svar.
-      const slim = (m) => ({
-        id: m.id, name: m.name || m.id,
-        pricing: m.pricing ? { prompt: +m.pricing.prompt || 0, completion: +m.pricing.completion || 0 } : null,
-      });
-      const models = [{ id: "openrouter/auto", name: "Auto — OpenRouter väljer modell", pricing: null }]
-        .concat(anthropic.map(slim))
-        .concat(flagships.map(slim));
-      try { sessionStorage.setItem(CACHE_KEY, JSON.stringify({ at: Date.now(), models })); } catch (_) { /* full storage — strunta i cache */ }
-      return models;
-    })();
-    orModelsPromise.catch(() => { orModelsPromise = null; }); // låt nästa försök hämta om
-    return orModelsPromise;
-  }
+  // Modellkatalogen är borttagen 2026-08-06. Den fanns för modellväljaren
+  // och för kostnadsvisningen — modellen är låst sedan dess, och
+  // kostnadsraden är borta. Kvar blev en hårdkodad stub med DeepSeeks gamla
+  // priser plus en aldrig anropad hämtare mot OpenRouters katalog.
 
   // Icke-strömmande bekvämlighet: samlar hela svaret till en sträng.
   async function collect(opts) {
@@ -279,5 +232,5 @@
     }
   }
 
-  window.ATBClaude = { stream, collect, setTeam, fetchWithTimeout, providerFor, openrouterModels, encodeTeamLink, decodeTeamLink, MODEL_ID, MODEL_LABEL };
+  window.ATBClaude = { stream, collect, setTeam, fetchWithTimeout, encodeTeamLink, decodeTeamLink, MODEL_ID, MODEL_LABEL };
 })();

@@ -16,15 +16,15 @@ const RUN_STORAGE = "atb_last_run";
 // omkring på ett val som inte finns.
 const OR_MODEL_STORAGE = "atb_model_or";
 try { localStorage.removeItem(OR_MODEL_STORAGE); localStorage.removeItem(MODEL_STORAGE); } catch (_) { /* privat läge */ }
-// API-URL, anthropic-version och strömningen ligger i ../atb-claude.js
-// (window.ATBClaude) — delat med Portalen så de inte kan glida isär.
+// Strömningen ligger i ../atb-claude.js (window.ATBClaude) — delad med
+// Portalen så de inte kan glida isär. Klienten känner ingen leverantörs-URL:
+// allt går till /api/ai, och vårt eget lager äger modell- och leverantörsval.
 
 const MODELS = [{ id: window.ATBClaude.MODEL_ID, label: window.ATBClaude.MODEL_LABEL }];
 // En modell, inga alternativ (2026-08-05). Listan finns kvar för att
 // anropande kod inte ska behöva skrivas om, men har exakt ett element
 // och hämtar det från atb-claude.js — modellvalet bor på ett ställe.
 
-function isOpenRouter() { return window.ATBClaude.providerFor(state.apiKey) === "openrouter"; }
 function syncModelForProvider() {
   state.model = window.ATBClaude.MODEL_ID;
 }

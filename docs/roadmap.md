@@ -338,11 +338,12 @@ felsökningsrundor. En rad i `build-dist.mjs` som hashar SHELL-filerna in i
   först på 3763. I luckan passerar ett andra anrop guarden; `state.chatAbort`
   skrivs över och stoppknappen stoppar bara det ena. Samma mönster i `runMeeting`
   (`3607` vs `3627`). Sätt flaggan före varje `await`.
-- **Kostnadsvisningen ljuger i både siffra och text.** `atb-claude.js:258`
-  hårdkodar DeepSeeks gamla pris (`0.00000009`/`0.00000018`) — inputpriset är
-  ~2,4× för högt mot gpt-oss-120b. Och `app.js:1689` säger *"Uppskattad
-  API-kostnad via din egen nyckel … Ingen avgift till Mitt AI-team"*. Det är
-  numera vår nyckel och vår kostnad. Antingen räkna rätt, eller ta bort raden.
+- ~~**Kostnadsvisningen ljuger i både siffra och text.**~~ **Åtgärdat
+  2026-08-06 — borttagen.** Beslut av Mikael: en kund som betalar fast pris ska
+  inte se ett kronbelopp per svar. Hela subsystemet är rivet (prisberäkning,
+  veckosumma, `msg-cost`-raden) och med det klientens modellkatalog, som bara
+  fanns för att mata det med priser — och som ändå returnerade DeepSeeks gamla.
+  `isoWeek()` behölls; den används av rutiner, streak och pulskortet.
 - **`renderTrialCard`** (`app.js:2873`) skriver in kortet i `.ws`, men
   `refreshSidebar()` (`app.js:2011`) bygger om spalten och tar bort det utan att
   kalla `checkTrialNotice` igen.

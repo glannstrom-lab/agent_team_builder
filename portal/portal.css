@@ -413,7 +413,6 @@ a.link-btn { text-decoration: none; }
 
 /* ---------- kostnadsrad per svar ---------- */
 /* opacity 0.85 tog ner den till 3.7:1 — färgen är dämpad nog i sig. */
-.msg-cost { font-size: 12.5px; color: var(--text-dim); margin-top: 4px; }
 
 /* ---------- kom igång-checklista ---------- */
 .intro-card { margin: 14px 14px 0; border: 1px solid var(--border); border-radius: 12px; background: var(--surface-2); padding: 10px 12px; flex-shrink: 0; }

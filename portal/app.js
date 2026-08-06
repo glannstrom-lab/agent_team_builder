@@ -38,10 +38,6 @@ try { localStorage.removeItem(OR_MODEL_STORAGE); localStorage.removeItem("atb_mo
 
 const MODELS = [{ id: window.ATBClaude.MODEL_ID, label: window.ATBClaude.MODEL_LABEL }];
 
-// Hela produkten kör OpenRouter sedan 2026-08-06, oavsett vem som betalar
-// anropet. Funktionen finns kvar för att prislistan (ensureOrPrices) ska veta
-// vilken katalog den ska hämta ur.
-function isOpenRouter() { return true; }
 function syncModelForProvider() {
   state.model = window.ATBClaude.MODEL_ID;
 }
@@ -1130,7 +1126,6 @@ function renderPicker(errMsg) {
 function renderPortal() {
   const root = $("#root");
   root.innerHTML = "";
-  ensureOrPrices(); // OpenRouter-priser till kostnadsvisningen (async, tyst)
   const app = el("div", "app");
   app.appendChild(renderSidebar());
   app.appendChild(renderMain());
@@ -1629,36 +1624,9 @@ function perspToggle(perspectives) {
   return wrap;
 }
 
-// ---------- kostnadsvisning ----------
-// BYO-kundens största oro är "vad kostar det här?" — svaret är öre, och det
-// ska synas. Tokenpriser är uppskattningar (USD/miljon tokens) och visas som
-// "≈"; veckosumman ackumuleras per ISO-vecka i localStorage.
-const SEK_PER_USD = 10.5;
-const CLAUDE_PRICES = { // model-id-prefix → [input, output] USD per miljon tokens
-  "claude-opus": [15, 75],
-  "claude-sonnet": [3, 15],
-  "claude-haiku": [1, 5],
-};
-let orPriceMap = null; // fylls från OpenRouters katalog (USD per token)
-function ensureOrPrices() {
-  if (orPriceMap || !isOpenRouter() || state.demo) return;
-  orPriceMap = {};
-  window.ATBClaude.openrouterModels().then((models) => {
-    models.forEach((m) => { if (m.pricing) orPriceMap[m.id] = m.pricing; });
-  }).catch(() => { orPriceMap = null; });
-}
-function costSek(used) {
-  if (!used || (!used.input && !used.output)) return null;
-  if (isOpenRouter()) {
-    const p = orPriceMap && orPriceMap[state.model];
-    if (!p || (!p.prompt && !p.completion)) return null;
-    return (used.input * (p.prompt || 0) + used.output * (p.completion || 0)) * SEK_PER_USD;
-  }
-  const key = Object.keys(CLAUDE_PRICES).find((k) => state.model.startsWith(k));
-  if (!key) return null;
-  const [inP, outP] = CLAUDE_PRICES[key];
-  return ((used.input * inP + used.output * outP) / 1e6) * SEK_PER_USD;
-}
+// ---------- ISO-vecka ----------
+// Bodde tidigare i kostnadsvisningen; används av veckorutiner, streak och
+// pulskortet.
 function isoWeek() {
   const d = new Date();
   const day = (d.getDay() + 6) % 7;
@@ -1667,49 +1635,13 @@ function isoWeek() {
   const week = 1 + Math.round(((d - jan4) / 86400000 - 3 + ((jan4.getDay() + 6) % 7)) / 7);
   return `${d.getFullYear()}-W${week}`;
 }
-// Veckosumman är portalens — den ska räkna varje anrop, oavsett varifrån.
-function costAddWeek(c) {
-  try {
-    const key = "atb_cost_" + (state.slug || "team");
-    const cur = JSON.parse(localStorage.getItem(key) || "null");
-    const wk = isoWeek();
-    const rec = cur && cur.week === wk ? cur : { week: wk, sek: 0 };
-    rec.sek += c;
-    localStorage.setItem(key, JSON.stringify(rec));
-  } catch (_) { /* full storage — veckosumman är nice-to-have, inte data */ }
-}
-// Kostnaden under ett svar hör till EN anropskedja, inte till portalen som
-// helhet. Med en global räknare kunde en auto-rutin som körde i bakgrunden
-// skriva in sin kostnad i användarens pågående svar (och tvärtom) — siffran
-// under bubblan hörde då till fel anrop. Varje kedja får därför en egen
-// räknare som skickas in som onUsage.
-function newCostRun() {
-  const run = { sek: 0 };
-  run.onUsage = (used) => {
-    const c = costSek(used);
-    if (c == null) return;
-    run.sek += c;
-    costAddWeek(c);
-  };
-  return run;
-}
-// För anrop som inte visar någon kostnadsrad (destillat, minnesförslag,
-// nya agenter) — de ska ändå synas i veckosumman.
-const costOnly = () => newCostRun().onUsage;
-function costWeekSek() {
-  try {
-    const rec = JSON.parse(localStorage.getItem("atb_cost_" + (state.slug || "team")) || "null");
-    return rec && rec.week === isoWeek() ? rec.sek : 0;
-  } catch (_) { return 0; }
-}
-const fmtSek = (v) => (v >= 1 ? v.toFixed(2) : v.toFixed(2)).replace(".", ",") + " kr";
-// Liten kostnadsrad under ett svar: "≈ 0,04 kr · den här veckan: 3,20 kr".
-function appendCost(row, run) {
-  if (state.demo || !run || run.sek <= 0) return;
-  const c = el("div", "msg-cost", `≈ ${fmtSek(run.sek)} · den här veckan: ${fmtSek(costWeekSek())}`);
-  c.title = "Vad svaret kostade i AI-förbrukning (tokenpris × förbrukning). Det ingår i din plan — ingen separat räkning, och beloppet dras inte någonstans.";
-  row.appendChild(c);
-}
+
+// Kostnadsvisningen är borttagen 2026-08-06. Den kom från BYO-tiden, då
+// kunden betalade sin egen förbrukning och hade rätt att se den. Nu ingår
+// AI:n i ett fast pris — då är ett kronbelopp under varje svar inte
+// transparens utan brus, och inbjuder till frågan "varför debiteras jag?".
+// Kostnaden är vår att bevaka, och den bokförs redan serversidan i
+// `ai_usage`/`ai_budget`. Priserna här var dessutom DeepSeeks gamla.
 
 // ---------- kom igång-checklista ----------
 // Fem steg där de två första ger omedelbart värde och de sista bygger
@@ -2131,7 +2063,7 @@ async function suggestMemory(agentId) {
     out = await window.ATBClaude.collect({
       apiKey: state.apiKey, model: state.model, system: MEM_SUGGEST_PROMPT,
       messages: [{ role: "user", content: `BEFINTLIGT MINNE:\n${loadMemory().trim() || "(tomt)"}\n\nSAMTAL:\n${convo}` }],
-      maxTokens: 400, onUsage: costOnly(),
+      maxTokens: 400,
     });
   } catch (e) { status.textContent = "⚠️ " + ((e && e.message) || "Gick inte att hämta förslag — försök igen."); return; }
   const lines = out.split("\n").map((s) => s.replace(/^[-•\s]+/, "").trim()).filter((s) => s && !/^INGA\b/i.test(s)).slice(0, 3);
@@ -2339,7 +2271,6 @@ async function runAutoRoutines() {
           apiKey: state.apiKey, model: state.model, system: systemFor(agent),
           messages: contextFor((state.history[agent.id] || []).concat([userMsg])),
           maxTokens: 4096, signal: ctrl.signal,
-          onUsage: costOnly(), // egen räknare — får inte hamna i användarens svar
         });
         if (ctrl.signal.aborted) return; // avbruten mitt i: spara inget halvfärdigt
         if (!state.history[agent.id]) state.history[agent.id] = [];
@@ -2591,7 +2522,7 @@ function openGrow() {
       const raw = await window.ATBClaude.collect({
         apiKey: state.apiKey, model: state.model, system: GROW_RULES,
         messages: [{ role: "user", content: `FÖRETAG: ${team.company} — ${team.tagline || ""}\n\nBEFINTLIGA AGENTER:\n${existing}\n\nKUNDENS BEHOV:\n${need}${mem ? `\n\nUR FÖRETAGSMINNET:\n${mem}` : ""}` }],
-        maxTokens: 4096, onUsage: costOnly(),
+        maxTokens: 4096,
       });
       const data = JSON.parse(extractJsonBlock(raw));
       const a = data.agent;
@@ -3384,7 +3315,7 @@ function openMemory() {
       apiKey: state.apiKey, model: state.model,
       system: "Komprimera underlaget till ett destillat på högst 2500 tecken som bevarar alla fakta, siffror, namn, priser, datum och beslut. Punktform, svenska, ingen inledning eller avslutning.",
       messages: [{ role: "user", content: (d.text || "").slice(0, 60000) }],
-      maxTokens: 1200, onUsage: costOnly(),
+      maxTokens: 1200,
     });
     const title = d.title.replace(/\.(md|txt)$/i, "") + " (destillat)";
     if (isFile && folderActive()) {
@@ -3650,7 +3581,6 @@ async function runMeeting(type, focus, ids) {
   const signal = state.chatAbort.signal;
   if (send) { send.textContent = "■"; send.setAttribute("aria-label", "Stoppa mötet"); send.classList.add("stop"); }
 
-  const costRun = newCostRun(); // mötets kostnad = summan av alla anrop i kedjan
   let acc = "";
   const perspectives = []; // { name, tagline, text } — sparas med anteckningen
   try {
@@ -3667,7 +3597,7 @@ async function runMeeting(type, focus, ids) {
           apiKey: state.apiKey, model: state.model,
           system: systemFor(a),
           messages: [{ role: "user", content: `MÖTE — ${type.label}.\nFråga/fokus: ${focus}\n\nGe DITT perspektiv utifrån din roll. Max 120 ord. Var konkret och våga ha en åsikt — vad är viktigast och varför, och vad kan vänta? Ingen artighetsprosa.` }],
-          maxTokens: 600, signal, onUsage: costRun.onUsage,
+          maxTokens: 600, signal,
         });
         perspectives.push({ name: a.name, tagline: a.tagline || "", text: p });
       } catch (e) {
@@ -3685,7 +3615,7 @@ async function runMeeting(type, focus, ids) {
       apiKey: state.apiKey, model: state.model,
       system: systemFor(entry),
       messages: [{ role: "user", content: `Du leder ett möte av typen "${type.label}".\nFråga/fokus: ${focus}\n\nDeltagarnas oberoende perspektiv:\n\n${perspBlockText}${failedNote}\n\nSAMMANSTÄLL TILL EN MÖTESANTECKNING. Börja med raden "## 🤝 Mötesanteckning — ${type.label}". Format därefter:\n${type.output}\n\nOm perspektiven krockar: lyft krocken öppet och ta ställning. Om frågan egentligen inte behövde ett möte, säg det ärligt.` }],
-      maxTokens: 2000, signal, onUsage: costRun.onUsage,
+      maxTokens: 2000, signal,
       onDelta: (d) => {
         if (!started && bub.isConnected) { bub.textContent = ""; bub.classList.remove("typing"); started = true; }
         acc += d;
@@ -3702,7 +3632,7 @@ async function runMeeting(type, focus, ids) {
     introMark("meeting");
     touchStreak();
     const finalText = acc;
-    if (bub.isConnected) { renderMarkdown(bub, finalText); addActions(row, () => finalText); row.appendChild(perspToggle(perspectives)); appendCost(row, costRun); }
+    if (bub.isConnected) { renderMarkdown(bub, finalText); addActions(row, () => finalText); row.appendChild(perspToggle(perspectives)); }
     else if (state.activeAgentId === agentId) renderLog();
   } catch (err) {
     if (err && err.name === "AbortError" && acc) {
@@ -3784,7 +3714,6 @@ async function submitMessage(text, display) {
   state.streaming = true;
   state.chatAbort = new AbortController();
   if (send) { send.textContent = "■"; send.setAttribute("aria-label", "Stoppa svaret"); send.classList.add("stop"); }
-  const costRun = newCostRun(); // egen räknare för just det här svaret
   let acc = "";
   const onDelta = (delta) => {
     acc += delta;
@@ -3800,7 +3729,7 @@ async function submitMessage(text, display) {
   };
   try {
     if (state.demo) await streamDemo(agent, state.history[agentId], onDelta);
-    else await streamClaude(systemFor(agent), state.history[agentId], onDelta, costRun.onUsage);
+    else await streamClaude(systemFor(agent), state.history[agentId], onDelta);
     state.history[agentId].push({ role: "assistant", content: acc, at: Date.now() });
     saveHistory();
     // Första riktiga svaret: fäll ut hela arbetsytan, permanent. Kunden har
@@ -3817,7 +3746,7 @@ async function submitMessage(text, display) {
     // Rendera det färdiga svaret som markdown (strömningen skrev råtext),
     // och rita om från historiken om bubblan detachats av ett agentbyte.
     const finalText = acc;
-    if (assistantBubble.isConnected) { renderMarkdown(assistantBubble, finalText); addActions(assistantRow, () => finalText); appendCost(assistantRow, costRun); }
+    if (assistantBubble.isConnected) { renderMarkdown(assistantBubble, finalText); addActions(assistantRow, () => finalText); }
     else if (state.activeAgentId === agentId) renderLog();
   } catch (err) {
     if (err && err.name === "AbortError" && acc) {
