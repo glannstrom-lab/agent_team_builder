@@ -7,10 +7,9 @@
    glida från /build-team). Ingen state-koppling: allt skickas in.
    ============================================================ */
 (function () {
-  const API_URL = "https://api.anthropic.com/v1/messages";
-  const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
+  // Klienten kanner inte langre nagon leverantors-URL. Allt gar till /api/ai;
+  // vart eget lager ager valet av leverantor och modell.
   const OPENROUTER_MODELS_URL = "https://openrouter.ai/api/v1/models";
-  const ANTHROPIC_VERSION = "2023-06-01"; // uppdatera här när Anthropic byter version
 
   // ── EN MODELL, INGA ALTERNATIV (beslutat 2026-08-05) ──────────────────
   // Hela produkten kör DeepSeek V4 Flash via OpenRouter. Det är ~1/30 av
@@ -280,5 +279,5 @@
     }
   }
 
-  window.ATBClaude = { stream, collect, setTeam, fetchWithTimeout, providerFor, openrouterModels, encodeTeamLink, decodeTeamLink, API_URL, ANTHROPIC_VERSION, MODEL_ID, MODEL_LABEL };
+  window.ATBClaude = { stream, collect, setTeam, fetchWithTimeout, providerFor, openrouterModels, encodeTeamLink, decodeTeamLink, MODEL_ID, MODEL_LABEL };
 })();

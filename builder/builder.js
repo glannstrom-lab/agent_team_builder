@@ -1320,7 +1320,7 @@ function markDone(key) {
 function renderResult(team) {
   if (window.ATBAvatars) window.ATBAvatars.assign(team); // ge varje agent ett porträtt
   // Autospara utkastet direkt — ett färdigt team ska aldrig kunna försvinna
-  // för att användaren råkade ladda om innan den tryckte "Prova teamet live".
+  // för att användaren råkade ladda om innan den hann spara det hos oss.
   if (!state.demo) { try { localStorage.setItem(DRAFT_STORAGE, JSON.stringify(stripTeam(team))); } catch (_) { /* full storage */ } }
   const root = $("#root"); root.innerHTML = "";
   const wrap = el("main", "result-wrap");
