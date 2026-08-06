@@ -35,11 +35,11 @@ i `meetings/` och (i konsult-läget) ett första-projekt-dokument och en
 
 - Ett generiskt "team-i-en-låda". Om output ser likadant ut oavsett input
   är verktyget trasigt.
-- Ett hostat verktyg. Kärnan körs via din egen Claude Code-installation. Det
-  finns ett valfritt webblager (builder/galleri/portal/branscher) som körs i
-  webbläsaren med din egen API-nyckel. Kärnan och BYO-läget kräver ingen server;
-  ett valfritt tunt köp/leverans-lager (Cloudflare Pages Functions + D1) finns
-  för moln-sparade team.
+- Ett hostat verktyg — i kärnan. Den körs via din egen Claude Code-installation
+  och kräver ingen server. Ovanpå finns ett webblager
+  (builder/galleri/portal/branscher) som körs i webbläsaren mot AI-proxyn
+  `/api/ai`, samt ett tunt köp/leverans-lager (Cloudflare Pages Functions + D1)
+  för konton, betalning och moln-sparade team.
 - En AI-strategirapport. Verktyget producerar fungerande agent-team och
   pedagogiskt material, inte whitepapers.
 
@@ -69,7 +69,11 @@ Kör lokalt från repo-roten (`npm run dev` eller `python -m http.server 8420`)
 och öppna `http://localhost:8420/`. Bygg/deploy till Cloudflare Pages med
 `npm run build` / `npm run deploy`.
 
-Builder och portal anropar modellen direkt från webbläsaren och kräver din egen
-nyckel — Anthropic (`sk-ant-`) eller OpenRouter (`sk-or-`), lagras bara lokalt.
-Demolägen (`?demo=1`) visar allt utan nyckel, och galleriet kräver ingen alls.
-Mer i `CLAUDE.md` och `docs/m2-backend-spec.md`.
+Builder och portal anropar `POST /api/ai`, som kör `openai/gpt-oss-120b` på vår
+OpenRouter-nyckel. Kunden har ingen egen nyckel. Bygget är gratis och
+obegränsat; portalen kräver ett köpt team. Demolägen (`?demo=1`) visar allt utan
+konto, och galleriet kräver ingenting alls.
+
+Vad som är kvar att bygga: **`docs/roadmap.md`** (arbetet, prioriterat) och
+**`docs/lansering.md`** (hålen mellan löfte och leverans). Arkitekturen i
+`CLAUDE.md`.

@@ -46,7 +46,7 @@
   // Läser BARA JSON om servern faktiskt skickar JSON — annars (t.ex. en
   // HTML-sida från en proxy/502/504) skulle res.json() kasta och dölja det
   // riktiga felet bakom ett generiskt "Fel".
-  async function errorMessage(res, viaProxy) {
+  async function errorMessage(res) {
     let msg = `Fel ${res.status}`;
     const ct = res.headers.get("content-type") || "";
     if (ct.includes("application/json")) {
@@ -61,12 +61,13 @@
     } else if (res.status >= 500) {
       msg = "Serverfel hos modell-API:t — försök igen om en stund.";
     }
-    // 401 betyder olika saker på de två vägarna. Går anropet via vår proxy är
-    // det kunden som inte är inloggad, och serverns svenska text är redan rätt
-    // — att skriva över den med ett nyckelfel skickade en utloggad kund att
-    // leta efter en nyckel hon aldrig haft.
-    if (res.status === 401 && !viaProxy) msg = "Ogiltig API-nyckel. Kontrollera nyckeln under \"Byt API-nyckel\".";
-    if (res.status === 429) msg = "För många anrop just nu — det gick inte ens efter automatiska omförsök. Vänta en minut och försök igen.";
+    // Serverns egen text vinner alltid. Den vet skillnaden mellan "vänta en
+    // stund" och "månadens tak är nått" — en generisk 429-text skickade kunden
+    // att vänta en minut på en spärr som satt till nästa månad. Bara när
+    // proxyn inte hunnit säga något alls fyller vi i.
+    if (res.status === 429 && msg === `Fel ${res.status}`) {
+      msg = "För många anrop just nu — det gick inte ens efter automatiska omförsök. Vänta en minut och försök igen.";
+    }
     return msg;
   }
 
@@ -100,63 +101,30 @@
   // Väljer Anthropic- eller OpenRouter-format utifrån nyckelns prefix.
   // opts: { apiKey, model, system, messages, maxTokens?, signal?, onDelta }
   async function stream(opts) {
-    const { apiKey, system, messages, maxTokens, signal, onDelta, json } = opts;
-    // opts.model ignoreras med flit. Anropsställena får fortsätta skicka
-    // den — det är en modell som gäller, och den bestäms här.
-    const model = MODEL_ID;
-    const openrouter = true;
+    const { system, messages, maxTokens, signal, onDelta, json } = opts;
+    // opts.model och opts.apiKey ignoreras med flit. Anropsställena får
+    // fortsätta skicka dem — det är en modell som gäller, och en väg.
 
-    // INGEN NYCKEL = VÅR NYCKEL (2026-08-06).
+    // VÅR NYCKEL, ALLTID (2026-08-06, enda vägen sedan 2026-08-07).
     //
-    // Saknas apiKey går anropet till vår egen proxy i stället för direkt till
-    // OpenRouter. Det är inte ett undantag utan huvudvägen: kunden ska aldrig
-    // behöva skaffa en nyckel, varken för att bygga ett team eller för att
-    // använda det. Kravet var den enskilt största avhoppspunkten för alla som
-    // inte redan var utvecklare.
+    // Varje anrop går till vår egen proxy. Kunden ska aldrig behöva skaffa en
+    // nyckel, varken för att bygga ett team eller för att använda det — kravet
+    // var den enskilt största avhoppspunkten för alla som inte redan var
+    // utvecklare.
     //
-    // Svarsformatet är identiskt — proxyn skickar OpenRouters ström vidare
-    // orörd — så parsningen nedan behöver inte veta vilken väg det tog.
-    // Nyckelvägen finns kvar för att portalen ännu har kvar sin nyckelruta;
-    // den dagen den är borta kan hela else-grenen strykas.
-    let url, init;
-    if (!apiKey) {
-      url = "/api/ai";
-      init = {
-        method: "POST",
-        signal: signal || undefined,
-        credentials: "same-origin", // sessionen avgör om förbrukningen räknas per konto
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ system, messages, maxTokens: maxTokens || 4096, json: !!json, schema: opts.schema || null, team: opts.team || currentTeam || undefined }),
-      };
-    } else if (openrouter) {
-      // OpenAI-kompatibelt format: system som första message, Bearer-auth.
-      const orMessages = system ? [{ role: "system", content: system }].concat(messages) : messages;
-      url = OPENROUTER_URL;
-      init = {
-        method: "POST",
-        signal: signal || undefined,
-        headers: {
-          "content-type": "application/json",
-          "authorization": "Bearer " + apiKey,
-          "HTTP-Referer": location.origin, // visas i OpenRouters statistik
-          "X-Title": "Mitt AI-team",
-        },
-        body: JSON.stringify({ model, max_tokens: maxTokens || 4096, stream: true, stream_options: { include_usage: true }, messages: orMessages }),
-      };
-    } else {
-      url = API_URL;
-      init = {
-        method: "POST",
-        signal: signal || undefined,
-        headers: {
-          "content-type": "application/json",
-          "x-api-key": apiKey,
-          "anthropic-version": ANTHROPIC_VERSION,
-          "anthropic-dangerous-direct-browser-access": "true",
-        },
-        body: JSON.stringify({ model, max_tokens: maxTokens || 4096, stream: true, system, messages }),
-      };
-    }
+    // Den gamla grenen som skickade anropet direkt till leverantören när en
+    // nyckel fanns i localStorage är borttagen. Den var inte bara död kod: så
+    // länge den fanns kvar gick varje portalsvar att styra förbi köpgrinden,
+    // taken och förbrukningsmätningen genom att lägga en nyckel i webbläsaren.
+    // En kvarlämnad väg under en ny grind gör grinden valfri.
+    const url = "/api/ai";
+    const init = {
+      method: "POST",
+      signal: signal || undefined,
+      credentials: "same-origin", // sessionen avgör om förbrukningen räknas per konto
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ system, messages, maxTokens: maxTokens || 4096, json: !!json, schema: opts.schema || null, team: opts.team || currentTeam || undefined }),
+    };
 
     // Automatiska omförsök på 429/529/5xx innan strömningen börjat — de
     // flesta rate limit-blippar blir därmed osynliga för användaren.
@@ -169,7 +137,7 @@
         await wait(RETRY_DELAYS[attempt], signal);
         continue;
       }
-      throw new Error(await errorMessage(res, !apiKey));
+      throw new Error(await errorMessage(res));
     }
 
     const reader = res.body.getReader();
@@ -215,36 +183,9 @@
     }
   }
 
-  // Testar en nyckel med ett gratis anrop (modellista/nyckelinfo — inga
-  // tokens förbrukas). Kastar ett begripligt svenskt fel om nyckeln är
-  // ogiltig eller tjänsten onåbar; returnerar true annars.
-  async function validateKey(apiKey) {
-    // Enda giltiga nyckeln är OpenRouter. En Anthropic-nyckel når inte
-    // DeepSeek, så den avvisas här med en förklaring i stället för att
-    // gå igenom och sedan falla på första riktiga anropet.
-    if (!(apiKey || "").startsWith("sk-or-")) {
-      throw new Error(
-        "Det här ser inte ut som en OpenRouter-nyckel. Portalen kör " + MODEL_LABEL +
-        " via OpenRouter, och nyckeln ska börja med sk-or-. Du skaffar en på openrouter.ai/keys."
-      );
-    }
-    const url = "https://openrouter.ai/api/v1/auth/key";
-    const headers = { authorization: "Bearer " + apiKey };
-    const openrouter = true;
-    let res;
-    try {
-      res = await fetchWithTimeout(url, { headers }, 8000);
-    } catch (_) {
-      // Kunde inte testa (nät/CORS/timeout) ≠ ogiltig nyckel — blockera aldrig
-      // en giltig nyckel på grund av ett misslyckat test. Riktiga fel visas
-      // ändå på svenska vid första anropet.
-      return true;
-    }
-    if (res.status === 401 || res.status === 403) {
-      throw new Error(`Nyckeln avvisades av ${openrouter ? "OpenRouter" : "Anthropic"}. Kontrollera att hela nyckeln är kopierad och att den inte är återkallad.`);
-    }
-    return true; // andra statusar (429, 5xx …) säger inget om nyckeln
-  }
+  // validateKey är borttagen 2026-08-06. Ingen kund har en egen nyckel, så
+  // det finns inget att validera — och en kvarlämnad validering hade bara
+  // gjort det lätt att återinföra nyckelvägen som en genväg förbi köpet.
 
   // Hämtar OpenRouters modellkatalog (publik endpoint, ingen nyckel krävs)
   // och kurerar den till en dropdown-vänlig lista: Auto-routern först, sedan
@@ -339,5 +280,5 @@
     }
   }
 
-  window.ATBClaude = { stream, collect, setTeam, fetchWithTimeout, providerFor, openrouterModels, validateKey, encodeTeamLink, decodeTeamLink, API_URL, ANTHROPIC_VERSION, MODEL_ID, MODEL_LABEL };
+  window.ATBClaude = { stream, collect, setTeam, fetchWithTimeout, providerFor, openrouterModels, encodeTeamLink, decodeTeamLink, API_URL, ANTHROPIC_VERSION, MODEL_ID, MODEL_LABEL };
 })();

@@ -5,7 +5,6 @@
    research.md → scale.md → proposal.md → (first-project.md) → sammanställning.
    ============================================================ */
 
-const KEY_STORAGE = "atb_api_key";
 const MODEL_STORAGE = "atb_model";
 const DRAFT_STORAGE = "atb_draft_team";
 // Pågående/senaste körning ({intake, r, team?, at}) — persisteras efter varje
@@ -45,7 +44,9 @@ const PORTAL_RULES = `Bygg varje agents "system" som en komplett systemprompt SK
 
 const PROMPTS = {}; // cache av hämtade prompt-filer
 const state = {
-  apiKey: localStorage.getItem(KEY_STORAGE) || "",
+  // Kunden har ingen egen nyckel (2026-08-06). Fältet står kvar tomt eftersom
+  // anropsställena skickar med det; stream() ignorerar det.
+  apiKey: "",
   model: window.ATBClaude.MODEL_ID,
   // Demoläge: spela upp en inspelad körning utan nyckel (knapp eller ?demo=1).
   demo: new URLSearchParams(location.search).get("demo") === "1",
@@ -133,86 +134,11 @@ function connectKey() {
   renderForm();
 }
 
-// ---------- nyckelkontroll (delad av nyckelrutan och köppanelens grind) ----------
-//
-// Samma nyckel kontrolleras på två ställen: innan ett bygge och innan ett köp.
-// Reglerna får inte glida isär — kunden ska aldrig kunna lära sig att en nyckel
-// "duger" på ena stället och inte på det andra. Returnerar null när nyckeln
-// duger, annars { html } eller { text } att visa för användaren.
-async function checkApiKey(v) {
-  if (v.startsWith("sk-ant-")) {
-    return { html: 'Det där är en Anthropic-nyckel. Vi kör numera på OpenRouter — samma arbete, en bråkdel av kostnaden. ' +
-      '<a href="../#forbrukning" target="_blank" rel="noreferrer">Så skaffar du en OpenRouter-nyckel →</a>' };
-  }
-  if (!v.startsWith("sk-or-")) {
-    return { text: "Det ser inte ut som en OpenRouter-nyckel — de börjar med sk-or-." };
-  }
-  // Testa nyckeln direkt (gratis anrop) — felet ska komma nu, medan användaren
-  // har rutan framför sig, inte mitt i en körning och absolut inte efter ett köp.
-  try {
-    await window.ATBClaude.validateKey(v);
-  } catch (e) {
-    return { text: e.message };
-  }
-  return null;
-}
-
-// Skriver ut ett fel från checkApiKey. Anthropic-felet innehåller en länk och
-// måste därför sättas som HTML; övriga är ren text från leverantören.
-function showKeyError(node, err) {
-  if (err.html) node.innerHTML = err.html; else node.textContent = err.text;
-  node.style.display = "block";
-}
-
-// Spara en verifierad nyckel. KEY_STORAGE ("atb_api_key") är samma nyckel som
-// portalen läser — den som verifierar här slipper klistra in den igen där.
-function saveVerifiedKey(v) {
-  state.apiKey = v;
-  localStorage.setItem(KEY_STORAGE, v);
-  syncModelForProvider();
-}
-
-function renderKeySetup() {
-  const root = $("#root"); root.innerHTML = "";
-  const wrap = el("main", "setup");
-  wrap.appendChild(hubLink());
-  wrap.appendChild(el("div", "setup-badge", "🔑 Engångsuppkoppling"));
-  const h = el("h1"); h.innerHTML = `Bygg ditt <span class="grad">AI-team</span>`;
-  wrap.appendChild(h);
-  const lead = el("p", "setup-lead");
-  lead.innerHTML = 'Klistra in din nyckel från OpenRouter (den börjar med <b>sk-or-</b>). Den sparas bara här i den här webbläsaren och skickas direkt till leverantören — aldrig till någon annan server. Att bygga ett team kostar ungefär åtta öre. ' +
-    '<a href="../#forbrukning" target="_blank" rel="noreferrer">Har du ingen nyckel? Så skaffar du en på fem minuter →</a>';
-  wrap.appendChild(lead);
-  const field = el("div", "setup-field");
-  const input = el("input"); input.type = "password"; input.id = "api-key-input"; input.placeholder = "sk-or-..."; input.spellcheck = false;
-  input.setAttribute("aria-label", "API-nyckel från OpenRouter");
-  field.appendChild(input); wrap.appendChild(field);
-  const err = el("div", "setup-err"); err.style.display = "none"; wrap.appendChild(err);
-  const btn = el("button", "btn-primary", "Anslut");
-  btn.onclick = async () => {
-    const v = input.value.trim();
-    btn.disabled = true; btn.textContent = "Testar nyckeln…"; err.style.display = "none";
-    const bad = await checkApiKey(v);
-    btn.disabled = false; btn.textContent = "Anslut";
-    if (bad) { showKeyError(err, bad); return; }
-    saveVerifiedKey(v); renderForm();
-  };
-  input.addEventListener("keydown", (e) => { if (e.key === "Enter") btn.click(); });
-  wrap.appendChild(btn);
-  const help = el("div", "setup-help");
-  help.innerHTML = 'Skapa en nyckel på <a href="https://openrouter.ai/keys" target="_blank" rel="noreferrer">openrouter.ai/keys</a> — <a href="../#forbrukning" target="_blank" rel="noreferrer">steg för steg här</a>.';
-  wrap.appendChild(help);
-  const demoBtn = el("button", "demo-link", "Eller utforska i demoläge utan nyckel →");
-  demoBtn.onclick = () => {
-    state.demo = true;
-    // Spegla till URL:en så demoläget överlever F5 (samma symmetri som connectKey).
-    const params = new URLSearchParams(location.search);
-    if (params.get("demo") !== "1") { params.set("demo", "1"); history.replaceState(null, "", location.pathname + "?" + params.toString()); }
-    renderForm();
-  };
-  wrap.appendChild(demoBtn);
-  root.appendChild(wrap); setTimeout(() => input.focus(), 50);
-}
+// Nyckelrutorna (renderKeySetup, buildKeyGate) är borttagna 2026-08-06.
+// Kunden har ingen egen nyckel; bygget är gratis på vår, och portalen
+// öppnas av köpet. En kvarlämnad nyckelruta var inte bara död kod — den
+// skrev en nyckel till localStorage som portalen läste, och den nyckeln
+// styrde anropen förbi köpgrinden, taken och mätningen.
 
 // ---------- vägval: vem är teamet till för? ----------
 //
@@ -1411,8 +1337,13 @@ function renderResult(team) {
   // därför står de under avslutet, inte bredvid det.
   const actions = el("div", "result-actions is-secondary");
   actions.appendChild(el("div", "actions-label", "Innan du bestämmer dig:"));
-  const live = el("button", "btn-ghost", "💬 Prova teamet live");
-  live.onclick = () => { localStorage.setItem(DRAFT_STORAGE, JSON.stringify(stripTeam(team))); window.open("../portal/?team=__draft" + (state.demo ? "&demo=1" : ""), "_blank"); };
+  // "Prova teamet live" är borttagen (beslut 2026-08-06). Att chatta med sitt
+  // eget team är det som säljs — kunde man göra det gratis vore köpet valfritt.
+  // Knappen fungerade dessutom inte: servern avvisar utkast-slugen med flit.
+  // Den som vill se portalen innan hon köper tittar på ett färdigt demoteam,
+  // där svaren är förskrivna och inget anrop sker.
+  const peek = el("button", "btn-ghost", "👀 Se hur portalen fungerar");
+  peek.onclick = () => window.open("../portal/?team=coachonline&demo=1", "_blank");
   const dl = el("button", "btn-ghost", "⬇ Ladda ner config");
   dl.onclick = () => downloadConfig(team);
   // Delbar länk utan server: hela konfigen komprimeras in i URL-fragmentet
@@ -1433,7 +1364,7 @@ function renderResult(team) {
   // fyra som inte gör det. Den bor i avslutet ovanför i stället.
   const again = el("button", "btn-ghost", "↺ Bygg ett till");
   again.onclick = () => renderForm();
-  actions.append(live, dl, share, again); hero.appendChild(actions);
+  actions.append(peek, dl, share, again); hero.appendChild(actions);
   wrap.appendChild(hero);
 
   if (team.divergence) {
@@ -1532,6 +1463,14 @@ function closingBlock(team) {
     + "Byter du dator, rensar historiken eller bygger ett nytt team är det borta, och en ny körning ger ett annat team. "
     + "Sparar du det får du ett konto och når teamet där du loggar in."));
 
+  // Sägs här, en gång, i klartext. Att kunden upptäcker det först när hon
+  // står i portalen och skrivit en fråga är samma fel som nyckelrutan var:
+  // ett villkor som visar sig efter att förväntningen redan byggts.
+  box.appendChild(el("p", "close-body close-gate",
+    "🔒 Att bygga teamet är gratis — att arbeta med det är det som kostar. "
+    + "Portalen, där du chattar med agenterna, håller veckomöten och bygger upp ett gemensamt minne, "
+    + "öppnas när teamet är sparat hos oss. AI:n ingår; du behöver ingen egen nyckel och inget konto hos någon leverantör."));
+
   const plans = el("div", "close-plans");
   PLANS.forEach((p) => {
     const row = el("div", "close-plan");
@@ -1548,7 +1487,8 @@ function closingBlock(team) {
   save.onclick = () => renderPurchase(team, box, save);
   box.appendChild(save);
   box.appendChild(el("p", "close-fine",
-    "Betalning med kort via Stripe. Provmånaden förnyas inte automatiskt. Vill du bara titta vidare först finns knapparna nedanför."));
+    "Betalning med kort via Stripe. Provmånaden förnyas inte automatiskt. "
+    + "Vill du se portalen först finns färdiga demoteam att titta på — knappen nedanför."));
   return box;
 }
 
@@ -1612,56 +1552,6 @@ const PLANS = [
   { tier: "standard", label: "Standard", price: "290 kr/mån", note: "Teamet löpande, med allt inkluderat. Uppsägningsbart när som helst." },
 ];
 
-// Nyckelrutan inuti köppanelen. Samma validering, samma test och samma
-// hjälplänk som den stora nyckelrutan — den som möter grinden här ska få exakt
-// de besked hen hade fått på nyckelsidan. Låser upp planknapparna först när
-// nyckeln har svarat OK, och sparar den där portalen läser den.
-// onVerified körs när nyckeln testats OK. Att den skickas in i stället för att
-// grinden själv vet vad som ska hända gör att samma grind kan användas både
-// för att låsa upp ett köp och för att släppa in någon i ett riktigt bygge.
-function buildKeyGate(onVerified, okLead) {
-  const box = el("div", "buy-keygate");
-  box.appendChild(el("div", "clarify-title", "Först: koppla in din nyckel"));
-
-  const lead = el("p", "buy-keygate-lead");
-  lead.innerHTML = "Teamet drivs av din egen nyckel hos OpenRouter — det är den som gör att agenterna faktiskt kan svara dig. " +
-    "Utan nyckel kommer du inte in i teamet ens efter att du betalat, och då har vi tagit betalt för en stängd dörr. " +
-    "Därför testar vi nyckeln här i stället, innan pengarna byter ägare. Den sparas bara i den här webbläsaren och följer med till portalen, " +
-    'så du slipper klistra in den igen. <a href="../#forbrukning" target="_blank" rel="noreferrer">Har du ingen nyckel? Så skaffar du en på fem minuter →</a>';
-  box.appendChild(lead);
-
-  const row = el("div", "buy-keygate-row");
-  const input = el("input");
-  input.type = "password"; input.placeholder = "sk-or-..."; input.spellcheck = false;
-  input.setAttribute("aria-label", "API-nyckel från OpenRouter");
-  const btn = el("button", "btn-primary", "Testa nyckeln");
-  btn.type = "button";
-  row.append(input, btn);
-  box.appendChild(row);
-
-  const err = el("div", "buy-keygate-err"); err.style.display = "none";
-  box.appendChild(err);
-
-  btn.onclick = async () => {
-    const v = input.value.trim();
-    btn.disabled = true; btn.textContent = "Testar nyckeln…"; err.style.display = "none";
-    const bad = await checkApiKey(v);
-    if (bad) {
-      showKeyError(err, bad);
-      btn.disabled = false; btn.textContent = "Testa nyckeln"; return;
-    }
-    saveVerifiedKey(v);
-    // Grinden byts mot ett kvitto: kunden ska se att just det här steget är
-    // avklarat, inte bara att knapparna plötsligt går att trycka på.
-    box.innerHTML = "";
-    box.classList.add("ok");
-    box.appendChild(el("div", "buy-keygate-ok", "✓ Nyckeln fungerar och är sparad i den här webbläsaren."));
-    box.appendChild(el("p", "buy-keygate-lead", okLead || "Portalen hittar den automatiskt när du loggat in. Välj hur du vill spara teamet nedan."));
-    if (typeof onVerified === "function") onVerified();
-  };
-  input.addEventListener("keydown", (e) => { if (e.key === "Enter") btn.click(); });
-  return box;
-}
 
 function renderPurchase(team, hero, trigger) {
   if (hero.querySelector(".buy-panel")) return; // redan öppen
@@ -1682,13 +1572,12 @@ function renderPurchase(team, hero, trigger) {
     const dl = el("p");
     dl.style.cssText = "color:var(--text-dim);margin:8px 0 16px;line-height:1.6";
     dl.textContent = "Det du ser nu är en inspelad demo åt ett påhittat företag — vi säljer inte den. " +
-      "Koppla in din nyckel, så kör vi samma sak mot din verksamhet i stället. Det tar ungefär en kvart och " +
-      "kostar åtta öre i API-förbrukning. Först när du har ett team som faktiskt handlar om dig är det något värt att spara.";
+      "Samma pipeline mot din egen verksamhet tar under en minut och kostar dig ingenting: AI:n står vi för, " +
+      "och du behöver ingen nyckel. Först när du har ett team som faktiskt handlar om dig är det något värt att spara.";
     panel.appendChild(dl);
-    panel.appendChild(buildKeyGate(
-      () => { state.demo = false; renderForm(); },
-      "Nu bygger vi mot din verksamhet. Formuläret öppnas — fyll i det, så får du ditt eget team."
-    ));
+    const go = el("button", "btn-primary btn-save", "Bygg mitt eget team →");
+    go.onclick = () => { state.demo = false; renderForm(); };
+    panel.appendChild(go);
     const back = el("button", "btn-ghost", "Inte nu");
     back.style.marginTop = "4px";
     back.onclick = () => { panel.remove(); trigger.disabled = false; };

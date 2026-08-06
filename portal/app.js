@@ -8,7 +8,10 @@
    __draft laddar ett utkast byggt i Builder-appen (localStorage).
    ============================================================ */
 
-const KEY_STORAGE = "atb_api_key";
+// Nyckeln är avskaffad (2026-08-06) och läses inte längre. Städa bort en
+// kvarglömd sådan ur webbläsaren — den ska inte ligga kvar hos oss sedan den
+// slutat betyda något.
+try { localStorage.removeItem("atb_api_key"); } catch (_) { /* låst lagring */ }
 const MODEL_STORAGE = "atb_model";
 const HIST_PREFIX = "atb_hist_"; // + team-slug → sparad chatthistorik
 const MEM_PREFIX = "atb_mem_";   // + team-slug → delat företagsminne (instruktioner)
@@ -35,14 +38,22 @@ try { localStorage.removeItem(OR_MODEL_STORAGE); localStorage.removeItem("atb_mo
 
 const MODELS = [{ id: window.ATBClaude.MODEL_ID, label: window.ATBClaude.MODEL_LABEL }];
 
-function isOpenRouter() { return window.ATBClaude.providerFor(state.apiKey) === "openrouter"; }
+// Hela produkten kör OpenRouter sedan 2026-08-06, oavsett vem som betalar
+// anropet. Funktionen finns kvar för att prislistan (ensureOrPrices) ska veta
+// vilken katalog den ska hämta ur.
+function isOpenRouter() { return true; }
 function syncModelForProvider() {
   state.model = window.ATBClaude.MODEL_ID;
 }
 
 let team = null; // sätts när ett team laddats
 const state = {
-  apiKey: localStorage.getItem(KEY_STORAGE) || "",
+  // Kunden har ingen egen nyckel sedan 2026-08-06 — allt går genom /api/ai på
+  // vår. Fältet står kvar tomt eftersom anropsställena skickar med det, men
+  // det läses aldrig från lagringen längre: en kvarglömd nyckel i localStorage
+  // skickade tidigare anropen direkt till leverantören, alltså förbi köpet,
+  // taken och mätningen.
+  apiKey: "",
   model: window.ATBClaude.MODEL_ID,
   // Demoläge: bläddra och chatta utan nyckel — svaren är förskrivna exempel.
   // Aktiveras via knapp eller ?demo=1 (delbar demolänk).
@@ -560,6 +571,15 @@ const el = (tag, cls, txt) => {
   return e;
 };
 const agentById = (id) => team.agents.find((a) => a.id === id);
+// Team som finns för att visas, inte för att säljas: exempelteamen i registret
+// (portal/teams/index.js) och branschsidornas demo. De öppnas utan konto och
+// utan anrop — svaren är förskrivna i konfigen.
+const isShowcaseSlug = (s) =>
+  !!s && (s === "__vertical" || (Array.isArray(window.TEAMS) && window.TEAMS.some((t) => t.slug === s)));
+// Ett lokalt team utan köp: Builder-utkastet och ett team öppnat via
+// delningslänk. Konfigen finns i webbläsaren, men agenterna kan inte svara —
+// det är portalen som säljs.
+const isUnpaidLocalSlug = (s) => s === "__draft" || s === "__link";
 const getSlug = () => new URLSearchParams(location.search).get("team");
 // Nerladdning på ett ställe. Varje exportknapp byggde tidigare sin egen
 // Blob + <a download> + revokeObjectURL, och den som glömde revoke läckte
@@ -739,7 +759,17 @@ async function boot() {
     return;
   }
 
-  if (!state.apiKey && !state.demo) { renderKeySetup(); return; }
+  // Nyckelrutan är borta (2026-08-06). Grinden till portalen är köpet, inte en
+  // nyckel: moln-team hämtas via /api/teams/:slug, som kräver inloggning och en
+  // rad i team_access. Det som återstår här är att skilja på de tre sorters
+  // team som når portalen utan att vara köpta.
+  //
+  // Demoteamen — exempelteamen i registret och branschsidornas demo — finns
+  // för att titta på. De öppnas alltid i demoläge: förskrivna svar, inga
+  // anrop, ingen inloggning. Utan det mötte en besökare ett 402 mitt i sin
+  // första fråga, vilket läses som ett fel och inte som ett erbjudande.
+  if (isShowcaseSlug(getSlug())) state.demo = true;
+
   // Delningslänk? Fragment (#cfg=…) bär hela teamkonfigen och når aldrig
   // servern. Packa upp, spara lokalt och öppna som __link-team.
   const hashCfg = /^#cfg=(.+)/.exec(location.hash || "");
@@ -748,6 +778,12 @@ async function boot() {
       const t = await window.ATBClaude.decodeTeamLink(hashCfg[1]);
       try { localStorage.setItem("atb_link_team", JSON.stringify(t)); } catch (_) { /* full storage */ }
       await loadTeam("__link");
+      if (!state.demo) {
+        renderLocked("Teamet kom hit via en delningslänk, så du kan läsa hela uppsättningen — "
+          + "vilka agenter det består av, vad var och en gör och vad som medvetet valdes bort. "
+          + "För att arbeta med dem behöver teamet aktiveras på ett konto.");
+        return;
+      }
       renderPortal();
       initFolder();
       return;
@@ -760,89 +796,76 @@ async function boot() {
   if (!slug) { renderPicker(); return; } // nås bara om adressen ändrats under körning
   try {
     await loadTeam(slug);
+    // Utkast och delade team laddar sin konfig lokalt och passerar därför
+    // aldrig köpgrinden i /api/teams/:slug. De stannar här. Moln-team har redan
+    // prövats mot team_access när konfigen hämtades — når vi hit är det köpt.
+    if (isUnpaidLocalSlug(slug) && !state.demo) { renderLocked(); return; }
     renderPortal();
     initFolder(); // async — banner/underlag dyker upp när mappen lästs
   } catch (err) {
+    // Logga innan vi översätter till en vänlig mening. Fångsten gäller
+    // "hittade inget team", men den sväljer lika gärna ett programfel i
+    // renderingen — och då ser det ut som en trasig länk i stället för en bugg.
+    console.error("[portal] kunde inte öppna teamet:", err);
     renderPicker(err.message);
   }
 }
 
-// ---------- key setup ----------
-function renderKeySetup() {
+// ---------- låst team (byggt men inte köpt) ----------
+//
+// Ersätter den gamla nyckelrutan. Kunden har aldrig en egen nyckel; det som
+// skiljer ett team som svarar från ett som inte gör det är köpet. Vyn visas
+// för Builder-utkast och delningslänkar — konfigen finns i webbläsaren, men
+// agenterna är inte inkopplade.
+//
+// Den säger vad kunden HAR, inte bara vad hon saknar: teamet är byggt, det är
+// hennes, och det som köps är arbetsytan runt det.
+function renderLocked(reason) {
   const root = $("#root");
   root.innerHTML = "";
   const wrap = el("main", "setup");
   wrap.appendChild(hubLink());
-  wrap.appendChild(el("div", "setup-badge", "🔑 Engångsuppkoppling"));
+  wrap.appendChild(el("div", "setup-badge", "🔒 Teamet är inte aktiverat"));
+  // Företagsnamnet kommer ur en teamkonfig (utkast eller delningslänk) och är
+  // alltså text vi inte skrivit själva. Byggs som textnoder, aldrig innerHTML.
   const h = el("h1");
-  h.innerHTML = `Koppla in ert <span class="grad">AI-team</span>`;
+  h.append(
+    document.createTextNode(((team && team.company) || "Ert team") + " är "),
+    el("span", "grad", "byggt"),
+    document.createTextNode(" — men inte igång"),
+  );
   wrap.appendChild(h);
-  // Nyckeln är den enskilt vanligaste avhopps­punkten: kunden har betalat, är
-  // inne, och möts av ett ord hen inte känner igen. Därför en länk till
-  // steg-för-steg-instruktionen i stället för bara ett krav.
+
   const lead = el("p", "setup-lead");
-  lead.innerHTML = 'Klistra in er egen nyckel från OpenRouter (den börjar med <b>sk-or-</b>). Den sparas bara här i er webbläsare och skickas direkt till leverantören — aldrig till någon annan server. ' +
-    '<a href="../#forbrukning" target="_blank" rel="noreferrer">Har ni ingen nyckel? Så skaffar ni en på fem minuter →</a>';
+  lead.textContent = reason ||
+    "Teamet du ser ligger i den här webbläsaren. För att agenterna ska kunna svara, "
+    + "hålla veckomöten och minnas mellan gångerna behöver det aktiveras på ett konto hos oss. "
+    + "AI:n ingår — du behöver ingen egen nyckel och inget konto hos någon leverantör.";
   wrap.appendChild(lead);
 
-  const field = el("div", "setup-field");
-  const input = el("input");
-  input.type = "password"; input.id = "api-key-input"; input.placeholder = "sk-or-...";
-  input.autocomplete = "off"; input.spellcheck = false;
-  input.setAttribute("aria-label", "API-nyckel från OpenRouter");
-  field.appendChild(input);
-  wrap.appendChild(field);
+  if (team && Array.isArray(team.agents) && team.agents.length) {
+    const got = el("p", "setup-help");
+    const nR = Array.isArray(team.routines) ? team.routines.length : 0;
+    got.textContent = `Det som väntar: ${team.agents.length} agenter`
+      + (nR ? `, ${nR} veckorutiner` : "")
+      + ", delat företagsminne och möten mellan agenterna.";
+    wrap.appendChild(got);
+  }
 
-  const err = el("div", "setup-err"); err.style.display = "none"; wrap.appendChild(err);
-
-  const btn = el("button", "btn-primary", "Anslut");
-  btn.onclick = async () => {
-    const val = input.value.trim();
-    // Anthropic-nycklar avvisas här i stället för längre in: de fungerade
-    // förr, så någon kan ha en liggande, och felet ska förklara varför den
-    // inte duger — inte bara att den inte duger.
-    if (val.startsWith("sk-ant-")) {
-      err.innerHTML = 'Det där är en Anthropic-nyckel. Vi kör numera på OpenRouter, som är ungefär tvåhundra gånger billigare för samma arbete. ' +
-        '<a href="../#forbrukning" target="_blank" rel="noreferrer">Så skaffar ni en OpenRouter-nyckel →</a>';
-      err.style.display = "block";
-      return;
-    }
-    if (!val.startsWith("sk-or-")) {
-      err.textContent = "Det ser inte ut som en OpenRouter-nyckel — de börjar med sk-or-. Kontrollera att hela nyckeln följde med när ni kopierade.";
-      err.style.display = "block";
-      return;
-    }
-    // Testa nyckeln direkt (gratis anrop) — en felklistrad nyckel ska ge
-    // besked nu, medan användaren har nyckelsidan öppen, inte mitt i
-    // första frågan till teamet.
-    btn.disabled = true; btn.textContent = "Testar nyckeln…"; err.style.display = "none";
-    try {
-      await window.ATBClaude.validateKey(val);
-    } catch (e) {
-      err.textContent = e.message; err.style.display = "block";
-      btn.disabled = false; btn.textContent = "Anslut"; return;
-    }
-    btn.disabled = false; btn.textContent = "Anslut";
-    state.apiKey = val;
-    localStorage.setItem(KEY_STORAGE, val);
-    boot();
-  };
-  input.addEventListener("keydown", (e) => { if (e.key === "Enter") btn.click(); });
+  const btn = el("button", "btn-primary", "Aktivera teamet →");
+  btn.onclick = () => { location.href = "../builder/"; };
   wrap.appendChild(btn);
 
-  const help = el("div", "setup-help");
-  help.innerHTML = 'Har ni ingen nyckel än? Skapa en på <a href="https://openrouter.ai/keys" target="_blank" rel="noreferrer">openrouter.ai/keys</a> — det tar fem minuter, och användningen kostar ett par kronor i månaden. <a href="../#forbrukning" target="_blank" rel="noreferrer">Steg för steg här →</a>';
-  wrap.appendChild(help);
-
-  const demoBtn = el("button", "demo-link", "Eller utforska i demoläge utan nyckel →");
-  demoBtn.onclick = () => { enterDemo(); boot(); };
-  wrap.appendChild(demoBtn);
+  const peek = el("button", "demo-link", "Eller se hur portalen fungerar i ett demoteam →");
+  peek.onclick = () => { location.href = "?team=coachonline&demo=1"; };
+  wrap.appendChild(peek);
 
   root.appendChild(wrap);
-  setTimeout(() => input.focus(), 50);
 }
 
-// Lämna demoläget och visa nyckel-skärmen (behåller vald team-slug i URL:en).
+// Lämna demoläget. Demot säljer ingenting (beslut 2026-08-06) — teamet på
+// skärmen tillhör någon annan. Vägen ut ur ett demo är därför att bygga sitt
+// eget, inte att koppla in något här.
 function connectKey() {
   state.demo = false;
   const params = new URLSearchParams(location.search);
@@ -851,7 +874,7 @@ function connectKey() {
     const q = params.toString();
     history.replaceState(null, "", location.pathname + (q ? "?" + q : ""));
   }
-  renderKeySetup();
+  location.href = "../builder/";
 }
 
 // ---------- team picker ----------
@@ -1093,20 +1116,14 @@ function renderPicker(errMsg) {
   };
   wrap.appendChild(openFile);
 
-  const reset = el("button", "link-btn", state.demo ? "Koppla in din nyckel" : "Byt API-nyckel");
-  reset.style.marginTop = "10px";
-  reset.onclick = state.demo ? connectKey : resetKey;
-  wrap.appendChild(reset);
+  // Ingen "byt nyckel" längre — kunden har ingen. Kvar står vägen vidare för
+  // den som tittar på ett demoteam: bygg sitt eget.
+  const build = el("button", "link-btn", "Bygg ditt eget team →");
+  build.style.marginTop = "10px";
+  build.onclick = () => { location.href = "../builder/"; };
+  wrap.appendChild(build);
 
   root.appendChild(wrap);
-}
-
-function resetKey() {
-  if (confirm("Ta bort den sparade nyckeln från den här webbläsaren?")) {
-    localStorage.removeItem(KEY_STORAGE);
-    state.apiKey = "";
-    renderKeySetup();
-  }
 }
 
 // ---------- portal shell ----------
@@ -1336,9 +1353,11 @@ function renderSidebar() {
     }
   }
 
-  const reset = el("button", "link-btn", state.demo ? "Koppla in din nyckel" : "Byt API-nyckel");
-  reset.onclick = state.demo ? connectKey : resetKey;
-  foot.appendChild(reset);
+  if (state.demo) {
+    const build = el("button", "link-btn", "Bygg ditt eget team →");
+    build.onclick = connectKey;
+    foot.appendChild(build);
+  }
 
   // "Glöm allt": nyckel + all chatthistorik + utkast. Det riktiga svaret på
   // "hur tömmer jag den här datorn?" — t.ex. efter en demo på kundens maskin.
@@ -1363,8 +1382,8 @@ function wipeAll() {
   }
   doomed.forEach((k) => localStorage.removeItem(k));
   try { indexedDB.deleteDatabase("atb-fs"); } catch (_) { /* inga mapphandtag */ }
-  state.apiKey = ""; state.history = {}; state.folder = null;
-  renderKeySetup();
+  state.history = {}; state.folder = null;
+  location.href = location.pathname; // tillbaka till dörren, utan team i adressen
 }
 
 function renderMain() {
@@ -1386,15 +1405,17 @@ function renderMain() {
   const mws = el("button", "mb-reset", "⭐"); mws.title = "Veckostart";
   mws.onclick = startWeek;
   mbar.appendChild(mws);
-  const mreset = el("button", "mb-reset", state.demo ? "Anslut" : "Nyckel");
-  mreset.onclick = state.demo ? connectKey : resetKey;
-  mbar.appendChild(mreset);
+  if (state.demo) {
+    const mbuild = el("button", "mb-reset", "Bygg eget");
+    mbuild.onclick = connectKey;
+    mbar.appendChild(mbuild);
+  }
 
   if (state.demo) {
     const banner = el("div", "demo-banner");
     banner.appendChild(el("span", "demo-dot"));
-    banner.appendChild(el("span", "demo-text", "Demoläge — svaren är förskrivna exempel som visar hur portalen känns."));
-    const connect = el("button", "demo-connect", "Koppla in din nyckel för riktiga svar →");
+    banner.appendChild(el("span", "demo-text", "Demoläge — svaren är förskrivna exempel som visar hur portalen känns. Teamet tillhör ett annat företag."));
+    const connect = el("button", "demo-connect", "Bygg samma sak för din verksamhet →");
     connect.onclick = connectKey;
     banner.appendChild(connect);
     main.appendChild(banner);
@@ -1686,7 +1707,7 @@ const fmtSek = (v) => (v >= 1 ? v.toFixed(2) : v.toFixed(2)).replace(".", ",") +
 function appendCost(row, run) {
   if (state.demo || !run || run.sek <= 0) return;
   const c = el("div", "msg-cost", `≈ ${fmtSek(run.sek)} · den här veckan: ${fmtSek(costWeekSek())}`);
-  c.title = "Uppskattad API-kostnad via din egen nyckel (tokenpris × förbrukning). Ingen avgift till Mitt AI-team.";
+  c.title = "Vad svaret kostade i AI-förbrukning (tokenpris × förbrukning). Det ingår i din plan — ingen separat räkning, och beloppet dras inte någonstans.";
   row.appendChild(c);
 }
 
@@ -2097,7 +2118,7 @@ const MEM_SUGGEST_PROMPT = `Du hjälper ett företags AI-team att bygga sitt del
 Läs samtalsutdraget och föreslå 0–3 KORTA rader med stabila fakta om företaget som är värda att spara: beslut, preferenser, siffror, arbetssätt. Inte tillfälligheter, inte AI:ns egna förslag — bara sådant ANVÄNDAREN själv sagt eller bekräftat.
 Upprepa inget som redan står i minnet. Returnera EN rad per faktum, varje rad börjar med "- ". Finns inget nytt att spara: svara exakt "INGA".`;
 async function suggestMemory(agentId) {
-  if (state.demo || !state.apiKey || state.streaming) return;
+  if (state.demo || state.streaming) return;
   stopAutoRoutines(); // ett betalt anrop i taget
   const msgs = (state.history[agentId] || []).slice(-8);
   if (!msgs.length) return;
@@ -2296,7 +2317,7 @@ function stopAutoRoutines() {
   autoAbort = null;
 }
 async function runAutoRoutines() {
-  if (state.demo || !state.apiKey || state.streaming || autoBusy) return;
+  if (state.demo || state.streaming || autoBusy) return;
   // Dagfönster: rutinens dag ELLER senare samma vecka — den som öppnar
   // portalen på tisdag ska inte bli utan måndagsbriefen.
   const due = (team.routines || []).filter((rt) =>
@@ -2559,7 +2580,7 @@ function openGrow() {
   go.onclick = async () => {
     const need = ta.value.trim();
     if (need.length < 10) { errEl.textContent = "Beskriv behovet med åtminstone en mening."; errEl.style.display = "block"; return; }
-    if (state.demo || !state.apiKey) { errEl.textContent = "Kräver en inkopplad nyckel — demoläget kan inte generera."; errEl.style.display = "block"; return; }
+    if (state.demo) { errEl.textContent = "Demoläget kan inte generera nya agenter — svaren här är förskrivna."; errEl.style.display = "block"; return; }
     errEl.style.display = "none";
     stopAutoRoutines(); // ett betalt anrop i taget
     go.disabled = true; go.textContent = "Formar agenten… (~30 s)";
@@ -3319,7 +3340,7 @@ function openMemory() {
     // det som skickas med (originalet ligger kvar avstängt) — så spricker
     // inte budgeten av sju titelunderlag i en katalogvecka.
     const sumBtn = (d, isFile, idx) => {
-      if ((d.text || "").length < 4000 || state.demo || !state.apiKey) return null;
+      if ((d.text || "").length < 4000 || state.demo) return null;
       const b = el("button", "act-btn", "Sammanfatta"); b.type = "button";
       b.title = "Skapa ett kort destillat som tar originalets plats i det som skickas med (originalet finns kvar, avstängt)";
       b.onclick = async () => {
@@ -3548,8 +3569,8 @@ function openMeeting() {
   const entryName = (agentById(team.entryAgent) || {}).name || "VD-assistenten";
   if (state.demo) {
     const box = openOverlay("🤝 Håll ett möte");
-    box.appendChild(el("p", "ovl-lead", `Möten körs mot riktiga modellen — koppla in en nyckel för att prova. Så funkar det: du väljer fråga och deltagare, varje agent ger sitt perspektiv utifrån sin roll, och ${entryName} sammanställer till ett beslut med tydligt format.`));
-    const c = el("button", "btn-primary ovl-save", "Koppla in din nyckel →"); c.type = "button";
+    box.appendChild(el("p", "ovl-lead", `Möten körs mot riktiga modellen och finns i det köpta teamet. Så funkar det: du väljer fråga och deltagare, varje agent ger sitt perspektiv utifrån sin roll, och ${entryName} sammanställer till ett beslut med tydligt format.`));
+    const c = el("button", "btn-primary ovl-save", "Bygg ditt eget team →"); c.type = "button";
     c.onclick = () => { closeOverlay(); connectKey(); };
     box.appendChild(c);
     return;

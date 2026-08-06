@@ -92,14 +92,22 @@ regeln.
 
 Fyra statiska webbappar + en hub gör verktyget demobart och användbart för
 icke-tekniska kunder. De delar designsystemet `site/showcase.css` och kör i
-webbläsaren — i BYO-läget anger kunden sin egen nyckel: Anthropic (`sk-ant-`,
-anropar `api.anthropic.com` direkt via `anthropic-dangerous-direct-browser-access`)
-eller OpenRouter (`sk-or-`, OpenAI-kompatibelt API mot `openrouter.ai`, modellista
-hämtas live från deras publika katalog). Leverantör detekteras på nyckelprefixet i
-`atb-claude.js`; modellval sparas separat per leverantör.
-Det finns ett valfritt, tunt köp/leverans-lager (Cloudflare Pages Functions + D1,
-se `docs/m2-backend-spec.md`) för moln-sparade team — annars ingen backend.
-Demolägen (`?demo=1`) låter både portal och builder visas helt utan nyckel.
+webbläsaren, men **AI-anropen går till `POST /api/ai` på vår nyckel** — det
+finns inget BYO-läge längre, och `api.anthropic.com` är borta ur CSP:n.
+Köp/leverans-lagret (Cloudflare Pages Functions + D1) sköter konton, betalning
+och moln-sparade team; kärnan är fortfarande serverlös.
+Demolägen (`?demo=1`) låter både portal och builder visas utan konto.
+
+**Portalens tre dörrar (2026-08-06):** *demoteam* — exempelteamen i
+`portal/teams/index.js` och `?team=__vertical` — öppnas alltid i demoläge, utan
+konto och utan anrop, eftersom de finns för att titta på. *Köpta team* hämtas
+via `/api/teams/:slug`, som kräver inloggning och en rad i `team_access`; når
+konfigen fram är teamet betalt. *Allt annat* — Builder-utkast (`__draft`) och
+delningslänkar (`__link`) — möts av `renderLocked()`: teamet är byggt men inte
+aktiverat, med vägen till köpet. **Ingen nyckelruta finns kvar någonstans**, och
+`atb-claude.js` har bara en väg: `/api/ai`. Den gamla grenen som gick direkt
+till leverantören när en nyckel låg i localStorage är borttagen — så länge den
+fanns kvar var köpgrinden valfri.
 
 **Designsystemet** (`site/showcase.css`, bytt 2026-08-05) heter *Personalen /
 Ljus*: sand `#F1ECE3`, papper `#FCFAF6`, bläck `#1E1913` och ockra `#A9741F`
@@ -179,12 +187,31 @@ skisser i `design/` (deployas inte).
 
 **Vår nyckel, inga kundnycklar (2026-08-06):** kunden har aldrig en egen
 API-nyckel. Allt går genom `POST /api/ai` (`functions/api/ai.js`) på vår
-OpenRouter-nyckel (`OPENROUTER_KEY` som Pages-secret). Tre tak skyddar kassan:
-per IP, per konto (1 000 svar/mån = villkorens fair use) och ett globalt
-dygnstak. Förbrukningen bokförs i `ai_budget` och `ai_usage`
-(`migrations/0004_ai_proxy.sql`) — antal och tokens, aldrig innehåll.
-Nyckelvägen finns kvar i `atb-claude.js` men används inte av något
-gränssnitt längre.
+OpenRouter-nyckel (`OPENROUTER_KEY` som Pages-secret). **Fyra tak**
+(`ai.js:53–57`) skyddar kassan: per IP och kvart (24 bygge / 90 portal), per IP
+och dygn för bygget (200), per **team** och månad (1 000 = villkorens fair use)
+och ett globalt dygnstak (4 000). Förbrukningen bokförs i `ai_budget` och
+`ai_usage` (`migrations/0004_ai_proxy.sql`) — antal och tokens, aldrig innehåll.
+Nyckelvägen finns kvar i `atb-claude.js` **och i portalens `renderKeySetup()`**;
+se varningsrutan ovan.
+
+**Betalväggen (2026-08-06):** rutten har två trafikslag och skillnaden mellan
+dem är hela affären. *Bygget* är gratis, obegränsat och anonymt — säljargumentet.
+*Portalen* kräver inloggning och en rad i `team_access`, annars 402
+`purchase_required`. Skillnaden avgörs i D1 mot `teams.plan`, aldrig av en flagga
+klienten sätter: en klient som utelämnar slugen får byggets villkor, inte gratis
+portalsvar. Slugen bärs som modultillstånd i `atb-claude.js` (`setTeam()`), inte
+av sju anropsställen i portalen.
+
+**Noll provsvar (beslut 2026-08-06).** Inte fem, som en tidigare spec sa. Att
+chatta med sitt eget team är det som säljs — vore det gratis vore köpet valfritt.
+Den som vill se portalen först tittar på ett demoteam. Därför finns heller ingen
+"prova teamet live"-knapp: villkoret sägs i stället *före* köpet, i Builderns
+avslut och i portalens låsta vy.
+
+**Men planen tar aldrig slut:** ingen kod skriver `expired`/`cancelled`/
+`refunded`, och webhooken lyssnar bara på `checkout.session.completed`. 90 kr
+ger i dag obegränsad åtkomst för alltid. Se `docs/roadmap.md` pass 2.
 
 **Prisstegen är tre nivåer (2026-08-06):** 0 kr bygga · 90 kr provmånad ·
 290 kr/mån standard · offert för flera användare. Engångsköpet på 4 990 och
@@ -212,6 +239,15 @@ hjälpte. Felen varierade mellan körningar, så inläsningen gick inte att laga
 utelämnade modellen `starters` och `routines`, alltså portalens agentkort och
 veckorutiner. Med `required` och `minItems` kan den inte göra det.
 
+**Baksidan av strict: fält som saknas i schemat kan inte genereras alls.**
+Prompten i samma fil (`builder.js:967–982`) beställer `firstProject`, `seasons`,
+`scaling` och `agents[].triggers` — inget av dem finns i `TEAM_SCHEMA`, så de
+kommer aldrig tillbaka. Konsult-lägets 🎯-panel kan alltså inte produceras av
+Buildern trots att first-project-steget körs och betalas, och `seasons` saknas i
+**alla 14** filer i `portal/teams/`. Omvänt kräver schemat ett toppnivå-`why`
+som ingen prompt definierar. **Ändras prompten måste schemat följa med** — det är
+samma fällatyp som `starters`-fyndet, andra gången. Se `docs/roadmap.md` pass 4.
+
 Ändras modellraden måste kostnadssiffrorna i `index.html` (`#forbrukning`)
 och avsnitt 3–4 i `villkor.html` följa med. Nuvarande nivå: $0,037/$0,170 per
 miljon tokens, vilket ger cirka 0,25 öre per svar och under 50 öre i månaden
@@ -221,10 +257,13 @@ för en normalanvändande kund.
 med `?team=` i adressen; den nakna adressen frågar kontot först. Inloggning sker
 med engångskod till mejlen — inga lösenord, alltså inget att läcka och inget
 återställningsflöde. Fem tabeller i `migrations/0002_auth.sql`, fyra rutter under
-`functions/api/auth/`, och `scripts/provision.mjs` som lägger upp en kund för hand
-tills köpflödet finns. Capability-URL:en finns kvar men räcker bara för det som
-säljs på kundens egen nyckel — utan identitet går förbrukning inte att mäta per
-konto, vilket den nyckelfria nivån kräver.
+`functions/api/auth/`, och `scripts/provision.mjs` som lägger upp en kund för
+hand. Köpflödet finns sedan 2026-08-06 (`functions/api/checkout.js`,
+`checkout/status.js`, `stripe-webhook.js`, `migrations/0003_commerce.sql`).
+Capability-läsningen är stängd: `/api/teams/:slug` kräver inloggning och slår upp
+åtkomsten i `team_access`, så en borttagen rad stänger dörren i samma sekund.
+Platsrutterna finns också (`functions/api/team/{invite,members,remove}.js`) men
+inget gränssnitt anropar dem än.
 
 **Portalens layout:** tre spalter på desktop — laget till vänster, chatten i
 mitten, arbetsytan och sidfoten till höger. **Ändras `portal/app.js` måste `CACHE`
@@ -254,13 +293,18 @@ ny kund dyker upp i både galleri och portal automatiskt.
 ├── skills-catalog.md               # Kurerad lista över kända Claude Skills
 │
 ├── index.html                      # Säljsida + nav till apparna
+├── villkor.html                    # Allmänna villkor (prislista i avsnitt 4)
+├── integritet.html                 # Integritetspolicy
+├── og.png / sitemap.xml / robots.txt
+├── fonts/                          # Självhostade woff2 + fonts.css
 ├── avatars.js                      # Delad avatar-tilldelning (alla ytor)
-├── atb-claude.js                   # Delad Claude-klient (builder + portal)
+├── atb-claude.js                   # Delad AI-klient (builder + portal)
 ├── builder/                        # Builder-UI: bygg ett team live (+ demo-data.js,
 │                                   #   survey-data.js = förvalsenkäten)
 ├── site/                           # Galleri + DESIGNSYSTEMET (showcase.css, laddas av
 │                                   #   alla ytor utom portalen) + en-vecka.html + gallery.js
 ├── portal/                         # Kundportal: chatta med ett team (+ PWA: manifest/sw)
+│   ├── aktivera.html               # Kvittosida efter Stripe-betalningen
 │   ├── avatars/                    # 25 agentporträtt (PNG)
 │   ├── vendor/                     # pdf.js, mammoth, xlsx (filimport — räknas mot CSP)
 │   ├── deadlines-se.js             # Svenska myndighetsdatum till årshjulet
@@ -270,12 +314,14 @@ ny kund dyker upp i både galleri och portal automatiskt.
 │                                   #   Deployas inte — saknas medvetet i ITEMS
 ├── functions/                      # Cloudflare Pages Functions (/api/* — moln-team)
 │                                   #   OBS: deployas från repo-roten, aldrig via dist/
-├── migrations/                     # D1-schema (SQL) för köp/leverans-lagret
+├── migrations/                     # D1-schema (SQL): init, auth, commerce, ai_proxy
+├── test/                           # node --test: teams.mjs + stripe.mjs (56 tester)
+├── scripts/                        # provision.mjs — lägg upp en kund för hand
 ├── testoutput/                     # Råa pipeline-körningar (källmaterial, ej deployat)
 │
-├── build-dist.mjs                  # Bygger dist/ för Cloudflare Pages
+├── build-dist.mjs                  # Bygger dist/ för Cloudflare Pages (dist/ är ignorerad)
 ├── wrangler.toml                   # Cloudflare-config (D1-bindning)
-├── package.json                    # npm-scripts (build/serve/dev/dev:cf/db:migrate/deploy)
+├── package.json                    # npm-scripts (build/serve/dev/dev:cf/db:migrate/deploy/test)
 ├── _headers                        # CSP + säkerhetsheaders (kopieras till dist/)
 │
 ├── docs/                           # Djupare dokumentation per område
@@ -285,18 +331,27 @@ ny kund dyker upp i både galleri och portal automatiskt.
 │   ├── team-roles.md               # VD, VD-assistent, specialisters roller
 │   ├── meetings.md                 # Mötesfunktionen i detalj
 │   ├── first-project.md            # Kriterier för ett bra första kundprojekt
-│   ├── produktstrategi-sjalvbetjaning.md  # Affärs-/produktstrategi (roadmap)
-│   ├── m2-backend-spec.md          # Spec för köp/leverans-lagret (Stripe + D1)
+│   ├── produktstrategi-sjalvbetjaning.md  # Affärsstrategi. OBS: bygger på BYO,
+│   │                               #   som är skrotat 2026-08-06
+│   ├── m2-backend-spec.md          # Spec för köp/leverans-lagret. Överspelad på
+│   │                               #   leveransväg, /api/chat och prissteg
+│   ├── pub-avtal-mall.md           # Avtalsmall. Underbiträdesavsnittet är fel
+│   ├── kunder.md                   # Logg, inte grind (se Nuvarande sprint)
 │   │
-│   │                               # Daterade ögonblicksbilder (granskningar/research).
-│   │                               # Läget de beskriver är alltid färskare i LÄGET nedan:
-│   ├── lansering.md                # LEVANDE lista: vad som är kvar till lansering
+│   │                               # ── DE TVÅ LEVANDE ────────────────────────
+│   ├── roadmap.md                  # LEVANDE: arbetet i prioriterad ordning
+│   ├── lansering.md                # LEVANDE: hålen mellan löfte och leverans
+│   │
+│   │                               # Daterade ögonblicksbilder. Läget de beskriver
+│   │                               # är alltid färskare i de två levande ovan:
 │   ├── granskning-helhet-2026-08-05.md    # Sexagentsgranskning: kod, säkerhet,
 │   │                               #   visuellt, kärna, affär, dokumentation
 │   ├── granskning-kundresa-2026-07-16.md  # 30 punkter längs kundresan
 │   ├── omvarldsresearch-2026-07-17.md     # Konkurrenter och marknad
 │   ├── roadmap-anvandarvarde-2026-07-17.md # UX/retention, etapp 0–4 (byggd)
 │   ├── simulering-forlag-slutsatser-2026-07-18.md # Halvårssimulering, förlagskund
+│   ├── rollspel-foretag-2026-08-06.md     # Rollspelad kundresa, redovisningsbyrå
+│   ├── rollspel-privatperson-2026-08-06.md # Rollspelad kundresa, livscoach
 │   └── idekatalog-anstalld-smaforetagare-2026-07-18.md # Idébank (topp 5 byggd)
 │
 ├── .claude/
@@ -361,14 +416,25 @@ ny kund dyker upp i både galleri och portal automatiskt.
 
 ## Nuvarande sprint
 
-> **LÄGET (2026-08-05) — läs `docs/granskning-helhet-2026-08-05.md` först.**
-> Den filen är den enda som beskriver nuläget och planen; övriga daterade
-> dokument är ögonblicksbilder från när de skrevs och ska inte läsas som plan.
+> **LÄGET (2026-08-06) — två levande dokument, läs dem i den här ordningen:**
+> **`docs/roadmap.md`** (arbetet, prioriterat) och **`docs/lansering.md`** (hålen
+> mellan löfte och leverans). Övriga daterade filer i `docs/` är ögonblicksbilder
+> från när de skrevs och ska inte läsas som plan — inklusive
+> `granskning-helhet-2026-08-05.md`, som var lägesdokument fram till nu.
 >
 > Kärnan (fas 1–3 nedan) är klar och bevisat divergerande — se `examples/`.
-> Webblagret är brett byggt i förhållande till kundbasen: fyra omgångar
-> funktioner i portalen, ingen betalande kund än, ingen kassa och ingen mätning.
-> Väg in det när något ska prioriteras — men det är ingen spärr.
+> Kassan, kontona, AI-proxyn och förbrukningsmätningen finns sedan 2026-08-06
+> och är verifierade skarpt. Testsviten är 56 gröna. Det som saknas är en
+> betalande kund — och en fungerande väg fram till första svaret.
+>
+> **Sammanfattning av sjuagentsgranskningen 2026-08-06:** kedjan gick sönder
+> mellan betalning och första svar — omläggningen till "vår nyckel" hade aldrig
+> genomförts i portalen, och den gamla nyckelvägen var en genväg förbi
+> betalväggen. **Det är åtgärdat samma kväll** (pass 1 i `docs/roadmap.md`,
+> verifierat i webbläsare). Kvar som tyngsta fynd: **provmånaden kan aldrig ta
+> slut**, eftersom ingen kod skriver `expired`/`cancelled` till `teams.plan` och
+> webhooken bara lyssnar på `checkout.session.completed`. Allt med filrader i
+> `docs/roadmap.md`.
 >
 > **Struket 2026-08-06:** grindregeln som stod här (ingen funktionskod i
 > `portal/`, `builder/` eller `verticals/` förrän `docs/kunder.md` hade en rad
@@ -377,41 +443,29 @@ ny kund dyker upp i både galleri och portal automatiskt.
 > "nästa steg" — vad som byggs härnäst avgörs pass för pass av Mikael.
 > `docs/kunder.md` finns kvar som logg, inte som grind.
 >
-> Skriv ingen ny daterad granskningsfil i `docs/`. Fyra på fyra månader räcker;
-> nästa bedömning görs av en kund som betalar eller låter bli. Uppdatera
-> lägesdokumentet i stället.
+> Skriv ingen ny daterad granskningsfil i `docs/`. Fem på fyra månader räcker;
+> nästa bedömning görs av en kund som betalar eller låter bli. Uppdatera de två
+> levande dokumenten i stället.
 >
 > Sista raden varje arbetspass: skriv nästa pass enda uppgift, en mening, här
-> nedanför. Projektet arbetar i skurar (38 commits på sex dagar), så scopet
+> nedanför. Projektet arbetar i skurar (35 commits på sex dagar), så scopet
 > måste laddas i förväg — annars väljs det som är roligast under första timmen.
 >
 > De tre besluten är tagna 2026-08-05: **enskild firma Glänne & Söner**, **B2B
-> och privatpersoner**, **momsregistrerat**. Prisstegen är spikad (0 / 90 / 190 /
-> 4 990 / 490 per mån / offert) och står i lägesdokumentet — prislistan i
-> `index.html` och avsnitt 4 i `villkor.html` måste alltid ändras tillsammans.
+> och privatpersoner**, **momsregistrerat**. Prisstegen är **0 / 90 / 290 /
+> offert** (se avsnittet "Prisstegen är tre nivåer" ovan — den gäller; en äldre
+> femstegslista stod här tidigare och var fel). Prislistan i `index.html`,
+> avsnitt 4 i `villkor.html` och `TIERS` i `functions/api/_stripe.js` ändras
+> alltid samma dag.
 >
-> **Gjort 2026-08-06 (ett långt pass):**
-> - **Avsändare:** Resend på mittaiteam.se (eu-west-1, DKIM+SPF verifierade,
->   MX på `send.` så Email Routing och info@ är orörda). Inloggningskoder mejlas
->   skarpt. Admin-nyckeln ligger i `.dev.vars.resend.admin` (gitignorerad).
-> - **Kassan (M2a-2):** `/api/checkout`, `/api/stripe-webhook`,
->   `/api/checkout/status`, `portal/aktivera.html` och "Spara i molnet" i
->   Buildern. Leverans sker till ett **konto**, inte till en capability-URL —
->   `docs/m2-backend-spec.md` är överspelad på just den punkten. Verifierat hela
->   vägen i webbläsare med Stripes testkort.
-> - **Rullande session:** en aktiv kund behöver aldrig en ny mejlkod.
-> - **Förbrukning och nyckel:** `index.html#forbrukning` — vad DeepSeek V4 Flash
->   via OpenRouter kostar i månaden (2–4 kr vid normal användning) och fem steg
->   för att skaffa nyckeln. Länkas från Buildern och portalen. **Ändras modellen
->   måste den sektionen ändras med prislistan och villkoren.**
+> **Två beslut kvar** (utskrivna i `docs/roadmap.md`): om capability-läsningen
+> ska dö helt, och var "Utveckla teamet" ska spara. De två första är fattade
+> 2026-08-06: **noll provsvar** och **ingen live-provning av eget team**.
 >
-> **`docs/lansering.md` är listan över vad som är kvar** — levande dokument, inte
-> en daterad granskning. Fyra blockerande hål: nyckeln krävs efter betalningen,
-> flera användare går inte att sälja, den nyckelfria nivån finns inte, och det
-> saknas självbetjänad väg ut.
->
-> **Nästa pass:** stäng hål 1 i `docs/lansering.md` — nyckeln ska vara verifierad
-> innan pengarna byter ägare, inte efter.
+> **Nästa pass:** pass 2 i `docs/roadmap.md` — ge planen en livscykel. Skriv
+> `expired` när provmånaden passerat 30 dagar och hantera
+> `customer.subscription.deleted` / `invoice.payment_failed` i webhooken. Utan
+> det är 90 kr hela produkten och 290-nivån går inte att sälja.
 >
 > Fas 1–3 nedan står kvar som historik över hur kärnan byggdes.
 

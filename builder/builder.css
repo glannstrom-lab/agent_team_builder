@@ -180,6 +180,11 @@ select.fin { cursor: pointer; }
 }
 .close-head { font-family: var(--font-display); font-size: clamp(19px, 2.6vw, 23px); font-weight: 800; letter-spacing: -0.02em; line-height: 1.2; }
 .close-body { color: var(--text-dim); font-size: 15px; line-height: 1.65; margin-top: 10px; }
+/* Köpvillkoret i klartext. Egen inramning för att det inte ska läsas som
+   ännu ett brödtextstycke — det är den enda meningen på sidan som säger vad
+   som händer efter köpet, och den ska inte gå att skumma förbi. */
+.close-gate { margin-top: 16px; padding: 12px 14px; border: 1px solid var(--line);
+  border-radius: 6px; background: var(--paper); color: var(--text); font-size: 14.5px; }
 .close-plans { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px; }
 .close-plan { border: 1px solid var(--border); border-radius: 6px; background: var(--surface-2); padding: 14px 16px; }
 .close-plan-top { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }

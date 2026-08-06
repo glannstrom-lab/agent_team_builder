@@ -4,8 +4,13 @@
 > gjorda, lägg till när något nytt hittas. Det här är listan som avgör när
 > produkten går att sälja till någon som inte känner Mikael.
 >
-> Senast genomgången 2026-08-06: kodgranskning, visuell genomgång med Playwright
-> (elva sidor, desktop + mobil), och två rollspelade kundresor — en privatperson
+> Senast genomgången 2026-08-06 (kväll): sju parallella granskare — kod &
+> arkitektur, säkerhet, kärnan, produkt & affär, dokumentation, kundresa & UX,
+> tester & drift. Arbetslistan som föll ut ligger i **`docs/roadmap.md`**; den
+> här filen listar hålen, roadmapen listar arbetet.
+>
+> Tidigare samma dag: kodgranskning, visuell genomgång med Playwright (elva
+> sidor, desktop + mobil), och två rollspelade kundresor — en privatperson
 > (livscoach, solo, icke-teknisk) och ett företag (redovisningsbyrå, nio
 > anställda, IT-leverantör som granskar).
 
@@ -40,29 +45,39 @@ Verifierat i webbläsare: bygge utan nyckel → följdfrågor → färdigt team 
 Kvarstår på kvalitet: systemprompterna är i snitt 1 319 tecken mot DeepSeeks
 2 100. Åtgärdas med `minLength` i schemat — inte gjort, inte verifierat.
 
-**Detta får inte deployas förrän `OPENROUTER_KEY` är satt.** Sajten säljer nu
-"AI:n ingår" och Buildern frågar inte längre kunden om någon nyckel — utan vår
-svarar `/api/ai` 503 och produkten är död i vattnet.
+~~Detta får inte deployas förrän `OPENROUTER_KEY` är satt.~~ Deployat och
+verifierat skarpt (`3bb3dfc`, `fc6ac61`).
 
-## Nästa uppgift: fem gratissvar, sedan provmånad
+## Gratissvaren: noll, inte fem — avgjort 2026-08-06
 
-Beslutat av Mikael 2026-08-06: **fem svar gratis i portalen**, därefter krävs
-provmånaden. Bygget förblir gratis och obegränsat — det är säljargumentet.
+Specen sa först fem gratissvar, koden byggdes med noll. **Mikael avgjorde till
+kodens fördel:** inga provsvar i portalen. Att chatta med sitt eget team är det
+som säljs — kunde man göra det gratis vore köpet valfritt. Den som vill se hur
+portalen fungerar tittar på ett demoteam, där svaren är förskrivna.
 
-Tre saker måste stämma, annars blir spärren värre än ingen spärr:
+Samtidigt avgjort: **det ska inte gå att prova sitt eget team live.** Knappen
+"Prova teamet live" är borttagen ur Buildern (den fungerade ändå inte — servern
+avvisar utkast-slugen med flit).
 
-1. **Bygget får inte räknas.** Det går genom samma `/api/ai` men ska förbli
-   fritt. Räkningen måste alltså kunna skilja på ett bygge och ett portalsvar,
-   och det får inte avgöras av en flagga klienten sätter — då är betalväggen
-   en rad JavaScript att ta bort.
-2. **En betalande kund får aldrig mötas av den.** `teams.plan` säger vad som
-   köpts; fem-gränsen ska bara gälla team utan betald plan.
-3. **Kunden ska se hur många som är kvar** innan de tar slut. En spärr som
-   kommer utan förvarning läses som ett fel, inte som ett erbjudande.
+Fundamentet var rätt byggt hela tiden. De tre kraven:
 
-Rekommenderad lösning: portalen skickar teamets slug, proxyn slår upp
-`teams.plan`, och räkningen sker per team i `ai_usage` (subject `team:<slug>`).
-Demo- och utkastteam räknas mot IP-hinken som i dag.
+1. **Bygget får inte räknas.** ✅ Uppfyllt. Skillnaden avgörs i D1 mot
+   `team_access` och `teams.plan` (`ai.js:240-266`), aldrig av en flagga
+   klienten sätter. `fc6ac61` täppte det verkliga hålet: portalen skickade
+   aldrig slugen, så *varje* portalsvar behandlades som ett bygge.
+2. **En betalande kund får aldrig mötas av den.** ✅ Uppfyllt, triviellt —
+   uppslaget sker mot databasen.
+3. **Kunden ska se hur många som är kvar.** Utgår — med noll gratissvar finns
+   inget att räkna ner. I stället ska villkoret sägas *före* köpet, vilket det
+   nu görs: Builderns avslut har ett eget stycke om att portalen öppnas av
+   köpet, och ett utkast som öppnas i portalen möts av en låst vy i stället för
+   ett 402 mitt i första frågan.
+
+~~**Kringgåendet:** en OpenRouter-nyckel i localStorage skickade portalsvaren
+direkt till `openrouter.ai`, förbi proxyn, betalväggen, taken och mätningen.~~
+**Stängt 2026-08-06** — nyckelvägen är borttagen ur `atb-claude.js`; alla anrop
+går till `/api/ai`. Verifierat i webbläsare med en planterad nyckel i
+localStorage: teamet förblir låst.
 
 ## Läget just nu
 
@@ -79,11 +94,40 @@ produkten går igenom den.
 
 ## Blockerande — måste vara löst innan en okänd kund betalar
 
-### ~~1. Nyckelkravet kommer efter betalningen~~ — STÄNGT 2026-08-06
+### ~~1. Nyckelkravet lever kvar i portalen~~ — STÄNGT 2026-08-06 (kväll)
 
-Köppanelen har en grind: saknas nyckel går planknapparna inte att trycka på
-förrän en nyckel testats mot OpenRouter på riktigt. Valideringen är utbruten och
-delas med builderns vanliga nyckelruta, så de kan inte glida isär.
+Hålet stängdes först i Buildern och köppanelen, men omläggningen "kunden har
+aldrig en egen API-nyckel" hade aldrig genomförts i portalen. Fyra granskare
+hittade det oberoende av varandra. Nu är hela nyckelvägen borta:
+
+- **Nyckelrutan i portalen** (`renderKeySetup`) är ersatt av en **låst vy**
+  (`renderLocked`) som säger att teamet är byggt men inte aktiverat, och leder
+  till köpet. "Byt API-nyckel", `resetKey` och nyckelknappen i mobilraden är
+  borttagna.
+- **Nyckelvägen i klienten** är borta. `atb-claude.js` har bara en väg kvar:
+  `/api/ai`. Grenen som skickade anropet direkt till leverantören när en nyckel
+  fanns i localStorage var inte död kod — den gjorde köpgrinden valfri.
+- **Builderns nyckelkod** (`renderKeySetup`, `buildKeyGate`, `checkApiKey`,
+  `saveVerifiedKey`) är raderad. Ingenting skriver längre `atb_api_key`, och
+  portalen städar bort en kvarglömd nyckel vid start.
+- **Demoteamen öppnas i demoläge automatiskt**, så ett exempelteam kan tittas på
+  utan konto i stället för att svara 402 på första frågan.
+
+Verifierat i webbläsare (Playwright, fyra flöden): exempelteam utan
+demo-parameter → portal i demoläge; utkast → låst vy; utkast **med planterad
+nyckel i localStorage** → fortfarande låst; uttryckligt demoläge → oförändrat.
+Inga nyckelfält, ingen `sk-or-`-text kvar i portalen.
+
+**Kvar på den här punkten:** `portal/aktivera.html:81` säljer fortfarande in
+nyckelkravet efter betalningen, och nyckeltext står kvar i portalens meta
+description och på branschsidorna (`verticals/app.js:89`). Se `docs/roadmap.md`,
+pass 6.
+
+### ~~1b. Nyckelgrinden i köppanelen~~ — STÄNGT 2026-08-06
+
+Köppanelen hade en grind: saknades nyckel gick planknapparna inte att trycka på
+förrän en nyckel testats mot OpenRouter på riktigt. Grinden togs sedan bort helt
+i `022811b` när kunden slutade ha nycklar.
 
 **Följdfynd på vägen — också stängt:** demoläget *sålde demoteamet*. Den som
 klickade "Spara i molnet" ur `?demo=1` betalade 90 kr för CoachOnline-teamet, ett
@@ -112,15 +156,24 @@ Har hen sparat `/portal/?team=<slug>` når hen fortfarande teamet, eftersom
 konto levereras). Att täppa till det kräver ett beslut om capability-läsningen
 ska dö helt.
 
-### 3. Den nyckelfria nivån säljs men finns inte
+### ~~3. Den nyckelfria nivån säljs men finns inte~~ — ÖVERSPELAT 2026-08-06
 
-190 kr och 490 kr/mån kräver en proxy på egen nyckel med kvot- och takräkning.
-Den är inte byggd. Båda korten är nu märkta "öppnar senare i höst" — men
-frågan kommer att ställas i varje säljsamtal, och svaret måste vara ett datum
-eller ett nej, inte ett "snart".
+Nivåerna 190 och 490 är strukna ur prislistan, och den nyckelfria driften *är*
+byggd: `/api/ai` på vår nyckel, fyra tak, förbrukning i `ai_budget`/`ai_usage`.
+Kontextbudget-buggen som blockerade den fixades i `6959aa4` (`contextFor`,
+`portal/app.js:519-549`).
 
-**Beror på:** kontextbudget-buggen måste fixas först (kostnaden blir vår i det
-läget), och en kvotmätning per konto ovanpå `usage`-tabellen.
+### 3b. Provmånaden tar aldrig slut — NYTT
+
+Ingen kod skriver någonsin `expired`, `cancelled` eller `refunded` till
+`teams.plan`. `PLANS_WITHOUT_PORTAL` (`functions/api/ai.js:162`) är en
+spärrlista som ingen fyller, och `stripe-webhook.js:42` hanterar bara
+`checkout.session.completed`.
+
+Följd: **90 kr engångsbetalning ger obegränsad portalåtkomst i evighet.** Därmed
+säljer 290-nivån sig aldrig, en uppsagd prenumeration behåller åtkomsten, och en
+återbetalning likaså. Det är den enda punkten på hela listan som direkt avgör
+intäkten. Åtgärd: `docs/roadmap.md`, pass 2.
 
 ### ~~4. Ingen självbetjänad väg ut~~ — STÄNGT 2026-08-06
 
@@ -141,8 +194,17 @@ hjälpfunktion som lägger in elementet i dokumentet före klicket.
 - **Fritt formulerade frågor i demoläget** faller tillbaka på ett generiskt svar
   utan att det märks att det inte är en riktig körning.
 - **Inbjudningsrutterna saknar gränssnitt** (se hål 2 ovan).
-- **Kontextbudget-buggen** (`portal/app.js`) måste fixas innan den nyckelfria
-  nivån kan prissättas — då är kostnaden vår.
+- **Det globala dygnstaket delas med betalande kunder** (`ai.js:299-302`) — den
+  som bränner 4 000 anrop ger 503 åt varje kund resten av dygnet. Taket räknar
+  dessutom anrop, inte pengar: värsta fall ~180 kr/dygn, och inget månadstak.
+- **Ingen felövervakning.** `ai.js:610` skriver *"KREDITEN ÄR SLUT hos
+  OpenRouter"* till en logg ingen läser. Tar krediten slut en helgnatt upptäcks
+  det när en kund mejlar.
+- **Prompt och schema har glidit isär i `builder/builder.js`.** `TEAM_SCHEMA`
+  körs `strict` med `additionalProperties: false`, men prompten beställer
+  `firstProject`, `seasons` och `triggers` — fält som inte finns i schemat och
+  därför aldrig kan genereras. Konsult-lägets 🎯-panel kan alltså inte produceras
+  av Buildern, och årshjulet är tomt i alla 14 teamfiler.
 
 ## Skav — rätta när något ändå görs i filen
 
@@ -151,7 +213,18 @@ hjälpfunktion som lägger in elementet i dokumentet före klicket.
 - Galleriet saknar sidor för tre av `examples/`-körningarna (lerverk,
   norrskenspodden, wikander).
 - `/api/team/...` och `/api/teams/:slug` ligger namnmässigt nära varandra. Ingen
-  kollision, men lätt att läsfela senare.
+  kollision, men lätt att läsfela senare — och slug-längderna krockar redan:
+  `teams/[slug].js:25` kräver 22–64 tecken, `team/_lib.js:17` tillåter 2–64, så
+  handprovisionerade slugar blir oladdbara.
+- Nyckeltext kvar på nio ställen, bl.a. `portal/index.html:7` (meta description,
+  syns i länkförhandsvisningar) och varje branschsida via `verticals/app.js:89`.
+- Tidsåtgången anges med fem olika värden på sajten; uppmätt verklighet är 28 s.
+- `integritet.html` beskriver taken och `ai_usage.subject` felaktigt — koden
+  skriver även `team:<slug>` och `ip:<ip>`, och fair use räknas per team, inte
+  per konto. Art. 13-information ska stämma.
+- `docs/pub-avtal-mall.md:149-155` påstår att OpenRouter *inte* är underbiträde.
+  Det gällde i BYO-läget; nu anropar vi dem från egen server, och
+  `villkor.html:471` listar dem redan. Rätta före nästa kundutskick.
 
 ---
 
