@@ -709,6 +709,10 @@ async function loadTeam(slug) {
   } catch (_) { /* trasigt tillägg — kör grundkonfigen */ }
   assignAvatars(team); // ge varje agent en (stabil, slumpad) avatar om ingen är satt
   state.slug = slug;
+  // Servern avgör om teamet är köpt; portalen talar bara om vilket det är.
+  // Demoläget skickar ingen slug — där sker inga anrop alls, svaren är
+  // förskrivna, och ett 402 mitt i en förhandsvisning vore obegripligt.
+  try { window.ATBClaude.setTeam(state.demo ? null : slug); } catch (_) { /* äldre klient */ }
   state.history = loadHistory(slug);
   state.activeAgentId = agentById(team.entryAgent) ? team.entryAgent : team.agents[0].id;
   // team.defaultModel läses inte längre. Sedan 2026-08-05 kör hela produkten

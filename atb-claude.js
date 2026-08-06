@@ -34,11 +34,19 @@
     return "openrouter";
   }
 
+  // Vilket team anropen gäller. Portalen sätter den när ett team laddats;
+  // Buildern rör den aldrig. Den skiljer ett portalsvar (kräver köpt team och
+  // inloggning) från ett bygge (gratis) — och den avgörs på servern, mot
+  // databasen. Att fältet sätts här är bara transport: en klient som ljuger
+  // om det får byggets villkor, inte gratis portalsvar.
+  let currentTeam = null;
+  function setTeam(slug) { currentTeam = slug || null; }
+
   // Översätter ett misslyckat svar till ett begripligt felmeddelande.
   // Läser BARA JSON om servern faktiskt skickar JSON — annars (t.ex. en
   // HTML-sida från en proxy/502/504) skulle res.json() kasta och dölja det
   // riktiga felet bakom ett generiskt "Fel".
-  async function errorMessage(res) {
+  async function errorMessage(res, viaProxy) {
     let msg = `Fel ${res.status}`;
     const ct = res.headers.get("content-type") || "";
     if (ct.includes("application/json")) {
@@ -53,7 +61,11 @@
     } else if (res.status >= 500) {
       msg = "Serverfel hos modell-API:t — försök igen om en stund.";
     }
-    if (res.status === 401) msg = "Ogiltig API-nyckel. Kontrollera nyckeln under „Byt API-nyckel”.";
+    // 401 betyder olika saker på de två vägarna. Går anropet via vår proxy är
+    // det kunden som inte är inloggad, och serverns svenska text är redan rätt
+    // — att skriva över den med ett nyckelfel skickade en utloggad kund att
+    // leta efter en nyckel hon aldrig haft.
+    if (res.status === 401 && !viaProxy) msg = "Ogiltig API-nyckel. Kontrollera nyckeln under \"Byt API-nyckel\".";
     if (res.status === 429) msg = "För många anrop just nu — det gick inte ens efter automatiska omförsök. Vänta en minut och försök igen.";
     return msg;
   }
@@ -114,7 +126,7 @@
         signal: signal || undefined,
         credentials: "same-origin", // sessionen avgör om förbrukningen räknas per konto
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ system, messages, maxTokens: maxTokens || 4096, json: !!json, schema: opts.schema || null }),
+        body: JSON.stringify({ system, messages, maxTokens: maxTokens || 4096, json: !!json, schema: opts.schema || null, team: opts.team || currentTeam || undefined }),
       };
     } else if (openrouter) {
       // OpenAI-kompatibelt format: system som första message, Bearer-auth.
@@ -157,7 +169,7 @@
         await wait(RETRY_DELAYS[attempt], signal);
         continue;
       }
-      throw new Error(await errorMessage(res));
+      throw new Error(await errorMessage(res, !apiKey));
     }
 
     const reader = res.body.getReader();
@@ -327,5 +339,5 @@
     }
   }
 
-  window.ATBClaude = { stream, collect, fetchWithTimeout, providerFor, openrouterModels, validateKey, encodeTeamLink, decodeTeamLink, API_URL, ANTHROPIC_VERSION, MODEL_ID, MODEL_LABEL };
+  window.ATBClaude = { stream, collect, setTeam, fetchWithTimeout, providerFor, openrouterModels, validateKey, encodeTeamLink, decodeTeamLink, API_URL, ANTHROPIC_VERSION, MODEL_ID, MODEL_LABEL };
 })();
