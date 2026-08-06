@@ -427,6 +427,72 @@ a.link-btn { text-decoration: none; }
 .intro-tick { flex-shrink: 0; width: 15px; }
 .intro-step.done .intro-tick { color: var(--green); text-decoration: none; }
 
+/* ---------- introduktion: lär känna teamet ----------
+   Ett steg i taget i overlay-rutan. Läses som ett samtal: ansiktet och
+   agentens egna ord i en pratbubbla, frågan tillbaka i ockratint, svarsfältet
+   direkt under. Ingen ny färg och inga nya former — samma tokens som resten. */
+.ovl-box.tour-box { max-width: 600px; }
+.tour-tagline { font-size: 15px; line-height: 1.55; color: var(--text); margin: 0 0 10px; }
+.tour-prog { margin: 2px 0 14px; }
+.tour-bar { height: 3px; background: var(--surface-3); border-radius: 2px; margin-top: 6px; overflow: hidden; }
+.tour-bar > i { display: block; height: 100%; background: var(--accent); transition: width 0.25s ease; }
+
+.tour-head { display: flex; align-items: center; gap: 12px; }
+.tour-icon {
+  width: 52px; height: 52px; flex: none; display: grid; place-items: center; font-size: 24px;
+  border-radius: 14px; background: var(--surface-2); border: 1px solid var(--border);
+}
+.tour-icon.has-img { padding: 0; overflow: hidden; }
+.tour-meta { min-width: 0; }
+.tour-name { font-family: var(--font-display); font-weight: 700; font-size: 18px; letter-spacing: -0.02em; }
+.tour-role { font-size: 14px; color: var(--text-dim); line-height: 1.45; }
+
+/* Pratbubbla, samma grepp som assistentsvaren i chatten: avhuggen hörna uppåt
+   vänster så att det syns att det är agenten som talar. */
+.tour-say {
+  margin-top: 10px; padding: 13px 15px; background: var(--surface-2);
+  border: 1px solid var(--border); border-radius: 14px; border-top-left-radius: 5px;
+}
+.tour-p { font-size: 15px; line-height: 1.6; margin: 0; }
+.tour-p + .tour-p { margin-top: 9px; }
+.tour-why { color: var(--text-dim); }
+.tour-say .ovl-label { margin: 12px 0 4px; }
+.tour-caps { margin: 0; padding-left: 19px; color: var(--text-dim); font-size: 14.5px; line-height: 1.6; }
+
+/* Frågan är hela poängen med steget — den ska inte kunna missas i löptexten. */
+.tour-q {
+  margin-top: 14px; padding: 12px 14px; font-size: 15.5px; font-weight: 600; line-height: 1.5;
+  color: var(--text); background: var(--accent-soft);
+  border: 1px solid rgba(169, 116, 31, 0.35); border-radius: 12px;
+}
+.tour-ta { margin-top: 8px; }
+
+.tour-acts { display: flex; align-items: center; flex-wrap: wrap; gap: 10px 16px; margin-top: 4px; }
+.tour-acts-col { flex-direction: column; align-items: stretch; gap: 2px; }
+.tour-acts-col .ovl-save { width: 100%; }
+/* Vägen ut ska finnas på varje steg, men får inte konkurrera med primärvalet. */
+.tour-skip {
+  background: none; border: none; color: var(--text-dim); font-family: inherit; font-size: 13.5px;
+  cursor: pointer; padding: 4px 2px; min-height: 44px; margin-top: 10px;
+}
+.tour-skip:hover { color: var(--text); text-decoration: underline; }
+.tour-link {
+  background: none; border: none; color: var(--accent-2); font-family: inherit; font-size: 14px;
+  font-weight: 600; text-align: left; cursor: pointer; padding: 4px 0; min-height: 44px;
+}
+.tour-link:hover { text-decoration: underline; }
+.tour-done-h { font-family: var(--font-display); font-size: 17px; font-weight: 700; letter-spacing: -0.01em; line-height: 1.4; margin-bottom: 6px; }
+
+/* ---------- gradvis arbetsyta ---------- */
+/* Streckad ram, som minnesräknaren: "här finns mer", inte "klicka här nu". */
+.ws-more {
+  display: block; width: 100%; text-align: left; margin-top: 6px; padding: 10px 11px;
+  background: none; border: 1px dashed var(--border); border-radius: 10px;
+  color: var(--text-dim); font-family: inherit; font-size: 13px; line-height: 1.45;
+  min-height: 44px; cursor: pointer;
+}
+.ws-more:hover { border-color: var(--accent); color: var(--text); }
+
 /* ---------- puls-kort (lokalt beräknade, ovanför chatten) ---------- */
 .pulse-strip { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 10px 22px 0; }
 .pulse-card {

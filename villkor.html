@@ -156,7 +156,7 @@
     <p>Du får inte AI-modellen. Vi varken utvecklar eller driver någon språkmodell.
     Det du köper är arbetet med att ta fram rollerna, gränssnittet som gör dem
     användbara, och tillgången till modellen genom oss. Motorn är språkmodellen
-    DeepSeek V4 Flash, som vi når via tjänsten OpenRouter. Du får använda den
+    GPT-OSS 120B, som vi når via tjänsten OpenRouter. Du får använda den
     genom portalen, inom ramen för avsnitt 3 — inte som en fristående
     AI-tjänst att bygga vidare på eller sälja åtkomst till.</p>
     <p>Du får inte heller en garanterad tidsbesparing, ett visst resultat eller
@@ -167,14 +167,21 @@
     <!-- Skrivet mot functions/api/ai.js (2026-08-06): MAX_CALLS_PER_ACCOUNT =
          1000 per månad, MAX_CALLS_PER_IP = 24 per kvart, MAX_CALLS_PER_DAY =
          4000 globalt. Ändras något av talen ändras texten nedan samma dag —
-         villkoren får inte lova mer än koden gör. Se även avsnitt 9 och 11. -->
+         villkoren får inte lova mer än koden gör. Se även avsnitt 9 och 11.
+         MODELLNAMNET (GPT-OSS 120B, id openai/gpt-oss-120b) står i MODEL_ID i
+         samma fil; bytt från DeepSeek V4 Flash 2026-08-06. Nämns modellen på
+         två ställen här (avsnitt 2 och 3) — ändra båda, och tredjelandsavsnittet
+         i integritet.html, samma dag. -->
     <h3 id="motor">3. Motorn bakom portalen, och vad som ingår</h3>
     <p>Portalen behöver en språkmodell för att svara. Den står vi för. Du behöver
     inget konto hos någon AI-leverantör, ingen API-nyckel och inget eget abonnemang
     — allt det ligger hos oss och ingår i priset.</p>
     <p>Rent tekniskt går din fråga från webbläsaren till vår server, vidare till
-    tjänsten OpenRouter på vårt konto, och därifrån till den leverantör som driftar
-    språkmodellen DeepSeek V4 Flash. Svaret tar samma väg tillbaka.</p>
+    tjänsten OpenRouter på vårt konto, och därifrån till den leverantör som kör
+    språkmodellen GPT-OSS 120B. Svaret tar samma väg tillbaka. Vilken leverantör
+    det blir avgörs anrop för anrop, och behandlingen kan ske utanför EU och EES —
+    <a href="integritet.html#tredjeland">integritetspolicyn</a> beskriver det i
+    detalj.</p>
 
     <h4>Vad det innebär för dig</h4>
     <ul>

@@ -15,6 +15,20 @@
 # no-cache betyder inte "hämta alltid om", utan "fråga alltid först". Svaret
 # blir 304 utan kropp när inget ändrats, alltså några hundra byte. Det är
 # billigare än en enda felsökning av något som redan är rättat.
+# Sälj- och juridiktexten måste också revalideras. Cloudflare Pages cachar
+# HTML i fyra timmar som standard, och 2026-08-06 gjorde det att villkoren och
+# integritetspolicyn visade en modell vi slutat använda medan prislistan redan
+# var uppdaterad. Prislistan och avsnitt 4 i villkoren ska ändras samma dag —
+# det löftet är värdelöst om ena sidan når kunden fyra timmar efter den andra.
+/index.html
+  Cache-Control: no-cache
+
+/villkor.html
+  Cache-Control: no-cache
+
+/integritet.html
+  Cache-Control: no-cache
+
 /portal/app.js
   Cache-Control: no-cache
 

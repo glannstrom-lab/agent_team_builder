@@ -670,7 +670,7 @@ async function loadTeam(slug) {
     const prevOwner = localStorage.getItem(ownerKey);
     if (prevOwner !== null && prevOwner !== owner) {
       [HIST_PREFIX, MEM_PREFIX, DOCS_PREFIX, DOCSON_PREFIX,
-        "atb_hello_", "atb_intro_", "atb_rout_", "atb_streak_", "atb_visit_", "atb_fp_", "atb_cost_", "atb_pulse_snooze_", "atb_teamext_"]
+        "atb_hello_", "atb_intro_", "atb_tour_", "atb_wsmore_", "atb_rout_", "atb_streak_", "atb_visit_", "atb_fp_", "atb_cost_", "atb_pulse_snooze_", "atb_teamext_"]
         .forEach((p) => localStorage.removeItem(p + slug));
       // Mappkopplingen ligger i IndexedDB — utan detta återansluter förra
       // företagets mapp och dess minne/underlag läcker in i nya teamet.
@@ -1122,6 +1122,22 @@ function renderPortal() {
   renderPulse();       // lokala puls-kort — portalen har alltid något att säga
   checkTrialNotice();  // async: provmånadens slutdatum, om kontot säger att det är en provmånad
   runAutoRoutines();   // async: auto-rutiner som ska ligga klara idag
+  // Första besöket: introduktionen går före allt annat. Den presenterar
+  // agenterna en i taget och slutar med en väg vidare — "Därför ser ert team
+  // ut så här" ligger som en knapp i sista steget i stället för att öppnas av
+  // sig själv, så att en ny kund inte möts av två modaler i rad.
+  //
+  // Bara när chatten är orörd: den som redan jobbat i portalen ska inte få en
+  // presentation av kollegor hen känner mitt i ett arbetspass. Knappen "Lär
+  // känna teamet" i arbetsytan finns kvar för dem.
+  const untouchedTeam = !Object.values(state.history).some((m) => m && m.length);
+  if (!tourDone() && untouchedTeam) {
+    // Ceremonin räknas som visad: introduktionen bär samma innehåll och
+    // erbjuder det egna fönstret på slutet.
+    try { localStorage.setItem("atb_hello_" + state.slug, "1"); } catch (_) { /* full storage */ }
+    setTimeout(openIntro, 400);
+    return;
+  }
   // Anställningsceremonin: första besöket i ett team med motiveringar öppnas
   // "Därför ser ert team ut så här" automatiskt — en gång, aldrig igen.
   if (!state.demo && whyAvailable()) {
@@ -1180,17 +1196,48 @@ function renderSidebar() {
   if (streak >= 2) ws.appendChild(el("div", "streak-badge", `🔥 ${streak} veckor i rad med teamet`));
 
   const entryName = (agentById(team.entryAgent) || {}).name || "VD-assistenten";
+  // Introduktionen står överst så länge den inte är gjord — det är det första
+  // en ny kund ska göra. Är den avklarad flyttar den ner bland de andra
+  // "läs om teamet"-knapparna, så att Veckostart behåller sin vana plats.
+  const introBtn = () => wsBtn("👋", "Lär känna teamet", openIntro, "Presentationen av teamet: en agent i taget, med en fråga tillbaka till dig");
+  const tourLeft = !tourDone();
+  if (tourLeft) introBtn();
   wsBtn("⭐", "Veckostart", startWeek, `${entryName} föreslår veckans fokus utifrån teamet och era rutiner`);
   wsBtn("🤝", "Håll ett möte", openMeeting, "Samla flera agenters perspektiv och landa i ett beslut");
   wsBtn("🧠", "Minne & underlag", openMemory, "Delade instruktioner och material som alla agenter ser");
-  wsBtn("📈", "Veckans arbete", openWeekWork, "Vad du och teamet gjort den här veckan — och tid tillbaka");
+  if (!tourLeft) introBtn();
   if (whyAvailable()) wsBtn("✨", "Därför detta team", openWhyTeam, "Varje agents koppling till er verksamhet — och det vi medvetet sa nej till");
-  if (!state.demo && quarterEndsSoon()) wsBtn("🏆", "Kvartalet med teamet", openQuarter, "Kvartalets siffror — delbara med en kollega");
-  if (!state.demo) wsBtn("🔄", "Utveckla teamet", openGrow, "Lägg till en agent när verksamheten förändras — avvisade moment står först i kön");
-  if (!state.demo) wsBtn("🔍", "Sök i historiken", openSearch, "Sök i alla samtal och arkivet");
   if (team.firstProject) wsBtn("🎯", "Första projektet", openFirstProject, "Ert första AI-projekt — planen och första steget");
 
+  // Resten av arbetsytan. Byggs som en lista i stället för direkta anrop, så
+  // att den kan fällas ihop för en ny kund utan att raderna dubbleras i koden.
+  // Se wsCollapsed(): allt visas permanent så fort det finns chatthistorik.
+  const extras = [];
+  extras.push(["📈", "Veckans arbete", openWeekWork, "Vad du och teamet gjort den här veckan — och tid tillbaka"]);
+  if (!state.demo && quarterEndsSoon()) extras.push(["🏆", "Kvartalet med teamet", openQuarter, "Kvartalets siffror — delbara med en kollega"]);
+  if (!state.demo) extras.push(["🔄", "Utveckla teamet", openGrow, "Lägg till en agent när verksamheten förändras — avvisade moment står först i kön"]);
+  if (!state.demo) extras.push(["🔍", "Sök i historiken", openSearch, "Sök i alla samtal och arkivet"]);
+  const hideExtras = wsCollapsed();
+  if (!hideExtras) extras.forEach((e) => wsBtn(e[0], e[1], e[2], e[3]));
+
+  // Verktygen bygger alla på portalens egen logg och har ingenting att visa
+  // förrän kunden använt teamet — de hör därför till det som fälls ut.
+  const tools = state.demo ? [] : [
+    ["📣", "Rapport till chefen", statusReport, "Statusuppdatering ur veckans logg — klar att klistra in i mejl eller Slack"],
+    ["🏅", "Det här har jag levererat", deliveredList, "Underlag inför löne-, medarbetar- eller kundavstämningssamtal"],
+    ["🎭", "Öva ett samtal", openPractice, "Rollspela ett svårt samtal — agenten spelar motparten och ger feedback"],
+  ];
+  if (hideExtras) {
+    const more = el("button", "ws-more", `＋ Visa hela arbetsytan (${extras.length + tools.length} till)`);
+    more.type = "button";
+    more.title = "Möten, sök, rapporter och växtvägen — allt som bygger på arbete du ännu inte hunnit göra";
+    more.onclick = () => { markWsExpanded(); refreshSidebar(); };
+    ws.appendChild(more);
+  }
+
   // Synlig inlärning: minnet som växande investering, inte gömd inställning.
+  // Visas även i hopfällt läge — efter introduktionen står det plötsligt en
+  // siffra där, och det är hela poängen med att svara på frågorna.
   if (!state.demo) {
     const fc = el("button", "fact-count", factLabel()); fc.id = "fact-count"; fc.type = "button";
     fc.title = "Teamets delade minne — klicka för att se och fylla på";
@@ -1199,11 +1246,9 @@ function renderSidebar() {
   }
 
   // ---- Verktyg: engångshjälp som bygger på portalens egen logg ----
-  if (!state.demo) {
+  if (tools.length && !hideExtras) {
     ws.appendChild(el("div", "side-label ws-head", "Verktyg"));
-    wsBtn("📣", "Rapport till chefen", statusReport, "Statusuppdatering ur veckans logg — klar att klistra in i mejl eller Slack");
-    wsBtn("🏅", "Det här har jag levererat", deliveredList, "Underlag inför löne-, medarbetar- eller kundavstämningssamtal");
-    wsBtn("🎭", "Öva ett samtal", openPractice, "Rollspela ett svårt samtal — agenten spelar motparten och ger feedback");
+    tools.forEach((t) => wsBtn(t[0], t[1], t[2], t[3]));
   }
 
   // Tidig utveckling — säg det, dölj det inte. Kunderna är i praktiken
@@ -1489,15 +1534,23 @@ function renderLog() {
       const chip = el("button", "starter-chip", s);
       chip.type = "button";
       chip.onclick = () => {
+        // Rutan ska vara TOM efter klicket. Fylls den med förslaget står
+        // kundens fråga kvar under svaret som om den aldrig skickats, och
+        // nästa klick på pilen skickar samma fråga en gång till. Skicka-vägen
+        // går via argumentet nedan — textrutan är inte inblandad alls.
         const ta = $("#composer-input");
-        if (!ta) return;
-        ta.value = s;
-        ta.style.height = "auto"; ta.style.height = Math.min(ta.scrollHeight, 200) + "px";
-        // Skicka direkt. Rubriken säger "Prova en av de här" — att bara fylla
-        // rutan ser ut som att klicket inte gjorde någonting, och kunden vet
-        // inte att den ska trycka Enter. Verifierat i webbläsare: chipsen gav
-        // noll svar innan den här raden.
-        submitMessage();
+        if (ta) { ta.value = ""; ta.style.height = "auto"; }
+        // Skicka texten SOM ARGUMENT, inte via textrutan.
+        //
+        // Förut anropades submitMessage() tomt och fick läsa rutan själv. Men
+        // funktionen har ett `await` innan den läser (mappen uppdateras), och i
+        // den luckan hann värdet försvinna: kunden fick ett tomt meddelande
+        // besvarat med generisk text, medan hennes riktiga fråga låg kvar i
+        // rutan. Klickade hon på pilen igen hade knappen hunnit bli STOPP.
+        //
+        // Det inträffade på första klicket en ny kund gör — alltså i exakt det
+        // ögonblick produkten ska bevisa sig. Uppmätt live 2026-08-06.
+        submitMessage(s);
       };
       chips.appendChild(chip);
     });
@@ -1653,6 +1706,9 @@ function renderIntroCard() {
   const anyChat = Object.values(state.history).some((m) => m && m.length);
   const hasMaterial = !!(loadMemory().trim() || loadDocs().length);
   const steps = [
+    // Presentationen står först: den som inte vet vilka agenterna är kan
+    // omöjligt veta vilken fråga som är "en riktig fråga" till nästa steg.
+    { done: tourDone(), label: "Lär känna teamet — en agent i taget", act: openIntro },
     { done: anyChat, label: `Ställ en riktig fråga till ${entry.name}`, act: () => selectAgent(team.entryAgent) },
     { done: !!s.week, label: "Kör din första Veckostart", act: startWeek },
     { done: hasMaterial, label: "Lägg in ett underlag eller minne", act: openMemory },
@@ -1676,6 +1732,279 @@ function renderIntroCard() {
     card.appendChild(b);
   });
   return card;
+}
+
+// ---------- introduktion: lär känna teamet ----------
+// Skarp test 2026-08-06: en ny kund möts av tio knappar i arbetsytan, en
+// checklista, puls-kort och en tom chatt — allt på en gång, och ingen aning
+// om vilka agenterna är. Introduktionen gör tvärtom: EN agent i taget, i
+// första person, som avslutar med EN fråga tillbaka. Det är så man lär känna
+// någon, och det är billigare än en rundvandring: svaret läggs i
+// företagsminnet (samma ställe som Minne & underlag skriver till), så teamet
+// är faktiskt bättre när introduktionen är slut än när den började.
+//
+// Ingen AI inblandad — all text kommer ur teamkonfigen. Därför fungerar
+// introduktionen likadant i demoläget, utan nyckel och utan kostnad.
+const TOUR_PREFIX = "atb_tour_";     // + slug → "1" när introduktionen visats
+const WSMORE_PREFIX = "atb_wsmore_"; // + slug → "1" när arbetsytan fällts ut helt
+
+// Går nyckeln inte att läsa (privat läge, blockerad lagring) svarar vi "gjord".
+// Alternativet vore att auto-öppna introduktionen vid varje sidladdning för
+// någon som redan sett den — en modal som inte går att bli av med är värre än
+// en introduktion som aldrig visas automatiskt. Knappen i arbetsytan finns kvar.
+function tourDone() {
+  try { return !!localStorage.getItem(TOUR_PREFIX + state.slug); } catch (_) { return true; }
+}
+function markTourDone() {
+  try { localStorage.setItem(TOUR_PREFIX + state.slug, "1"); } catch (_) { /* full storage */ }
+}
+
+// Ingångsagenten först, resten i teamets egen ordning — samma hierarki som
+// sidopanelen och "Börja här"-märket i tomläget.
+function introAgents() {
+  const list = (team.agents || []).slice();
+  const i = list.findIndex((a) => a.id === team.entryAgent);
+  if (i > 0) list.unshift(list.splice(i, 1)[0]);
+  return list;
+}
+
+// Frågorna. Varje agent ställer EN, och de är medvetet olika: åtta agenter som
+// alla frågar "vad kan jag hjälpa dig med?" är en enkät, inte ett samtal.
+// Varje fråga är dessutom vald för att svaret ska bli ett hållbart faktum om
+// verksamheten — något som är sant om ett halvår och är värt plats i minnet.
+// `topic` blir etiketten framför svaret i företagsminnet.
+// En teamkonfig får skriva över med `introQuestion` (+ valfritt `introTopic`).
+const INTRO_QUESTIONS = [
+  { topic: "Veckans största tidstjuv", q: "Vad tar mest tid av dig en vanlig vecka — det du helst hade sluppit göra själv?" },
+  { topic: "Typisk kund", q: "Vem är er typiska kund, och vad är det de egentligen köper av er?" },
+  { topic: "Tonläge mot kund", q: "Hur vill ni låta när ni skriver till kunder? Ge mig gärna ett exempel på något ni aldrig skulle skriva." },
+  { topic: "Regler jag alltid ska följa", q: "Finns det något ni redan bestämt — priser, arbetssätt, gränser — som jag alltid ska hålla mig till?" },
+  { topic: "Målet på tre månader", q: "Vad ska vara annorlunda om tre månader för att det här ska ha varit värt pengarna?" },
+  { topic: "Verktyg och system", q: "Vilka verktyg och system jobbar ni i idag som jag behöver känna till?" },
+  { topic: "Vanliga fallgropar", q: "Vad brukar gå fel i det här arbetet — sådant jag ska hålla ögonen på?" },
+  { topic: (a) => `Första uppgiften till ${a.name}`, q: "Vilken konkret uppgift vill du att jag tar tag i först?" },
+];
+function introQuestionFor(agent, idx) {
+  if (agent.introQuestion) {
+    return { q: agent.introQuestion, topic: agent.introTopic || `Till ${agent.name}` };
+  }
+  // Ingångsagenten frågar alltid om tidstjuven: det är den enda frågan vars
+  // svar hela teamet har nytta av, och den är lättast att svara på direkt.
+  const shape = idx === 0
+    ? INTRO_QUESTIONS[0]
+    : INTRO_QUESTIONS[1 + ((idx - 1) % (INTRO_QUESTIONS.length - 1))];
+  return { q: shape.q, topic: typeof shape.topic === "function" ? shape.topic(agent) : shape.topic };
+}
+
+// Ett svar → en rad i företagsminnet, samma format som minnesförslagen ("• ").
+// Returnerar false när ingenting sparades, så avslutsteget kan räkna rätt.
+function saveIntroAnswer(topic, text) {
+  const t = (text || "").replace(/\s+/g, " ").trim();
+  if (!t) return false;
+  const mem = loadMemory();
+  // Körs introduktionen om ska samma svar inte hamna två gånger i minnet.
+  if (mem && mem.includes(t.slice(0, 60))) return false;
+  saveMemory((mem.trim() ? mem.replace(/\s+$/, "") + "\n" : "") + `• ${topic}: ${t}`);
+  paintFactCount();
+  return true;
+}
+
+function openIntro() {
+  const agents = introAgents();
+  if (!agents.length) return;
+  // Markera direkt vid öppning, inte vid avslut: stänger kunden rutan med ✕,
+  // Esc eller ett klick utanför är det ett "nej tack", och då ska frågan inte
+  // komma tillbaka nästa gång portalen öppnas. Vägen tillbaka är knappen
+  // "Lär känna teamet" i arbetsytan — den försvinner aldrig.
+  markTourDone();
+  const box = openOverlay("👋 Lär känna ert team");
+  box.classList.add("tour-box");
+  const body = el("div", "tour-body");
+  box.appendChild(body);
+
+  let step = -1; // -1 = välkomst · 0..n-1 = en agent · n = avslut
+  let saved = 0;
+
+  // Sidopanelen och puls-korten ritades FÖRE introduktionen och känner inte
+  // till svaren som just sparats: checklistans bock, minnesräknaren och kortet
+  // "teamet känner er inte än" skulle stå kvar och ljuga tills nästa
+  // sidladdning. Måla om dem när rutan lämnas — oavsett hur den lämnas.
+  const repaint = () => { refreshSidebar(); renderPulse(); };
+  const ovl = $("#ovl");
+  const closeX = box.querySelector(".ovl-close");
+  if (closeX) closeX.onclick = () => { closeOverlay(); repaint(); };
+  if (ovl) ovl.onclick = (e) => { if (e.target === ovl) { closeOverlay(); repaint(); } };
+
+  const progress = (label) => {
+    const wrap = el("div", "tour-prog");
+    wrap.appendChild(el("div", "side-label", label));
+    const bar = el("div", "tour-bar");
+    const fill = el("i");
+    fill.style.width = Math.round(((step + 1) / (agents.length + 1)) * 100) + "%";
+    bar.appendChild(fill);
+    wrap.appendChild(bar);
+    return wrap;
+  };
+  // "Hoppa över resten" finns på varje steg — kravet är att det ska gå att
+  // avbryta när som helst, inte bara i början.
+  const skipRow = (label) => {
+    const b = el("button", "tour-skip", label || "Hoppa över resten");
+    b.type = "button";
+    b.onclick = () => { step = agents.length; render(); };
+    return b;
+  };
+
+  const renderWelcome = () => {
+    body.appendChild(el("p", "ovl-lead",
+      `${team.company} har ${agents.length} ${agents.length === 1 ? "agent" : "agenter"} anställda. ` +
+      "Jag presenterar dem en i taget — var och en berättar kort vem hen är och ställer en fråga tillbaka till dig. " +
+      "Dina svar sparas i teamets delade minne, så teamet kan mer om er när vi är klara än när vi började."));
+    if (team.tagline) body.appendChild(el("p", "tour-tagline", team.tagline));
+    body.appendChild(el("p", "ovl-note", "Tar någon minut. Du kan hoppa över en fråga eller hela introduktionen när du vill — den kommer inte tillbaka av sig själv, men ligger kvar som \"Lär känna teamet\" i arbetsytan."));
+    const acts = el("div", "tour-acts");
+    const go = el("button", "btn-primary ovl-save", "Börja presentationen");
+    go.type = "button";
+    go.onclick = () => { step = 0; render(); };
+    acts.appendChild(go);
+    acts.appendChild(skipRow("Hoppa över"));
+    body.appendChild(acts);
+  };
+
+  const renderAgent = (a, idx) => {
+    body.appendChild(progress(`Agent ${idx + 1} av ${agents.length}`));
+
+    const head = el("div", "tour-head");
+    head.appendChild(agentIcon(a, "tour-icon"));
+    const meta = el("div", "tour-meta");
+    meta.appendChild(el("div", "tour-name", a.name));
+    meta.appendChild(el("div", "tour-role", a.tagline || a.role || ""));
+    head.appendChild(meta);
+    body.appendChild(head);
+
+    // Agentens egna ord ur konfigen. `job` är uppdraget, `why` är kopplingen
+    // till kundens egen verksamhet — den senare är produktens starkaste
+    // argument och hör hemma här, bredvid ansiktet, inte bara i en lista.
+    const say = el("div", "tour-say");
+    if (a.job) say.appendChild(el("p", "tour-p", a.job));
+    if (a.why) say.appendChild(el("p", "tour-p tour-why", a.why));
+    if (!a.job && !a.why && a.role) say.appendChild(el("p", "tour-p", a.role));
+    const caps = (Array.isArray(a.capabilities) ? a.capabilities : []).slice(0, 3);
+    if (caps.length) {
+      say.appendChild(el("div", "ovl-label", "Det här gör jag"));
+      const ul = el("ul", "tour-caps");
+      caps.forEach((c) => ul.appendChild(el("li", null, c)));
+      say.appendChild(ul);
+    }
+    body.appendChild(say);
+
+    const { q, topic } = introQuestionFor(a, idx);
+    body.appendChild(el("div", "tour-q", q));
+    const ta = el("textarea", "ovl-ta tour-ta");
+    ta.rows = 2;
+    ta.placeholder = "Svara med en mening — eller hoppa över.";
+    body.appendChild(ta);
+
+    const acts = el("div", "tour-acts");
+    const next = el("button", "btn-primary ovl-save", "Gå vidare →");
+    next.type = "button";
+    const label = () => { next.textContent = ta.value.trim() ? "Spara svaret och gå vidare →" : "Gå vidare →"; };
+    ta.addEventListener("input", label);
+    // Enter skickar, Shift+Enter ger radbrytning — samma regel som composern,
+    // och svaren här är oftast en mening. Pekskärm undantagen (se COARSE).
+    ta.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !e.shiftKey && !COARSE) { e.preventDefault(); next.click(); }
+    });
+    next.onclick = () => {
+      if (saveIntroAnswer(topic, ta.value)) saved++;
+      step = idx + 1;
+      render();
+    };
+    acts.appendChild(next);
+    acts.appendChild(skipRow());
+    body.appendChild(acts);
+    // preventScroll: i ett smalt fönster ligger svarsfältet under vikningen,
+    // och ett vanligt focus() hade rullat dit direkt — förbi presentationen
+    // som är hela poängen med steget. Markören står ändå rätt.
+    if (!COARSE) setTimeout(() => { try { ta.focus({ preventScroll: true }); } catch (_) { ta.focus(); } }, 40);
+  };
+
+  const renderDone = () => {
+    repaint(); // svaren finns i minnet nu — låt arbetsytan visa det
+    body.appendChild(progress("Klart"));
+    const entry = agentById(team.entryAgent) || agents[0];
+    body.appendChild(el("p", "tour-done-h", saved
+      ? `Tack — teamet vet nu ${saved} ${saved === 1 ? "sak" : "saker"} om er som det inte visste innan.`
+      : "Introduktionen är klar."));
+    body.appendChild(el("p", "ovl-lead", saved
+      ? "Svaren ligger i företagsminnet och följer med i varje samtal, med alla agenter. Du kan läsa, ändra och fylla på under Minne & underlag."
+      : "Du hoppade över frågorna — det går bra. Teamet jobbar ändå, men blir märkbart vassare när det vet hur ni arbetar. Fyll på under Minne & underlag när du vill."));
+    // Förklara den gradvisa arbetsytan, annars ser den ut som en produkt med
+    // färre funktioner än den har.
+    if (!state.demo && wsCollapsed()) {
+      body.appendChild(el("p", "ovl-note", "Arbetsytan till höger visar de fyra viktigaste sakerna först. Resten — möten, sök, rapporter, växtvägen — fälls ut med ett klick, eller av sig själv så fort du ställt din första fråga."));
+    }
+    const acts = el("div", "tour-acts tour-acts-col");
+    const go = el("button", "btn-primary ovl-save", `Ställ din första fråga till ${entry.name}`);
+    go.type = "button";
+    go.onclick = () => {
+      closeOverlay();
+      selectAgent(entry.id);
+      if (!COARSE) setTimeout(() => $("#composer-input")?.focus(), 40);
+    };
+    acts.appendChild(go);
+    const mem = el("button", "tour-link", saved ? "Se vad teamet vet om er" : "Öppna Minne & underlag");
+    mem.type = "button";
+    mem.onclick = openMemory; // openOverlay stänger den här rutan åt oss
+    acts.appendChild(mem);
+    // Nejen ligger kvar i sitt eget fönster — de är ett eget resonemang och
+    // ska inte klämmas in som en fotnot i introduktionen.
+    if (whyAvailable()) {
+      const why = el("button", "tour-link", "Därför ser teamet ut precis så här");
+      why.type = "button";
+      why.onclick = openWhyTeam;
+      acts.appendChild(why);
+    }
+    body.appendChild(acts);
+  };
+
+  const render = () => {
+    body.innerHTML = "";
+    if (step < 0) renderWelcome();
+    else if (step >= agents.length) renderDone();
+    else renderAgent(agents[step], step);
+    // Långa presentationer: börja alltid överst i rutan vid stegbyte.
+    const ovl = $("#ovl"); if (ovl) ovl.scrollTop = 0;
+  };
+  render();
+}
+
+// ---------- gradvis arbetsyta ----------
+// Arbetsytan har vuxit i fyra omgångar och är nu tolv rader lång. För någon
+// som använt portalen i en månad är det ett verktygsbälte; för någon som
+// öppnar den för första gången är det en vägg — och hälften av raderna
+// (Sök i historiken, Veckans arbete, Det här har jag levererat) är dessutom
+// tomma innan det finns något att söka i.
+//
+// Regeln är medvetet försiktig: så fort det finns EN rad chatthistorik visas
+// allt, för alltid. Ingen som redan lärt sig var en knapp sitter kan alltså
+// tappa bort den, och den som fäller ut manuellt får utfällt läge permanent.
+function wsCollapsed() {
+  if (state.demo) return false; // demot ska visa hela produkten
+  try {
+    if (localStorage.getItem(WSMORE_PREFIX + state.slug) === "1") return false;
+  } catch (_) { return false; } // kan vi inte läsa flaggan: visa allt
+  return !Object.values(state.history).some((m) => m && m.length);
+}
+function markWsExpanded() {
+  try { localStorage.setItem(WSMORE_PREFIX + state.slug, "1"); } catch (_) { /* full storage */ }
+}
+// Bygger om vänsterspalten på plats. Billigare än renderPortal(), som också
+// kör puls, provmånadskoll och auto-rutiner (varav den sista kostar pengar).
+function refreshSidebar() {
+  const old = document.querySelector(".sidebar");
+  if (!old) return;
+  old.replaceWith(renderSidebar());
+  document.querySelectorAll(".agent-item").forEach((n) => n.classList.toggle("active", n.dataset.agent === state.activeAgentId));
 }
 
 // ============================================================
@@ -2867,6 +3196,16 @@ function startWeek() {
 }
 
 // ---------- overlay ----------
+// Escape stänger. Rutan gick tidigare bara att lämna med ✕ eller ett klick på
+// bakgrunden — Escape är den genväg alla utom nybörjaren provar först, och en
+// modal som inte svarar på den känns låst. Lyssnaren sitter på document och
+// plockas bort i closeOverlay, så den kan inte ligga kvar och stänga något
+// annat senare.
+let ovlEsc = null;
+// Enskilda rutor kan registrera städning som ska ske oavsett HUR de lämnas
+// (✕, bakgrundsklick, Escape eller att en annan ruta öppnas ovanpå).
+// Introduktionen använder den för att måla om arbetsytan — se openIntro.
+let ovlOnClose = null;
 function openOverlay(title) {
   closeOverlay();
   document.body.classList.remove("drawer-open"); // overlay ska inte hamna bakom mobil-drawern
@@ -2881,9 +3220,16 @@ function openOverlay(title) {
   box.appendChild(head);
   ovl.appendChild(box);
   document.body.appendChild(ovl);
+  ovlEsc = (e) => { if (e.key === "Escape") closeOverlay(); };
+  document.addEventListener("keydown", ovlEsc);
   return box;
 }
-function closeOverlay() { const o = $("#ovl"); if (o) o.remove(); }
+function closeOverlay() {
+  if (ovlEsc) { document.removeEventListener("keydown", ovlEsc); ovlEsc = null; }
+  const o = $("#ovl"); if (o) o.remove();
+  const fn = ovlOnClose; ovlOnClose = null;
+  if (fn) { try { fn(); } catch (_) { /* städning får aldrig hindra stängning */ } }
+}
 
 // ---------- minne & underlag (UI) ----------
 function openMemory() {
@@ -3379,6 +3725,9 @@ async function submitMessage(text) {
   if (state.folder) { await refreshFolder(state.folder.needsPermission ? { ask: true } : undefined); updateFolderBanner(); }
   const agentId = state.activeAgentId;
   const agent = agentById(agentId);
+  // Läses FÖRE meddelandet läggs in: wsCollapsed() svarar på om det fanns
+  // historik, och den finns om två rader.
+  const wsWasCollapsed = wsCollapsed();
   if (!state.history[agentId]) state.history[agentId] = [];
   // Behåll referensen — vid fel ska EXAKT detta meddelande tas bort, inte
   // det som råkar ligga sist (en auto-rutin kan ha hunnit skriva under tiden).
@@ -3420,6 +3769,10 @@ async function submitMessage(text) {
     else await streamClaude(systemFor(agent), state.history[agentId], onDelta, costRun.onUsage);
     state.history[agentId].push({ role: "assistant", content: acc, at: Date.now() });
     saveHistory();
+    // Första riktiga svaret: fäll ut hela arbetsytan, permanent. Kunden har
+    // sett hur portalen fungerar och ska aldrig behöva leta efter en knapp
+    // som var där igår — se wsCollapsed().
+    if (wsWasCollapsed) { markWsExpanded(); refreshSidebar(); }
     // Skickades en rutin-prompt? Bocka av den för veckan (+ streak + puls) —
     // men bara om det som skickades faktiskt var rutinen, inte en annan fråga.
     if (state.pendingRoutine) {

@@ -912,13 +912,22 @@ async function runBuild(intake, prevR) {
       }
       if (stg.store && r[stg.store]) { markDone(stg.key); continue; } // klar sedan tidigare — betala inte igen
       const sys = await fetchPrompt(stg.file);
-      const panel = $("#analysis-text"); panel.textContent = "";
+      const panel = $("#analysis-text");
+      // Tom panel = död sida. Under tankepausen står här vad som ska dyka upp;
+      // första tecknet skriver över texten (acc är tom, så det sker av sig självt).
+      panel.textContent = stg.stream ? "Textens första mening dyker upp här så fort modellen är klar med att tänka." : "";
+      panel.classList.toggle("is-waiting", !!stg.stream);
       let acc = "";
-      const onDelta = (d) => { acc += d; panel.textContent = acc; panel.scrollTop = panel.scrollHeight; };
+      // clockWriting flyttar vänteindikatorn från "tänker" till "skriver" vid
+      // första tecknet — det är den enda signal vi har på att tankepausen är slut.
+      const onDelta = (d) => { acc += d; panel.textContent = acc; panel.scrollTop = panel.scrollHeight; clockWriting(acc.length); };
       if (stg.stream) {
         await streamClaude(sys, [{ role: "user", content: stg.user() }], onDelta, stg.max);
       } else {
-        panel.textContent = "Arbetar…";
+        // Enda icke-strömmande steget i loopen är skalningen (sammanställningen
+        // tas om hand ovan). Panelen ska ändå säga vad som pågår.
+        panel.textContent = (stg.key === "scale" ? "Väger underlaget mot skalningsreglerna." : "Arbetar med steget.")
+          + "\n\nDet här steget strömmar inte — svaret kommer i ett stycke när det är klart.";
         acc = await callClaude(sys, [{ role: "user", content: stg.user() }], stg.max);
         panel.textContent = acc;
       }
@@ -934,26 +943,23 @@ async function runBuild(intake, prevR) {
     }
   } finally {
     state.busy = false;
+    clockStop(); // fel, avbrott eller klart — räknaren ska aldrig ticka vidare i bakgrunden
   }
 }
 
 // Sammanställningssteget är långt (upp till 16k tokens, icke-strömmat) och
-// kom precis vid klimaxet — utan livstecken ser det ut som en hängning.
-// Töm panelen och visa förfluten tid tills svaret landar.
+// kommer precis vid klimaxet — utan livstecken ser det ut som en hängning.
+// Sekundräkningen sköts numera av den delade vänteindikatorn (clockStart via
+// setStage); här räcker det att panelen förklarar vad som pågår. Två timers
+// som skrev i samma vy skulle bara kunna glida isär.
 async function structureWithStatus(intake, r) {
   const panel = $("#analysis-text");
-  const started = Date.now();
-  const paint = () => {
-    const s = Math.round((Date.now() - started) / 1000);
-    if (panel) panel.textContent = `Formaterar teamet för portalen — alla beslut är redan fattade, inget innehåll ändras.\n\nDet här brukar ta 1–2 minuter. (${s} s)`;
-  };
-  paint();
-  const timer = setInterval(paint, 1000);
-  try {
-    return await structureTeam(intake, r);
-  } finally {
-    clearInterval(timer);
+  if (panel) {
+    panel.textContent = "Formaterar teamet för portalen — alla beslut är redan fattade, inget innehåll ändras.\n\n"
+      + "Det här är körningens längsta steg och det strömmar inte: modellen skriver hela teamet klart innan något skickas tillbaka. "
+      + "Räknaren ovanför visar hur länge det pågått. Det brukar ta 1–2 minuter.";
   }
+  return structureTeam(intake, r);
 }
 
 // Sista steget: omvandla research + proposal till render-struktur + portal-systemprompter.
@@ -1133,6 +1139,7 @@ async function retryStructure() {
     renderError(err.message, true);
   } finally {
     state.busy = false;
+    clockStop();
   }
 }
 
@@ -1147,10 +1154,12 @@ async function runDemoBuild(intake) {
     return;
   }
   state.busy = true;
+  // stream: true även här — uppspelningen matar text tecken för tecken, och
+  // vänteindikatorn ska bete sig likadant som i en riktig körning.
   const stages = [
-    { key: "research", label: "Research — analyserar arbetsmoment", text: demo.stages.research },
-    { key: "scale", label: "Skalning — väljer antal agenter", text: demo.stages.scaling },
-    { key: "proposal", label: "Förslag — formar agenterna", text: demo.stages.proposal },
+    { key: "research", label: "Research — analyserar arbetsmoment", text: demo.stages.research, stream: true },
+    { key: "scale", label: "Skalning — väljer antal agenter", text: demo.stages.scaling, stream: true },
+    { key: "proposal", label: "Förslag — formar agenterna", text: demo.stages.proposal, stream: true },
     { key: "structure", label: "Sammanställer teamet" },
   ];
   renderProgress(intake, stages);
@@ -1166,12 +1175,13 @@ async function runDemoBuild(intake) {
       }
       const panel = $("#analysis-text"); panel.textContent = "";
       let acc = "";
-      await streamText(stg.text, (d) => { acc += d; panel.textContent = acc; panel.scrollTop = panel.scrollHeight; });
+      await streamText(stg.text, (d) => { acc += d; panel.textContent = acc; panel.scrollTop = panel.scrollHeight; clockWriting(acc.length); });
       markDone(stg.key);
       await sleep(220);
     }
   } finally {
     state.busy = false;
+    clockStop();
   }
 }
 
@@ -1181,14 +1191,140 @@ async function streamText(full, onDelta) {
   for (const tk of tokens) { await sleep(7); onDelta(tk); }
 }
 
+// ---------- vänteindikator ----------
+//
+// Modellen (gpt-oss-120b) skickar resonemangs-tokens FÖRE själva svaret, och
+// de filtreras bort på vägen hit — vi ser dem aldrig, kunden ännu mindre. För
+// användaren betyder det att skärmen kan stå helt still i tiotals sekunder
+// mitt i produktens dyraste operation. Mikael avbröt själv en körning av
+// precis det skälet: det såg hängt ut. En sida som ser död ut kostar mer än
+// en sida som är långsam.
+//
+// Därför en indikator som ALLTID rör sig. Den visar tre ärliga saker: vilket
+// steg som körs, hur länge det hållit på, och om texten har börjat komma.
+// Ingen procentsats — vi vet inte hur långt modellen har kvar, och en påhittad
+// mätare som fastnar på 80 % är värre än ingen mätare alls.
+const clock = {
+  timer: null,       // setInterval-handtag; null = ingen körning pågår
+  startedAt: 0,      // när det NUVARANDE steget började
+  runStartedAt: 0,   // när hela körningen började (nollställs av renderProgress)
+  streaming: false,  // har första texttecknet kommit?
+  firstDeltaMs: 0,   // hur länge tankepausen varade — visas när texten börjat
+  chars: 0,
+  streams: true,     // ger steget löpande text, eller allt på en gång?
+};
+
+// Väntetexterna trappas upp med tiden. Poängen är inte att fylla tystnaden med
+// ord utan att svaret på "har det hängt sig?" ska ändras allteftersom, precis
+// som användarens misstanke gör det. Vid riktigt lång väntan pekar texten på
+// Avbryt-knappen i stället för att fortsätta lugna — det är det ärliga rådet.
+const THINK_PHASES = [
+  [0, "Modellen läser underlaget och tänker igenom svaret innan den skriver. Därför står det still en stund — ingen text kommer förrän tankearbetet är klart."],
+  [12, "Fortfarande tankearbete. Det brukar ta 10–40 sekunder innan första meningen dyker upp."],
+  [40, "Längre tankepaus än vanligt. Inget är fel — när texten väl börjar kommer den i ett svep."],
+  [90, "Över en och en halv minut. Det händer när leverantören är hårt belastad. Du kan avbryta nedan; stegen som är klara ligger kvar."],
+  [180, "Över tre minuter. Nu är det troligen trögt hos leverantören — avbryt gärna och försök igen, du förlorar inte det som redan är gjort."],
+];
+const QUIET_PHASES = [
+  [0, "Det här steget strömmar inte — svaret kommer i ett enda stycke när det är färdigt. Tystnaden är alltså normal här."],
+  [25, "Fortfarande igång. Modellen tänker och skriver klart innan något skickas tillbaka."],
+  [75, "Över en minut. Långa steg tar den tiden ibland. Avbryt-knappen finns kvar nedan."],
+  [180, "Över tre minuter. Troligen trögt hos leverantören — avbryt gärna, de klara stegen sparas."],
+];
+
+// Stegen och deras ordning, satt av renderProgress. Låter setStage veta både
+// vad steget heter och om det strömmar, utan att varje anropsställe behöver
+// skicka med det.
+let progMeta = new Map();
+
+function fmtSecs(ms) {
+  const s = Math.max(0, Math.floor(ms / 1000));
+  return s < 60 ? `${s} s` : `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+}
+
+function clockStart(meta) {
+  clockStop();
+  clock.startedAt = Date.now();
+  if (!clock.runStartedAt) clock.runStartedAt = clock.startedAt;
+  clock.streaming = false; clock.firstDeltaMs = 0; clock.chars = 0;
+  clock.streams = !!(meta && meta.stream);
+  const live = $("#prog-live");
+  if (live) {
+    live.classList.remove("is-writing");
+    live.style.display = "";
+    const head = live.querySelector(".prog-live-head");
+    if (head) head.textContent = meta && meta.total > 1
+      ? `Steg ${meta.n} av ${meta.total} · ${meta.label}`
+      : (meta ? meta.label : "Arbetar");
+  }
+  clockPaint();
+  clock.timer = setInterval(clockPaint, 1000);
+}
+
+// Anropas från strömningens onDelta. Måste vara billig — den körs per token.
+// Allt arbete utom övergången görs av sekundtickern.
+function clockWriting(chars) {
+  if (!clock.timer) return;
+  clock.chars = chars;
+  if (clock.streaming) return;
+  clock.streaming = true;
+  clock.firstDeltaMs = Date.now() - clock.startedAt;
+  // Övergången ska vara omöjlig att missa: indikatorn byter läge och panelen
+  // blinkar till en gång. Det är ögonblicket användaren har väntat på.
+  const live = $("#prog-live");
+  if (live) live.classList.add("is-writing");
+  const text = $("#analysis-text");
+  if (text) text.classList.remove("is-waiting"); // väntetexten är ersatt av riktig text
+  const panel = document.querySelector(".analysis-panel");
+  if (panel) { panel.classList.remove("flash"); void panel.offsetWidth; panel.classList.add("flash"); }
+  clockPaint();
+}
+
+function clockStop() {
+  if (clock.timer) { clearInterval(clock.timer); clock.timer = null; }
+}
+
+function clockPhaseText(now) {
+  if (clock.streaming) {
+    const n = `Texten strömmar in — ${clock.chars.toLocaleString("sv-SE")} tecken hittills.`;
+    // Tankepausen redovisas bara när den var värd att vänta ut. "Tog 0 s" är
+    // sant men säger ingenting, och en siffra som inte säger något är brus.
+    return clock.firstDeltaMs >= 2000 ? `${n} Tankepausen före första meningen tog ${fmtSecs(clock.firstDeltaMs)}.` : n;
+  }
+  const sec = (now - clock.startedAt) / 1000;
+  const table = clock.streams ? THINK_PHASES : QUIET_PHASES;
+  let out = table[0][1];
+  table.forEach(([at, txt]) => { if (sec >= at) out = txt; });
+  return out;
+}
+
+function clockPaint() {
+  const live = $("#prog-live");
+  if (!live) { clockStop(); return; } // vyn är utbytt — ingen anledning att ticka vidare
+  const now = Date.now();
+  const secs = live.querySelector(".prog-live-secs");
+  if (secs) secs.textContent = fmtSecs(now - clock.startedAt);
+  // Totaltiden visas först när den skiljer sig meningsfullt från stegets egen,
+  // annars står samma siffra två gånger och betyder ingenting.
+  const total = live.querySelector(".prog-live-total");
+  if (total) {
+    const t = now - clock.runStartedAt, s = now - clock.startedAt;
+    total.textContent = t - s > 3000 ? `totalt ${fmtSecs(t)}` : "";
+  }
+  const sub = live.querySelector(".prog-live-sub");
+  if (sub) { const txt = clockPhaseText(now); if (sub.textContent !== txt) sub.textContent = txt; }
+}
+
 // ---------- progress view ----------
 function renderProgress(intake, stages) {
+  clockStop(); clock.runStartedAt = 0;
+  progMeta = new Map(stages.map((s, i) => [s.key, { label: s.label, stream: !!s.stream, n: i + 1, total: stages.length }]));
   const root = $("#root"); root.innerHTML = "";
   const wrap = el("main", "progress-wrap");
   const head = el("div", "prog-head");
   head.appendChild(el("div", "eyebrow", "● Bygger team för"));
   head.appendChild(el("h1", "prog-company", intake.company));
-  head.appendChild(el("p", "form-lead", "Den fullständiga pipelinen körs live. Det tar ett par minuter."));
+  head.appendChild(el("p", "form-lead", "Den fullständiga pipelinen körs live och tar ett par minuter. Modellen tänker igenom varje steg innan den börjar skriva, så skärmen står still i perioder — räknaren nedan visar att arbetet pågår."));
   wrap.appendChild(head);
 
   // Undertexter som förklarar vad som händer — och lyfter att analysen även
@@ -1212,6 +1348,24 @@ function renderProgress(intake, stages) {
   });
   wrap.appendChild(steps);
 
+  // Den ständigt rörliga raden. Ligger mellan steglistan och textpanelen
+  // eftersom det är precis där blicken är när ingenting händer.
+  const live = el("div", "prog-live"); live.id = "prog-live";
+  const pulse = el("span", "prog-live-pulse"); pulse.setAttribute("aria-hidden", "true");
+  pulse.append(el("i"), el("i"), el("i"));
+  const body = el("div", "prog-live-body");
+  body.appendChild(el("div", "prog-live-head", "Startar…"));
+  const sub = el("div", "prog-live-sub", THINK_PHASES[0][1]);
+  // role=status läser upp fasbytena för skärmläsare. Sekundräknaren hålls
+  // utanför — en uppläsning i sekunden vore obrukbart.
+  sub.setAttribute("role", "status");
+  body.appendChild(sub);
+  const time = el("div", "prog-live-time"); time.setAttribute("aria-hidden", "true");
+  time.appendChild(el("span", "prog-live-secs", "0 s"));
+  time.appendChild(el("span", "prog-live-total", ""));
+  live.append(pulse, body, time);
+  wrap.appendChild(live);
+
   const panel = el("div", "analysis-panel");
   const at = el("div", "analysis-text"); at.id = "analysis-text";
   panel.appendChild(at); wrap.appendChild(panel);
@@ -1223,8 +1377,18 @@ function renderProgress(intake, stages) {
   }
   root.appendChild(wrap);
 }
-function setStage(key) { document.querySelectorAll(".prog-step").forEach((n) => { if (n.dataset.stage === key) n.classList.add("active"); }); }
-function markDone(key) { document.querySelectorAll(".prog-step").forEach((n) => { if (n.dataset.stage === key) { n.classList.remove("active"); n.classList.add("done"); } }); }
+function setStage(key) {
+  document.querySelectorAll(".prog-step").forEach((n) => { if (n.dataset.stage === key) n.classList.add("active"); });
+  clockStart(progMeta.get(key)); // klockan startar med steget, inte med första tecknet
+}
+function markDone(key) {
+  document.querySelectorAll(".prog-step").forEach((n) => { if (n.dataset.stage === key) { n.classList.remove("active"); n.classList.add("done"); } });
+  clockStop();
+  // Sista steget lämnar inget efter sig att vänta på — dölj raden så att en
+  // frusen räknare inte står kvar och ser ut som något som fastnat.
+  const live = $("#prog-live");
+  if (live && progMeta.get(key) && progMeta.get(key).n === progMeta.get(key).total) live.style.display = "none";
+}
 
 // ---------- result view ----------
 function renderResult(team) {
@@ -1241,8 +1405,13 @@ function renderResult(team) {
   const h = el("h1"); h.innerHTML = `${esc(team.company)} — <span class="grad">${team.agents.length} agenter</span>`;
   hero.appendChild(h);
   hero.appendChild(el("p", "result-lead", team.tagline || ""));
-  const actions = el("div", "result-actions");
-  const live = el("button", "btn-primary", "💬 Prova teamet live");
+  hero.appendChild(closingBlock(team));
+
+  // Sekundära val. De händer alla i den här webbläsaren och kostar ingenting —
+  // därför står de under avslutet, inte bredvid det.
+  const actions = el("div", "result-actions is-secondary");
+  actions.appendChild(el("div", "actions-label", "Innan du bestämmer dig:"));
+  const live = el("button", "btn-ghost", "💬 Prova teamet live");
   live.onclick = () => { localStorage.setItem(DRAFT_STORAGE, JSON.stringify(stripTeam(team))); window.open("../portal/?team=__draft" + (state.demo ? "&demo=1" : ""), "_blank"); };
   const dl = el("button", "btn-ghost", "⬇ Ladda ner config");
   dl.onclick = () => downloadConfig(team);
@@ -1259,13 +1428,12 @@ function renderResult(team) {
     } catch (_) { share.textContent = "Kunde inte kopiera"; }
     setTimeout(() => (share.textContent = "🔗 Kopiera delningslänk"), 2400);
   };
-  // Spara i molnet = köp. Allt annat i den här raden händer i webbläsaren;
-  // det här är det enda som lämnar den, och därför det enda som kostar.
-  const buy = el("button", "btn-ghost", "☁ Spara i molnet");
-  buy.onclick = () => renderPurchase(team, hero, buy);
+  // "Spara i molnet" ligger inte längre här. Den var ett av fem likvärdiga
+  // alternativ i en knapprad — den enda som leder någonstans, klädd som de
+  // fyra som inte gör det. Den bor i avslutet ovanför i stället.
   const again = el("button", "btn-ghost", "↺ Bygg ett till");
   again.onclick = () => renderForm();
-  actions.append(live, dl, share, buy, again); hero.appendChild(actions);
+  actions.append(live, dl, share, again); hero.appendChild(actions);
   wrap.appendChild(hero);
 
   if (team.divergence) {
@@ -1311,6 +1479,77 @@ function renderResult(team) {
     wrap.appendChild(rg);
   }
   root.appendChild(wrap);
+}
+
+// ---------- avslutet på resultatsidan ----------
+//
+// Resultatsidan räknade upp vad som byggts och lade sedan fem likvärdiga
+// knappar i rad — inklusive den enda som leder till ett köp. Ett resultat utan
+// nästa steg är ett resultat kunden lämnar, och en köpknapp som ser ut som
+// "ladda ner config" blir inte tryckt.
+//
+// Här står i stället ett val: spara teamet, eller låt det ligga kvar i en
+// webbläsare som förr eller senare städar bort det. Ingen hype och inga
+// utropstecken — påståendena ska gå att kontrollera. Beloppen kommer från
+// PLANS; de får inte skrivas om här, för prislistan i index.html och
+// villkor.html § 4 hänger ihop med dem.
+const PLAN_GAIN = {
+  trial: "Hela teamet i portalen i en månad: agenterna svarar, veckans rutiner går att köra, företagsminnet och era underlag ligger kvar mellan gångerna. AI-användningen ingår. Månaden tar slut av sig själv — det finns inget att säga upp.",
+  standard: "Samma sak löpande, och teamet ligger på ert konto i stället för i den här webbläsaren. Ni når det från vilken dator som helst och loggar in med en kod till mejlen. Uppsägningsbart när som helst.",
+};
+
+function closingBlock(team) {
+  const box = el("div", "result-close");
+
+  // Demoläget säljer ingenting (beslutat 2026-08-06) — teamet på skärmen
+  // tillhör ett påhittat företag. Avslutet leder därför till ett riktigt
+  // bygge, inte till en kassa.
+  if (state.demo) {
+    box.appendChild(el("div", "close-head", "Det här teamet är inte ditt"));
+    box.appendChild(el("p", "close-body",
+      "Körningen du just såg är inspelad åt ett påhittat företag, och den säljer vi inte. "
+      + "Samma pipeline mot din egen verksamhet tar ungefär en kvart och kostar dig ingenting — vi står för AI:n."));
+    const go = el("button", "btn-primary btn-save", "Bygg samma sak för din verksamhet →");
+    go.onclick = connectKey;
+    box.appendChild(go);
+    return box;
+  }
+
+  const nAgents = team.agents.length;
+  const nRoutines = Array.isArray(team.routines) ? team.routines.length : 0;
+  const nRejected = Array.isArray(team.rejected) ? team.rejected.length : 0;
+
+  box.appendChild(el("div", "close-head", "Teamet finns bara i den här webbläsaren"));
+
+  // Vad kunden fick — räknat ur teamet självt, inte påstått.
+  const got = [`${nAgents} agenter med varsin systemprompt`];
+  if (nRoutines) got.push(`${nRoutines} veckorutiner`);
+  if (nRejected) got.push(`${nRejected} förslag som medvetet fick nej`);
+  const gotTxt = got.length > 1 ? got.slice(0, -1).join(", ") + " och " + got[got.length - 1] : got[0];
+  box.appendChild(el("p", "close-body",
+    `Du har ${gotTxt} — byggt ur det du skrev, inte ur en mall. `
+    + "Allt ligger just nu i den här datorns webbläsare och ingen annanstans. "
+    + "Byter du dator, rensar historiken eller bygger ett nytt team är det borta, och en ny körning ger ett annat team. "
+    + "Sparar du det får du ett konto och når teamet där du loggar in."));
+
+  const plans = el("div", "close-plans");
+  PLANS.forEach((p) => {
+    const row = el("div", "close-plan");
+    const top = el("div", "close-plan-top");
+    top.appendChild(el("span", "close-plan-label", p.label));
+    top.appendChild(el("span", "close-plan-price", p.price));
+    row.appendChild(top);
+    row.appendChild(el("p", "close-plan-body", PLAN_GAIN[p.tier] || p.note));
+    plans.appendChild(row);
+  });
+  box.appendChild(plans);
+
+  const save = el("button", "btn-primary btn-save", "☁ Spara teamet hos oss");
+  save.onclick = () => renderPurchase(team, box, save);
+  box.appendChild(save);
+  box.appendChild(el("p", "close-fine",
+    "Betalning med kort via Stripe. Provmånaden förnyas inte automatiskt. Vill du bara titta vidare först finns knapparna nedanför."));
+  return box;
 }
 
 function orgRow(nodes) { const r = el("div", "org-row"); nodes.forEach((n) => r.appendChild(n)); return r; }
@@ -1429,7 +1668,9 @@ function renderPurchase(team, hero, trigger) {
   trigger.disabled = true;
 
   const panel = el("div", "buy-panel");
-  panel.style.cssText = "margin-top:20px;padding:18px;border:1px solid var(--border);border-radius:6px;background:var(--surface);text-align:left";
+  // surface-2, inte surface: panelen öppnas numera inuti avslutsblocket, som
+  // självt ligger på surface. Samma ton två gånger hade sett ut som ingen ram alls.
+  panel.style.cssText = "margin-top:20px;padding:18px;border:1px solid var(--border);border-radius:6px;background:var(--surface-2);text-align:left";
 
   // Demoläget säljer inte demoteamet. Körningen är inspelad och gjord åt ett
   // påhittat företag — att ta betalt för den vore att sälja någon annans team
@@ -1456,11 +1697,13 @@ function renderPurchase(team, hero, trigger) {
     return;
   }
 
-  panel.appendChild(el("div", "eyebrow", "Spara teamet hos oss"));
+  panel.appendChild(el("div", "eyebrow", "Välj nivå"));
 
+  // Kortare än förut: att teamet bara finns i webbläsaren står redan i
+  // avslutsblocket som panelen öppnas inuti. Här handlar det om nästa klick.
   const lead = el("p");
   lead.style.cssText = "color:var(--text-dim);margin:8px 0 16px;line-height:1.6";
-  lead.textContent = "Teamet finns just nu bara i den här webbläsaren. Sparar ni det hos oss får ni ett konto och kommer åt det från vilken dator som helst — inloggning med en kod till mejlen, inget lösenord.";
+  lead.textContent = "Nästa steg är Stripes kassa. Efter betalningen får ni en inloggningskod till mejlen och teamet ligger på ert konto — inget lösenord att hitta på.";
   panel.appendChild(lead);
 
   const status = el("p");
