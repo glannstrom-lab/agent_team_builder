@@ -38,6 +38,17 @@ if (location.hostname === 'agent-team-builder-2xy.pages.dev') location.replace('
   .sidecard li b { font-family: var(--font-mono); font-size: 11px; color: var(--green); letter-spacing: .06em; min-width: 46px; }
   .sidecard li.no b { color: var(--red); }
   .cta-row { display: flex; flex-wrap: wrap; gap: 13px; margin-top: 30px; opacity: 0; animation: fadeUp .8s .45s ease forwards; }
+  /* Smala mobiler (<480px): badge, rubrik och ingress tar tillsammans så
+     mycket höjd att primärknappen "Bygg ert team" hamnar under vecket på
+     korta skärmar (t.ex. 375×667). Detta krymper avståndet ovanför knappen —
+     rör inte desktop/tablet, och byt inte till att gömma själva knappen. */
+  @media (max-width: 480px) {
+    .hero { padding-top: 28px; }
+    .hero .badge { display: none; }
+    .hero h1 { margin-top: 6px; }
+    .hero p.sub:first-of-type { margin-top: 14px; }
+    .cta-row { margin-top: 20px; }
+  }
 
   .problems { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 42px; }
   @media (max-width: 860px) { .problems { grid-template-columns: 1fr; } }
@@ -109,15 +120,19 @@ if (location.hostname === 'agent-team-builder-2xy.pages.dev') location.replace('
 <body>
 
 <!-- ===== NAV ===== -->
+<!-- Nav-CTA:t ÄR Buildern, inte demon — samma produktbeslut som styr
+     hero-knapparna nedan. Demon finns kvar som en vanlig (hideable) länk,
+     så den försvinner på mobil precis som "Så funkar det" m.fl. gör. -->
 <div class="hubnav">
   <div class="inner">
     <a class="home" href="./"><span class="dot"></span> Mitt AI-team</a>
     <a class="np hideable" href="#hur">Så funkar det</a>
     <a class="np hideable" href="verticals/">Branscher</a>
     <a class="np hideable" href="#exempel">Exempel</a>
+    <a class="np hideable" href="portal/?team=coachonline&amp;demo=1">Prova demo</a>
     <a class="np" href="#priser">Priser</a>
     <a class="np" href="portal/">Logga in</a>
-    <a class="nav-cta" href="portal/?team=coachonline&amp;demo=1">Prova demo</a>
+    <a class="nav-cta" href="builder/">Bygg ert team</a>
   </div>
 </div>
 
@@ -138,7 +153,11 @@ if (location.hostname === 'agent-team-builder-2xy.pages.dev') location.replace('
           <a class="btn-lg btn-primary-lg" href="builder/">Bygg ert team →</a>
           <a class="btn-lg btn-ghost" href="portal/?team=coachonline&amp;demo=1">Se ett färdigt team först</a>
         </div>
-        <p class="sub" style="margin-top:14px;font-size:14.5px">Femton minuter och kostnadsfritt: inget konto, inget kort, ingenting att installera. Det är en riktig körning, inte en förhandsvisning — ni får se vilka roller er vecka faktiskt motiverar, och vilka förslag som fick nej.</p>
+        <!-- Prisuppgiften låg förut bara 5,4 skärmar ner i #priser. Den här
+             raden är avsiktligt kort och ligger efter cta-row i dokumentflödet
+             så att den inte flyttar primärknappen längre ner — beloppen är
+             låsta (se kommentaren vid #priser) och ska hållas identiska. -->
+        <p class="sub" style="margin-top:14px;font-size:14.5px"><strong>Bygget är gratis:</strong> femton minuter, inget konto, inget kort, ingenting att installera. Vill ni sedan fortsätta i portalen kostar det 90 kr för en provmånad, därefter 290 kr i månaden. Det är en riktig körning, inte en förhandsvisning — ni får se vilka roller er vecka faktiskt motiverar, och vilka förslag som fick nej.</p>
       </div>
       <div class="sidecard reveal">
         <div class="t">Anställda i exemplet nedan</div>
