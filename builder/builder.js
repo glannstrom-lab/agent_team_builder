@@ -431,7 +431,7 @@ function renderForm() {
   // element som inte finns kvar.
   const costHint = el("div", "cost-hint", state.demo
     ? "I demoläget anropas inget API — att bygga på riktigt kostar bara dina egna API-ören."
-    : "En körning gör 4–6 anrop via din egen OpenRouter-nyckel och kostar ungefär åtta öre.");
+    : "En körning gör 4–6 anrop. Vi står för AI-kostnaden — du betalar ingenting för bygget.");
   form.appendChild(costHint);
 
   form.onsubmit = (e) => {
@@ -998,7 +998,7 @@ ${schema}`;
 
   // json: true — se kommentaren i functions/api/ai.js. Det här steget är det
   // enda i pipelinen som måste ge maskinläsbart svar, och det var det som föll.
-  const raw = await callClaude(sys, [{ role: "user", content: user }], 16000, true);
+  const raw = await callClaude(sys, [{ role: "user", content: user }], 16000, true, TEAM_SCHEMA);
   let team;
   try {
     team = parseTeamJson(raw);
@@ -1021,6 +1021,49 @@ ${schema}`;
   team.entryAgent = (team.agents.find((a) => a.id === "vd-assistent") || team.agents[0]).id;
   return team;
 }
+
+
+// Schemat som modellen MÅSTE följa. Strict-läget kräver att varje objekt har
+// additionalProperties: false och att alla fält står i required — det är just
+// den strängheten som gör att starters och routines inte kan hoppas över.
+// Uppmätt 2026-08-06: med bara json_object utelämnade modellen båda, och
+// portalens agentkort och veckorutiner hade levererats tomma.
+const TEAM_SCHEMA = {
+  type: "object", additionalProperties: false,
+  required: ["company", "tagline", "slug", "why", "divergence", "agents", "rejected", "routines"],
+  properties: {
+    company: { type: "string" }, tagline: { type: "string" }, slug: { type: "string" },
+    why: { type: "string" }, divergence: { type: "string" },
+    agents: {
+      type: "array", minItems: 2,
+      items: {
+        type: "object", additionalProperties: false,
+        required: ["id", "name", "icon", "role", "tagline", "always", "job", "why", "capabilities", "starters", "system"],
+        properties: {
+          id: { type: "string" }, name: { type: "string" }, icon: { type: "string" },
+          role: { type: "string" }, tagline: { type: "string" }, always: { type: "boolean" },
+          job: { type: "string" }, why: { type: "string" },
+          capabilities: { type: "array", minItems: 3, items: { type: "string" } },
+          starters: { type: "array", minItems: 3, maxItems: 3, items: { type: "string" } },
+          system: { type: "string" },
+        },
+      },
+    },
+    rejected: {
+      type: "array", minItems: 1,
+      items: { type: "object", additionalProperties: false, required: ["name", "why"],
+        properties: { name: { type: "string" }, why: { type: "string" } } },
+    },
+    routines: {
+      type: "array", minItems: 3,
+      items: { type: "object", additionalProperties: false,
+        required: ["label", "agentId", "day", "timeEstimate", "auto", "prompt"],
+        properties: { label: { type: "string" }, agentId: { type: "string" },
+          day: { type: ["integer", "null"] }, timeEstimate: { type: ["integer", "null"] },
+          auto: { type: "boolean" }, prompt: { type: "string" } } },
+    },
+  },
+};
 
 // Läser modellens svar som JSON, och lagar det om det behövs.
 //
@@ -1506,9 +1549,9 @@ function renderError(msg, canRetryStructure, canResume) {
 // Tunna omslag runt den delade klienten (../atb-claude.js). callClaude samlar
 // hela svaret; streamClaude strömmar via onDelta. Abort-signalen kommer från
 // "Avbryt körningen"-knappen.
-async function callClaude(system, messages, maxTokens, json) {
+async function callClaude(system, messages, maxTokens, json, schema) {
   return window.ATBClaude.collect({
-    apiKey: state.apiKey, model: state.model, system, messages, maxTokens, json,
+    apiKey: state.apiKey, model: state.model, system, messages, maxTokens, json, schema,
     signal: state.abort ? state.abort.signal : undefined,
   });
 }

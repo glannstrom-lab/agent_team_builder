@@ -25,8 +25,8 @@
   //    villkor.html — de bygger på den här kostnadsnivån.
   //  - villkor.html § 3 och integritet.html § 3 beskriver vilken
   //    leverantör kundens data går till. Ändras raden nedan måste de med.
-  const MODEL_ID = "deepseek/deepseek-v4-flash"; // stabilt id: varken tilde-alias (~...-latest, uppdateras utan forvarning) eller datumsuffix (-0731, ruttnar)
-  const MODEL_LABEL = "DeepSeek V4 Flash";
+  const MODEL_ID = "openai/gpt-oss-120b"; // stabilt id: varken tilde-alias (~...-latest, uppdateras utan forvarning) eller datumsuffix (-0731, ruttnar)
+  const MODEL_LABEL = "GPT-OSS 120B";
 
   // Kvar som funktion för att anropsställena ska slippa ändras, men den
   // har bara ett svar numera: allt går via OpenRouter.
@@ -114,7 +114,7 @@
         signal: signal || undefined,
         credentials: "same-origin", // sessionen avgör om förbrukningen räknas per konto
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ system, messages, maxTokens: maxTokens || 4096, json: !!json }),
+        body: JSON.stringify({ system, messages, maxTokens: maxTokens || 4096, json: !!json, schema: opts.schema || null }),
       };
     } else if (openrouter) {
       // OpenAI-kompatibelt format: system som första message, Bearer-auth.

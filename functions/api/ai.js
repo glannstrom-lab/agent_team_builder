@@ -53,7 +53,7 @@ const MAX_OUTPUT_TOKENS = 16384;
 // Taket finns för att en manipulerad klient inte ska kunna skicka en roman.
 const MAX_INPUT_CHARS = 200000;
 
-const MODEL_ID = "deepseek/deepseek-v4-flash";
+const MODEL_ID = "openai/gpt-oss-120b";
 
 const utcDay = (t) => new Date(t).toISOString().slice(0, 10);
 const utcMonth = (t) => new Date(t).toISOString().slice(0, 7);
@@ -154,9 +154,15 @@ export async function onRequestPost(context) {
       //
       // Kvar PÅ i de andra stegen (research, skalning, förslag) — där är
       // resonemanget själva arbetet, och det är dem produkten säljer.
-      ...(body.json
-        ? { response_format: { type: "json_object" }, reasoning: { enabled: false } }
-        : {}),
+      // Äkta strukturerad utdata när anroparen skickar ett schema. Skillnaden
+      // mot json_object är avgörande och kostade ett halvt dygn att lära sig:
+      // json_object garanterar bara SYNTAX. Innehållet är fortfarande en
+      // vädjan i systemprompten, och modellen hoppade över starters och
+      // routines — de fält portalens agentkort och veckorutiner bygger på.
+      // Ett schema med required kan den inte hoppa över.
+      ...(body.schema
+        ? { response_format: { type: "json_schema", json_schema: { name: "team", strict: true, schema: body.schema } } }
+        : body.json ? { response_format: { type: "json_object" } } : {}),
       messages: system ? [{ role: "system", content: system }, ...messages] : messages,
     }),
   });
