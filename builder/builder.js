@@ -914,9 +914,13 @@ function renderResult(team) {
     } catch (_) { share.textContent = "Kunde inte kopiera"; }
     setTimeout(() => (share.textContent = "🔗 Kopiera delningslänk"), 2400);
   };
+  // Spara i molnet = köp. Allt annat i den här raden händer i webbläsaren;
+  // det här är det enda som lämnar den, och därför det enda som kostar.
+  const buy = el("button", "btn-ghost", "☁ Spara i molnet");
+  buy.onclick = () => renderPurchase(team, hero, buy);
   const again = el("button", "btn-ghost", "↺ Bygg ett till");
   again.onclick = () => renderForm();
-  actions.append(live, dl, share, again); hero.appendChild(actions);
+  actions.append(live, dl, share, buy, again); hero.appendChild(actions);
   wrap.appendChild(hero);
 
   if (team.divergence) {
@@ -1012,6 +1016,67 @@ function stripTeam(team) {
     agents: team.agents.map((a) => ({ id: a.id, name: a.name, icon: a.icon, avatarN: a.avatarN, role: a.role, tagline: a.tagline, always: !!a.always,
       job: a.job, why: a.why || null, capabilities: a.capabilities, starters: a.starters, system: a.system })) };
 }
+// ---------- köp ("Spara i molnet") ----------
+//
+// De två nivåerna som går att leverera i dag. 190 kr och 490 kr/mån kräver en
+// proxy på vår nyckel med kvotmätning — den finns inte, och tills den gör det
+// ska de inte gå att köpa. Priserna här är etiketter; beloppen som dras kommer
+// från Stripe, och prislistan i index.html och villkor.html § 4 måste följa med
+// om de ändras.
+const PLANS = [
+  { tier: "trial-byo", label: "Provmånad", price: "90 kr", note: "En månad med teamet i portalen, på er egen API-nyckel. Ingen bindning." },
+  { tier: "buy", label: "Köp teamet", price: "4 990 kr", note: "Teamet är ert, med uppdateringar. Engångsbetalning." },
+];
+
+function renderPurchase(team, hero, trigger) {
+  if (hero.querySelector(".buy-panel")) return; // redan öppen
+  trigger.disabled = true;
+
+  const panel = el("div", "buy-panel");
+  panel.style.cssText = "margin-top:20px;padding:18px;border:1px solid var(--border);border-radius:6px;background:var(--surface);text-align:left";
+  panel.appendChild(el("div", "eyebrow", "Spara teamet hos oss"));
+
+  const lead = el("p");
+  lead.style.cssText = "color:var(--text-dim);margin:8px 0 16px;line-height:1.6";
+  lead.textContent = "Teamet finns just nu bara i den här webbläsaren. Sparar ni det hos oss får ni ett konto och kommer åt det från vilken dator som helst — inloggning med en kod till mejlen, inget lösenord.";
+  panel.appendChild(lead);
+
+  const status = el("p");
+  status.style.cssText = "color:var(--text-dim);margin:14px 0 0;min-height:20px";
+
+  PLANS.forEach((plan) => {
+    const row = el("button", "btn-ghost");
+    row.style.cssText = "display:block;width:100%;text-align:left;margin-bottom:8px";
+    row.innerHTML = `<b>${esc(plan.label)} — ${esc(plan.price)}</b><br><span style="color:var(--text-dim);font-weight:400">${esc(plan.note)}</span>`;
+    row.onclick = async () => {
+      panel.querySelectorAll("button").forEach((b) => (b.disabled = true));
+      status.textContent = "Öppnar betalningen…";
+      try {
+        const res = await fetch("/api/checkout", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ tier: plan.tier, config: stripTeam(team) }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || !data.url) throw new Error(data.error || "kunde inte starta betalningen");
+        // Samma flik, inte ny: en popup-blockerare får aldrig stå mellan en
+        // kund och en kassa. Teamet ligger kvar i localStorage om hen ångrar sig.
+        location.href = data.url;
+      } catch (e) {
+        panel.querySelectorAll("button").forEach((b) => (b.disabled = false));
+        status.textContent = "Det gick inte: " + ((e && e.message) || "okänt fel") + ". Teamet ligger kvar — prova igen, eller ladda ner configen så länge.";
+      }
+    };
+    panel.appendChild(row);
+  });
+
+  const cancel = el("button", "btn-ghost", "Inte nu");
+  cancel.style.marginTop = "4px";
+  cancel.onclick = () => { panel.remove(); trigger.disabled = false; };
+  panel.append(cancel, status);
+  hero.appendChild(panel);
+}
+
 function downloadConfig(team) {
   const js = "// Genererad av Builder. Lägg i portal/teams/ och registrera i index.js.\nwindow.TEAM = " + JSON.stringify(stripTeam(team), null, 2) + ";\n";
   const url = URL.createObjectURL(new Blob([js], { type: "text/javascript" }));

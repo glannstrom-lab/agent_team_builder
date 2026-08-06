@@ -37,6 +37,11 @@ const METHOD_RULES = [
   { match: /^\/api\/auth\/verify\/?$/, allow: ["POST"] },
   { match: /^\/api\/auth\/logout\/?$/, allow: ["POST"] },
   { match: /^\/api\/auth\/me\/?$/, allow: ["GET"] },
+  // Köpflödet (M2a-2). Webhooken är POST-only med flit: en GET mot den från
+  // en nyfiken skanner ska inte ens nå signaturkontrollen.
+  { match: /^\/api\/checkout\/?$/, allow: ["POST"] },
+  { match: /^\/api\/checkout\/status\/?$/, allow: ["GET"] },
+  { match: /^\/api\/stripe-webhook\/?$/, allow: ["POST"] },
 ];
 
 export async function onRequest(context) {

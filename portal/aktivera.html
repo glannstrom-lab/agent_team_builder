@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Mitt AI-team · Ditt team aktiveras</title>
+<meta name="robots" content="noindex" />
+<link rel="stylesheet" href="/fonts/fonts.css" />
+<link rel="stylesheet" href="portal.css" />
+<meta name="theme-color" content="#F1ECE3" />
+<link rel="icon" href="icon.svg" type="image/svg+xml" />
+<style>
+  /* Sidan lånar portalens typografi och tokens men har ingen egen layout att
+     ärva — den visas en gång per kund, i tio sekunder. */
+  .akt { max-width: 620px; margin: 0 auto; padding: 56px 24px 80px; }
+  .akt h1 { font-size: clamp(26px, 4.5vw, 38px); font-weight: 800; letter-spacing: -0.025em; line-height: 1.12; margin: 14px 0 0; }
+  .akt p { color: var(--text-dim); line-height: 1.65; margin: 14px 0 0; }
+  .akt ol { color: var(--text-dim); line-height: 1.7; margin: 16px 0 0; padding-left: 20px; }
+  .akt .btn-primary { margin-top: 26px; text-decoration: none; display: inline-flex; }
+  .akt code { font-family: var(--font-mono); font-size: 0.92em; background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 2px 6px; }
+  .spinner {
+    width: 15px; height: 15px; border-radius: 50%;
+    border: 2px solid var(--border); border-top-color: var(--accent);
+    animation: spin 0.75s linear infinite; display: inline-block; vertical-align: -2px; margin-right: 8px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { .spinner { animation-duration: 3s; } }
+</style>
+</head>
+<body>
+<main class="akt">
+  <a class="hublink" href="../">← Mitt AI-team</a>
+  <div id="state">
+    <div class="setup-badge"><span class="spinner"></span>Aktiverar</div>
+    <h1>Tack — vi gör i ordning <span class="grad">ert team</span></h1>
+    <p>Betalningen är klar. Det sista steget tar några sekunder: teamet sparas och kopplas till ert konto. Sidan uppdaterar sig själv.</p>
+  </div>
+</main>
+
+<script>
+// Aktiveringssidan pollar tills webhooken hunnit skapa teamet. Betalningen är
+// klar i kundens webbläsare INNAN Stripe hinner berätta det för oss — utan
+// pollningen möts kunden av "hittade inget team" i det ögonblick hen är som
+// mest känslig för att något gått fel.
+(function () {
+  var sessionId = new URLSearchParams(location.search).get("session_id") || "";
+  var state = document.getElementById("state");
+
+  function show(html) { state.innerHTML = html; }
+
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+
+  if (!/^cs_[A-Za-z0-9_]{10,120}$/.test(sessionId)) {
+    show(
+      '<div class="setup-badge">Saknar kvitto</div>' +
+      "<h1>Den här sidan behöver ett köp</h1>" +
+      "<p>Adressen saknar det kvitto-id som Stripe skickar med efter en betalning. Har ni just betalat: gå tillbaka till kvittomejlet och följ länken därifrån.</p>" +
+      '<p>Har ni redan ett team? <a href="./">Logga in här.</a></p>'
+    );
+    return;
+  }
+
+  var tries = 0;
+
+  function done(slug, email) {
+    show(
+      '<div class="setup-badge">Klart</div>' +
+      '<h1>Ert team är <span class="grad">redo</span></h1>' +
+      "<p>Teamet är sparat och kopplat till " + (email ? "<b>" + esc(email) + "</b>" : "er mejladress") + ". Så här kommer ni in:</p>" +
+      "<ol>" +
+      "<li>Klicka på knappen nedan.</li>" +
+      "<li>Skriv " + (email ? "samma mejladress" : "mejladressen ni betalade med") + ".</li>" +
+      "<li>Vi skickar en sexsiffrig kod. Den gäller i tio minuter.</li>" +
+      "</ol>" +
+      "<p>Inget lösenord att välja, och inget att glömma bort. Nästa gång loggar ni in via <b>Logga in</b> uppe på mittaiteam.se.</p>" +
+      '<a class="btn-primary" href="./">Logga in och öppna teamet</a>'
+    );
+  }
+
+  function stuck() {
+    show(
+      '<div class="setup-badge">Tar längre tid än väntat</div>' +
+      "<h1>Betalningen är registrerad</h1>" +
+      "<p>Teamet är betalt, men aktiveringen har inte gått igenom än. Det löser sig oftast av sig självt inom några minuter — ladda om sidan då.</p>" +
+      "<p>Står det kvar: mejla <a href=\"mailto:info@mittaiteam.se\">info@mittaiteam.se</a> så fixar vi det för hand. Uppge gärna <code>" + esc(sessionId.slice(0, 20)) + "…</code></p>"
+    );
+  }
+
+  function poll() {
+    fetch("/api/checkout/status?session_id=" + encodeURIComponent(sessionId), { credentials: "same-origin" })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (d && d.ready && d.slug) return done(d.slug, d.email);
+        // Drygt två minuter innan vi ger upp: webhooken kommer normalt inom
+        // ett par sekunder, men Stripe kan köa vid driftstörning.
+        if (++tries > 40) return stuck();
+        setTimeout(poll, 3000);
+      })
+      .catch(function () {
+        if (++tries > 40) return stuck();
+        setTimeout(poll, 3000);
+      });
+  }
+
+  poll();
+})();
+</script>
+</body>
+</html>
