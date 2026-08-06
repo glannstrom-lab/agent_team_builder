@@ -333,23 +333,16 @@ ny kund dyker upp i både galleri och portal automatiskt.
 > dokument är ögonblicksbilder från när de skrevs och ska inte läsas som plan.
 >
 > Kärnan (fas 1–3 nedan) är klar och bevisat divergerande — se `examples/`.
-> Webblagret är däremot djupt överbyggt i förhållande till affären: portalen
-> har fyra omgångar funktioner ovanpå en kundbas på noll. **Noll betalande
-> kunder, noll mätning, ingen kassa.** Nästa arbete är inte fler funktioner
-> utan att sälja för hand: identitet och juridik på sajten, ett demoteam med
-> riktiga svar, fyrtio namngivna företag, förbyggda team, och samtal.
+> Webblagret är brett byggt i förhållande till kundbasen: fyra omgångar
+> funktioner i portalen, ingen betalande kund än, ingen kassa och ingen mätning.
+> Väg in det när något ska prioriteras — men det är ingen spärr.
 >
-> ## GRINDEN — gäller varje session
->
-> **Ingen ny funktionskod i `portal/`, `builder/` eller `verticals/` committas
-> förrän `docs/kunder.md` har en ny rad med datum, namn och utfall från ett
-> riktigt samtal med en riktig människa.** Kontrollera filen innan du börjar
-> bygga. Undantag: buggar som en namngiven betalande kund har stött på, de tre
-> säkerhetsposterna i planen (pdf.js, SheetJS, `functions/_middleware.js`), och
-> **vecka 0-arbetet i planen** — identitet, juridiktexter, bokningslänk,
-> självhostade typsnitt, OG-bild, analytics och riktiga demosvar i
-> `portal/teams/`. Det är säljmaterial och data, inte nya funktioner. Grinden
-> stoppar funktionsutveckling, inte förberedelsen för att sälja.
+> **Struket 2026-08-06:** grindregeln som stod här (ingen funktionskod i
+> `portal/`, `builder/` eller `verticals/` förrän `docs/kunder.md` hade en rad
+> från ett riktigt kundsamtal) gäller inte längre, och inte heller säljmålen den
+> hängde ihop med. Föreslå inte kundsamtal, kundlistor eller säljfickor som
+> "nästa steg" — vad som byggs härnäst avgörs pass för pass av Mikael.
+> `docs/kunder.md` finns kvar som logg, inte som grind.
 >
 > Skriv ingen ny daterad granskningsfil i `docs/`. Fyra på fyra månader räcker;
 > nästa bedömning görs av en kund som betalar eller låter bli. Uppdatera
@@ -364,10 +357,16 @@ ny kund dyker upp i både galleri och portal automatiskt.
 > 4 990 / 490 per mån / offert) och står i lägesdokumentet — prislistan i
 > `index.html` och avsnitt 4 i `villkor.html` måste alltid ändras tillsammans.
 >
-> **Nästa pass:** sätt upp en avsändartjänst (Resend/Postmark + DNS på
-> mittaiteam.se), sätt MAIL_API_KEY och MAIL_FROM, och ändra MAIL_PROVIDER
-> från console till resend — så länge den står på console skrivs varje
-> inloggningskod i klartext till loggen. Därefter: prata med en människa.
+> **Gjort 2026-08-06:** avsändaren är uppsatt. Resend på mittaiteam.se
+> (region eu-west-1, DKIM + SPF verifierade, MX:en ligger på `send.` så
+> Email Routing och info@ är orörda), `MAIL_API_KEY`/`MAIL_FROM`/`MAIL_PROVIDER`
+> satta som Pages-secrets, deployat. Inloggningskoder mejlas — de skrivs inte
+> längre i klartext till loggen. Nyckeln är en sändnyckel begränsad till
+> domänen; admin-nyckeln ligger i `.dev.vars.resend.admin` (gitignorerad).
+>
+> **Nästa pass:** kassan. Stripe-konto finns; kvar är produkter/priser
+> (0 / 90 / 190 / 4 990 / 490 per mån), checkout-rutt och webhook enligt
+> `docs/m2-backend-spec.md` M2a-2.
 >
 > Fas 1–3 nedan står kvar som historik över hur kärnan byggdes.
 

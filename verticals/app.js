@@ -21,6 +21,7 @@ function nav() {
     <a class="home" href="../"><span class="dot"></span> Mitt AI-team</a>
     <a class="np" href="./">Branscher</a>
     <a class="np" href="../site/">Exempel</a>
+    <a class="np" href="../portal/">Logga in</a>
     <a class="nav-cta" href="../index.html#priser">Priser</a>
   </div></div>`;
 }

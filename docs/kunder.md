@@ -1,11 +1,10 @@
 # Kunder och samtal
 
-> Den här filen är projektets grind. Ingen ny funktionskod i `portal/`,
-> `builder/` eller `verticals/` committas förrän det finns en ny rad här med
-> datum, namn och utfall från ett riktigt samtal med en riktig människa.
->
-> Månadens mått är samtal, inte commits. Mål till 4 september 2026:
-> **20 samtal, 3 demos, 1 offert ute.**
+> Logg över samtal och kunder. **Ingen grind:** kravet att ett loggat samtal
+> skulle krävas innan funktionskod fick committas är struket 2026-08-06, och
+> månadsmålen (20 samtal, 3 demos, 1 offert) med det. Filen finns för att
+> anteckningar från riktiga samtal är värda att spara — inte för att villkora
+> bygget.
 
 ## Samtal
 

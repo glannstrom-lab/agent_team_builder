@@ -341,26 +341,20 @@ konkurrent säger.
 **Vecka 4 — konvertera och skörda.** Målet är **10 samtal**, inte 10 kunder.
 Leverera för hand, fakturera, och skörda den vertikala mallen ur uppdraget.
 
-### Grinden
+### Grinden — STRUKEN 2026-08-06
 
-Frysningen i förra versionen hade tre undantag i samma dokument — det är en önskan,
-inte en frys. Den här är mekanisk och står i CLAUDE.md:
+Det här avsnittet föreslog en mekanisk spärr: ingen ny funktionskod i `portal/`,
+`builder/` eller `verticals/` förrän `docs/kunder.md` hade en rad från ett riktigt
+kundsamtal, med månadsmått (20 samtal, 3 demos, 1 offert) och en fast säljficka
+i veckoschemat.
 
-> Ingen ny funktionskod i `portal/`, `builder/` eller `verticals/` committas förrän
-> `docs/kunder.md` har en ny rad med datum, namn och utfall från ett riktigt samtal.
+**Mikael har strukit den.** Den gäller inte, varken som regel i CLAUDE.md eller
+som förslag att återkomma till. Texten är borttagen härifrån och ur CLAUDE.md
+2026-08-06; det som står kvar är den här noteringen så att den som läser
+dokumentet vet att grinden fanns och togs bort, inte att den glömdes.
 
-Den fungerar för att den är binär, för att varje session kan kontrollera den innan
-den börjar bygga, och för att den vänder beroendet: bygget blir belöningen för
-säljandet.
-
-**Månadens mått är samtal, inte commits:** 20 samtal, 3 demos, 1 offert ute till
-4 september. Slutar månaden med tolv commits och noll samtal har den misslyckats,
-oavsett vad som byggdes.
-
-**Rytmen:** tisdag 08:30–09:15 säljficka (enda tillåtna output: skickade
-meddelanden eller bokade samtal), torsdag 08:30–08:50 uppföljning. Byggdagen börjar
-inte förrän veckans säljficka är gjord — inte som moral, som sekvens. Byggandet
-belönar sig självt, säljandet gör det inte.
+`docs/kunder.md` finns kvar som logg över samtal och kunder — inte som villkor
+för att få bygga.
 
 ### Stryk
 
