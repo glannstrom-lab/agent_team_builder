@@ -5,7 +5,7 @@
 // Det är hela vinsten mot capability-länken: åtkomsten följer kontot, inte
 // adressfältet, och går att ta tillbaka.
 
-import { json, sessionUser } from "./_lib.js";
+import { json, sessionUser, refreshSession } from "./_lib.js";
 
 export async function onRequestGet({ request, env }) {
   const db = env.DB;
@@ -13,6 +13,10 @@ export async function onRequestGet({ request, env }) {
 
   const user = await sessionUser(db, request);
   if (!user) return json({ error: "inte inloggad" }, 401);
+
+  // Portalen anropar den här vid varje sidladdning, vilket gör den till rätt
+  // ställe att förlänga sessionen. Den som använder tjänsten hålls inloggad.
+  const rolled = await refreshSession(db, user).catch(() => null);
 
   const { results } = await db.prepare(
     "SELECT a.team_slug, a.role, t.config FROM team_access a " +
@@ -28,5 +32,5 @@ export async function onRequestGet({ request, env }) {
     return { slug: r.team_slug, company, role: r.role };
   });
 
-  return json({ email: user.email, teams });
+  return json({ email: user.email, teams }, 200, rolled ? { "set-cookie": rolled } : {});
 }

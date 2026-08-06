@@ -258,6 +258,7 @@ ny kund dyker upp i både galleri och portal automatiskt.
 │   │
 │   │                               # Daterade ögonblicksbilder (granskningar/research).
 │   │                               # Läget de beskriver är alltid färskare i LÄGET nedan:
+│   ├── lansering.md                # LEVANDE lista: vad som är kvar till lansering
 │   ├── granskning-helhet-2026-08-05.md    # Sexagentsgranskning: kod, säkerhet,
 │   │                               #   visuellt, kärna, affär, dokumentation
 │   ├── granskning-kundresa-2026-07-16.md  # 30 punkter längs kundresan
@@ -357,16 +358,28 @@ ny kund dyker upp i både galleri och portal automatiskt.
 > 4 990 / 490 per mån / offert) och står i lägesdokumentet — prislistan i
 > `index.html` och avsnitt 4 i `villkor.html` måste alltid ändras tillsammans.
 >
-> **Gjort 2026-08-06:** avsändaren är uppsatt. Resend på mittaiteam.se
-> (region eu-west-1, DKIM + SPF verifierade, MX:en ligger på `send.` så
-> Email Routing och info@ är orörda), `MAIL_API_KEY`/`MAIL_FROM`/`MAIL_PROVIDER`
-> satta som Pages-secrets, deployat. Inloggningskoder mejlas — de skrivs inte
-> längre i klartext till loggen. Nyckeln är en sändnyckel begränsad till
-> domänen; admin-nyckeln ligger i `.dev.vars.resend.admin` (gitignorerad).
+> **Gjort 2026-08-06 (ett långt pass):**
+> - **Avsändare:** Resend på mittaiteam.se (eu-west-1, DKIM+SPF verifierade,
+>   MX på `send.` så Email Routing och info@ är orörda). Inloggningskoder mejlas
+>   skarpt. Admin-nyckeln ligger i `.dev.vars.resend.admin` (gitignorerad).
+> - **Kassan (M2a-2):** `/api/checkout`, `/api/stripe-webhook`,
+>   `/api/checkout/status`, `portal/aktivera.html` och "Spara i molnet" i
+>   Buildern. Leverans sker till ett **konto**, inte till en capability-URL —
+>   `docs/m2-backend-spec.md` är överspelad på just den punkten. Verifierat hela
+>   vägen i webbläsare med Stripes testkort.
+> - **Rullande session:** en aktiv kund behöver aldrig en ny mejlkod.
+> - **Förbrukning och nyckel:** `index.html#forbrukning` — vad DeepSeek V4 Flash
+>   via OpenRouter kostar i månaden (2–4 kr vid normal användning) och fem steg
+>   för att skaffa nyckeln. Länkas från Buildern och portalen. **Ändras modellen
+>   måste den sektionen ändras med prislistan och villkoren.**
 >
-> **Nästa pass:** kassan. Stripe-konto finns; kvar är produkter/priser
-> (0 / 90 / 190 / 4 990 / 490 per mån), checkout-rutt och webhook enligt
-> `docs/m2-backend-spec.md` M2a-2.
+> **`docs/lansering.md` är listan över vad som är kvar** — levande dokument, inte
+> en daterad granskning. Fyra blockerande hål: nyckeln krävs efter betalningen,
+> flera användare går inte att sälja, den nyckelfria nivån finns inte, och det
+> saknas självbetjänad väg ut.
+>
+> **Nästa pass:** stäng hål 1 i `docs/lansering.md` — nyckeln ska vara verifierad
+> innan pengarna byter ägare, inte efter.
 >
 > Fas 1–3 nedan står kvar som historik över hur kärnan byggdes.
 

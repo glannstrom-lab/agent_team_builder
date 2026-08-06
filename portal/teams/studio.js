@@ -17,7 +17,6 @@ window.TEAM = {
   tagline: "Designstudio, 12 personer, byggarnivå — fem agenter i en kedja kring outtalade designbeslut.",
   language: "sv",
   // Default-modell. Kunden kan byta till billigare i gränssnittet.
-  defaultModel: "claude-opus-4-8",
   entryAgent: "vd-assistent",
 
   why: "Intaget beskrev tre klämmor — manuell rationale-dokumentation, kundpresentationer som tar en hel dag, onboarding som tar en vecka — och research hittade en gemensam rot: designbesluten är outtalade och ligger spridda i Figma-kommentarer, Slack-trådar och folks huvuden. Teamet är byggt runt roten, inte runt de tre symptomen var för sig.",

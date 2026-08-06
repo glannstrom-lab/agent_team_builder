@@ -170,7 +170,30 @@ export async function sessionUser(db, request) {
     await db.prepare("DELETE FROM sessions WHERE token_hash = ?").bind(hash).run();
     return null;
   }
-  return { id: row.user_id, email: row.email };
+  return { id: row.user_id, email: row.email, token, tokenHash: hash, expiresAt: row.expires_at };
+}
+
+// Rullande session: varje gång kunden använder tjänsten flyttas utgången fram.
+// Utan den här loggas även den som är inne varje dag ut efter trettio dagar och
+// måste hämta en ny kod ur mejlen — en kod som bara finns för att bevisa vem
+// hen är, vilket redan är bevisat av att sessionen används. Med den ser en
+// aktiv kund aldrig en kod igen; en inaktiv får en efter trettio dagars tystnad.
+//
+// Skrivningen görs bara när mer än ett dygn gått sedan förra förlängningen.
+// Annars blir varje sidladdning en databasskrivning för ingenting.
+const REFRESH_AFTER_MS = 24 * 60 * 60 * 1000;
+
+export async function refreshSession(db, user) {
+  if (!user || !user.tokenHash) return null;
+  const t = nowMs();
+  const fresh = user.expiresAt - t > SESSION_TTL_MS - REFRESH_AFTER_MS;
+  if (fresh) return null; // förlängdes nyligen — rör inget
+
+  await db.prepare("UPDATE sessions SET expires_at = ? WHERE token_hash = ?")
+    .bind(t + SESSION_TTL_MS, user.tokenHash).run();
+  // Kakan måste sättas om också: databasen och webbläsaren har varsin klocka,
+  // och det är webbläsarens som avgör om kakan ens skickas med nästa gång.
+  return sessionCookie(user.token, Math.floor(SESSION_TTL_MS / 1000));
 }
 
 export async function destroySession(db, request) {

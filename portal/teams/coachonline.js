@@ -7,7 +7,6 @@ window.TEAM = {
   tagline: "Solo livs- och karriärcoach online — ett fokuserat fyra-agentersteam.",
   language: "sv",
   // Default-modell. Kunden kan byta till billigare i gränssnittet.
-  defaultModel: "claude-opus-4-8",
   entryAgent: "vd-assistent",
   // Veckans rutiner — stående uppgifter med klickväg rakt in i rätt agent.
   // day: 1=måndag … 7=söndag, null = närhelst. Prompten förifylls i composern

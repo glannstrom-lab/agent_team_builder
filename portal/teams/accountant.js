@@ -9,7 +9,6 @@ window.TEAM = {
   tagline: "Liten bokföringsbyrå, ny på AI — ett fokuserat tre-agentersteam kring verifikationsklassificering.",
   language: "sv",
   // Default-modell. Du kan byta till en billigare modell i gränssnittet om du vill.
-  defaultModel: "claude-opus-4-8",
   entryAgent: "vd-assistent",
 
   // Veckans rutiner — byråns faktiska veckorytm ur researchen (måndag–tisdag

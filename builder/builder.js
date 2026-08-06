@@ -127,16 +127,24 @@ function renderKeySetup() {
   wrap.appendChild(el("div", "setup-badge", "🔑 Engångsuppkoppling"));
   const h = el("h1"); h.innerHTML = `Bygg ditt <span class="grad">AI-team</span>`;
   wrap.appendChild(h);
-  wrap.appendChild(el("p", "setup-lead", "Klistra in din API-nyckel — Anthropic (sk-ant-…) eller OpenRouter (sk-or-…). Den sparas bara här i den här webbläsaren och skickas direkt till leverantören — aldrig till någon annan server. Tips: använd en nyckel med begränsad budget."));
+  const lead = el("p", "setup-lead");
+  lead.innerHTML = 'Klistra in din nyckel från OpenRouter (den börjar med <b>sk-or-</b>). Den sparas bara här i den här webbläsaren och skickas direkt till leverantören — aldrig till någon annan server. Att bygga ett team kostar ungefär åtta öre. ' +
+    '<a href="../#forbrukning" target="_blank" rel="noreferrer">Har du ingen nyckel? Så skaffar du en på fem minuter →</a>';
+  wrap.appendChild(lead);
   const field = el("div", "setup-field");
-  const input = el("input"); input.type = "password"; input.id = "api-key-input"; input.placeholder = "sk-ant-... eller sk-or-..."; input.spellcheck = false;
-  input.setAttribute("aria-label", "API-nyckel (Anthropic eller OpenRouter)");
+  const input = el("input"); input.type = "password"; input.id = "api-key-input"; input.placeholder = "sk-or-..."; input.spellcheck = false;
+  input.setAttribute("aria-label", "API-nyckel från OpenRouter");
   field.appendChild(input); wrap.appendChild(field);
   const err = el("div", "setup-err"); err.style.display = "none"; wrap.appendChild(err);
   const btn = el("button", "btn-primary", "Anslut");
   btn.onclick = async () => {
     const v = input.value.trim();
-    if (!v.startsWith("sk-ant-") && !v.startsWith("sk-or-")) { err.textContent = "Det ser inte ut som en giltig nyckel (Anthropic: sk-ant-…, OpenRouter: sk-or-…)."; err.style.display = "block"; return; }
+    if (v.startsWith("sk-ant-")) {
+      err.innerHTML = 'Det där är en Anthropic-nyckel. Vi kör numera på OpenRouter — samma arbete, en bråkdel av kostnaden. ' +
+        '<a href="../#forbrukning" target="_blank" rel="noreferrer">Så skaffar du en OpenRouter-nyckel →</a>';
+      err.style.display = "block"; return;
+    }
+    if (!v.startsWith("sk-or-")) { err.textContent = "Det ser inte ut som en OpenRouter-nyckel — de börjar med sk-or-."; err.style.display = "block"; return; }
     // Testa nyckeln direkt (gratis anrop) — felet ska komma nu, medan
     // användaren har nyckelsidan öppen, inte mitt i första körningen.
     btn.disabled = true; btn.textContent = "Testar nyckeln…"; err.style.display = "none";
@@ -152,7 +160,7 @@ function renderKeySetup() {
   input.addEventListener("keydown", (e) => { if (e.key === "Enter") btn.click(); });
   wrap.appendChild(btn);
   const help = el("div", "setup-help");
-  help.innerHTML = 'Skapa en nyckel på <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noreferrer">console.anthropic.com</a> eller <a href="https://openrouter.ai/settings/keys" target="_blank" rel="noreferrer">openrouter.ai</a>.';
+  help.innerHTML = 'Skapa en nyckel på <a href="https://openrouter.ai/keys" target="_blank" rel="noreferrer">openrouter.ai/keys</a> — <a href="../#forbrukning" target="_blank" rel="noreferrer">steg för steg här</a>.';
   wrap.appendChild(help);
   const demoBtn = el("button", "demo-link", "Eller utforska i demoläge utan nyckel →");
   demoBtn.onclick = () => {
@@ -201,8 +209,12 @@ function renderForm() {
 
   const form = el("form", "intake");
   form.appendChild(fieldRow("Företag / projekt", inputEl("company", "company", "T.ex. CoachOnline")));
-  const modeSel = selectEl("mode", "mode", [["team-builder", "Team-builder (för dig själv / tekniska)"], ["ai-consultant", "AI-konsult (för kunduppdrag)"]]);
-  form.appendChild(fieldRow("Läge", modeSel));
+  // Etiketterna hette förut "Team-builder (för dig själv / tekniska)" och
+  // "AI-konsult (för kunduppdrag)" — projektets egna arbetsnamn, obegripliga
+  // för den som bara vill ha ett team. Värdena är oförändrade; det är bara
+  // vad kunden ser som är omskrivet.
+  const modeSel = selectEl("mode", "mode", [["team-builder", "Bara teamet — jag vet vad jag vill ha"], ["ai-consultant", "Teamet plus ett första projekt att börja med"]]);
+  form.appendChild(fieldRow("Vad vill du få ut?", modeSel));
   const sizeSel = selectEl("size", "size", [["solo", "Solo (1 person)"], ["mikro", "Mikro (2)"], ["litet", "Litet team (3–10)"], ["medelstort", "Medelstort (10–100)"], ["stort", "Stort (100+)"]]);
   form.appendChild(fieldRow("Storlek", sizeSel));
   const matRow = fieldRow("AI-mognad", selectEl("maturity", "maturity", [["nybörjare", "Nybörjare — har inte börjat"], ["van", "Van — provat ChatGPT osv."], ["byggare", "Byggare — bygger redan egna verktyg"]]));
@@ -749,7 +761,9 @@ ${schema}`;
   }
   team.slug = slugify(team.slug || intake.company);
   team.language = "sv";
-  team.defaultModel = state.model;
+  // Ingen defaultModel: modellen är låst i atb-claude.js och samma för alla.
+  // Ett fält som ser ut som ett val men inte är det förvirrar den som läser
+  // konfigen — och den är gjord för att läsas.
   team.workstyle = intake.workstyle === "coach" ? "coach" : null;
   team.entryAgent = (team.agents.find((a) => a.id === "vd-assistent") || team.agents[0]).id;
   return team;
@@ -1006,7 +1020,7 @@ function stripTeam(team) {
   // routines + firstProject driver arbetsytan (rutinlistan och 🎯-panelen).
   // rejected + divergence + why följer med — de driver portalens
   // "Därför ser ert team ut så här"-sida (anställningsceremonin).
-  return { company: team.company, tagline: team.tagline, language: "sv", defaultModel: state.model, entryAgent: team.entryAgent,
+  return { company: team.company, tagline: team.tagline, language: "sv", entryAgent: team.entryAgent,
     routines: Array.isArray(team.routines) ? team.routines : [],
     seasons: Array.isArray(team.seasons) ? team.seasons : [],
     firstProject: team.firstProject || null,
@@ -1040,6 +1054,19 @@ function renderPurchase(team, hero, trigger) {
   lead.style.cssText = "color:var(--text-dim);margin:8px 0 16px;line-height:1.6";
   lead.textContent = "Teamet finns just nu bara i den här webbläsaren. Sparar ni det hos oss får ni ett konto och kommer åt det från vilken dator som helst — inloggning med en kod till mejlen, inget lösenord.";
   panel.appendChild(lead);
+
+  // Den som byggt på riktigt har redan en fungerande nyckel — den krävdes för
+  // att komma hit. Den som köper ur demoläget har det inte, och skulle annars
+  // upptäcka kravet först efter betalningen, inne i portalen. Det är den
+  // ordningen som gör att någon betalar för något de sedan inte kan öppna.
+  if (state.demo) {
+    const warn = el("div");
+    warn.style.cssText = "margin:0 0 16px;padding:14px 16px;border:1px solid var(--accent);border-radius:6px;background:rgba(169,116,31,0.06);line-height:1.55";
+    warn.innerHTML = "<b>Innan ni betalar:</b> för att använda teamet behöver ni en egen nyckel från OpenRouter. " +
+      'Den tar fem minuter att skaffa och kostar ett par kronor i månaden att använda — <a href="../#forbrukning" target="_blank" rel="noreferrer">så här gör ni</a>. ' +
+      "Skaffa den först, så vet ni att allt fungerar innan pengarna byter ägare.";
+    panel.appendChild(warn);
+  }
 
   const status = el("p");
   status.style.cssText = "color:var(--text-dim);margin:14px 0 0;min-height:20px";

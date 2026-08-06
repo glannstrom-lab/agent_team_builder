@@ -683,10 +683,10 @@ async function loadTeam(slug) {
   state.slug = slug;
   state.history = loadHistory(slug);
   state.activeAgentId = agentById(team.entryAgent) ? team.entryAgent : team.agents[0].id;
-  // Teamets defaultModel gäller bara om det matchar användarens leverantör —
-  // ett team byggt med OpenRouter-nyckel kan bära t.ex. "openrouter/auto",
-  // som skulle ge 404 på varje anrop mot api.anthropic.com.
-  if (!isOpenRouter() && !localStorage.getItem(MODEL_STORAGE) && team.defaultModel && /^claude-/.test(team.defaultModel)) state.model = team.defaultModel;
+  // team.defaultModel läses inte längre. Sedan 2026-08-05 kör hela produkten
+  // en enda modell, låst i atb-claude.js, och stream() ignorerar vad anropet
+  // än skickar med. Fältet finns kvar i äldre teamfiler men styr ingenting —
+  // att låta det se ut som ett val vore att ljuga i konfigurationen.
 }
 
 // ---------- boot ----------
@@ -745,13 +745,19 @@ function renderKeySetup() {
   const h = el("h1");
   h.innerHTML = `Koppla in ert <span class="grad">AI-team</span>`;
   wrap.appendChild(h);
-  wrap.appendChild(el("p", "setup-lead", "Klistra in er egen API-nyckel — Anthropic (sk-ant-…) eller OpenRouter (sk-or-…). Den sparas bara här i er webbläsare och skickas direkt till leverantören — aldrig till någon annan server. Tips: använd en nyckel med begränsad budget."));
+  // Nyckeln är den enskilt vanligaste avhopps­punkten: kunden har betalat, är
+  // inne, och möts av ett ord hen inte känner igen. Därför en länk till
+  // steg-för-steg-instruktionen i stället för bara ett krav.
+  const lead = el("p", "setup-lead");
+  lead.innerHTML = 'Klistra in er egen nyckel från OpenRouter (den börjar med <b>sk-or-</b>). Den sparas bara här i er webbläsare och skickas direkt till leverantören — aldrig till någon annan server. ' +
+    '<a href="../#forbrukning" target="_blank" rel="noreferrer">Har ni ingen nyckel? Så skaffar ni en på fem minuter →</a>';
+  wrap.appendChild(lead);
 
   const field = el("div", "setup-field");
   const input = el("input");
-  input.type = "password"; input.id = "api-key-input"; input.placeholder = "sk-ant-... eller sk-or-...";
+  input.type = "password"; input.id = "api-key-input"; input.placeholder = "sk-or-...";
   input.autocomplete = "off"; input.spellcheck = false;
-  input.setAttribute("aria-label", "API-nyckel (Anthropic eller OpenRouter)");
+  input.setAttribute("aria-label", "API-nyckel från OpenRouter");
   field.appendChild(input);
   wrap.appendChild(field);
 
@@ -760,8 +766,17 @@ function renderKeySetup() {
   const btn = el("button", "btn-primary", "Anslut");
   btn.onclick = async () => {
     const val = input.value.trim();
-    if (!val.startsWith("sk-ant-") && !val.startsWith("sk-or-")) {
-      err.textContent = "Det ser inte ut som en giltig nyckel (Anthropic börjar med sk-ant-, OpenRouter med sk-or-).";
+    // Anthropic-nycklar avvisas här i stället för längre in: de fungerade
+    // förr, så någon kan ha en liggande, och felet ska förklara varför den
+    // inte duger — inte bara att den inte duger.
+    if (val.startsWith("sk-ant-")) {
+      err.innerHTML = 'Det där är en Anthropic-nyckel. Vi kör numera på OpenRouter, som är ungefär tvåhundra gånger billigare för samma arbete. ' +
+        '<a href="../#forbrukning" target="_blank" rel="noreferrer">Så skaffar ni en OpenRouter-nyckel →</a>';
+      err.style.display = "block";
+      return;
+    }
+    if (!val.startsWith("sk-or-")) {
+      err.textContent = "Det ser inte ut som en OpenRouter-nyckel — de börjar med sk-or-. Kontrollera att hela nyckeln följde med när ni kopierade.";
       err.style.display = "block";
       return;
     }
@@ -784,7 +799,7 @@ function renderKeySetup() {
   wrap.appendChild(btn);
 
   const help = el("div", "setup-help");
-  help.innerHTML = 'Har ni ingen nyckel än? Skapa en på <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noreferrer">console.anthropic.com</a> eller <a href="https://openrouter.ai/settings/keys" target="_blank" rel="noreferrer">openrouter.ai</a> — det tar någon minut. Med OpenRouter kan ni välja bland fler modeller än Claude.';
+  help.innerHTML = 'Har ni ingen nyckel än? Skapa en på <a href="https://openrouter.ai/keys" target="_blank" rel="noreferrer">openrouter.ai/keys</a> — det tar fem minuter, och användningen kostar ett par kronor i månaden. <a href="../#forbrukning" target="_blank" rel="noreferrer">Steg för steg här →</a>';
   wrap.appendChild(help);
 
   const demoBtn = el("button", "demo-link", "Eller utforska i demoläge utan nyckel →");

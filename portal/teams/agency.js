@@ -13,7 +13,6 @@ window.TEAM = {
   tagline: "Innehållsbyrå, 8 personer, van vid ChatGPT — fyra agenter kring kundtonen och månadsrapporterna.",
   language: "sv",
   // Default-modell. Kunden kan byta till billigare i gränssnittet.
-  defaultModel: "claude-opus-4-8",
   entryAgent: "vd-assistent",
 
   why: "Intaget beskrev två återkommande förluster och ett misslyckande. Förlusterna: varje kund vill ha sin egen ton och den tonen bärs i huvudet på den som råkar skriva, och månadsrapporterna byggs för hand i Google Slides på 4–6 timmar styck, sju till nio gånger i månaden. Misslyckandet: en promptbank i Notion som övergavs efter en vecka. Teamet är byggt runt de två förlusterna, och format efter lärdomen av misslyckandet — agenterna bär sin kunskap själva i stället för att ligga bredvid arbetet.",

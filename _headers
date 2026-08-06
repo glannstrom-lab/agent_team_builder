@@ -1,6 +1,34 @@
 /*
-  Content-Security-Policy: default-src 'self'; connect-src 'self' https://api.anthropic.com https://openrouter.ai; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'
+  Content-Security-Policy: default-src 'self'; connect-src 'self' https://openrouter.ai; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'self' https://checkout.stripe.com; frame-ancestors 'none'
   Strict-Transport-Security: max-age=31536000; includeSubDomains
   Referrer-Policy: no-referrer
   X-Content-Type-Options: nosniff
   X-Frame-Options: DENY
+
+# Applagren måste alltid revalideras.
+#
+# Cloudflare Pages sätter annars max-age=14400 på statiska filer, och
+# filnamnen är inte innehållshashade. En kund kan därför köra fyra timmar
+# gammal kod efter en deploy — ovanpå service workerns egen cache, som
+# redan gjort flera felsökningsrundor längre än de behövde vara.
+#
+# no-cache betyder inte "hämta alltid om", utan "fråga alltid först". Svaret
+# blir 304 utan kropp när inget ändrats, alltså några hundra byte. Det är
+# billigare än en enda felsökning av något som redan är rättat.
+/portal/app.js
+  Cache-Control: no-cache
+
+/portal/sw.js
+  Cache-Control: no-cache
+
+/portal/teams/*
+  Cache-Control: no-cache
+
+/builder/builder.js
+  Cache-Control: no-cache
+
+/atb-claude.js
+  Cache-Control: no-cache
+
+/avatars.js
+  Cache-Control: no-cache

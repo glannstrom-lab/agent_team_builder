@@ -9,7 +9,6 @@ window.TEAM = {
   company: "Källaren Nord",
   tagline: "Lunchrestaurang med kvällsverksamhet, 11 anställda — schemat är veckans tyngsta jobb.",
   language: "sv",
-  defaultModel: "claude-opus-4-8",
   entryAgent: "vd-assistent",
 
   why: "Intaget beskrev en vecka där samma tre saker återkommer: schemat läggs om i sista stund när någon sjukanmäler sig, lunchmenyn ska bestämmas utifrån vad som finns i kylen och vad som blev över, och leverantörsfakturor granskas aldrig för att ingen hinner. Teamet är byggt runt de tre, inte runt \"restaurang\" som bransch.",

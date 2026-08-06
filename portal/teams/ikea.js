@@ -28,7 +28,6 @@ window.TEAM = {
   tagline: "Global detaljhandel, massmarknadsvolym — åtta agenter i domänsilos, byggt på publika källor och hypoteser.",
   language: "sv",
   // Default-modell. Kunden kan byta till billigare i gränssnittet.
-  defaultModel: "claude-opus-4-8",
   entryAgent: "vd-assistent",
 
   why: "Research på publika källor pekade ut samma sak i moment efter moment: flaskhalsen är inte design eller tillverkning, utan dataflödet från koncern till lokal marknad. Prissättning, produkttexter, kampanjlogistik och feedback sker tusentals gånger parallellt, med höga krav på hastighet och konsistens. Teamet är byggt runt volym och repetition — inte runt vad ett möbelföretag gör.",

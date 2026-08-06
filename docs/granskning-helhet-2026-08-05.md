@@ -576,8 +576,9 @@ Kör användarens faktiska steg, inklusive knappen som måste tryckas.**
 
 ### Kvar
 
-- `MAIL_PROVIDER=console` ligger i produktion — inloggningskoder skrivs i klartext
-  till loggen. Ska bort samma dag en avsändare (Resend/Postmark + DNS) är uppsatt.
+- ~~`MAIL_PROVIDER=console` ligger i produktion~~ — **åtgärdat 2026-08-06.** Resend
+  uppsatt på mittaiteam.se (eu-west-1, DKIM+SPF verifierade, MX på `send.` så
+  Email Routing är orörd). Koder mejlas; de skrivs inte längre i loggen.
 - Kassan finns inte. De första kunderna faktureras för hand.
 - Nyckelfria nivåerna (190 kr, 490 kr/mån) kräver en proxy på egen nyckel med
   kvotmätning. Inte byggd. Sälj dem inte innan.

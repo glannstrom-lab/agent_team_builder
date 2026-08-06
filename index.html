@@ -352,7 +352,8 @@ if (location.hostname === 'agent-team-builder-2xy.pages.dev') location.replace('
           <li>Hela bygget, live i webbläsaren</li>
           <li>Ni ser vilka förslag som fick nej, och varför</li>
           <li>Färdigt teamunderlag att läsa och ta med er</li>
-          <li>Inget konto, ingen bindning, ingen betalning</li>
+          <li>Inget konto och ingen bindning. Vi tar inte betalt — men själva bygget körs på <a href="#forbrukning" style="color: var(--accent-2)">er egen nyckel och kostar ungefär åtta öre</a></li>
+          <li>Vill ni bara titta först finns <a href="builder/?demo=1" style="color: var(--accent-2)">demoläget, helt utan nyckel</a></li>
         </ul>
         <a class="price-cta outline" href="builder/">Bygg ert team →</a>
       </div>
@@ -361,14 +362,14 @@ if (location.hostname === 'agent-team-builder-2xy.pages.dev') location.replace('
         <div class="price-ribbon">Börja här</div>
         <div class="price-name">Provmånad</div>
         <div class="price-for">Använd teamet på riktigt i en månad innan ni bestämmer er.</div>
-        <div class="price-amount">90 kr <span class="per">/ månaden</span></div>
+        <div class="price-amount">90 kr <span class="per">/ en månad</span></div>
         <ul class="price-list">
           <li>Hela portalen: veckostart, rutiner, möten och delat minne</li>
-          <li>Ni använder er egen AI-nyckel och betalar förbrukningen själva — i praktiken några kronor</li>
+          <li>Ni använder er egen AI-nyckel och betalar förbrukningen själva — <a href="#forbrukning" style="color: var(--accent-2)">ungefär 2–4 kr i månaden</a>, och <a href="#forbrukning" style="color: var(--accent-2)">så här skaffar ni den</a></li>
           <li>Utan egen nyckel: 190 kr med allt inkluderat <em>(öppnar senare i höst)</em></li>
-          <li>Slutar automatiskt. Vill ni fortsätta väljer ni det aktivt</li>
+          <li>Engångsbetalning som slutar av sig själv — ingen bindning, inget abonnemang att säga upp</li>
         </ul>
-        <a class="price-cta solid" href="#kontakt">Kom igång →</a>
+        <a class="price-cta solid" href="builder/">Bygg teamet och kom igång →</a>
       </div>
 
       <div class="price-card reveal d2">
@@ -377,15 +378,87 @@ if (location.hostname === 'agent-team-builder-2xy.pages.dev') location.replace('
         <div class="price-amount">4 990 kr <span class="per">/ engång</span></div>
         <ul class="price-list">
           <li><b>Köp teamet</b> — er egen nyckel, inga fler avgifter, ert för alltid</li>
-          <li><b>Eller 490 kr i månaden</b> — vi kör det åt er, ingen nyckel behövs, uppdateringar och support ingår</li>
+          <li><b>Eller 490 kr i månaden</b> — vi kör det åt er, ingen nyckel behövs, uppdateringar och support ingår <em>(öppnar senare i höst)</em></li>
           <li>Nya agenter när verksamheten förändras</li>
           <li>Fler användare eller team i molnet: hör av er så räknar vi på det</li>
         </ul>
-        <a class="price-cta outline" href="#kontakt">Prata med oss →</a>
+        <a class="price-cta outline" href="builder/">Bygg teamet och köp →</a>
+        <p style="font-size: 13.5px; color: var(--text-dim); margin: 10px 0 0; text-align: center">Eller <a href="#kontakt" style="color: var(--accent-2)">prata med oss först</a></p>
       </div>
 
     </div>
     <p class="price-note">Alla priser inklusive moms. Köper ni som företag och drar av momsen blir det 72, 152, 392 respektive 3 992 kr. Villkoren står i sin helhet i <a href="villkor.html" style="color: var(--accent-2);">våra villkor</a>.</p>
+  </div>
+</section>
+
+<!--
+  FÖRBRUKNING OCH NYCKEL.
+  Siffrorna nedan bygger på deepseek/deepseek-v4-flash via OpenRouter till
+  $0,14 in / $0,28 ut per miljon tokens och 10,50 kr per dollar — samma
+  antaganden som SEK_PER_USD i portal/app.js och som modellraden i
+  atb-claude.js. Byts modellen måste den här sektionen, prislistan ovan och
+  avsnitt 3–4 i villkor.html ändras samma dag.
+
+  Sektionen finns för att "ni betalar förbrukningen själva" var det som fick
+  folk att tveka: en okänd rörlig kostnad känns dyrare än en känd fast. Ett
+  tal och en instruktion tar bort båda invändningarna.
+-->
+<section id="forbrukning">
+  <div class="wrap narrow">
+    <div class="section-head center">
+      <div class="eyebrow center"><span class="dot"></span> Förbrukningen</div>
+      <h2 class="section-title">Vad AI:n kostar i månaden</h2>
+      <p class="section-lead">Månadsavgiften betalar teamet och portalen. Själva AI-svaren betalar ni direkt till motorleverantören, till självkostnad — vi lägger inget på. Därför vet ni exakt vad ni betalar för, och kan stänga av det när ni vill.</p>
+    </div>
+
+    <div class="reveal" style="background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 26px 28px">
+      <p style="margin: 0 0 18px"><b>Kort svar: ett par kronor i månaden.</b> Vi kör DeepSeek V4 Flash, som kostar ungefär en tvåhundradel av vad de dyraste modellerna gör. Ett svar landar på ett halvt öre till tre öre.</p>
+
+      <div style="display: grid; gap: 12px; border-top: 1px solid var(--border); padding-top: 18px">
+        <div style="display: flex; justify-content: space-between; gap: 18px"><span>En fråga till en agent</span><b style="white-space: nowrap">≈ 0,5–1 öre</b></div>
+        <div style="display: flex; justify-content: space-between; gap: 18px"><span>En lång tråd med era egna underlag inlästa</span><b style="white-space: nowrap">≈ 2–3 öre</b></div>
+        <div style="display: flex; justify-content: space-between; gap: 18px"><span>Ett möte där fem agenter tycker till</span><b style="white-space: nowrap">≈ 10–15 öre</b></div>
+        <div style="display: flex; justify-content: space-between; gap: 18px"><span>Att bygga ett helt nytt team</span><b style="white-space: nowrap">≈ 8 öre</b></div>
+      </div>
+
+      <div style="display: grid; gap: 12px; border-top: 1px solid var(--border); margin-top: 18px; padding-top: 18px">
+        <div style="display: flex; justify-content: space-between; gap: 18px"><span><b>Lugn månad</b> — någon fråga om dagen</span><b style="white-space: nowrap">under 1 kr</b></div>
+        <div style="display: flex; justify-content: space-between; gap: 18px"><span><b>Normal månad</b> — fem frågor om dagen och ett möte i veckan</span><b style="white-space: nowrap">2–4 kr</b></div>
+        <div style="display: flex; justify-content: space-between; gap: 18px"><span><b>Intensiv månad</b> — tjugo frågor om dagen, dagliga rutiner</span><b style="white-space: nowrap">8–12 kr</b></div>
+      </div>
+
+      <p style="color: var(--text-dim); font-size: 14.5px; margin: 18px 0 0; line-height: 1.6">Portalen visar den uppskattade kostnaden under varje svar och en summa för veckan, så ni behöver aldrig gissa. Siffrorna ovan är räknade på 10,50 kr per dollar och gäller i skrivande stund — modellpriser sjunker över tid, de har inte gått åt andra hållet hittills.</p>
+    </div>
+
+    <div class="section-head center" style="margin-top: 56px">
+      <h2 class="section-title" style="font-size: clamp(24px, 3vw, 30px)">Så skaffar ni nyckeln — fem minuter, en gång</h2>
+      <p class="section-lead">Nyckeln är det som kopplar portalen till AI-motorn. Ni skapar den hos OpenRouter, klistrar in den i portalen en gång, och sedan är det gjort. Den sparas bara i er egen webbläsare — vi ser den aldrig.</p>
+    </div>
+
+    <ol class="reveal" style="counter-reset: none; padding-left: 0; list-style: none; display: grid; gap: 14px">
+      <li style="background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 18px 22px">
+        <b style="font-family: var(--font-mono); font-size: 11.5px; letter-spacing: 0.13em; color: var(--accent-2)">STEG 1</b>
+        <div style="margin-top: 6px"><b>Skapa konto på <a href="https://openrouter.ai" target="_blank" rel="noreferrer" style="color: var(--accent-2)">openrouter.ai</a>.</b> Klicka <em>Sign in</em> uppe till höger. Ni kan logga in med Google om ni hellre vill slippa ett lösenord till.</div>
+      </li>
+      <li style="background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 18px 22px">
+        <b style="font-family: var(--font-mono); font-size: 11.5px; letter-spacing: 0.13em; color: var(--accent-2)">STEG 2</b>
+        <div style="margin-top: 6px"><b>Fyll på med pengar.</b> Gå till <em>Credits</em> och lägg in till exempel 5 dollar. OpenRouter tar en avgift på 5,5 % (minst 0,80 dollar) när ni fyller på, så 5 dollar kostar drygt 60 kronor. Vid normal användning räcker den summan i ett år eller mer.</div>
+      </li>
+      <li style="background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 18px 22px">
+        <b style="font-family: var(--font-mono); font-size: 11.5px; letter-spacing: 0.13em; color: var(--accent-2)">STEG 3</b>
+        <div style="margin-top: 6px"><b>Skapa nyckeln.</b> Gå till <a href="https://openrouter.ai/keys" target="_blank" rel="noreferrer" style="color: var(--accent-2)">openrouter.ai/keys</a> och klicka <em>Create key</em>. Ge den ett namn ni känner igen, till exempel "Mitt AI-team".</div>
+      </li>
+      <li style="background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 18px 22px">
+        <b style="font-family: var(--font-mono); font-size: 11.5px; letter-spacing: 0.13em; color: var(--accent-2)">STEG 4</b>
+        <div style="margin-top: 6px"><b>Sätt ett tak medan ni är där.</b> I samma ruta kan ni ange en gräns för hur mycket nyckeln får kosta. Sätt den på 5 dollar. Då kan ingenting — inte ett misstag, inte en glömd flik — kosta mer än så.</div>
+      </li>
+      <li style="background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 18px 22px">
+        <b style="font-family: var(--font-mono); font-size: 11.5px; letter-spacing: 0.13em; color: var(--accent-2)">STEG 5</b>
+        <div style="margin-top: 6px"><b>Kopiera och klistra in.</b> Nyckeln börjar på <code style="font-family: var(--font-mono); font-size: 0.92em">sk-or-</code> och visas <b>bara en gång</b> — kopiera den direkt. Öppna sedan portalen, klistra in den i rutan som frågar, och ni är igång.</div>
+      </li>
+    </ol>
+
+    <p style="color: var(--text-dim); font-size: 14.5px; margin-top: 22px; line-height: 1.65">Kör ni fast är det bara att höra av er till <a href="mailto:info@mittaiteam.se" style="color: var(--accent-2)">info@mittaiteam.se</a> — jag går igenom det med er över telefon. Vill ni hellre slippa nyckeln helt kommer nivån där vi sköter den åt er senare i höst.</p>
   </div>
 </section>
 
@@ -480,11 +553,11 @@ if (location.hostname === 'agent-team-builder-2xy.pages.dev') location.replace('
       </details>
       <details class="reveal">
         <summary>Vad är en "API-nyckel" och behöver vi en?</summary>
-        <div class="fa">En API-nyckel är det som kopplar portalen till AI-motorn och gör att ni betalar för exakt den användning ni har. Ni skapar en på någon minut på <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noreferrer">console.anthropic.com</a> (Claude) eller <a href="https://openrouter.ai/settings/keys" target="_blank" rel="noreferrer">openrouter.ai</a> — med OpenRouter kan ni dessutom välja fritt bland modeller från flera leverantörer, utan att binda er till en. I konsultpaketet hjälper vi er hela vägen. Vill ni bara känna på det först kan ni prova allt i demoläget utan nyckel.</div>
+        <div class="fa">En API-nyckel är det som kopplar portalen till AI-motorn och gör att ni betalar för exakt den användning ni har — till självkostnad, utan påslag från oss. Ni skapar den hos <a href="https://openrouter.ai" target="_blank" rel="noreferrer">openrouter.ai</a> på ungefär fem minuter, och det är en engångsgrej. <a href="#forbrukning">Här står varje steg, och vad det kostar i månaden</a> (svar: ett par kronor). Kör ni fast ringer jag och går igenom det med er. Vill ni bara känna på produkten först kan ni prova allt i demoläget utan nyckel.</div>
       </details>
       <details class="reveal">
         <summary>Är vår data säker? Hur funkar det med GDPR?</summary>
-        <div class="fa">Kör ni på <strong>er egen nyckel</strong> går allt direkt mellan er webbläsare och AI-leverantören: era frågor och underlag skickas dit för att kunna besvaras, men de passerar aldrig oss, och vi har ingen server som sparar dem. Vi hanterar alltså inga personuppgifter åt er, vilket gör GDPR-bilden ovanligt enkel — inget biträdesavtal med oss behövs. Väljer ni i stället att vi <strong>sköter allt</strong> är vi personuppgiftsbiträde och skriver ett vanligt biträdesavtal med er. Ert material kan i båda fallen bo som vanliga markdown-filer i en mapp ni själva äger — läsbara i vilket program som helst, den dag ni vill sluta. Ni äger er data på riktigt.</div>
+        <div class="fa">Kör ni på <strong>er egen nyckel</strong> går allt direkt mellan er webbläsare och AI-leverantören: era frågor och underlag skickas dit för att kunna besvaras, men de passerar aldrig oss, och vi har ingen server som sparar dem. <strong>Rakt på sak om motorn:</strong> vi kör DeepSeek V4 Flash via OpenRouter. DeepSeek är ett kinesiskt AI-bolag, och körningen kan ske utanför EU beroende på vilken leverantör OpenRouter dirigerar anropet till — det går att begränsa i OpenRouters inställningar. Hanterar ni sekretessbelagt material bör ni ta det beslutet medvetet; <a href="integritet.html#portalen">hela resonemanget står i integritetspolicyn</a>. Vi hanterar alltså inga personuppgifter åt er, vilket gör GDPR-bilden ovanligt enkel — inget biträdesavtal med oss behövs. Väljer ni i stället att vi <strong>sköter allt</strong> är vi personuppgiftsbiträde och skriver ett vanligt biträdesavtal med er. Ert material kan i båda fallen bo som vanliga markdown-filer i en mapp ni själva äger — läsbara i vilket program som helst, den dag ni vill sluta. Ni äger er data på riktigt.</div>
       </details>
       <details class="reveal">
         <summary>Varför kan jag inte bara göra det här själv gratis i ChatGPT?</summary>
