@@ -556,6 +556,29 @@ const el = (tag, cls, txt) => {
 };
 const agentById = (id) => team.agents.find((a) => a.id === id);
 const getSlug = () => new URLSearchParams(location.search).get("team");
+// Nerladdning på ett ställe. Varje exportknapp byggde tidigare sin egen
+// Blob + <a download> + revokeObjectURL, och den som glömde revoke läckte
+// minnet tyst. Tre rader att kopiera fel är två för många.
+//
+// Länken läggs in i dokumentet före klicket och plockas bort efteråt: en
+// lös <a> som aldrig kopplats in ignoreras av vissa webbläsare, och då händer
+// exakt ingenting när kunden klickar — verifierat i headless Chromium.
+function downloadFile(filename, text, mime) {
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([text], { type: mime || "text/markdown" }));
+  a.download = filename;
+  a.style.display = "none";
+  document.body.appendChild(a);
+  a.click();
+  const url = a.href;
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 5000);
+}
+// Filnamnsvänligt företagsnamn — åäö skrivs om, resten blir bindestreck.
+const fileSlug = (s) => (s || "team").toLowerCase()
+  .replace(/[åä]/g, "a").replace(/ö/g, "o")
+  .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "team";
+const isoDay = (ms) => new Date(ms == null ? Date.now() : ms).toISOString().slice(0, 10);
 // Behåll demo=1 i alla interna länkar — annars dumpas en demo-besökare på
 // nyckelskärmen vid första klicket (kundväljarkort, brand, mobilmeny).
 const withDemo = (url) => (state.demo ? url + (url.includes("?") ? "&" : "?") + "demo=1" : url);
@@ -1092,6 +1115,7 @@ function renderPortal() {
   root.appendChild(app);
   selectAgent(state.activeAgentId);
   renderPulse();       // lokala puls-kort — portalen har alltid något att säga
+  checkTrialNotice();  // async: provmånadens slutdatum, om kontot säger att det är en provmånad
   runAutoRoutines();   // async: auto-rutiner som ska ligga klara idag
   // Anställningsceremonin: första besöket i ett team med motiveringar öppnas
   // "Därför ser ert team ut så här" automatiskt — en gång, aldrig igen.
@@ -1258,6 +1282,28 @@ function renderSidebar() {
   const share = el("button", "link-btn", "Dela / exportera team");
   share.onclick = openShare;
   foot.appendChild(share);
+
+  // Vägen ut, i klartext och i samma spalt som allt annat. Villkoren lovar
+  // både att data går att få ut och att uppsägning räcker med ett mejl — men
+  // ett löfte som bara står i juridiken är inget löfte. Se avsnittet
+  // "VÄGEN UT" längre ner i filen.
+  if (!state.demo) {
+    const dlAll = el("button", "link-btn", "Ladda ner allt");
+    dlAll.title = "Företagsminnet, alla underlag och hela chatthistoriken som en enda markdown-fil";
+    dlAll.onclick = () => downloadEverything(dlAll);
+    foot.appendChild(dlAll);
+
+    // Uppsägningen bara för riktiga team: ett Builder-utkast, en branschdemo
+    // eller ett team som öppnats via delad länk har ingen beställning att säga
+    // upp, och raden skulle bara förvirra. Nerladdningen finns däremot överallt
+    // där det finns data — den hör till kunden, inte till avtalet.
+    if (!state.slug.startsWith("__")) {
+      const quit = el("a", "link-btn", "Säg upp");
+      quit.href = quitMailto();
+      quit.title = "Öppnar ett förifyllt mejl till info@mittaiteam.se. Uppsägning gäller från utgången av innevarande betalperiod — teamet och era filer är era att behålla.";
+      foot.appendChild(quit);
+    }
+  }
 
   const reset = el("button", "link-btn", state.demo ? "Koppla in din nyckel" : "Byt API-nyckel");
   reset.onclick = state.demo ? connectKey : resetKey;
@@ -2291,7 +2337,7 @@ function renderGrowPreview(preview, a, routine) {
 // ---------- dela & exportera team ----------
 function openShare() {
   const box = openOverlay("🔗 Dela & exportera teamet");
-  box.appendChild(el("p", "ovl-lead", "Teamet kan flyttas som en länk eller en fil — ingen server inblandad. Mottagaren använder sin egen nyckel. Chatthistorik, minne och underlag följer inte med."));
+  box.appendChild(el("p", "ovl-lead", "Teamet kan flyttas som en länk eller en fil — ingen server inblandad. Mottagaren använder sin egen nyckel. Chatthistorik, minne och underlag följer inte med — dem hämtar du med \"Ladda ner allt\" längst ner i arbetsytan."));
   const linkBtn = el("button", "btn-primary ovl-save", "🔗 Kopiera delningslänk"); linkBtn.type = "button";
   linkBtn.onclick = async () => {
     try {
@@ -2304,16 +2350,209 @@ function openShare() {
   box.appendChild(linkBtn);
   const fileBtn = el("button", "btn-primary ovl-save", "⬇ Ladda ner teamfil (.json)"); fileBtn.type = "button";
   fileBtn.onclick = () => {
-    const name = (team.company || "team").toLowerCase().replace(/[åä]/g, "a").replace(/ö/g, "o").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "team";
-    const blob = new Blob([JSON.stringify(team, null, 2)], { type: "application/json" });
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = name + "-ai-team.json";
-    a.click();
-    setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+    downloadFile(fileSlug(team.company) + "-ai-team.json", JSON.stringify(team, null, 2), "application/json");
   };
   box.appendChild(fileBtn);
   box.appendChild(el("p", "ovl-note", "Filen öppnas via kundväljarens \"Öppna en teamfil\" på vilken dator som helst — bra som backup och för flytt mellan datorer. Länken bär hela teamet i själva adressen (efter #) och skickas aldrig till någon server."));
+}
+
+// ============================================================
+// VÄGEN UT — provmånad, "Ladda ner allt" och uppsägning
+//
+// Villkoren lovar tre saker som portalen inte höll: att provmånaden inte
+// förnyas i smyg, att all data går att få ut, och att uppsägning är ett mejl
+// bort. Ingen av dem fanns som en knapp någonstans, och ett löfte som bara
+// står i juridiken är inget löfte alls.
+//
+// En enkel väg ut är ett säljargument, inte en förlust: den som vet att hen
+// kan gå när som helst vågar börja. Därför står allt tre öppet i arbetsytan
+// i stället för att gömmas bakom ett mejl till supporten.
+// ============================================================
+
+// ---------- ladda ner allt ----------
+// Nerladdning per svar fanns redan, men för en kund med ett halvårs samtal är
+// "klicka på varje svar" i praktiken ett nej. En fil, ett klick, läsbar i
+// vilken textredigerare som helst — och markdown eftersom det är formatet
+// agenterna redan svarar i.
+function exportEverything() {
+  const now = new Date();
+  const out = [];
+  out.push(`# Allt från ${team.company}s AI-team`);
+  out.push("");
+  out.push(`Uttag ur portalen ${now.toLocaleString("sv-SE")}. Team: \`${state.slug}\`.`);
+  out.push("");
+  out.push("Filen innehåller företagsminnet, alla underlag och hela den chatthistorik som ligger sparad i den här webbläsaren. Själva teamkonfigurationen laddas ner separat under \"Dela / exportera team\".");
+  out.push("");
+
+  out.push("## Teamet");
+  out.push("");
+  team.agents.forEach((a) => out.push(`- **${a.name}** — ${a.tagline || a.role || ""}`.replace(/\s+—\s*$/, "")));
+  out.push("");
+
+  const mem = loadMemory().trim();
+  out.push("## Företagsminne");
+  out.push("");
+  out.push(mem || "_(tomt)_");
+  out.push("");
+
+  const docs = loadDocs();
+  out.push(`## Underlag (${docs.length})`);
+  out.push("");
+  if (!docs.length) out.push("_(inga underlag inlagda)_");
+  docs.forEach((d, i) => {
+    // På/av-läget följer med: ett avstängt underlag är fortfarande kundens
+    // material, men den som läser filen ska veta att agenterna inte såg det.
+    out.push(`### ${i + 1}. ${d.title || "Namnlöst underlag"}${d.on === false ? " (avstängt)" : ""}${d.file ? " · fil i den kopplade mappen" : ""}`);
+    out.push("");
+    out.push(d.text || "");
+    out.push("");
+  });
+
+  out.push("## Samtal");
+  out.push("");
+  let anyMsg = false;
+  team.agents.forEach((a) => {
+    const msgs = state.history[a.id] || [];
+    if (!msgs.length) return;
+    anyMsg = true;
+    out.push(`### ${a.name} (${msgs.length} meddelanden)`);
+    out.push("");
+    msgs.forEach((m) => {
+      const who = m.role === "user" ? "Du" : a.name;
+      out.push(`**${who}**${m.at ? " · " + new Date(m.at).toLocaleString("sv-SE") : ""}`);
+      out.push("");
+      out.push(m.content || "");
+      out.push("");
+    });
+  });
+  if (!anyMsg) out.push("_(inga sparade samtal)_");
+  out.push("");
+  out.push("---");
+  out.push("");
+  // Taket per agent är osynligt tills man saknar något. Säg var resten finns
+  // i stället för att låta filen se komplett ut när den inte är det.
+  out.push("Historiken har ett tak på 60 meddelanden per agent. Äldre svar finns kvar i `arkiv/` i den mapp på datorn som är kopplad till teamet — har ingen mapp kopplats är de borta.");
+  return out.join("\n");
+}
+
+function downloadEverything(btn) {
+  try {
+    downloadFile(`${state.slug || "team"}-allt-${isoDay()}.md`, exportEverything());
+    if (btn) { const t = btn.textContent; btn.textContent = "Nerladdat ✓"; setTimeout(() => (btn.textContent = t), 2000); }
+  } catch (e) {
+    // Inte storeWarn(): dess banner talar om att något inte kunde SPARAS, och
+    // en misslyckad nerladdning har inte rört kundens data.
+    console.warn("[Mitt AI-team] kunde inte bygga uttaget:", e);
+    if (btn) { const t = btn.textContent; btn.textContent = "Gick inte att ladda ner"; setTimeout(() => (btn.textContent = t), 2400); }
+  }
+}
+
+// ---------- uppsägning ----------
+// Villkoren säger att uppsägning görs skriftligt till info@mittaiteam.se. Då
+// ska portalen skriva mejlet — kunden ska inte behöva formulera en uppsägning
+// från tomt papper för att komma ur något hen betalar för.
+function quitMailto() {
+  const subject = `Uppsägning — ${team.company} (${state.slug})`;
+  const body =
+    `Hej!\n\nJag vill säga upp vårt AI-team.\n\n` +
+    `Företag: ${team.company}\nTeam: ${state.slug}\n\n` +
+    `Vad som fick mig att sluta (frivilligt, men det hjälper oss):\n\n\n` +
+    `Vänliga hälsningar,\n`;
+  return "mailto:info@mittaiteam.se?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
+}
+
+// ---------- provmånaden går mot sitt slut ----------
+// Villkoren: provmånaden löper en månad från beställningen och övergår inte
+// automatiskt i något annat. Att kunden ska slippa bli överraskad gäller åt
+// BÅDA hållen — ingen oväntad dragning, men heller ingen dag då teamet tyst
+// slutar fungera utan att någon sagt till i förväg.
+const TRIAL_LENGTH_DAYS = 30; // "en månad från beställningen", villkor.html §4
+const TRIAL_NOTICE_DAYS = 25; // fem dagars framförhållning — tid att hinna välja
+const TRIAL_SNOOZE_PREFIX = "atb_trial_snooze_"; // + slug → ISO-datum kortet göms
+
+// Tidsstämplar kommer från en annan tjänst än den som läser dem, och format
+// är det som brukar glida isär. Ta emot millisekunder, sekunder och ISO-sträng;
+// allt annat ger 0, vilket betyder "vet inte" och därmed inget kort.
+function msFromStamp(v) {
+  if (typeof v === "number" && isFinite(v) && v > 0) return v < 1e11 ? v * 1000 : v;
+  if (typeof v === "string" && v.trim()) {
+    const n = Number(v);
+    if (isFinite(n) && n > 0) return n < 1e11 ? n * 1000 : n;
+    const p = Date.parse(v);
+    if (!isNaN(p)) return p;
+  }
+  return 0;
+}
+
+// /api/auth/me svarar { email, teams: [{ slug, company, role, plan?, createdAt? }] }.
+// plan och createdAt är NYA fält. En portal som körs mot en äldre backend, mot
+// ett team utan konto, eller mot ett svar där fälten heter något annat ska bete
+// sig exakt som förut — därför returnerar varje avvikelse null i stället för
+// att gissa ett slutdatum. Ett felgissat "provmånaden tar slut imorgon" är
+// värre än inget kort alls.
+function trialNoticeFor(me, slug) {
+  if (!me || typeof me !== "object" || !Array.isArray(me.teams)) return null;
+  const t = me.teams.find((x) => x && x.slug === slug);
+  if (!t || t.plan !== "trial-byo") return null;
+  const started = msFromStamp(t.createdAt);
+  if (!started) return null;
+  const daysIn = Math.floor((Date.now() - started) / 86400000);
+  if (daysIn < TRIAL_NOTICE_DAYS) return null;
+  const endsAt = started + TRIAL_LENGTH_DAYS * 86400000;
+  return { endsAt, daysLeft: Math.ceil((endsAt - Date.now()) / 86400000) };
+}
+
+// Ett anrop per sidladdning, delat med boot(): renderPortal() körs om varje
+// gång teamet ändras ("Utveckla teamet"), och kontot ändrar sig inte däremellan.
+let mePromise = null;
+function meOnce() {
+  if (!mePromise) mePromise = authMe().catch(() => null);
+  return mePromise;
+}
+
+async function checkTrialNotice() {
+  // Demo, utkast och branschdemo har ingen beställning bakom sig — och en
+  // delad länk tillhör inte den som öppnar den.
+  if (state.demo || !state.slug || state.slug.startsWith("__")) return;
+  const today = isoDay();
+  try { if (localStorage.getItem(TRIAL_SNOOZE_PREFIX + state.slug) === today) return; } catch (_) { /* läsfel — visa ändå */ }
+  const info = trialNoticeFor(await meOnce(), state.slug);
+  if (info) renderTrialCard(info, today);
+}
+
+function renderTrialCard(info, today) {
+  const ws = document.querySelector(".ws");
+  if (!ws || $("#trial-card")) return;
+  const ends = new Date(info.endsAt).toLocaleDateString("sv-SE", { day: "numeric", month: "long" });
+
+  const card = el("div", "trial-card"); card.id = "trial-card";
+  const head = el("div", "intro-head");
+  head.appendChild(el("span", "side-label", info.daysLeft > 0
+    ? `Provmånaden · ${info.daysLeft} ${info.daysLeft === 1 ? "dag" : "dagar"} kvar`
+    : "Provmånaden är slut"));
+  const x = el("button", "intro-x", "✕"); x.type = "button"; x.title = "Dölj för idag";
+  x.onclick = () => {
+    try { localStorage.setItem(TRIAL_SNOOZE_PREFIX + state.slug, today); } catch (_) { /* full storage */ }
+    card.remove();
+  };
+  head.appendChild(x);
+  card.appendChild(head);
+
+  card.appendChild(el("p", "trial-line", info.daysLeft > 0
+    ? `Provmånaden för ${team.company} tar slut den ${ends}.`
+    : `Provmånaden för ${team.company} tog slut den ${ends}.`));
+  card.appendChild(el("p", "trial-note",
+    "Ingenting dras automatiskt. Provmånaden är ett engångsköp som inte förnyas — vill ni inte fortsätta behöver ni inte göra någonting. Samtal, minne och underlag ligger i den här webbläsaren och berörs inte."));
+
+  const cont = el("a", "trial-act", "Vill ni fortsätta? Se vad teamet kostar →");
+  cont.href = "../#priser";
+  card.appendChild(cont);
+
+  const dl = el("button", "trial-act", "Ladda ner allt ni lagt in"); dl.type = "button";
+  dl.onclick = () => downloadEverything(dl);
+  card.appendChild(dl);
+
+  ws.insertBefore(card, ws.firstChild);
 }
 
 // ---------- kvartalet med teamet ----------
@@ -2428,14 +2667,7 @@ function addActions(row, getText) {
     catch (_) { copy.textContent = "Kunde inte kopiera"; setTimeout(() => (copy.textContent = "Kopiera"), 1400); }
   };
   const dl = el("button", "act-btn", "Ladda ner"); dl.type = "button"; dl.title = "Spara som markdown-fil";
-  dl.onclick = () => {
-    const blob = new Blob([getText()], { type: "text/markdown" });
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = `${state.slug || "team"}-${new Date().toISOString().slice(0, 10)}.md`;
-    a.click();
-    setTimeout(() => URL.revokeObjectURL(a.href), 5000);
-  };
+  dl.onclick = () => downloadFile(`${state.slug || "team"}-${isoDay()}.md`, getText());
   acts.appendChild(copy); acts.appendChild(dl);
   if (!state.demo) {
     // Fork ("fortsätt härifrån"): räddar ett urspårat samtal utan att kunden

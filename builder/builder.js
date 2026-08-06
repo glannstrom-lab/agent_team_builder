@@ -120,6 +120,45 @@ function connectKey() {
   renderKeySetup();
 }
 
+// ---------- nyckelkontroll (delad av nyckelrutan och köppanelens grind) ----------
+//
+// Samma nyckel kontrolleras på två ställen: innan ett bygge och innan ett köp.
+// Reglerna får inte glida isär — kunden ska aldrig kunna lära sig att en nyckel
+// "duger" på ena stället och inte på det andra. Returnerar null när nyckeln
+// duger, annars { html } eller { text } att visa för användaren.
+async function checkApiKey(v) {
+  if (v.startsWith("sk-ant-")) {
+    return { html: 'Det där är en Anthropic-nyckel. Vi kör numera på OpenRouter — samma arbete, en bråkdel av kostnaden. ' +
+      '<a href="../#forbrukning" target="_blank" rel="noreferrer">Så skaffar du en OpenRouter-nyckel →</a>' };
+  }
+  if (!v.startsWith("sk-or-")) {
+    return { text: "Det ser inte ut som en OpenRouter-nyckel — de börjar med sk-or-." };
+  }
+  // Testa nyckeln direkt (gratis anrop) — felet ska komma nu, medan användaren
+  // har rutan framför sig, inte mitt i en körning och absolut inte efter ett köp.
+  try {
+    await window.ATBClaude.validateKey(v);
+  } catch (e) {
+    return { text: e.message };
+  }
+  return null;
+}
+
+// Skriver ut ett fel från checkApiKey. Anthropic-felet innehåller en länk och
+// måste därför sättas som HTML; övriga är ren text från leverantören.
+function showKeyError(node, err) {
+  if (err.html) node.innerHTML = err.html; else node.textContent = err.text;
+  node.style.display = "block";
+}
+
+// Spara en verifierad nyckel. KEY_STORAGE ("atb_api_key") är samma nyckel som
+// portalen läser — den som verifierar här slipper klistra in den igen där.
+function saveVerifiedKey(v) {
+  state.apiKey = v;
+  localStorage.setItem(KEY_STORAGE, v);
+  syncModelForProvider();
+}
+
 function renderKeySetup() {
   const root = $("#root"); root.innerHTML = "";
   const wrap = el("main", "setup");
@@ -139,23 +178,11 @@ function renderKeySetup() {
   const btn = el("button", "btn-primary", "Anslut");
   btn.onclick = async () => {
     const v = input.value.trim();
-    if (v.startsWith("sk-ant-")) {
-      err.innerHTML = 'Det där är en Anthropic-nyckel. Vi kör numera på OpenRouter — samma arbete, en bråkdel av kostnaden. ' +
-        '<a href="../#forbrukning" target="_blank" rel="noreferrer">Så skaffar du en OpenRouter-nyckel →</a>';
-      err.style.display = "block"; return;
-    }
-    if (!v.startsWith("sk-or-")) { err.textContent = "Det ser inte ut som en OpenRouter-nyckel — de börjar med sk-or-."; err.style.display = "block"; return; }
-    // Testa nyckeln direkt (gratis anrop) — felet ska komma nu, medan
-    // användaren har nyckelsidan öppen, inte mitt i första körningen.
     btn.disabled = true; btn.textContent = "Testar nyckeln…"; err.style.display = "none";
-    try {
-      await window.ATBClaude.validateKey(v);
-    } catch (e) {
-      err.textContent = e.message; err.style.display = "block";
-      btn.disabled = false; btn.textContent = "Anslut"; return;
-    }
+    const bad = await checkApiKey(v);
     btn.disabled = false; btn.textContent = "Anslut";
-    state.apiKey = v; localStorage.setItem(KEY_STORAGE, v); syncModelForProvider(); renderForm();
+    if (bad) { showKeyError(err, bad); return; }
+    saveVerifiedKey(v); renderForm();
   };
   input.addEventListener("keydown", (e) => { if (e.key === "Enter") btn.click(); });
   wrap.appendChild(btn);
@@ -1042,12 +1069,89 @@ const PLANS = [
   { tier: "buy", label: "Köp teamet", price: "4 990 kr", note: "Teamet är ert, med uppdateringar. Engångsbetalning." },
 ];
 
+// Nyckelrutan inuti köppanelen. Samma validering, samma test och samma
+// hjälplänk som den stora nyckelrutan — den som möter grinden här ska få exakt
+// de besked hen hade fått på nyckelsidan. Låser upp planknapparna först när
+// nyckeln har svarat OK, och sparar den där portalen läser den.
+// onVerified körs när nyckeln testats OK. Att den skickas in i stället för att
+// grinden själv vet vad som ska hända gör att samma grind kan användas både
+// för att låsa upp ett köp och för att släppa in någon i ett riktigt bygge.
+function buildKeyGate(onVerified, okLead) {
+  const box = el("div", "buy-keygate");
+  box.appendChild(el("div", "clarify-title", "Först: koppla in din nyckel"));
+
+  const lead = el("p", "buy-keygate-lead");
+  lead.innerHTML = "Teamet drivs av din egen nyckel hos OpenRouter — det är den som gör att agenterna faktiskt kan svara dig. " +
+    "Utan nyckel kommer du inte in i teamet ens efter att du betalat, och då har vi tagit betalt för en stängd dörr. " +
+    "Därför testar vi nyckeln här i stället, innan pengarna byter ägare. Den sparas bara i den här webbläsaren och följer med till portalen, " +
+    'så du slipper klistra in den igen. <a href="../#forbrukning" target="_blank" rel="noreferrer">Har du ingen nyckel? Så skaffar du en på fem minuter →</a>';
+  box.appendChild(lead);
+
+  const row = el("div", "buy-keygate-row");
+  const input = el("input");
+  input.type = "password"; input.placeholder = "sk-or-..."; input.spellcheck = false;
+  input.setAttribute("aria-label", "API-nyckel från OpenRouter");
+  const btn = el("button", "btn-primary", "Testa nyckeln");
+  btn.type = "button";
+  row.append(input, btn);
+  box.appendChild(row);
+
+  const err = el("div", "buy-keygate-err"); err.style.display = "none";
+  box.appendChild(err);
+
+  btn.onclick = async () => {
+    const v = input.value.trim();
+    btn.disabled = true; btn.textContent = "Testar nyckeln…"; err.style.display = "none";
+    const bad = await checkApiKey(v);
+    if (bad) {
+      showKeyError(err, bad);
+      btn.disabled = false; btn.textContent = "Testa nyckeln"; return;
+    }
+    saveVerifiedKey(v);
+    // Grinden byts mot ett kvitto: kunden ska se att just det här steget är
+    // avklarat, inte bara att knapparna plötsligt går att trycka på.
+    box.innerHTML = "";
+    box.classList.add("ok");
+    box.appendChild(el("div", "buy-keygate-ok", "✓ Nyckeln fungerar och är sparad i den här webbläsaren."));
+    box.appendChild(el("p", "buy-keygate-lead", okLead || "Portalen hittar den automatiskt när du loggat in. Välj hur du vill spara teamet nedan."));
+    if (typeof onVerified === "function") onVerified();
+  };
+  input.addEventListener("keydown", (e) => { if (e.key === "Enter") btn.click(); });
+  return box;
+}
+
 function renderPurchase(team, hero, trigger) {
   if (hero.querySelector(".buy-panel")) return; // redan öppen
   trigger.disabled = true;
 
   const panel = el("div", "buy-panel");
   panel.style.cssText = "margin-top:20px;padding:18px;border:1px solid var(--border);border-radius:6px;background:var(--surface);text-align:left";
+
+  // Demoläget säljer inte demoteamet. Körningen är inspelad och gjord åt ett
+  // påhittat företag — att ta betalt för den vore att sälja någon annans team
+  // till någon som tror att det är sitt. Nyckelgrinden räckte inte mot det:
+  // den ser till att kunden KAN öppna dörren, inte att det ligger rätt sak
+  // bakom den. Här blir köpknappen i stället vägen till ett riktigt bygge.
+  if (state.demo) {
+    panel.appendChild(el("div", "eyebrow", "Först: bygg ditt eget team"));
+    const dl = el("p");
+    dl.style.cssText = "color:var(--text-dim);margin:8px 0 16px;line-height:1.6";
+    dl.textContent = "Det du ser nu är en inspelad demo åt ett påhittat företag — vi säljer inte den. " +
+      "Koppla in din nyckel, så kör vi samma sak mot din verksamhet i stället. Det tar ungefär en kvart och " +
+      "kostar åtta öre i API-förbrukning. Först när du har ett team som faktiskt handlar om dig är det något värt att spara.";
+    panel.appendChild(dl);
+    panel.appendChild(buildKeyGate(
+      () => { state.demo = false; renderForm(); },
+      "Nu bygger vi mot din verksamhet. Formuläret öppnas — fyll i det, så får du ditt eget team."
+    ));
+    const back = el("button", "btn-ghost", "Inte nu");
+    back.style.marginTop = "4px";
+    back.onclick = () => { panel.remove(); trigger.disabled = false; };
+    panel.appendChild(back);
+    hero.appendChild(panel);
+    return;
+  }
+
   panel.appendChild(el("div", "eyebrow", "Spara teamet hos oss"));
 
   const lead = el("p");
@@ -1055,26 +1159,25 @@ function renderPurchase(team, hero, trigger) {
   lead.textContent = "Teamet finns just nu bara i den här webbläsaren. Sparar ni det hos oss får ni ett konto och kommer åt det från vilken dator som helst — inloggning med en kod till mejlen, inget lösenord.";
   panel.appendChild(lead);
 
-  // Den som byggt på riktigt har redan en fungerande nyckel — den krävdes för
-  // att komma hit. Den som köper ur demoläget har det inte, och skulle annars
-  // upptäcka kravet först efter betalningen, inne i portalen. Det är den
-  // ordningen som gör att någon betalar för något de sedan inte kan öppna.
-  if (state.demo) {
-    const warn = el("div");
-    warn.style.cssText = "margin:0 0 16px;padding:14px 16px;border:1px solid var(--accent);border-radius:6px;background:rgba(169,116,31,0.06);line-height:1.55";
-    warn.innerHTML = "<b>Innan ni betalar:</b> för att använda teamet behöver ni en egen nyckel från OpenRouter. " +
-      'Den tar fem minuter att skaffa och kostar ett par kronor i månaden att använda — <a href="../#forbrukning" target="_blank" rel="noreferrer">så här gör ni</a>. ' +
-      "Skaffa den först, så vet ni att allt fungerar innan pengarna byter ägare.";
-    panel.appendChild(warn);
-  }
-
   const status = el("p");
   status.style.cssText = "color:var(--text-dim);margin:14px 0 0;min-height:20px";
+
+  // Nyckelgrind. Den som byggt på riktigt har redan en verifierad nyckel — den
+  // krävdes för att komma hit, och då ska ingenting stå i vägen för köpet. Den
+  // som kommer ur demoläget har ingen, och skulle utan grinden upptäcka kravet
+  // först efter betalningen, inne i portalen: betalt för en dörr hon inte kan
+  // öppna. Det är kundresans värsta fel, och en varningsruta räcker inte mot
+  // det — den går att klicka förbi. Därför får planknapparna inte gå att trycka
+  // på förrän en nyckel faktiskt har testats mot leverantören.
+  const needsKey = !state.apiKey;
+  const planBtns = [];
 
   PLANS.forEach((plan) => {
     const row = el("button", "btn-ghost");
     row.style.cssText = "display:block;width:100%;text-align:left;margin-bottom:8px";
     row.innerHTML = `<b>${esc(plan.label)} — ${esc(plan.price)}</b><br><span style="color:var(--text-dim);font-weight:400">${esc(plan.note)}</span>`;
+    row.disabled = needsKey;
+    planBtns.push(row);
     row.onclick = async () => {
       panel.querySelectorAll("button").forEach((b) => (b.disabled = true));
       status.textContent = "Öppnar betalningen…";
@@ -1096,6 +1199,8 @@ function renderPurchase(team, hero, trigger) {
     };
     panel.appendChild(row);
   });
+
+  if (needsKey) panel.insertBefore(buildKeyGate(() => planBtns.forEach((b) => (b.disabled = false))), planBtns[0]);
 
   const cancel = el("button", "btn-ghost", "Inte nu");
   cancel.style.marginTop = "4px";

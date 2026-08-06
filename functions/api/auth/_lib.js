@@ -237,14 +237,18 @@ function readCookie(request, name) {
 //
 // Domänen måste vara verifierad hos avsändaren (SPF/DKIM i DNS), annars
 // hamnar koden i skräpposten och kunden tror att tjänsten är trasig.
-export async function sendLoginCode(env, email, code) {
+// Själva utskicket ligger för sig, och texterna för sig. Två meddelanden
+// delar allt utom orden: kontrollen av att en avsändare alls är konfigurerad,
+// Resend-anropet och felhanteringen. Görs de i varje funktion hamnar nästa
+// ändring — ett omförsök, ett byte av leverantör — bara i det ena.
+async function sendMail(env, { to, subject, text, consoleLine }) {
   const provider = env.MAIL_PROVIDER || "resend";
 
   if (provider === "console") {
-    // Lokal utveckling: koden hamnar i `wrangler pages dev`-loggen.
+    // Lokal utveckling: mejlet hamnar i `wrangler pages dev`-loggen.
     // Får ALDRIG vara aktiv i produktion — då blir varje kod läsbar för
     // den som når loggarna.
-    console.log(`[auth] inloggningskod för ${email}: ${code}`);
+    console.log(consoleLine || `[mail] till ${to}: ${subject}`);
     return true;
   }
 
@@ -258,23 +262,67 @@ export async function sendLoginCode(env, email, code) {
       authorization: "Bearer " + env.MAIL_API_KEY,
       "content-type": "application/json",
     },
-    body: JSON.stringify({
-      from: env.MAIL_FROM,
-      to: [email],
-      subject: `Din inloggningskod: ${code}`,
-      text:
-        `Din kod för att logga in på Mitt AI-team är:\n\n    ${code}\n\n` +
-        `Koden gäller i tio minuter och kan bara användas en gång.\n\n` +
-        `Bad du inte om den här koden kan du strunta i mejlet — ingen kommer ` +
-        `in på ditt konto utan den.\n\n— Mitt AI-team\nmittaiteam.se`,
-    }),
+    body: JSON.stringify({ from: env.MAIL_FROM, to: [to], subject, text }),
   });
 
   if (!res.ok) {
     // Detaljen loggas för felsökning men returneras aldrig till klienten:
     // avsändarens felmeddelanden kan avslöja om adressen finns.
-    console.error("[auth] utskick misslyckades", res.status, await res.text().catch(() => ""));
+    console.error("[mail] utskick misslyckades", res.status, await res.text().catch(() => ""));
     throw new Error("utskick misslyckades");
   }
   return true;
+}
+
+export async function sendLoginCode(env, email, code) {
+  return sendMail(env, {
+    to: email,
+    subject: `Din inloggningskod: ${code}`,
+    text:
+      `Din kod för att logga in på Mitt AI-team är:\n\n    ${code}\n\n` +
+      `Koden gäller i tio minuter och kan bara användas en gång.\n\n` +
+      `Bad du inte om den här koden kan du strunta i mejlet — ingen kommer ` +
+      `in på ditt konto utan den.\n\n— Mitt AI-team\nmittaiteam.se`,
+    consoleLine: `[auth] inloggningskod för ${email}: ${code}`,
+  });
+}
+
+// Hårdkodad adress, till skillnad från köpflödet som bygger sina URL:er ur
+// begärans egen origin. Ett mejl överlever den begäran som skapade det: en
+// länk till en förhandsdeploy ligger kvar i någons inkorg långt efter att den
+// deployen är borta, och en kollega som klickar möter då ingenting.
+const PORTAL_URL = "https://mittaiteam.se/portal/";
+
+// Inbjudan bär ingen inloggningskod, och det är ett medvetet val.
+//
+// En kod gäller i tio minuter. Ett inbjudningsmejl läses när det läses — på
+// kvällen, dagen efter, efter semestern. En kod i det mejlet är alltså i
+// praktiken alltid utgången när den används, och kollegan möts av "koden
+// stämmer inte" som sitt första intryck av produkten. Mejlet säger i stället
+// var dörren finns; koden hämtar hen själv när hen faktiskt står vid den, via
+// den vanliga inloggningen.
+//
+// Att adressen redan har åtkomst när mejlet skickas gör det ofarligt att
+// mejlet vidarebefordras: det innehåller ingen hemlighet, bara en adress som
+// vem som helst hade kunnat gissa.
+export async function sendTeamInvite(env, email, { company, invitedBy }) {
+  // Företagsnamnet kommer ur kundens egen teamkonfiguration. Radbrytningar
+  // och överlängder klipps bort innan det går in i en ämnesrad.
+  const name = String(company || "teamet").replace(/[\r\n]+/g, " ").trim().slice(0, 80) || "teamet";
+
+  return sendMail(env, {
+    to: email,
+    subject: `Du är inbjuden till ${name} på Mitt AI-team`,
+    text:
+      `Hej!\n\n${invitedBy} har lagt till dig i teamet "${name}" på Mitt AI-team.\n\n` +
+      `Så här kommer du in:\n\n` +
+      `  1. Gå till ${PORTAL_URL}\n` +
+      `  2. Skriv in den här adressen: ${email}\n` +
+      `  3. Du får en sexsiffrig kod per mejl — fyll i den, så är du inne.\n\n` +
+      `Det finns inget lösenord att hitta på eller tappa bort. En ny kod går ` +
+      `alltid att begära.\n\n` +
+      `Var det här oväntat? Strunta då i mejlet. Ingen kommer in på kontot ` +
+      `utan tillgång till din e-post.\n\n— Mitt AI-team\nmittaiteam.se`,
+    consoleLine: `[team] inbjudan till ${email} för "${name}" (av ${invitedBy})`,
+  });
 }

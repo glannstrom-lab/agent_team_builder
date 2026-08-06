@@ -24,34 +24,38 @@ produkten går igenom den.
 
 ## Blockerande — måste vara löst innan en okänd kund betalar
 
-### 1. Nyckelkravet kommer efter betalningen
+### ~~1. Nyckelkravet kommer efter betalningen~~ — STÄNGT 2026-08-06
 
-**Problemet.** Den som köper provmånaden ur demoläget kan betala 90 kr, logga
-in, och först då mötas av kravet på en egen OpenRouter-nyckel. Har hen ingen —
-och vet inte vad det är — har hen betalat för något hon aldrig öppnar.
+Köppanelen har en grind: saknas nyckel går planknapparna inte att trycka på
+förrän en nyckel testats mot OpenRouter på riktigt. Valideringen är utbruten och
+delas med builderns vanliga nyckelruta, så de kan inte glida isär.
 
-**Delvis åtgärdat 2026-08-06:** köppanelen varnar nu i demoläge, hubben har en
-egen sektion (`index.html#forbrukning`) med kostnad och femstegsinstruktion, och
-både Buildern och portalen länkar dit från nyckelrutan. Den som bygger på
-riktigt har dessutom redan en fungerande nyckel — den krävdes för att komma
-fram till köpknappen.
+**Följdfynd på vägen — också stängt:** demoläget *sålde demoteamet*. Den som
+klickade "Spara i molnet" ur `?demo=1` betalade 90 kr för CoachOnline-teamet, ett
+påhittat företag. Nyckelgrinden såg till att kunden kunde öppna dörren, men inte
+att rätt sak låg bakom den. Nu säljer demoläget ingenting: panelen förklarar att
+körningen är inspelad, ber om nyckeln, och tar kunden till formuläret för att
+bygga sitt eget.
 
-**Kvar:** verifiera nyckeln *före* betalning i demoflödet, eller flytta
-nyckelsteget till aktiveringssidan så att det sker medan köpet är färskt. Så
-länge det går att betala utan nyckel finns hålet kvar.
+### 2. Flera användare — halvvägs
 
-### 2. Flera användare går inte att sälja
+**Byggt 2026-08-06:** `POST /api/team/invite`, `GET /api/team/members`,
+`POST /api/team/remove`. Ägaren kan bjuda in, lista och ta bort platser.
+Inbjudan bär ingen inloggningskod (den lever tio minuter, mejl läses när de
+läses). Åtkomstraden skrivs före mejlet, så ett misslyckat utskick ger en kollega
+som finns men inte fått lappen — inte tvärtom. Egna spärrhinkar, tak på 50
+platser, och identiskt svar på "finns inte" och "du äger det inte".
 
-`team_access` har roller (`owner`/`member`) sedan M3, men det finns ingen
-inbjudningsknapp och ingen API-rutt. Nio anställda betyder nio manuella körningar
-av `scripts/provision.mjs`. Prislistan säger "hör av er så räknar vi på det",
-vilket är ärligt — men en byrå som frågar "hur lägger jag till mina åtta
-kollegor" får inget svar på sajten.
+**Kvar: ingen knapp.** Rutterna finns, men ingenting i portalen anropar dem.
+Tills det byggs är det fortfarande Mikael som lägger till kollegor — nu via ett
+API-anrop i stället för `scripts/provision.mjs`, vilket är snabbare men lika
+manuellt.
 
-**Att göra:** antingen en minimal inbjudningsrutt (`POST /api/team/invite` →
-mejl med engångskod, `member`-rad), eller en tydlig mening om att platser läggs
-till för hand och vad de kostar. Det senare tar tjugo minuter och räcker för de
-första kunderna.
+**Kvar också:** en borttagen kollega tappar sitt konto men inte capability-länken.
+Har hen sparat `/portal/?team=<slug>` når hen fortfarande teamet, eftersom
+`/api/teams/:slug` med flit inte kräver inloggning (det är så team som säljs utan
+konto levereras). Att täppa till det kräver ett beslut om capability-läsningen
+ska dö helt.
 
 ### 3. Den nyckelfria nivån säljs men finns inte
 
@@ -63,38 +67,36 @@ eller ett nej, inte ett "snart".
 **Beror på:** kontextbudget-buggen måste fixas först (kostnaden blir vår i det
 läget), och en kvotmätning per konto ovanpå `usage`-tabellen.
 
-### 4. Ingen självbetjänad väg ut
+### ~~4. Ingen självbetjänad väg ut~~ — STÄNGT 2026-08-06
 
-Uppsägning sker genom att mejla. Ingen påminnelse när provmånaden tar slut.
-Ingen export-knapp i portalen som samlar allt kunden lagt in. Villkoren lovar
-att data går att få ut; portalen har inget som gör det i ett klick.
+Kort i arbetsytan från dag 25 som säger vilket datum provmånaden tar slut och
+att ingenting dras automatiskt. "Ladda ner allt" som samlar företagsminne,
+underlag och hela chatthistoriken i en läsbar markdown-fil. Uppsägningslänk som
+öppnar ett förifyllt mejl med företagsnamn och slug.
 
-**Att göra:** ett kort i arbetsytan när ~25 dagar gått sedan köpet ("provmånaden
-tar slut den X — här är vad som händer"), och en "Ladda ner allt"-knapp.
+**Bugg som hittades på vägen:** de befintliga nedladdningsknapparna (per svar,
+och "Ladda ner teamfil") fungerade sannolikt inte alls — en frikopplad
+`<a download>` ignoreras av Chromium. Nu går alla nedladdningar genom en delad
+hjälpfunktion som lägger in elementet i dokumentet före klicket.
 
 ---
 
 ## Allvarligt — kostar affärer men stoppar dem inte
 
-- **Demoteamen matchar inte den kund som tittar.** Bokföringsdemot är byggt för
-  en trepersonersbyrå; branschsidan säger inte det. En byrå med nio anställda
-  ser ett team som är för litet för dem och drar fel slutsats om produkten.
 - **Fritt formulerade frågor i demoläget** faller tillbaka på ett generiskt svar
   utan att det märks att det inte är en riktig körning.
-- **Aktiveringssidan är tunn.** Fungerar, men innehåller 247 tecken text. Det är
-  ögonblicket efter att kunden betalat — det tåligaste läget att förklara nästa
-  steg, och det används inte.
-- **`docs/m2-backend-spec.md` är ett halvår gammal på leveranspunkten.** Den
-  beskriver capability-URL; koden levererar till konton. Specen bör märkas
-  som överspelad på just den punkten.
+- **Inbjudningsrutterna saknar gränssnitt** (se hål 2 ovan).
+- **Kontextbudget-buggen** (`portal/app.js`) måste fixas innan den nyckelfria
+  nivån kan prissättas — då är kostnaden vår.
 
 ## Skav — rätta när något ändå görs i filen
 
 - Ingen påminnelse om att maskera personnummer i redovisningsteamets lönerutin,
   trots att integritetspolicyn ber kunden undvika dem.
-- `verticals/`-sidorna länkar inte till `#forbrukning`.
 - Galleriet saknar sidor för tre av `examples/`-körningarna (lerverk,
   norrskenspodden, wikander).
+- `/api/team/...` och `/api/teams/:slug` ligger namnmässigt nära varandra. Ingen
+  kollision, men lätt att läsfela senare.
 
 ---
 
@@ -116,3 +118,10 @@ Sparat här för att nästa granskning inte ska hitta samma saker igen.
 | Inloggning krävde ny mejlkod var 30:e dag | Rullande session: utgången flyttas fram vid användning, så en aktiv kund aldrig ser en kod igen |
 | Statiska filer cachades i fyra timmar utan innehållshash | `no-cache` på applagret i `_headers` — deployer syns direkt |
 | CSP tillät `api.anthropic.com` som aldrig anropas | Borttaget; `checkout.stripe.com` tillagt i `form-action` |
+| Demoläget sålde demoteamet — 90 kr för ett påhittat företags team | Demoläget säljer ingenting; köpknappen leder till ett riktigt bygge |
+| Aktiveringssidan var 247 tecken i kundens mest mottagliga ögonblick | Förklarar nu inloggning, nyckelkravet med länk, och att köpet inte förnyas |
+| Branschsidorna nämnde varken kostnad eller nyckel | Kostnadsrad med länk till `#forbrukning` i heron |
+| Bokföringsdemot såg ut att gälla alla byråer | Säger nu att det är en trepersonersbyrå och att en större får ett annat team |
+| `m2-backend-spec.md` beskrev capability-URL som levande lösning | Märkt överspelad på leveranspunkten; resonemanget kvar som historik |
+| Nedladdningsknapparna laddade sannolikt inte ner något | Delad `downloadFile()` som lägger in elementet i dokumentet före klicket |
+| Inget testade signaturkontrollen — betalningsbeviset | `test/stripe.mjs`, 13 tester. Suiten: 43 → 56 |

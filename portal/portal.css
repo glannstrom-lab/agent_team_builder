@@ -259,6 +259,10 @@ a { color: inherit; }
   font-family: inherit;
 }
 .link-btn:hover { color: var(--text); text-decoration: underline; }
+/* Sidfoten blandar knappar och länkar (uppsägningen är ett mailto). Utan den
+   här raden får länken webbläsarens understrykning och ser ut som den enda
+   klickbara raden i foten, fast alla är det. */
+a.link-btn { text-decoration: none; }
 /* Pekskärm i valfri bredd — inte bara mobilbrytpunkten. En surfplatta i
    liggande läge är bredare än 880 px men styrs fortfarande med tummen, och
    foten har numera högerspaltens botten för sig själv, så plats finns. */
@@ -595,6 +599,29 @@ a { color: inherit; }
    för brödtext. Går bara att rätta härifrån med !important; flytta den
    inline-stilen till den här regeln när app.js ändå ska röras. */
 .ws-beta { font-size: 13.5px !important; line-height: 1.6 !important; }
+
+/* ---------- provmånadskortet (överst i arbetsytan) ---------- */
+/* Ockra ram + tint, samma signal som .folder-banner och .routine-item.due:
+   "det här är en upplysning, inte ett larm". Röd vore fel — ingenting går
+   sönder den dagen, och kortet ska inte skrämma någon som redan tänkt stanna.
+   Ligger först i .ws, alltså före rubriken "Arbetsyta", för att inte hamna
+   under vikningen i tvåkolumnsläget där spalten bara är 38vh hög. */
+.trial-card {
+  margin: 2px 0 10px; padding: 11px 13px; flex-shrink: 0;
+  background: var(--accent-soft); border: 1px solid rgba(169, 116, 31, 0.35); border-radius: 10px;
+}
+.trial-line { margin: 2px 0 0; font-size: 14.5px; font-weight: 700; line-height: 1.45; color: var(--text); }
+.trial-note { margin: 6px 0 0; font-size: 13px; line-height: 1.6; color: var(--text-dim); }
+/* Knapp och länk sida vid sida i samma stapel — därför nollställd knappstil
+   och delad radhöjd, annars hoppar de två raderna isär med några pixlar. */
+.trial-act {
+  display: flex; align-items: center; width: 100%; min-height: 40px; margin-top: 4px;
+  padding: 4px 0; background: none; border: none; text-align: left;
+  color: var(--accent-2); font-family: inherit; font-size: 13.5px; font-weight: 600;
+  text-decoration: none; cursor: pointer;
+}
+.trial-act:hover { text-decoration: underline; }
+@media (hover: none) { .trial-act { min-height: 44px; } }
 
 /* ===== Overlay ===== */
 .ovl { position: fixed; inset: 0; background: rgba(30,25,19,0.42); backdrop-filter: blur(4px); z-index: 200; display: flex; align-items: flex-start; justify-content: center; padding: 6vh 16px 16px; overflow-y: auto; }

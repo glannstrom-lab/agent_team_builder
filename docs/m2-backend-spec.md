@@ -6,6 +6,24 @@
 > (lokal D1, inga konton). M2a-2 och framåt kräver Stripe-kontot i §8.
 > Bygger vidare på [strategin](produktstrategi-sjalvbetjaning.md).
 
+> **ÖVERSPELAT 2026-08-05 — leveranspunkten (Beslut B).** Den här specen
+> skrevs innan M3 fanns, och **§2 Beslut B, §6:s beskrivning av
+> aktiveringssidan och §12/M2b-2:s "identitet"-punkt beskriver inte längre hur
+> leveransen faktiskt sker.** Vad som gäller i stället: teamet levereras till
+> ett **konto**, inte en hemlig länk. Kunden loggar in med en engångskod som
+> mejlas till adressen hen betalade med — inga lösenord, se
+> `migrations/0002_auth.sql` och rutterna under `functions/api/auth/`.
+> `functions/api/stripe-webhook.js` skapar kontot (`users`/`team_access`)
+> direkt när betalningen går igenom, i samma transaktion som teamet.
+> Capability-slugen (`teams.slug`, §5) finns fortfarande kvar internt — det är
+> fortfarande vägen till `/api/teams/:slug` — men den delas inte längre ut som
+> kundens åtkomstlänk. Anledningen till bytet står kvar i `0002_auth.sql`:
+> en länk går inte att återkalla, läcker via webbhistorik och vidarebefordrade
+> mejl, och identifierar ingen — vilket den nyckelfria nivån (190/490 kr)
+> kräver för att kunna mäta förbrukning per konto. Resonemanget nedan för
+> **varför** capability-URL valdes 2026-06-28 stryks inte — det förklarar
+> varför beslutet såg rimligt ut då och vad som fick oss att ändra oss.
+
 ---
 
 ## 1. Mål och avgränsning
@@ -47,6 +65,14 @@ av Mikael innan live. Detaljerna nedan står kvar som motivering.
 → **Rekommendation: 1.**
 
 ### Beslut B — Åtkomst / inloggning
+
+> **Historik, överspelad 2026-08-05 (M3).** Alternativ 1 (capability-URL) var
+> valet 2026-06-28 och stod kvar genom M2a. Sedan M3 levereras teamet i
+> stället till ett **konto**, med inloggning via engångskod (alternativ 2 här,
+> fast med kod i stället för länk i mejlet) — se markeringen högst upp i
+> dokumentet för varför. Resonemanget nedan är kvar för spårbarhet, inte som
+> beskrivning av hur det fungerar idag.
+
 **Hur kommer kunden åt sitt team från valfri enhet?**
 1. **Capability-URL (rekommenderat för BYO).** Teamet får en lång, ogissningsbar
    slug: `portal/?team=k7f3...`. Den som har länken kommer in — ingen inloggning,
@@ -157,8 +183,13 @@ Slug genereras med `crypto.getRandomValues` (16+ byte, base62) — oguessbar.
 - **Idempotens:** webhooken kan komma flera gånger → no-op om teamet redan finns
   för den sessionen.
 
-Aktiveringssida (`portal/aktivera`) pollar `/api/checkout/status` tills slug finns,
-visar sedan "Ditt team är klart" + länk till `portal/?team=<slug>`.
+Aktiveringssida (`portal/aktivera`) pollar `/api/checkout/status` tills slug finns.
+
+> **Historik, överspelad 2026-08-05.** Ursprungsplanen var att visa "Ditt team
+> är klart" med en direktlänk `portal/?team=<slug>` — själva capability-URL:en
+> som åtkomst. Den byggda sidan (`portal/aktivera.html`) gör i stället det som
+> beskrivs högst upp i dokumentet: den visar att kontot är kopplat och pekar
+> kunden till inloggning med engångskod, inte till en länk att spara.
 
 ---
 
@@ -193,6 +224,10 @@ Inloggning för dessa gör du själv i din terminal med t.ex.
 - **Webhook-signatur** måste verifieras — annars kan vem som helst provisionera
   gratis team.
 - **Capability-slugs** ≥128 bitar slump (oguessbara), serveras bara över HTTPS.
+  Sedan M3 är slugen inte längre kundens enda skydd — kontot och engångskoden
+  är det (se markeringen högst upp i dokumentet) — men slugen förblir
+  oguessbar av samma skäl som innan: `/api/teams/:slug` ska inte gå att
+  skanna fram.
 - **M2b proxy:** kundtoken krävs; **kostnadstak per kund och period** (hård gräns
   i `/api/chat`); Cloudflare rate limiting; logga aldrig nyckeln.
 - BYO-läget rör ingen kostnad/risk för dig — bara managed gör det.
@@ -242,10 +277,16 @@ fleranvändare med behörigheter, RAG i stor skala* — inte grundlagring.
   ett konto, inbyggda spend-limits, alla modeller, och billiga defaulter
   (deepseek-v4-flash) som gör prenumerationsmarginalen hållbar. Frontenden
   finns redan förberedd: `atb-claude.js` väljer redan endpoint per läge.
-- **M2b-2 — Identitet + fleranvändare:** magisk länk via e-post (engångskod;
+- **M2b-2 — Identitet + fleranvändare:** ~~magisk länk via e-post (engångskod;
   MailChannels är gratis från Workers, annars Resend), sessions-token i D1,
-  `customers`-tabell. Sen inbjudningar: fler e-postadresser per tenant →
-  fempersonersbyrån delar team, minne och historik på riktigt.
+  `customers`-tabell.~~ **Identitetsdelen är byggd och i drift sedan M3
+  (2026-08-05)** — engångskod via Resend, `users`/`sessions` i
+  `migrations/0002_auth.sql`, se markeringen högst upp i dokumentet. Kvar att
+  göra är fleranvändardelen: `team_access` har rollerna (`owner`/`member`)
+  men ingen inbjudningsknapp och ingen API-rutt — i dag betyder en
+  niopersonersbyrå nio manuella körningar av `scripts/provision.mjs`. Sen
+  inbjudningar: fler e-postadresser per tenant → fempersonersbyrån delar team,
+  minne och historik på riktigt.
 - **M2b-3 — Materiallagring i molnet:** `materials`-tabell i D1
   (`team, id, title, text, active, updated_at`) + företagsminne + historik.
   Portalens "Minne & underlag"-UI behålls oförändrat — bara lagringsbackend

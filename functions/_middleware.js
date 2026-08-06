@@ -37,6 +37,12 @@ const METHOD_RULES = [
   { match: /^\/api\/auth\/verify\/?$/, allow: ["POST"] },
   { match: /^\/api\/auth\/logout\/?$/, allow: ["POST"] },
   { match: /^\/api\/auth\/me\/?$/, allow: ["GET"] },
+  // Platser på ett team (M3). invite och remove ändrar tillstånd och är POST;
+  // members är en ren läsning. Att remove är POST och inte DELETE är ett val i
+  // rutten själv — DELETE med JSON-kropp hanteras olika av mellanlager.
+  { match: /^\/api\/team\/invite\/?$/, allow: ["POST"] },
+  { match: /^\/api\/team\/members\/?$/, allow: ["GET"] },
+  { match: /^\/api\/team\/remove\/?$/, allow: ["POST"] },
   // Köpflödet (M2a-2). Webhooken är POST-only med flit: en GET mot den från
   // en nyfiken skanner ska inte ens nå signaturkontrollen.
   { match: /^\/api\/checkout\/?$/, allow: ["POST"] },

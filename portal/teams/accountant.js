@@ -41,7 +41,7 @@ window.TEAM = {
       why: "Kräver systemåtkomst som inte finns. En agent som 'sköter Fortnox' utan att kunna nå Fortnox vore teater. Möjlig i en senare version, då med bibehållen granskning." },
   ],
 
-  divergence: "Teamet är byggt runt exakt Lindgrens väg in — kvitton som PDF och mobilfoto plus bankexporter i CSV/Excel — och runt att smärtan sitter i återupprepade bedömningar, inte i volym: därför äger VD:n en regelbok i stället för en strategiroll. En byrå där underlaget redan flödar digitalt genom Fortnox hade inte fått samma specialist, och en byrå på van-nivå hade fått svarsbanken direkt i teamet i stället för i kö.",
+  divergence: "Teamet är byggt runt exakt Lindgrens väg in — kvitton som PDF och mobilfoto plus bankexporter i CSV/Excel — och runt att smärtan sitter i återupprepade bedömningar, inte i volym: därför äger VD:n en regelbok i stället för en strategiroll. En byrå där underlaget redan flödar digitalt genom Fortnox hade inte fått samma specialist, och en byrå på van-nivå hade fått svarsbanken direkt i teamet i stället för i kö.\n\nDet här är dessutom ett medvetet litet exempel: tre anställda, helt nya på AI, taket är 2–3 agenter oavsett hur stor byrån är på pappret — det är mognaden, inte bara storleken, som styr. En byrå med nio anställda som redan låtit några i teamet testa AI ett tag hade fått ett annat och större team, med fler specialiserade roller i stället för att VD:n bär regelboken som en hatt bland flera. Storleken ni ser här är alltså inte ett tak för er byrå — den är en bild av var just Lindgren stod den dag teamet byggdes.",
 
   // Ingen `seasons`: intake och research beskriver en veckorytm, inte ett årshjul,
   // och de datum som finns (moms, AGI, bokslut) täcks redan av portalens svenska

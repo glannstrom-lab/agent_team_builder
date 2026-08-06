@@ -19,17 +19,30 @@ export async function onRequestGet({ request, env }) {
   const rolled = await refreshSession(db, user).catch(() => null);
 
   const { results } = await db.prepare(
-    "SELECT a.team_slug, a.role, t.config FROM team_access a " +
+    "SELECT a.team_slug, a.role, t.config, t.plan, t.created_at FROM team_access a " +
     "JOIN teams t ON t.slug = a.team_slug WHERE a.user_id = ? ORDER BY a.created_at"
   ).bind(user.id).all();
 
   // Bara namn och roll här — hela teamkonfigurationen hämtas när kunden
   // valt team. Annars skickar vi varje agents systemprompt vid varje
   // sidladdning, och de kan vara långa.
+  //
+  // plan och createdAt är undantaget: de är två tal, och utan dem kan portalen
+  // inte veta att en provmånad håller på att ta slut. Att kunden får veta det
+  // av oss i stället för av sitt kontoutdrag är skillnaden mellan en
+  // förnyelse och ett supportärende. Fälten kan vara null — teams.plan fanns
+  // inte före 0003_commerce.sql, och team som lagts upp för hand med
+  // scripts/provision.mjs saknar den.
   const teams = (results || []).map((r) => {
     let company = r.team_slug;
     try { company = JSON.parse(r.config).company || company; } catch (_) { /* trasig konfig */ }
-    return { slug: r.team_slug, company, role: r.role };
+    return {
+      slug: r.team_slug,
+      company,
+      role: r.role,
+      plan: r.plan || null,
+      createdAt: r.created_at || null,
+    };
   });
 
   return json({ email: user.email, teams }, 200, rolled ? { "set-cookie": rolled } : {});

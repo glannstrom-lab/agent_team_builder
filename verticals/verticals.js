@@ -11,6 +11,9 @@
      agents[] {icon,name,role}   — exempel-team (3–5 st: ledning + specialister)
      firstTask                   — ett konkret första AI-jobb
      demoTeam                    — (valfritt) slug i portal/teams för "prova live"
+     sizeNote                    — (valfritt) friskrivning när demoTeam är byggt
+                                   för en specifik storlek/mognad som inte får
+                                   generaliseras till hela branschen (se bokforing)
 
    REGEL: sidans säljtext måste stämma med demoteamet. Lovar sidan en agent
    som teamet avvisat är produktens bärande argument brutet redan i annonsen.
@@ -36,6 +39,7 @@ window.VERTICALS = [
     ],
     firstTask: "En riktig kundbunt genom konteringen: en granskningsklar lista med konto och motivering per post, plus en separat lista över det som behöver ditt beslut.",
     demoTeam: "accountant",
+    sizeNote: "Demot nedan är byggt för en byrå på tre anställda, helt ny på AI — därför bara tre agenter. En byrå med fler anställda, eller som redan börjat använda AI, får ett större och mer specialiserat team.",
   },
   {
     slug: "marknadsbyra",

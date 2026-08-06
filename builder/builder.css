@@ -154,6 +154,29 @@ select.fin { cursor: pointer; }
   display: flex; flex-direction: column; gap: 12px;
 }
 
+/* ---------- nyckelgrind i köppanelen ---------- */
+/* Utan verifierad nyckel går teamet inte att öppna efter köpet. Grinden ska
+   därför läsa som ett steg man tar, inte som en varning man klickar bort —
+   accentram och egen yta, ovanför planknapparna som ligger släckta bakom den. */
+.buy-keygate {
+  margin: 0 0 18px; padding: 16px 18px;
+  border: 1px solid var(--accent); border-radius: 6px; background: var(--accent-soft);
+}
+.buy-keygate-lead { color: var(--text-dim); font-size: 13.5px; line-height: 1.6; margin: 8px 0 0; }
+.buy-keygate-lead a { color: var(--accent-2); }
+.buy-keygate-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+.buy-keygate-row input {
+  flex: 1; min-width: 190px; background: var(--surface); border: 1px solid var(--border);
+  border-radius: 6px; padding: 12px 14px; color: var(--text); font-size: 14px;
+  font-family: ui-monospace, Menlo, monospace; outline: none;
+}
+.buy-keygate-row input:focus { border-color: var(--accent); }
+.buy-keygate-row .btn-primary { padding: 12px 20px; font-size: 14px; white-space: nowrap; }
+.buy-keygate-err { color: var(--red); font-size: 13px; margin-top: 10px; line-height: 1.55; }
+.buy-keygate-err a { color: var(--accent-2); }
+.buy-keygate-ok { color: var(--green); font-size: 14px; font-weight: 700; }
+.buy-keygate.ok { border-color: var(--green); background: none; }
+
 /* ---------- kostnadshint vid Bygg-knappen ---------- */
 .cost-hint { font-size: 12.5px; color: var(--text-dim); margin-top: 2px; max-width: 520px; }
 

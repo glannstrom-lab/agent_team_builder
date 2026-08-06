@@ -86,6 +86,7 @@ function renderSingle(v) {
         <h1><span class="grad">${esc(v.tagline)}</span></h1>
         <p class="sub">${esc(v.intro)}</p>
         <div class="cta-row">${primary}<a class="btn-lg btn-ghost" href="../index.html#priser">Se priser</a></div>
+        <p class="sub" style="margin-top:12px;font-size:14px;">Teamet kör på er egen AI-nyckel — <a href="../index.html#forbrukning" style="color:var(--accent-2)">normalt 2–4 kr i månaden, och så skaffar ni nyckeln på fem minuter</a>.</p>
       </div>
     </section>
 
@@ -101,7 +102,8 @@ function renderSingle(v) {
       <div class="wrap">
         <div class="section-head"><div class="eyebrow"><span class="dot"></span> Förslag på team</div>
         <h2 class="section-title">Ett team som tar det</h2>
-        <p class="section-lead">Ett exempel — ert riktiga team byggs utifrån just er vecka, så det kan se annorlunda ut.</p></div>
+        <p class="section-lead">Ett exempel — ert riktiga team byggs utifrån just er vecka, så det kan se annorlunda ut.</p>
+        ${v.sizeNote ? `<p class="section-lead" style="color:var(--text-dim);font-size:14.5px;">${esc(v.sizeNote)}</p>` : ""}</div>
         <div class="cards">${agents}</div>
       </div>
     </section>
@@ -146,7 +148,9 @@ function openDraftDemo(v) {
     company: v.name,
     tagline: v.tagline,
     language: "sv",
-    defaultModel: "claude-opus-4-8",
+    // Ingen defaultModel: modellen är låst i atb-claude.js sedan 2026-08-05 och
+    // fältet lästes bort ur portalen. Ett värde här hade bara varit en osann
+    // uppgift i en fil som är gjord för att läsas.
     entryAgent: agents[0].id,
     agents,
   };
