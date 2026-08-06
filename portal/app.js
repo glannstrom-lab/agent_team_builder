@@ -1573,7 +1573,10 @@ function bubble(role, text, msg) {
     // bevis för att mötet inte är en modell som lajvar roller. Visa dem.
     if (msg && Array.isArray(msg.perspectives) && msg.perspectives.length) row.appendChild(perspToggle(msg.perspectives));
   } else {
-    b.textContent = text;
+    // msg.display: kort etikett för knappgenererade instruktioner, se
+    // submitMessage(). Faller alltid tillbaka på den skickade texten, så
+    // vanliga meddelanden och äldre historik ser ut precis som förut.
+    b.textContent = (msg && msg.display) || text;
   }
   row.appendChild(b);
   return row;
@@ -1828,12 +1831,10 @@ function openIntro() {
   // Sidopanelen och puls-korten ritades FÖRE introduktionen och känner inte
   // till svaren som just sparats: checklistans bock, minnesräknaren och kortet
   // "teamet känner er inte än" skulle stå kvar och ljuga tills nästa
-  // sidladdning. Måla om dem när rutan lämnas — oavsett hur den lämnas.
+  // sidladdning. Måla om dem när rutan lämnas — oavsett hur den lämnas
+  // (✕, bakgrundsklick, Escape eller att Minne & underlag öppnas ovanpå).
   const repaint = () => { refreshSidebar(); renderPulse(); };
-  const ovl = $("#ovl");
-  const closeX = box.querySelector(".ovl-close");
-  if (closeX) closeX.onclick = () => { closeOverlay(); repaint(); };
-  if (ovl) ovl.onclick = (e) => { if (e.target === ovl) { closeOverlay(); repaint(); } };
+  ovlOnClose = repaint;
 
   const progress = (label) => {
     const wrap = el("div", "tour-prog");
@@ -2267,7 +2268,7 @@ function weekReview() {
   ].filter(Boolean).join("\n");
   selectAgent(team.entryAgent);
   touchStreak();
-  submitMessage(`Ny vecka! Teamets aktivitetsdata:\n${meta}\n\nGe mig: 1) en kort återblick — vad vi ägnade oss åt (utgå från datan ovan, gissa inga detaljer), 2) förslag på veckans tre fokus med motivering, 3) vilken rutin eller agent jag borde börja med idag. Kort och konkret.`);
+  submitMessage(`Ny vecka! Teamets aktivitetsdata:\n${meta}\n\nGe mig: 1) en kort återblick — vad vi ägnade oss åt (utgå från datan ovan, gissa inga detaljer), 2) förslag på veckans tre fokus med motivering, 3) vilken rutin eller agent jag borde börja med idag. Kort och konkret.`, "☀️ Veckan som gick — och vad jag ska fokusera på nu");
 }
 
 // ---------- auto-körda rutiner ----------
@@ -2350,7 +2351,7 @@ function statusReport() {
   });
   const doneR = routLoad().done.map((d) => d.label || d);
   selectAgent(team.entryAgent);
-  submitMessage(`Skriv en kort statusuppdatering till min chef, redo att klistras in i mejl eller Slack. Jag-form, professionell men avslappnad, svenska.\n\nDATA UR VECKANS ARBETE I PORTALEN:\n${perAgent.join("\n") || "- (ingen loggad aktivitet den här veckan)"}${doneR.length ? `\nAvklarade rutiner: ${doneR.join(", ")}` : ""}\n\nStruktur: **Levererat**, **Pågående**, **Behöver input på**. Utgå från datan och det du känner till ur våra samtal — sätt [fyll i]-luckor där du saknar detaljer i stället för att hitta på.`);
+  submitMessage(`Skriv en kort statusuppdatering till min chef, redo att klistras in i mejl eller Slack. Jag-form, professionell men avslappnad, svenska.\n\nDATA UR VECKANS ARBETE I PORTALEN:\n${perAgent.join("\n") || "- (ingen loggad aktivitet den här veckan)"}${doneR.length ? `\nAvklarade rutiner: ${doneR.join(", ")}` : ""}\n\nStruktur: **Levererat**, **Pågående**, **Behöver input på**. Utgå från datan och det du känner till ur våra samtal — sätt [fyll i]-luckor där du saknar detaljer i stället för att hitta på.`, "📣 Rapport till chefen — ur veckans logg");
 }
 function deliveredList() {
   if (state.streaming) return;
@@ -2366,7 +2367,7 @@ function deliveredList() {
   });
   const facts = memoryFactCount();
   selectAgent(team.entryAgent);
-  submitMessage(`Hjälp mig bygga underlaget "Det här har jag levererat" inför ett löne-/medarbetarsamtal eller en kundavstämning. Svenska, jag-form, konkret och självsäkert utan överdrifter.\n\nDATA UR PORTALENS LOGG${firstAt ? ` (sedan ${new Date(firstAt).toLocaleDateString("sv-SE")})` : ""}:\n${perAgent.join("\n") || "- (ingen loggad aktivitet än)"}\nTotalt: ${total} leveranser.${facts ? ` Uppbyggt kunskapsminne: ${facts} rader.` : ""}\n\nGör: 1) en punktlista över leveransområden med [fyll i]-luckor för konkreta resultat och siffror jag själv fyller i, 2) tre formuleringar som knyter arbetet till verksamhetsnytta, 3) en avslutande rad om utveckling framåt. Hitta inte på specifika resultat.`);
+  submitMessage(`Hjälp mig bygga underlaget "Det här har jag levererat" inför ett löne-/medarbetarsamtal eller en kundavstämning. Svenska, jag-form, konkret och självsäkert utan överdrifter.\n\nDATA UR PORTALENS LOGG${firstAt ? ` (sedan ${new Date(firstAt).toLocaleDateString("sv-SE")})` : ""}:\n${perAgent.join("\n") || "- (ingen loggad aktivitet än)"}\nTotalt: ${total} leveranser.${facts ? ` Uppbyggt kunskapsminne: ${facts} rader.` : ""}\n\nGör: 1) en punktlista över leveransområden med [fyll i]-luckor för konkreta resultat och siffror jag själv fyller i, 2) tre formuleringar som knyter arbetet till verksamhetsnytta, 3) en avslutande rad om utveckling framåt. Hitta inte på specifika resultat.`, "🏅 Det här har jag levererat — underlag inför samtalet");
 }
 
 const PRACTICE_SCENARIOS = [
@@ -2393,7 +2394,7 @@ function openPractice() {
   go.onclick = () => {
     closeOverlay();
     selectAgent(team.entryAgent);
-    submitMessage(`ROLLSPEL — jag vill öva ett svårt samtal: "${chosen}".${det.value.trim() ? `\nKontext: ${det.value.trim()}` : ""}\n\nSpela motparten realistiskt: naturliga invändningar, känslor, inga lättköpta eftergifter. Börja med motpartens första replik. Håll dig i rollen tills jag skriver STOPP — kliv då ur rollen och ge mig: 1) ärlig feedback på hur jag förde samtalet, 2) vad jag borde ha sagt annorlunda, 3) ett färdigt samtalsmanus jag kan använda på riktigt.`);
+    submitMessage(`ROLLSPEL — jag vill öva ett svårt samtal: "${chosen}".${det.value.trim() ? `\nKontext: ${det.value.trim()}` : ""}\n\nSpela motparten realistiskt: naturliga invändningar, känslor, inga lättköpta eftergifter. Börja med motpartens första replik. Håll dig i rollen tills jag skriver STOPP — kliv då ur rollen och ge mig: 1) ärlig feedback på hur jag förde samtalet, 2) vad jag borde ha sagt annorlunda, 3) ett färdigt samtalsmanus jag kan använda på riktigt.`, `🎭 Öva ett samtal: ${chosen}`);
   };
   box.appendChild(go);
 }
@@ -3192,7 +3193,7 @@ function startWeek() {
     `\n\nGe mig en kort veckostart: 1) de tre viktigaste sakerna att fokusera på, med motivering, 2) vilken agent i teamet som hjälper mig med varje, 3) vad du behöver veta från mig. Kort och konkret.`;
   introMark("week");
   touchStreak();
-  submitMessage(text);
+  submitMessage(text, `⭐ Veckostart — ${days[now.getDay()]} ${now.toLocaleDateString("sv-SE")}`);
 }
 
 // ---------- overlay ----------
@@ -3715,7 +3716,14 @@ async function sendMessage() {
 
 // Kärnan i att skicka — separat från composern så arbetsytan (veckostart,
 // rutiner) kan skicka programmatiskt till den aktiva agenten.
-async function submitMessage(text) {
+//
+// `display` finns för knapparna i arbetsytan. De skickar en instruktion på
+// fem rader ("Ge mig en kort veckostart: 1)… 2)… 3)…"), och den stod ordagrant
+// i chatten som om kunden själv skrivit den — som att se maskineriet i stället
+// för produkten. Modellen får fortfarande hela instruktionen (den ligger i
+// `content` och följer med i historik, kontext och export); det är bara
+// bubblan som visar den korta versionen.
+async function submitMessage(text, display) {
   if (state.streaming) return;
   // Användaren går före: en auto-rutin i bakgrunden avbryts här, så att det
   // aldrig finns två betalda anrop i luften samtidigt.
@@ -3732,12 +3740,13 @@ async function submitMessage(text) {
   // Behåll referensen — vid fel ska EXAKT detta meddelande tas bort, inte
   // det som råkar ligga sist (en auto-rutin kan ha hunnit skriva under tiden).
   const userMsg = { role: "user", content: text, at: Date.now() };
+  if (display) userMsg.display = display;
   state.history[agentId].push(userMsg);
   saveHistory();
 
   const log = $("#chat-log");
   if (state.history[agentId].length === 1) log.innerHTML = "";
-  log.appendChild(bubble("user", text));
+  log.appendChild(bubble("user", text, userMsg));
 
   const assistantRow = bubble("assistant", "");
   const assistantBubble = assistantRow.querySelector(".bubble");
