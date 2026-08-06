@@ -55,6 +55,8 @@ if (location.hostname === 'agent-team-builder-2xy.pages.dev') location.replace('
   .flow-step h4 { font-size: 19px; margin: 12px 0 8px; }
   .flow-step p { font-size: 14.5px; color: var(--text-dim); line-height: 1.55; }
 
+  /* Tre nivåer sedan 2026-08-06: 0 / 90 / 290. Rutnätet rymmer tre kort — vill
+     någon lägga till en fjärde nivå måste kolumnerna göras om först. */
   .pricing { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 46px; align-items: stretch; }
   @media (max-width: 880px) { .pricing { grid-template-columns: 1fr; } }
   .price-card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 30px; display: flex; flex-direction: column; position: relative; }
@@ -127,10 +129,16 @@ if (location.hostname === 'agent-team-builder-2xy.pages.dev') location.replace('
         <div class="badge"><span class="dot"></span> AI-team för små och medelstora företag</div>
         <h1>Fyra nya kollegor. <span class="grad">Ingen av dem är påhittad.</span></h1>
         <p class="sub"><strong>Vi bygger inte samma team åt alla.</strong> Apparna med färdiga "AI-anställda" ger varje kund samma roller med nya namn. Vi gör tvärtom: kartlägger er faktiska vecka och anställer en agent per moment som är värt en agent. Tre olika företag får tre meningsfullt olika team — och det som vore AI-teater får ett ärligt nej.</p>
+        <!-- Primärknappen ÄR Buildern. Förut låg demon här och bygget fanns
+             bara som en rad långt ner i prislistan — besökaren leddes alltså
+             till att titta på någon annans team i stället för att bygga sitt
+             eget. Demon finns kvar som andrahandsval för den som vill se
+             produkten innan hen lägger femton minuter på ett formulär. -->
         <div class="cta-row">
-          <a class="btn-lg btn-primary-lg" href="portal/?team=coachonline&amp;demo=1">Träffa ett team live →</a>
-          <a class="btn-lg btn-ghost" href="#liggare">Se personalliggaren</a>
+          <a class="btn-lg btn-primary-lg" href="builder/">Bygg ert team →</a>
+          <a class="btn-lg btn-ghost" href="portal/?team=coachonline&amp;demo=1">Se ett färdigt team först</a>
         </div>
+        <p class="sub" style="margin-top:14px;font-size:14.5px">Femton minuter och kostnadsfritt: inget konto, inget kort, ingenting att installera. Det är en riktig körning, inte en förhandsvisning — ni får se vilka roller er vecka faktiskt motiverar, och vilka förslag som fick nej.</p>
       </div>
       <div class="sidecard reveal">
         <div class="t">Anställda i exemplet nedan</div>
@@ -285,7 +293,7 @@ if (location.hostname === 'agent-team-builder-2xy.pages.dev') location.replace('
       <div class="flow-step reveal d2">
         <div class="n">03 · Använd</div>
         <h4>Ni chattar med teamet</h4>
-        <p>Ni får en egen portal där ni pratar med varje agent i ett rent gränssnitt. Ingen terminal, ingen installation.</p>
+        <p>Ni får en egen portal där ni pratar med varje agent i ett rent gränssnitt. Ingen terminal, ingen installation och inget AI-konto att skaffa — vi kör AI:n åt er.</p>
       </div>
     </div>
   </div>
@@ -297,13 +305,13 @@ if (location.hostname === 'agent-team-builder-2xy.pages.dev') location.replace('
     <div class="section-head">
       <div class="eyebrow"><span class="dot"></span> Se det själv</div>
       <h2 class="section-title">Olika företag, olika team</h2>
-      <p class="section-lead">Det bästa beviset är att titta. Öppna ett team i demoläget och prata med agenterna direkt — ingen nyckel, ingen inloggning. Eller följ hela processen från samtal till färdigt team i galleriet.</p>
+      <p class="section-lead">Det bästa beviset är att titta. Öppna ett team i demoläget och prata med agenterna direkt — ingen inloggning, ingenting att fylla i. Eller följ hela processen från samtal till färdigt team i galleriet.</p>
     </div>
     <div class="gallery">
       <a class="gcard reveal" href="portal/?team=coachonline&amp;demo=1">
         <div class="gtop"><div class="gicon">💬</div><div><h3>Prova ett team</h3><div class="gsub">Kundportal · demo</div></div></div>
         <div class="gdesc">Kliv in i en riktig kundportal och chatta med ett solo-team på fyra agenter. Byt mellan agenter och se hur det känns att jobba med dem.</div>
-        <div class="gmeta"><span class="gtag mode">Prova nu</span><span class="gtag">Ingen nyckel</span></div>
+        <div class="gmeta"><span class="gtag mode">Prova nu</span><span class="gtag">Ingen inloggning</span></div>
         <div class="go">Öppna demon →</div>
       </a>
       <a class="gcard reveal d1" href="site/">
@@ -314,8 +322,8 @@ if (location.hostname === 'agent-team-builder-2xy.pages.dev') location.replace('
       </a>
       <a class="gcard reveal d2" href="builder/">
         <div class="gtop"><div class="gicon">🛠️</div><div><h3>Bygg själv</h3><div class="gsub">Builder</div></div></div>
-        <div class="gdesc">Vill ni testa att bygga ett eget team? Mata in er verksamhet och se hela pipelinen köra live — research, skalning, förslag — tills teamet är klart.</div>
-        <div class="gmeta"><span class="gtag mode">Self-service</span><span class="gtag">Egen nyckel</span></div>
+        <div class="gdesc">Mata in er verksamhet och se hela pipelinen köra live — research, skalning, förslag — tills teamet är klart. En riktig körning, inte en inspelning, och vi står för AI-kostnaden.</div>
+        <div class="gmeta"><span class="gtag mode">Self-service</span><span class="gtag">0 kr</span></div>
         <div class="go">Öppna Builder →</div>
       </a>
     </div>
@@ -324,23 +332,36 @@ if (location.hostname === 'agent-team-builder-2xy.pages.dev') location.replace('
 
 <!-- ===== PRISER ===== -->
 <!--
-  PRISLISTAN ÄR BESLUTAD 2026-08-05 och ska hållas identisk med avsnitt 4 i
+  PRISLISTAN ÄR BESLUTAD 2026-08-06 och ska hållas identisk med avsnitt 4 i
   villkor.html. Ändras den ena måste den andra följa med samma dag.
-  Belopp inkl. moms (25 %): 0 / 90 / 190 / 4 990 / 490 per mån.
-  Motsvarande exkl. moms:        0 / 72 / 152 / 3 992 / 392.
 
-  INTE SÄLJBART ÄNNU: nivån utan egen nyckel (190 kr och 490 kr/mån) kräver en
-  proxy på vår nyckel med kvot- och takräkning. Den finns inte. Kortet nedan
-  säger därför "öppnar senare" — ta bort den märkningen samma dag proxyn är
-  byggd, inte innan. Att lägga in en egen nyckel i kundens webbläsare är INTE
-  en genväg: nyckeln blir läsbar för kunden.
+  Tre nivåer, inga fler:
+    0 kr        bygga teamet — vi står för AI-kostnaden, inget konto, inget kort
+    90 kr       provmånad, en månad i portalen, allt ingår, slutar av sig själv
+    290 kr/mån  standard: portalen löpande, AI:n ingår, uppsägningsbart
+  Belopp inkl. moms (25 %): 0 / 90 / 290.
+  Motsvarande exkl. moms:   0 / 72 / 232.
+  190, 490 och engångsköpet på 4 990 UTGÅR — skriv inte tillbaka dem.
+
+  VARFÖR det inte finns någon köp- eller ägandenivå: molnstrukturen byggs ut
+  efterhand, och vi har ingen drift för att underhålla team åt kunder som betalat
+  en gång. Ett engångsköp vore ett löfte utan drift bakom sig. Vi säljer bara det
+  vi kan leverera i dag. Den dag underhållet finns kan nivån komma tillbaka —
+  inte innan.
+
+  NYCKELN: ingen kund har någonsin en egen API-nyckel. Vi kör AI:n på vår nyckel
+  (DeepSeek V4 Flash via OpenRouter) på alla tre nivåerna, med ett fair use-tak på
+  1 000 svar per konto och månad. Det finns inget lokalt läge att sälja. Ändras
+  taket ska det ändras här, i avsnitt 3 i villkor.html och i #forbrukning nedan
+  samma dag.
 -->
 <section id="priser">
   <div class="wrap">
     <div class="section-head center">
       <div class="eyebrow center"><span class="dot"></span> Priser</div>
-      <h2 class="section-title">Välj hur involverade ni vill att vi är</h2>
-      <p class="section-lead">Samma motor i botten — skillnaden är hur mycket vi gör åt er. Som jämförelse: en svensk AI-konsult kostar 1 200–2 500 kr <em>i timmen</em>, och byråpaketen börjar runt 5 000 kr i månaden. Ett skräddarsytt team kostar mindre än två konsulttimmar — och det jobbar kvar.</p>
+      <h2 class="section-title">Titta, prova, eller kör det löpande</h2>
+      <p class="section-lead">Samma team och samma portal på alla tre nivåerna — skillnaden är bara hur länge ni håller på. Som jämförelse: en svensk AI-konsult kostar 1 200–2 500 kr <em>i timmen</em>, och byråpaketen börjar runt 5 000 kr i månaden. Ett helt år med teamet går på 3 480 kr — ungefär två konsulttimmar.</p>
+      <p class="section-lead"><b>AI:n ingår på varje nivå.</b> Inget AI-konto, ingenting att lägga in och ingen separat räkning för användningen — vi kör den åt er, med ett tak på 1 000 svar per konto och månad som normal användning inte kommer i närheten av. <a href="#forbrukning" style="color: var(--accent-2)">Här står varför vi har råd med det.</a></p>
     </div>
     <div class="pricing">
 
@@ -349,11 +370,11 @@ if (location.hostname === 'agent-team-builder-2xy.pages.dev') location.replace('
         <div class="price-for">Se vilka fyra roller er verksamhet faktiskt behöver.</div>
         <div class="price-amount">0 kr</div>
         <ul class="price-list">
-          <li>Hela bygget, live i webbläsaren</li>
+          <li>Hela bygget, live i webbläsaren — en riktig körning, inte en förhandsvisning</li>
           <li>Ni ser vilka förslag som fick nej, och varför</li>
           <li>Färdigt teamunderlag att läsa och ta med er</li>
-          <li>Inget konto och ingen bindning. Vi tar inte betalt — men själva bygget körs på <a href="#forbrukning" style="color: var(--accent-2)">er egen nyckel och kostar ungefär åtta öre</a></li>
-          <li>Vill ni bara titta först finns <a href="builder/?demo=1" style="color: var(--accent-2)">demoläget, helt utan nyckel</a></li>
+          <li>Inget konto, inget kort, ingen bindning. AI-kostnaden för bygget står vi för</li>
+          <li>Vill ni hellre se en färdig körning direkt finns <a href="builder/?demo=1" style="color: var(--accent-2)">demoläget</a></li>
         </ul>
         <a class="price-cta outline" href="builder/">Bygg ert team →</a>
       </div>
@@ -365,54 +386,59 @@ if (location.hostname === 'agent-team-builder-2xy.pages.dev') location.replace('
         <div class="price-amount">90 kr <span class="per">/ en månad</span></div>
         <ul class="price-list">
           <li>Hela portalen: veckostart, rutiner, möten och delat minne</li>
-          <li>Ni använder er egen AI-nyckel och betalar förbrukningen själva — <a href="#forbrukning" style="color: var(--accent-2)">ungefär 2–4 kr i månaden</a>, och <a href="#forbrukning" style="color: var(--accent-2)">så här skaffar ni den</a></li>
-          <li>Utan egen nyckel: 190 kr med allt inkluderat <em>(öppnar senare i höst)</em></li>
+          <li>AI-användningen ingår — inget att skaffa, ingen extra räkning</li>
           <li>Engångsbetalning som slutar av sig själv — ingen bindning, inget abonnemang att säga upp</li>
         </ul>
-        <a class="price-cta solid" href="builder/">Bygg teamet och kom igång →</a>
+        <a class="price-cta solid" href="builder/">Prova en månad →</a>
       </div>
 
       <div class="price-card reveal d2">
-        <div class="price-name">Fortsätt efteråt</div>
-        <div class="price-for">Två sätt, beroende på om ni vill äga det eller slippa hålla i det.</div>
-        <div class="price-amount">4 990 kr <span class="per">/ engång</span></div>
+        <div class="price-name">Standard</div>
+        <div class="price-for">Teamet som en del av veckan, månad för månad.</div>
+        <div class="price-amount">290 kr <span class="per">/ månad</span></div>
         <ul class="price-list">
-          <li><b>Köp teamet</b> — er egen nyckel, inga fler avgifter, ert för alltid</li>
-          <li><b>Eller 490 kr i månaden</b> — vi kör det åt er, ingen nyckel behövs, uppdateringar och support ingår <em>(öppnar senare i höst)</em></li>
-          <li>Nya agenter när verksamheten förändras</li>
+          <li>Portalen löpande, med allt som kommer till efter hand</li>
+          <li>AI:n ingår inom fair use: 1 000 svar per konto och månad</li>
+          <li>Uppsägningsbart när som helst — ingen bindningstid</li>
           <li>Fler användare eller team i molnet: hör av er så räknar vi på det</li>
         </ul>
-        <a class="price-cta outline" href="builder/">Bygg teamet och köp →</a>
+        <a class="price-cta outline" href="builder/">Kom igång löpande →</a>
         <p style="font-size: 13.5px; color: var(--text-dim); margin: 10px 0 0; text-align: center">Eller <a href="#kontakt" style="color: var(--accent-2)">prata med oss först</a></p>
       </div>
 
     </div>
-    <p class="price-note">Alla priser inklusive moms. Köper ni som företag och drar av momsen blir det 72, 152, 392 respektive 3 992 kr. Villkoren står i sin helhet i <a href="villkor.html" style="color: var(--accent-2);">våra villkor</a>.</p>
+    <p class="price-note">Alla priser inklusive moms. Köper ni som företag och drar av momsen blir det 72 respektive 232 kr. Villkoren står i sin helhet i <a href="villkor.html" style="color: var(--accent-2);">våra villkor</a>.</p>
+    <p class="price-note" style="margin-top: 10px">Det finns ingen nivå där ni köper teamet en gång och kör det själva. Vi säljer bara det vi kan stå för i drift, och underhåll av team i molnet är inte byggt än.</p>
   </div>
 </section>
 
 <!--
-  FÖRBRUKNING OCH NYCKEL.
+  FÖRBRUKNINGEN — ett förtroendeargument, inte en instruktion.
+  Id:t heter fortfarande "forbrukning" med flit: villkor.html, branschsidorna
+  och portalen länkar hit. Byt det inte utan att söka igenom repot först.
+
   Siffrorna nedan bygger på deepseek/deepseek-v4-flash via OpenRouter till
   $0,14 in / $0,28 ut per miljon tokens och 10,50 kr per dollar — samma
   antaganden som SEK_PER_USD i portal/app.js och som modellraden i
   atb-claude.js. Byts modellen måste den här sektionen, prislistan ovan och
   avsnitt 3–4 i villkor.html ändras samma dag.
 
-  Sektionen finns för att "ni betalar förbrukningen själva" var det som fick
-  folk att tveka: en okänd rörlig kostnad känns dyrare än en känd fast. Ett
-  tal och en instruktion tar bort båda invändningarna.
+  2026-08-06: kunden har ingen egen nyckel längre, så de fem stegen för att
+  skaffa en OpenRouter-nyckel är borttagna härifrån — de beskrev något ingen
+  kund ska göra. Kvar står kostnadsresonemanget, som nu har ett annat jobb:
+  förklara varför vi kan låta AI-användningen ingå utan påslag, och varför
+  taket på 1 000 svar är generöst. Skriv inte tillbaka någon nyckelinstruktion.
 -->
 <section id="forbrukning">
   <div class="wrap narrow">
     <div class="section-head center">
       <div class="eyebrow center"><span class="dot"></span> Förbrukningen</div>
-      <h2 class="section-title">Vad AI:n kostar i månaden</h2>
-      <p class="section-lead">Månadsavgiften betalar teamet och portalen. Själva AI-svaren betalar ni direkt till motorleverantören, till självkostnad — vi lägger inget på. Därför vet ni exakt vad ni betalar för, och kan stänga av det när ni vill.</p>
+      <h2 class="section-title">Varför AI:n får ingå i priset</h2>
+      <p class="section-lead">Ni behöver inte göra någonting av det som står här — vi kör AI:n åt er och användningen ingår i det ni betalar. Men ni ska kunna se att det inte är ett löfte vi tar tillbaka om ett halvår, så här är räkningen öppen: så här lite kostar tekniken faktiskt.</p>
     </div>
 
     <div class="reveal" style="background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 26px 28px">
-      <p style="margin: 0 0 18px"><b>Kort svar: ett par kronor i månaden.</b> Vi kör DeepSeek V4 Flash, som kostar ungefär en tvåhundradel av vad de dyraste modellerna gör. Ett svar landar på ett halvt öre till tre öre.</p>
+      <p style="margin: 0 0 18px"><b>Kort svar: ett par kronor i månaden per kund.</b> Vi kör DeepSeek V4 Flash, som kostar ungefär en tvåhundradel av vad de dyraste modellerna gör. Ett svar landar på ett halvt öre till tre öre — vår kostnad, inte er.</p>
 
       <div style="display: grid; gap: 12px; border-top: 1px solid var(--border); padding-top: 18px">
         <div style="display: flex; justify-content: space-between; gap: 18px"><span>En fråga till en agent</span><b style="white-space: nowrap">≈ 0,5–1 öre</b></div>
@@ -427,79 +453,69 @@ if (location.hostname === 'agent-team-builder-2xy.pages.dev') location.replace('
         <div style="display: flex; justify-content: space-between; gap: 18px"><span><b>Intensiv månad</b> — tjugo frågor om dagen, dagliga rutiner</span><b style="white-space: nowrap">8–12 kr</b></div>
       </div>
 
-      <p style="color: var(--text-dim); font-size: 14.5px; margin: 18px 0 0; line-height: 1.6">Portalen visar den uppskattade kostnaden under varje svar och en summa för veckan, så ni behöver aldrig gissa. Siffrorna ovan är räknade på 10,50 kr per dollar och gäller i skrivande stund — modellpriser sjunker över tid, de har inte gått åt andra hållet hittills.</p>
+      <p style="color: var(--text-dim); font-size: 14.5px; margin: 18px 0 0; line-height: 1.6">Det är alltså vad en aktiv kund kostar oss i AI — några kronor mot en månadsavgift på 290. Marginalen ligger i månadsavgiften, inte i att ni ska hålla igen på frågorna, och det är därför vi kan säga att användningen ingår utan att sedan börja räkna. Siffrorna är räknade på $0,14 in och $0,28 ut per miljon tokens och 10,50 kr per dollar, och gäller i skrivande stund — modellpriser har hittills bara sjunkit.</p>
     </div>
 
     <div class="section-head center" style="margin-top: 56px">
-      <h2 class="section-title" style="font-size: clamp(24px, 3vw, 30px)">Så skaffar ni nyckeln — fem minuter, en gång</h2>
-      <p class="section-lead">Nyckeln är det som kopplar portalen till AI-motorn. Ni skapar den hos OpenRouter, klistrar in den i portalen en gång, och sedan är det gjort. Den sparas bara i er egen webbläsare — vi ser den aldrig.</p>
+      <h2 class="section-title" style="font-size: clamp(24px, 3vw, 30px)">Taket, och varför det inte kommer i vägen</h2>
+      <p class="section-lead">Vi räknar svar per konto och månad, med ett tak på 1 000. Det finns för att en enda kund inte ska kunna köra automatiserade anrop dygnet runt på allas bekostnad — inte för att hålla er tillbaka.</p>
     </div>
 
-    <ol class="reveal" style="counter-reset: none; padding-left: 0; list-style: none; display: grid; gap: 14px">
-      <li style="background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 18px 22px">
-        <b style="font-family: var(--font-mono); font-size: 11.5px; letter-spacing: 0.13em; color: var(--accent-2)">STEG 1</b>
-        <div style="margin-top: 6px"><b>Skapa konto på <a href="https://openrouter.ai" target="_blank" rel="noreferrer" style="color: var(--accent-2)">openrouter.ai</a>.</b> Klicka <em>Sign in</em> uppe till höger. Ni kan logga in med Google om ni hellre vill slippa ett lösenord till.</div>
-      </li>
-      <li style="background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 18px 22px">
-        <b style="font-family: var(--font-mono); font-size: 11.5px; letter-spacing: 0.13em; color: var(--accent-2)">STEG 2</b>
-        <div style="margin-top: 6px"><b>Fyll på med pengar.</b> Gå till <em>Credits</em> och lägg in till exempel 5 dollar. OpenRouter tar en avgift på 5,5 % (minst 0,80 dollar) när ni fyller på, så 5 dollar kostar drygt 60 kronor. Vid normal användning räcker den summan i ett år eller mer.</div>
-      </li>
-      <li style="background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 18px 22px">
-        <b style="font-family: var(--font-mono); font-size: 11.5px; letter-spacing: 0.13em; color: var(--accent-2)">STEG 3</b>
-        <div style="margin-top: 6px"><b>Skapa nyckeln.</b> Gå till <a href="https://openrouter.ai/keys" target="_blank" rel="noreferrer" style="color: var(--accent-2)">openrouter.ai/keys</a> och klicka <em>Create key</em>. Ge den ett namn ni känner igen, till exempel "Mitt AI-team".</div>
-      </li>
-      <li style="background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 18px 22px">
-        <b style="font-family: var(--font-mono); font-size: 11.5px; letter-spacing: 0.13em; color: var(--accent-2)">STEG 4</b>
-        <div style="margin-top: 6px"><b>Sätt ett tak medan ni är där.</b> I samma ruta kan ni ange en gräns för hur mycket nyckeln får kosta. Sätt den på 5 dollar. Då kan ingenting — inte ett misstag, inte en glömd flik — kosta mer än så.</div>
-      </li>
-      <li style="background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 18px 22px">
-        <b style="font-family: var(--font-mono); font-size: 11.5px; letter-spacing: 0.13em; color: var(--accent-2)">STEG 5</b>
-        <div style="margin-top: 6px"><b>Kopiera och klistra in.</b> Nyckeln börjar på <code style="font-family: var(--font-mono); font-size: 0.92em">sk-or-</code> och visas <b>bara en gång</b> — kopiera den direkt. Öppna sedan portalen, klistra in den i rutan som frågar, och ni är igång.</div>
-      </li>
-    </ol>
+    <div class="reveal" style="background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 26px 28px">
+      <p style="margin: 0 0 16px">Tusen svar i månaden är ungefär <b>femtio frågor varje arbetsdag</b>. Ett litet företag som använder teamet flitigt — veckostart på måndagen, ett par rutiner om dagen, ett möte i veckan och frågor däremellan — landar på en tiondel av det.</p>
+      <p style="margin: 0 0 16px; color: var(--text-dim); font-size: 14.5px; line-height: 1.6">Kommer ni ändå upp i taket pausas svaren till nästa månad — men hör av er först, för då vill vi veta vad ni använder teamet till, och ett tak går att höja. Det som inte ingår är maskinell användning, vidareförsäljning av åtkomsten och delad inloggning utanför er egen verksamhet; <a href="villkor.html" style="color: var(--accent-2)">villkoren</a> säger var gränsen går.</p>
+      <p style="margin: 0; color: var(--text-dim); font-size: 14.5px; line-height: 1.6">Att bygga ett team kostar oss ungefär åtta öre och räknas inte mot något tak alls. Därför kan vi låta bygget vara gratis utan att be om ett kort först.</p>
+    </div>
 
-    <p style="color: var(--text-dim); font-size: 14.5px; margin-top: 22px; line-height: 1.65">Kör ni fast är det bara att höra av er till <a href="mailto:info@mittaiteam.se" style="color: var(--accent-2)">info@mittaiteam.se</a> — jag går igenom det med er över telefon. Vill ni hellre slippa nyckeln helt kommer nivån där vi sköter den åt er senare i höst.</p>
+    <p style="color: var(--text-dim); font-size: 14.5px; margin-top: 22px; line-height: 1.65">Undrar ni något om hur användningen mäts eller vad som händer med det ni skriver: hör av er till <a href="mailto:info@mittaiteam.se" style="color: var(--accent-2)">info@mittaiteam.se</a>, eller läs <a href="integritet.html#proxy" style="color: var(--accent-2)">integritetspolicyn</a> där det står i detalj.</p>
   </div>
 </section>
 
-<!-- ===== TVÅ UPPLÄGG ===== -->
+<!-- ===== VAD VI HÅLLER I / VAD SOM STANNAR HOS ER ===== -->
+<!--
+  Den här sektionen hette förut "Två sätt att köra det" och ställde egen nyckel
+  mot moln. Efter beslutet 2026-08-06 finns bara ett sätt, så uppdelningen går
+  nu mellan vad VI sköter och var KUNDENS MATERIAL bor. Skriv inte tillbaka
+  nyckelvalet, och lova inte att frågorna aldrig passerar oss — det gör de, på
+  varje nivå. Det som är sant är att vi inte sparar dem; se integritet.html#proxy.
+-->
 <section id="upplagg">
   <div class="wrap">
     <div class="section-head center">
-      <div class="eyebrow center"><span class="dot"></span> Två sätt att köra det</div>
-      <h2 class="section-title">Er data hos er — eller allt skött åt er</h2>
-      <p class="section-lead">Samma team, samma portal. Skillnaden är hur mycket ni vill hålla i själva.</p>
+      <div class="eyebrow center"><span class="dot"></span> Vem håller i vad</div>
+      <h2 class="section-title">Vi sköter tekniken — ert material stannar hos er</h2>
+      <p class="section-lead">Ett upplägg, inga alternativ att välja mellan. Det ni behöver veta är vad vi tar hand om och vad som ligger kvar på er dator.</p>
     </div>
     <div class="opt-grid">
 
       <div class="opt-card reveal">
-        <div class="opt-icon">🔒</div>
-        <h3>Er egen nyckel</h3>
-        <div class="opt-tag">Kontroll &amp; integritet</div>
-        <p>Portalen kör i er egen webbläsare med er egen nyckel från OpenRouter. Samtalen går direkt till AI-leverantören — vi lagrar ingenting, ser ingenting och lägger inget påslag på användningen. Ni betalar leverantörens självkostnad och ser kostnaden per svar direkt i portalen. Vi kör DeepSeek V4 Flash, vald för att den är snabb och kostar ören per svar i stället för kronor.</p>
+        <div class="opt-icon">⚙️</div>
+        <h3>Det vi sköter</h3>
+        <div class="opt-tag">Ingenting att skaffa</div>
+        <p>AI-motorn är vår att hålla i. Ni skapar inget konto hos någon AI-leverantör, lägger inte in någon nyckel och får ingen räkning för användningen. Vi kör DeepSeek V4 Flash, vald för att den är snabb och kostar ören per svar i stället för kronor — det är därför användningen kan ingå i priset utan påslag.</p>
         <ul>
-          <li>Ingen mellanserver — era frågor och underlag går bara till er egen AI-leverantör, aldrig via oss</li>
-          <li>Inget sparas hos oss: samtal och material ligger kvar hos er, i webbläsaren eller i er egen mapp</li>
-          <li>Ert material bor som vanliga filer i en mapp ni äger (funkar med OneDrive/Dropbox)</li>
-          <li>Enkel GDPR-bild i det här upplägget: vi hanterar inga personuppgifter åt er, så inget biträdesavtal behövs med oss</li>
-          <li>Installeras som app på datorn (PWA)</li>
+          <li>Drift, modellval och uppdateringar av portalen ligger hos oss</li>
+          <li>Byter vi modell säger vi till i förväg om det märks i hur teamet svarar</li>
+          <li>Frågan går via vår server för att kunna besvaras, och sparas inte hos oss efteråt — <a href="integritet.html#proxy" style="color: var(--accent-2)">så här ser behandlingen ut</a></li>
+          <li>Vi är personuppgiftsbiträde och tecknar ett biträdesavtal med er innan ni börjar</li>
         </ul>
       </div>
 
       <div class="opt-card reveal d1">
-        <div class="opt-icon">☁️</div>
-        <h3>Vi sköter allt</h3>
-        <div class="opt-tag">Moln &amp; bekvämlighet</div>
-        <p>Hostat och klart. Logga in från vilken enhet som helst — dator, mobil, surfplatta — så sköter vi nycklar, drift och uppdateringar åt er.</p>
+        <div class="opt-icon">📁</div>
+        <h3>Det som stannar hos er</h3>
+        <div class="opt-tag">Ert material, era filer</div>
+        <p>Samtalen, företagsminnet och de underlag ni lägger in bor i er egen webbläsare, eller i en mapp på datorn som ni pekar ut. Vi har ingen kopia av dem, och ni kan ta med er allt den dag ni vill sluta.</p>
         <ul>
-          <li>Tillgängligt överallt, ingen teknik att hålla reda på</li>
-          <li>En inloggning, alltid senaste versionen</li>
-          <li>Bäst för minsta möjliga krångel</li>
+          <li>Ert material bor som vanliga filer i en mapp ni äger (funkar med OneDrive/Dropbox)</li>
+          <li>Teamet är markdown — läsbart i vilket program som helst, användbart i andra AI-verktyg</li>
+          <li>"Ladda ner allt" ger er minne, underlag och hela chatthistoriken i en fil</li>
+          <li>Installeras som app på datorn (PWA)</li>
         </ul>
       </div>
 
     </div>
-    <p class="opt-foot">Behöver ni en helt fristående desktop-installation för en sluten miljö? Det löser vi på begäran.</p>
+    <p class="opt-foot">Får ert material inte lämna huset alls? Då är det här inte rätt verktyg i dag — frågorna måste passera oss för att kunna besvaras, och någon sluten installation säljer vi inte. <a href="#kontakt">Hör gärna av er ändå</a> så säger vi rakt ut om det går att lösa.</p>
   </div>
 </section>
 
@@ -519,7 +535,7 @@ if (location.hostname === 'agent-team-builder-2xy.pages.dev') location.replace('
         <p>Bokföringsprogrammen bygger in AI i siffrorna — men ingen hjälper era kunder med allt runt omkring. Ett AI-team per kund blir en rådgivningstjänst ni kan paketera och ta betalt för.</p>
         <ul>
           <li>Ett team per kund, levererat som delningslänk eller teamfil</li>
-          <li>Kunden kör på sin egen nyckel — ni bär ingen driftkostnad</li>
+          <li>Kunden behöver inget eget AI-konto, och ni bär ingen driftkostnad</li>
           <li>Er byrå står som avsändare i kundens vardag</li>
         </ul>
       </div>
@@ -552,12 +568,12 @@ if (location.hostname === 'agent-team-builder-2xy.pages.dev') location.replace('
         <div class="fa">Nej. Portalen är en vanlig chatt — skriver ni i ett meddelandefält kan ni använda teamet. Det finns ingen terminal, inget att installera och inga inställningar att hålla reda på.</div>
       </details>
       <details class="reveal">
-        <summary>Vad är en "API-nyckel" och behöver vi en?</summary>
-        <div class="fa">En API-nyckel är det som kopplar portalen till AI-motorn och gör att ni betalar för exakt den användning ni har — till självkostnad, utan påslag från oss. Ni skapar den hos <a href="https://openrouter.ai" target="_blank" rel="noreferrer">openrouter.ai</a> på ungefär fem minuter, och det är en engångsgrej. <a href="#forbrukning">Här står varje steg, och vad det kostar i månaden</a> (svar: ett par kronor). Kör ni fast ringer jag och går igenom det med er. Vill ni bara känna på produkten först kan ni prova allt i demoläget utan nyckel.</div>
+        <summary>Behöver vi skaffa ett AI-konto eller en "API-nyckel"?</summary>
+        <div class="fa">Nej. Vi kör AI:n åt er, på varje nivå — även när ni bygger teamet gratis. Ni skapar inget konto hos någon AI-leverantör, lägger inte in någon nyckel och får ingen separat räkning för användningen. Det ingår i det ni betalar, med ett tak på 1 000 svar per konto och månad som normal användning inte kommer i närheten av. <a href="#forbrukning">Här står varför vi har råd med det, och vad taket betyder i praktiken.</a></div>
       </details>
       <details class="reveal">
         <summary>Är vår data säker? Hur funkar det med GDPR?</summary>
-        <div class="fa">Kör ni på <strong>er egen nyckel</strong> går allt direkt mellan er webbläsare och AI-leverantören: era frågor och underlag skickas dit för att kunna besvaras, men de passerar aldrig oss, och vi har ingen server som sparar dem. <strong>Rakt på sak om motorn:</strong> vi kör DeepSeek V4 Flash via OpenRouter. DeepSeek är ett kinesiskt AI-bolag, och körningen kan ske utanför EU beroende på vilken leverantör OpenRouter dirigerar anropet till — det går att begränsa i OpenRouters inställningar. Hanterar ni sekretessbelagt material bör ni ta det beslutet medvetet; <a href="integritet.html#portalen">hela resonemanget står i integritetspolicyn</a>. Vi hanterar alltså inga personuppgifter åt er, vilket gör GDPR-bilden ovanligt enkel — inget biträdesavtal med oss behövs. Väljer ni i stället att vi <strong>sköter allt</strong> är vi personuppgiftsbiträde och skriver ett vanligt biträdesavtal med er. Ert material kan i båda fallen bo som vanliga markdown-filer i en mapp ni själva äger — läsbara i vilket program som helst, den dag ni vill sluta. Ni äger er data på riktigt.</div>
+        <div class="fa">Det korta svaret: era frågor passerar oss, vi sparar dem inte, och vi är ert personuppgiftsbiträde för den överföringen — ett biträdesavtal tecknas innan ni börjar använda tjänsten. <strong>Rakt på sak om motorn:</strong> vi kör DeepSeek V4 Flash via OpenRouter. DeepSeek är ett kinesiskt AI-bolag, och själva körningen sker hos den datacenterleverantör OpenRouter dirigerar anropet till — den kan ligga utanför EU och EES. Det är ingen detalj vi gömmer i en fotnot: hanterar ni sekretessbelagt klientmaterial, känsliga personuppgifter eller omfattas ni av tystnadsplikt, ta beslutet medvetet tillsammans med den som ansvarar för informationssäkerheten hos er. <a href="integritet.html#proxy">Hela resonemanget, uppgift för uppgift, står i integritetspolicyn.</a> Det som däremot aldrig lämnar er dator är arkivet: samtal, företagsminne och underlag ligger i er webbläsare eller i en mapp ni äger, som vanliga markdown-filer — läsbara i vilket program som helst, den dag ni vill sluta.</div>
       </details>
       <details class="reveal">
         <summary>Varför kan jag inte bara göra det här själv gratis i ChatGPT?</summary>
@@ -569,7 +585,7 @@ if (location.hostname === 'agent-team-builder-2xy.pages.dev') location.replace('
       </details>
       <details class="reveal">
         <summary>Vad händer om verksamheten förändras?</summary>
-        <div class="fa">Teamet är inte hugget i sten. Med den löpande partnern uppdaterar vi det när behoven ändras — lägger till agenter, tar bort sådant ni inte använder — utan att skrota det som redan fungerar.</div>
+        <div class="fa">Teamet är inte hugget i sten. I portalen kan ni själva lägga till agenter och plocka bort sådant ni inte använder, och ett helt nytt bygge kostar ingenting att köra igen när verksamheten har hunnit förändras på riktigt. Behöver ni hjälp att tänka om teamet, hör av er — det är precis den sortens samtal jag helst vill ha.</div>
       </details>
     </div>
   </div>

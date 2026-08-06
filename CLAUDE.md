@@ -177,6 +177,23 @@ skisser i `design/` (deployas inte).
 - **Branscher** (`verticals/`) — datadrivna branschlandningssidor
   (`?v=<slug>` från `verticals.js`); varje bransch har en live-demo utan nyckel.
 
+**Vår nyckel, inga kundnycklar (2026-08-06):** kunden har aldrig en egen
+API-nyckel. Allt går genom `POST /api/ai` (`functions/api/ai.js`) på vår
+OpenRouter-nyckel (`OPENROUTER_KEY` som Pages-secret). Tre tak skyddar kassan:
+per IP, per konto (1 000 svar/mån = villkorens fair use) och ett globalt
+dygnstak. Förbrukningen bokförs i `ai_budget` och `ai_usage`
+(`migrations/0004_ai_proxy.sql`) — antal och tokens, aldrig innehåll.
+Nyckelvägen finns kvar i `atb-claude.js` men används inte av något
+gränssnitt längre.
+
+**Prisstegen är tre nivåer (2026-08-06):** 0 kr bygga · 90 kr provmånad ·
+290 kr/mån standard · offert för flera användare. Engångsköpet på 4 990 och
+nivåerna 190/490 är strukna — ingen molnstruktur för underhåll finns, och
+"ert för alltid" vore ett löfte utan drift bakom sig. **Prislistan i
+`index.html`, avsnitt 4 i `villkor.html` och `TIERS` i
+`functions/api/_stripe.js` måste alltid ändras samma dag** (ett test i
+`test/stripe.mjs` fäller bygget om nivålistan växer).
+
 **En modell, inga alternativ (2026-08-05):** hela produkten kör
 `deepseek/deepseek-v4-flash` via OpenRouter. Valet bor i `atb-claude.js`, och
 `stream()` ignorerar vilken modell anropet än skickar med — det gick inte att

@@ -92,13 +92,16 @@ function timingSafeEqual(a, b) {
 // nivå och den miljövariabel som håller dess price-id — så att testläge och
 // skarpt läge kan ha olika id:n utan att koden ändras.
 //
-// De två nyckelfria nivåerna (190 kr, 490 kr/mån) finns medvetet inte med.
-// De kräver en proxy på vår nyckel med kvotmätning, och den är inte byggd.
-// Att kunna ta betalt för något som inte går att leverera är värre än att
-// inte kunna ta betalt alls.
+// Två nivåer, inte fler (beslutat 2026-08-06). Engångsköpet av ett team är
+// skrotat: vi har ingen molnstruktur för att underhålla team åt kunder, och
+// "ert för alltid" är ett löfte utan drift bakom sig. Provmånaden är ett
+// engångsbelopp som inte förnyas; standard är ett riktigt abonnemang.
+//
+// Läggs en nivå till här måste den gå att leverera samma dag. Testet i
+// test/stripe.mjs fäller bygget om listan växer utan att någon tänkt efter.
 export const TIERS = {
-  "buy": { env: "STRIPE_PRICE_BUY", mode: "payment", label: "Mitt AI-team — köp" },
-  "trial-byo": { env: "STRIPE_PRICE_TRIAL_BYO", mode: "payment", label: "Mitt AI-team — provmånad" },
+  "trial": { env: "STRIPE_PRICE_TRIAL", mode: "payment", label: "Provmånad" },
+  "standard": { env: "STRIPE_PRICE_STANDARD", mode: "subscription", label: "Standard, löpande" },
 };
 
 // Slug på 22 base62-tecken ≈ 131 bitar slump. Måste matcha mönstret i

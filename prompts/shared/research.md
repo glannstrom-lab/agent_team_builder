@@ -56,6 +56,82 @@ För **läge C** (uppdatering) finns också:
 
 ---
 
+## När teamet byggs för en enskild person
+
+Intake kan säga att teamet inte byggs åt en verksamhet utan åt **en person i
+sitt jobb** — en ekonomiassistent, en säljare, en projektledare, eller en
+egenföretagare som jobbar ensam. Då står det i klartext högst upp:
+
+```
+teamet_för:     en enskild person i sitt jobb
+roll:           <personens roll, i hens egna ord>
+arbetsplats:    <vad arbetsplatsen gör>
+arbetsplatsens_storlek: <ungefärlig storlek — ren kontext>
+storlek:        solo
+antal_personer: 1
+```
+
+och två sektioner tillkommer: `## Vem teamet byggs för` och `## Vad omgivningen
+förväntar sig`. Sektionen `## Vad företaget gör` beskriver i det här fallet
+rollen och arbetsplatsen, inte en verksamhet.
+
+Allt ovan i den här filen gäller fortfarande. Det här är hur det ska läsas:
+
+1. **Momenten är en persons vecka, inte en verksamhets.** Lista aldrig moment
+   som någon annan på arbetsplatsen äger, hur självklara de än är för
+   branschen. En ekonomiassistent på en redovisningsbyrå gör inte bokslutet
+   för att byrån gör bokslut. Om ett moment inte utförs av den här personen
+   med hens egna timmar hör det inte hemma i listan.
+
+2. **En vecka har fyrtio timmar, och de är redan slut.** Tidsåtgången ska
+   summera till något en människa faktiskt hinner. Hittar du tio moment som
+   var för sig tar "en halv vecka" har du analyserat en avdelning, inte en
+   person — gå tillbaka.
+
+3. **Skalningen följer personen.** `storlek` står på `solo` med flit, oavsett
+   om arbetsplatsen har fem eller femhundra anställda. Det ger 2–4 agenter
+   enligt `docs/scaling.md`. Arbetsplatsens storlek är kontext för hur
+   arbetet ser ut (fler kollegor = fler överlämningar, fler system, mer
+   rapportering uppåt) — den är inte skalningsunderlag.
+
+4. **Agenterna ska sitta nära det dagliga arbetet, inte i ett
+   organisationsschema.** Spegla inte företagsfunktioner — personen är inte
+   ett företag och behöver ingen "marknadsagent" eller "HR-agent". Klustren
+   ska följa hens faktiska handgrepp: det hon skriver, det hon letar rätt på,
+   det hon matar in på tre ställen, det hon får påstötningar om när det
+   glöms bort. Ett bra kluster går att beskriva som "det jag gör på
+   tisdagsförmiddagarna", inte som en avdelning.
+
+5. **Förväntningarna är där smärtan sitter.** `## Vad omgivningen förväntar
+   sig` säger vad personen bedöms på av chef, kollegor och kunder. Ett moment
+   som hen mäts på men inte hinner med har hög smärta även om intake aldrig
+   använder ordet. Notera i "Notering" när smärtan är härledd på det viset,
+   så att bedömningen går att granska.
+
+6. **Avgränsningarna är ofta inte personens egna.** Anställda har
+   begränsningar de inte har valt: personuppgifter som inte får lämna
+   systemet, interna dokument, sekretess, verktyg arbetsgivaren har sagt nej
+   till. Ta dem bokstavligt — de sänker AI-lämpligheten på riktigt, inte som
+   en artighet. Om intake antyder att arbetsgivaren begränsar vilka
+   AI-verktyg som får användas hör det hemma i "Kontextfaktorer", eftersom
+   det påverkar hela teamets utformning.
+
+7. **VD-momentet (regel 6) blir prioriteringen av den egna veckan.** För en
+   person finns ingen strategi att sätta. Det som motsvarar VD-momentet är
+   att välja vad som ska göras i dag när tre saker är brådskande och att
+   kunna säga ifrån med underlag. Leta efter sådana signaler i intake och
+   lyft dem — men hitta inte på dem om de inte finns.
+
+8. **Divergenstestet gäller hårdare här, inte mildare.** Två personer med
+   samma titel på olika arbetsplatser ska ge olika research, eftersom det är
+   veckan och inte titeln som analyseras. Och en person ska aldrig ge samma
+   research som sin arbetsgivare skulle ha gett: byrån har kunder, säljmål
+   och en marknad; hon har ett inkorgsberg, ett affärssystem och ett
+   månadsskifte. Om din output kunde klistras in i det ena fallet lika gärna
+   som i det andra — börja om.
+
+---
+
 ## Vad research gör
 
 Steget har ett jobb: hitta de konkreta saker som görs i verksamheten

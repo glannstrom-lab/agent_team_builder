@@ -43,6 +43,9 @@ const METHOD_RULES = [
   { match: /^\/api\/team\/invite\/?$/, allow: ["POST"] },
   { match: /^\/api\/team\/members\/?$/, allow: ["GET"] },
   { match: /^\/api\/team\/remove\/?$/, allow: ["POST"] },
+  // AI-proxyn på vår nyckel. POST-only: en GET mot den är antingen ett misstag
+  // eller någon som letar, och båda ska mötas av 405 innan de kostar oss något.
+  { match: /^\/api\/ai\/?$/, allow: ["POST"] },
   // Köpflödet (M2a-2). Webhooken är POST-only med flit: en GET mot den från
   // en nyfiken skanner ska inte ens nå signaturkontrollen.
   { match: /^\/api\/checkout\/?$/, allow: ["POST"] },

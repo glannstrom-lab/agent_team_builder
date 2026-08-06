@@ -31,14 +31,35 @@
 
   TEKNISKA PÅSTÅENDEN SOM MÅSTE HÅLLAS SYNKRONISERADE MED KODEN
   ············································································
-  - BYO-läget anropar leverantören direkt från webbläsaren:
-    atb-claude.js rad 10–12 (api.anthropic.com/v1/messages,
-    openrouter.ai/api/v1/chat/completions). Ingen proxy, ingen server hos oss.
-  - Kundens material lagras i localStorage (portal/app.js rad 84–156 m.fl.),
-    mapphandtag i IndexedDB "atb-fs" (rad 178), vald mapp via
+  - ETT DRIFTLÄGE sedan 2026-08-06. Kunden har ingen egen API-nyckel. Alla
+    anrop går kundens webbläsare → vår Cloudflare-funktion → OpenRouter → den
+    leverantör som driftar DeepSeek V4 Flash. Vi är därmed ALLTID
+    personuppgiftsbiträde för innehållet i frågorna. Skriv aldrig in text om
+    att kunden lägger in en egen nyckel, eller att inget passerar oss — den
+    produkten finns inte längre.
+  - Proxyn heter /api/ai (functions/api/ai.js), byggd 2026-08-06. Punkt 3 är
+    skriven mot den koden. Ändras vad som lagras eller loggas där måste punkt 3
+    skrivas om samma dag. Lova aldrig "ingen loggning" om servern loggar.
+  - Det som faktiskt lagras (migrations/0004_ai_proxy.sql):
+      ai_usage  — subject ('user:<id>' eller 'anon'), period (ÅÅÅÅ-MM), calls,
+                  input_tok, output_tok.
+      ai_budget — day (ÅÅÅÅ-MM-DD), calls, input_tok, output_tok. Globalt.
+      auth_throttle — hink 'ip:ai:<ip-adress>' med räknare, fönster 15 min
+                  (THROTTLE_WINDOW_MS i functions/api/auth/_lib.js). DEN HÄR
+                  RADEN INNEHÅLLER EN IP-ADRESS och är därför utskriven i
+                  punkt 3. Tas den bort ur koden ska den bort ur texten.
+    Ingen fråga och inget svar skrivs till databasen. console.error i ai.js
+    loggar uppströmsfel, inte kundens innehåll — håll det så.
+  - Taken i koden: 24 anrop per IP per kvart, 1 000 per konto och månad
+    (= villkorens fair use), 4 000 per dygn globalt. Ändras MAX_CALLS_PER_ACCOUNT
+    måste avsnitt 3 i villkor.html och prisavsnittet i index.html följa med.
+  - Kundens material lagras dessutom i localStorage (portal/app.js rad 84–156
+    m.fl.), mapphandtag i IndexedDB "atb-fs" (rad 178), vald mapp via
     showDirectoryPicker (rad 241).
   - Moln-team: functions/api/teams/[slug].js är i dag ENDAST läsning (GET).
-    Ändras det till skrivning måste avsnitt 6 nedan skrivas om.
+    Ändras det till skrivning måste punkt 4 nedan skrivas om.
+  - index.html länkar hit på #portalen och villkor.html på #proxy. Båda
+    ankarna måste finnas kvar.
   - Typsnitten självhostas (/fonts/fonts.css). Skriv aldrig in Google Fonts här.
 -->
 
@@ -77,11 +98,11 @@
 <section>
   <div class="wrap narrow legal">
 
-    <div class="lead-meta">Integritetspolicy · Senast ändrad 2026-08-05</div>
+    <div class="lead-meta">Integritetspolicy · Senast ändrad 2026-08-06</div>
     <h1 class="section-title" style="font-size:clamp(30px,4vw,44px)">Så behandlas personuppgifter</h1>
-    <p class="section-lead" style="margin-bottom:10px">Mitt AI-team är byggt så att så lite som möjligt passerar oss. Den här sidan
-    beskriver de sex behandlingar som faktiskt finns, en i taget, med vad som samlas in, varför, hur länge och vad du kan
-    kräva. Är något oklart går det bra att fråga.</p>
+    <p class="section-lead" style="margin-bottom:10px">Det du skriver i portalen skickas via våra servrar till den AI-leverantör som
+    producerar svaret. Den här sidan beskriver de fem behandlingar som finns, en i taget, med vad som samlas in, varför,
+    hur länge och vad du kan kräva. Är något oklart går det bra att fråga.</p>
 
     <!-- ============ 1. VEM ANSVARAR ============ -->
     <h3 id="ansvarig">Vem som ansvarar</h3>
@@ -111,32 +132,31 @@
     dig till med vad.</p>
 
     <h4>För webbplatsen ansvarar vi</h4>
-    <p>Besök på mittaiteam.se, mejl till oss och den frivilliga molnlagringen av ett
-    team — där är vi personuppgiftsansvariga och den här sidan beskriver hur.</p>
+    <p>Besök på mittaiteam.se, mejl till oss, ditt konto och den molnlagring av ett
+    team som hör till leveransen — där är vi personuppgiftsansvariga och den här
+    sidan beskriver hur.</p>
 
-    <h4>För det du matar in i portalen ansvarar du</h4>
-    <p>När du använder portalen med din egen API-nyckel är det du, eller det företag
-    du arbetar för, som är personuppgiftsansvarig för allt du skriver, klistrar in
-    eller lägger som underlag. Vi ser det inte, lagrar det inte och kan inte hämta
-    ut det. Det går direkt från din webbläsare till den AI-leverantör vars nyckel
-    du har lagt in.</p>
-    <p>Använder du en nivå <em>utan</em> egen nyckel gäller det motsatta: då går
-    frågorna via oss, och vi blir ditt personuppgiftsbiträde. Det beskrivs under
-    <a href="#proxy">punkt 5</a>.</p>
+    <h4>För det du matar in i portalen ansvarar du — men vi hanterar det åt dig</h4>
+    <p>Du, eller det företag du arbetar för, är personuppgiftsansvarig för allt du
+    skriver, klistrar in eller lägger som underlag. Ni bestämmer vad som får matas
+    in och varför. Vi behandlar det på ert uppdrag och är alltså ert
+    <b>personuppgiftsbiträde</b>. Det går inte att välja bort: portalen svarar
+    genom att skicka din fråga via vår server till AI-leverantören. Hela vägen
+    beskrivs under <a href="#portalen">punkt 3</a>.</p>
 
-    <h4>Din AI-leverantör är ditt biträde, inte vårt</h4>
-    <p>OpenRouter, och den modellleverantör OpenRouter i sin tur anlitar,
-    behandlar dina uppgifter under det avtal <em>du</em> har tecknat med
-    OpenRouter när du skapade nyckeln. Vi är inte part i det avtalet och kan
-    inte ge dig rättigheter i det. Läser du deras villkor och
-    databehandlingsavtal är det de villkoren som gäller för innehållet i dina
-    frågor. Behöver ditt företag ett biträdesavtal för AI-behandlingen tecknar ni
-    det direkt med leverantören.</p>
+    <h4>De leverantörer vi anlitar är våra underbiträden</h4>
+    <p>Vi anlitar Cloudflare, OpenRouter och den leverantör som driftar
+    språkmodellen för att kunna leverera svaret. De är underbiträden till oss,
+    inte motparter till dig — du behöver alltså inget eget avtal med dem, och du
+    kan hålla oss ansvariga för kedjan. Vilka de är och var de behandlar
+    uppgifterna står under <a href="#proxy">punkt 3</a> och under
+    <a href="#tredjeland">Överföring utanför EU och EES</a>.</p>
 
     <div class="varning">
       <h4>Klistra inte in känsliga personuppgifter</h4>
-      <p style="margin-bottom:10px">Portalen skickar vidare det du skriver. Den
-      filtrerar ingenting. Fyra av branschsidorna riktar sig till yrken där det
+      <p style="margin-bottom:10px">Portalen skickar vidare det du skriver — via
+      oss till AI-leverantören. Den filtrerar ingenting, och vi läser inte
+      igenom det i förväg. Fyra av branschsidorna riktar sig till yrken där det
       finns tystnadsplikt, och därför är den här punkten inte teoretisk.</p>
       <p style="margin-bottom:10px">Undvik att mata in uppgifter om hälsa, etniskt
       ursprung, religiös eller politisk uppfattning, fackligt medlemskap,
@@ -153,7 +173,8 @@
 
     <!-- ============ 3. BEHANDLING 1 ============ -->
     <h3 id="besok">1. När du besöker webbplatsen</h3>
-    <p>Webbplatsen består av statiska filer som ligger hos Cloudflare. För att
+    <p>Webbplatsen består av färdiga sidfiler och några serverfunktioner som ligger
+    hos Cloudflare. För att
     kunna leverera en sida måste Cloudflare hantera din IP-adress, vilken sida du
     bad om och tekniska uppgifter om din webbläsare. Det är oundvikligt — det är
     så en förfrågan över internet fungerar.</p>
@@ -198,117 +219,175 @@
     personnummer i ett mejl till oss.</p>
 
     <!-- ============ 5. BEHANDLING 3 ============ -->
-    <h3 id="portalen">3. När du använder portalen med din egen nyckel</h3>
-    <p>Det här är det vanliga sättet att använda tjänsten, och här har vi ingen
-    roll alls i behandlingen.</p>
-    <p>Portalen är en webbsida som körs i din webbläsare. Du lägger in en egen
-    API-nyckel från OpenRouter. När du ställer en fråga skickas den
-    direkt från din dator till OpenRouter, som kör den mot språkmodellen
-    DeepSeek V4 Flash. Den passerar inte våra servrar,
-    och det finns ingen server hos oss som skulle kunna ta emot den.</p>
-    <h4>Var ditt material hamnar</h4>
+    <!-- Skriven mot functions/api/ai.js och migrations/0004_ai_proxy.sql
+         (2026-08-06). Läs kommentaren i filhuvudet innan något ändras här:
+         varje mening nedan motsvarar en rad i den koden. -->
+    <h3 id="portalen">3. När du använder portalen</h3>
+    <p>Det här är kärnan i tjänsten, och den behandling där mest står på spel. Läs
+    det här avsnittet även om du hoppar över resten.</p>
+
+    <h4 id="proxy">Vägen en fråga tar</h4>
+    <p>Portalen är en webbsida som körs i din webbläsare. När du ställer en fråga
+    skickas den till en funktion på vår server hos Cloudflare, som skickar den
+    vidare till tjänsten OpenRouter på vårt konto. OpenRouter dirigerar anropet
+    till den leverantör som driftar språkmodellen DeepSeek V4 Flash, och svaret tar
+    samma väg tillbaka till din skärm. Med frågan följer det du har lagt in som
+    företagsminne och de underlag du har slagit på.</p>
+    <p>Du behöver alltså inget eget konto och ingen egen API-nyckel hos någon
+    AI-leverantör. Priset är detsamma oavsett hur mycket modellen kostar oss. Men
+    det innebär också att <b>innehållet i dina frågor passerar oss</b>, och det är
+    därför resten av det här avsnittet finns.</p>
+    <p>Samma väg gäller när du bygger ett team på webbplatsen utan att vara
+    inloggad. Då finns inget konto att räkna körningen mot, och den räknas i
+    stället i en gemensam anonym post — vi vet att en byggkörning skedde, inte av
+    vem.</p>
+
+    <ul class="fakta">
+      <li><b>Uppgifter</b>Din fråga, det företagsminne och de underlag som skickas
+      med den, och svaret tillbaka — alltså de personuppgifter du själv väljer att
+      mata in.</li>
+      <li><b>Ändamål</b>Att producera svaret och leverera det till dig, och att
+      räkna av din förbrukning mot det som ingår i priset.</li>
+      <li><b>Vår roll</b>Personuppgiftsbiträde. Vi behandlar uppgifterna enbart på
+      ditt uppdrag och för dina ändamål, aldrig för egna.</li>
+      <li><b>Din roll</b>Du, eller din arbetsgivare, är personuppgiftsansvarig för
+      innehållet och avgör vad som får matas in.</li>
+      <li><b>Rättslig grund</b>Vi behandlar uppgifterna enligt instruktion i
+      biträdesavtalet och för att fullgöra avtalet med dig (artikel 6.1 b). Den
+      rättsliga grunden för din egen behandling bestämmer du, och den ska finnas
+      innan du matar in något.</li>
+      <li><b>Underbiträden</b>Cloudflare, Inc. (kör funktionen och databasen),
+      OpenRouter, Inc. (förmedlar anropet till en modell) och den leverantör som
+      driftar DeepSeek V4 Flash och utför själva beräkningen.</li>
+      <li><b>Lagringstid</b>Frågan och svaret finns hos oss bara så länge anropet
+      pågår. De skrivs inte till vår databas och finns inte kvar när svaret är
+      levererat.</li>
+    </ul>
+
+    <h4>Vad vi sparar, och vad vi inte sparar</h4>
+    <p>Av din användning behåller vi tre saker, och alla tre är räkneverk:</p>
     <ul>
-      <li><b>I din webbläsare.</b> Samtal, företagsminne, inklistrade underlag och
-      din API-nyckel sparas i webbläsarens lokala lagring, i klartext, på din egen
-      dator. De ligger kvar tills du rensar dem. I portalen finns knapparna
-      "Rensa samtal" och "Töm allt".</li>
+      <li><b>Per konto och månad</b> — antal svar och hur många tokens (textenheter)
+      som gått in och ut. Det är den siffran fair use-taket räknas mot, och den
+      som gör att vi kan fakturera rätt.</li>
+      <li><b>Per dygn för hela tjänsten</b> — samma slags summa, utan koppling till
+      något konto. Den finns för att vi ska se om något skenar och kunna bromsa
+      innan kostnaden gör det åt oss.</li>
+      <li><b>Per IP-adress i femton minuter</b> — en räknare som stoppar den som
+      skickar orimligt många anrop på kort tid. Raden innehåller IP-adressen och
+      ett antal, ingenting annat, och skrivs över vid nästa tidsfönster. Rättslig
+      grund för just den är vårt berättigade intresse (artikel 6.1 f) av att inte
+      få vår tjänst missbrukad.</li>
+    </ul>
+    <p>Räkneverken innehåller siffror, inte text. Vi sparar alltså <b>inte</b>
+    innehållet i dina frågor, dina underlag eller de svar du får, i någon databas
+    hos oss. Vi använder dem inte för att träna eller förbättra någon modell, vi
+    läser dem inte för att utveckla produkten, och vi lämnar dem inte till någon
+    annan än de underbiträden som räknas upp ovan. Behöver vi någon gång se ett
+    konkret svar för att felsöka åt dig, ber vi dig skicka det — vi hämtar det
+    inte.</p>
+    <p>Går ett anrop fel skriver vår server en felrad i driftloggen med
+    felkoden från AI-leverantören. Din fråga står inte i den. I övrigt för
+    Cloudflare driftloggar över anropen på samma sätt som beskrivs under punkt 1:
+    teknisk information om anropet, inte innehållet i det.</p>
+
+    <div class="varning">
+      <h4>Om modellen och var den körs</h4>
+      <p style="margin-bottom:10px">Modellen heter DeepSeek V4 Flash och är
+      utvecklad av DeepSeek, ett kinesiskt AI-bolag. Vi når den via OpenRouter,
+      som är ett amerikanskt bolag. Själva beräkningen sker hos den
+      datacenterleverantör OpenRouter dirigerar anropet till, och <b>den kan ligga
+      utanför EU och EES</b>. Vår egen funktion körs i Cloudflares nät, som når
+      hela världen.</p>
+      <!-- SANNINGSKRAV: koden (functions/api/ai.js) skickar provider:
+           { sort: "throughput" } — alltså INGEN vitlista. Skriv inte att urvalet
+           är begränsat förrän koden begränsar det. Att anrop inte får sparas för
+           modellträning är en inställning på OpenRouter-kontot; kontrollera att
+           den faktiskt är satt innan den här meningen får stå kvar. -->
+      <p style="margin-bottom:10px">Vi styr anropet till den leverantör som svarar
+      snabbast, och begränsar i dag inte urvalet till någon viss lista. Hos
+      OpenRouter har vi valt bort att anrop får sparas för modellträning. Behöver
+      din verksamhet att bara vissa leverantörer, eller bara leverantörer inom EU,
+      används — säg till innan du beställer, så svarar vi skriftligt om vi kan
+      lösa det och vad det i så fall innebär.</p>
+      <p style="margin-bottom:0">Arbetar du med sekretessbelagt klientmaterial,
+      journaluppgifter eller under tystnadsplikt: ta beslutet medvetet, tillsammans
+      med den som ansvarar för informationssäkerheten hos er, och läs
+      <a href="#tredjeland">Överföring utanför EU och EES</a> innan ni börjar. Vi
+      kan inte fatta det beslutet åt er, och vi låtsas inte att frågan inte
+      finns.</p>
+    </div>
+
+    <h4>Var ditt material hamnar på din egen dator</h4>
+    <p>Utöver vägen ovan sparar portalen material lokalt hos dig, för att du ska
+    kunna komma tillbaka till dina samtal. Det ligger på din dator och styrs av
+    dig.</p>
+    <ul>
+      <li><b>I din webbläsare.</b> Samtal, företagsminne och inklistrade underlag
+      sparas i webbläsarens lokala lagring, i klartext, på din egen dator. De
+      ligger kvar tills du rensar dem. I portalen finns knapparna "Rensa samtal"
+      och "Töm allt".</li>
       <li><b>I en mapp du själv väljer.</b> Kopplar du en mapp på datorn läser och
       skriver portalen i just den mappen. Väljer du en mapp som synkas till
       OneDrive eller Dropbox följer materialet med dit, under ditt eget avtal med
       den tjänsten.</li>
-      <li><b>Hos din AI-leverantör.</b> Frågan och de underlag som skickas med
-      den behandlas av OpenRouter, och av den som driftar modellen, enligt
-      OpenRouters villkor och det avtal du har med dem.
-      <br><br>
-      <b>Var tydlig med det här internt:</b> modellen heter DeepSeek V4 Flash och
-      är utvecklad av DeepSeek, ett kinesiskt AI-bolag. Själva körningen sker hos
-      den datacenterleverantör OpenRouter dirigerar anropet till, och den kan
-      ligga utanför EU/EES. Vilka leverantörer som är aktuella, och vilken
-      datapolicy var och en har, anger OpenRouter per modell — och i OpenRouters
-      inställningar kan du begränsa vilka leverantörer som får användas och
-      stänga av att dina anrop får sparas för modellträning.
-      <br><br>
-      Hanterar du känsliga personuppgifter, sekretessbelagt klientmaterial eller
-      omfattas du av tystnadsplikt: ta det här beslutet medvetet, tillsammans med
-      den som ansvarar för informationssäkerheten hos er. Vi kan inte fatta det
-      åt er, och vi låtsas inte att frågan inte finns.</li>
-    </ul>
-    <ul class="fakta">
-      <li><b>Vår roll</b>Ingen. Vi är varken personuppgiftsansvariga eller
-      personuppgiftsbiträden för det du matar in i portalen i det här läget.</li>
-      <li><b>Din roll</b>Du, eller din arbetsgivare, är personuppgiftsansvarig för
-      innehållet och avgör vad som får matas in.</li>
-      <li><b>Lagringstid</b>Bestäms av dig. Vi kan varken radera eller hämta ut
-      något åt dig, eftersom vi inte har det.</li>
     </ul>
     <p>Använder du en dator som delas med andra: den som öppnar portalen på samma
-    dator och i samma webbläsare kommer åt både historiken och nyckeln.</p>
+    dator och i samma webbläsare kommer åt historiken.</p>
 
     <!-- ============ 6. BEHANDLING 4 ============ -->
-    <h3 id="moln">4. När ett team sparas i molnet</h3>
-    <p>Det finns en frivillig funktion där en färdig teamkonfiguration kan sparas
-    hos oss och öppnas via en lång, slumpad länk. En teamkonfiguration innehåller
-    rollbeskrivningar och instruktioner — inte dina samtal, inte dina underlag och
-    inte din nyckel.</p>
+    <h3 id="moln">4. Ditt konto och ditt team hos oss</h3>
+    <p>För att kunna använda portalen behöver du ett konto, dels för att bara du
+    och dina kollegor ska nå teamet, dels för att förbrukningen ska kunna räknas
+    per konto. Inloggningen sker med en engångskod till din e-post — det finns
+    inget lösenord.</p>
+    <ul class="fakta">
+      <li><b>Uppgifter</b>Din e-postadress, tidpunkt för när kontot skapades och
+      när du senast loggade in, samt vilka team ditt konto har åtkomst till.
+      Inloggningskoden och sessionen lagras i förvrängd form (hashad), aldrig i
+      klartext. Något namn, någon profil eller något mer lagrar vi inte.</li>
+      <li><b>Ändamål</b>Att ge dig åtkomst till det du har betalat för, hindra
+      andra från att nå det, och räkna förbrukning per konto.</li>
+      <li><b>Rättslig grund</b>Att fullgöra avtalet med dig (artikel 6.1 b).</li>
+      <li><b>Mottagare</b>Cloudflare, som lagrar databasen, och den
+      avsändartjänst som levererar mejlet med inloggningskoden.</li>
+      <li><b>Lagringstid</b>Så länge kontot finns. Inloggningskoder gallras inom
+      minuter, sessioner när de går ut eller när du loggar ut. Säger du upp
+      tjänsten raderas kontot inom 90 dagar.</li>
+    </ul>
+
+    <h4>Teamet som sparas hos oss</h4>
+    <p>Det team du har beställt lagras hos oss så att det kan öppnas i portalen.
+    En teamkonfiguration innehåller rollbeskrivningar och instruktioner — inte
+    dina samtal och inte dina underlag.</p>
     <ul class="fakta">
       <li><b>Uppgifter</b>Företagets namn, teamets innehåll och de personuppgifter
       som råkar förekomma i beskrivningarna, till exempel namn på en kontaktperson.</li>
-      <li><b>Ändamål</b>Att leverera det köpta teamet och göra det åtkomligt för
-      dig och dina kollegor.</li>
+      <li><b>Ändamål</b>Att leverera teamet och göra det åtkomligt för dig och
+      dina kollegor så länge tjänsten löper.</li>
       <li><b>Rättslig grund</b>Att fullgöra avtalet med dig (artikel 6.1 b).</li>
       <li><b>Mottagare</b>Cloudflare, som lagrar databasen.</li>
       <li><b>Lagringstid</b>Så länge du har tjänsten, och därefter 90 dagar innan
       posten raderas.</li>
       <!-- Regionen är inte satt explicit i wrangler.toml och går därför inte att
            utläsa ur konfigurationen. Kör `npx wrangler d1 info agent-team-builder`
-           och skriv in den verifierade regionen här INNAN något kunddata lagras.
-           Påstå ingenting om EU förrän det är kontrollerat. -->
+           och skriv in den verifierade regionen här. Påstå ingenting om EU förrän
+           det är kontrollerat. -->
       <li><b>Var</b>Databasen driftas av Cloudflare. Vill du veta i vilken region
       din post ligger innan du beställer, fråga oss så kontrollerar vi det och
       svarar skriftligt.</li>
     </ul>
-    <p>Innehåller ditt team personuppgifter som du är ansvarig för blir vi ditt
-    personuppgiftsbiträde för just den lagringen. Då tecknar vi ett
-    personuppgiftsbiträdesavtal med dig innan lagringen börjar. Hör av dig om du
-    vill se det i förväg.</p>
-    <p><b>I dag är funktionen bara läsning.</b> Ingenting sparas hos oss förrän du
-    har köpt ett team och vi tillsammans har lagt upp det. Det sker inte
-    automatiskt när du bygger ett team i Builder — det utkastet ligger i din egen
-    webbläsare.</p>
+    <p>Innehåller ditt team personuppgifter som du är ansvarig för är vi ditt
+    personuppgiftsbiträde också för den lagringen. Den täcks av samma
+    biträdesavtal som behandlingen under punkt 3 — se
+    <a href="#bitradesavtal">Personuppgiftsbiträdesavtal</a> nedan.</p>
+    <p>Teamet sparas hos oss först när du går vidare till kassan. Bygger du ett
+    team utan att beställa ligger utkastet kvar i din egen webbläsare och når
+    aldrig oss. Går du till kassan men fullföljer inte betalningen raderas det
+    påbörjade utkastet hos oss, normalt inom ett dygn.</p>
 
-    <!-- ============ BEHANDLING 5 — NYCKELFRITT LÄGE ============ -->
-    <!-- OBS FÖR UTVECKLING: det här avsnittet beskriver en proxy (/api/chat) som
-         INTE är byggd. Så länge den inte finns säljs ingen nyckelfri nivå, och
-         då är avsnittet en beskrivning av vad som kommer att gälla. Byggs den:
-         bestäm och skriv in den faktiska loggningen (vad, hur länge, var) —
-         gissa inte, och lova inte "ingen loggning" om servern loggar. -->
-    <h3 id="proxy">5. När du använder portalen utan egen nyckel</h3>
-    <p>På de nivåer där ingen egen nyckel behövs går dina frågor via vår server,
-    på vårt konto hos AI-leverantören. Det är den enda situationen där innehållet
-    i dina frågor passerar oss, och därför beskrivs den för sig.</p>
-    <ul class="fakta">
-      <li><b>Uppgifter</b>Din fråga, det företagsminne och de underlag som skickas
-      med den, och svaret tillbaka — alltså de personuppgifter du själv väljer att
-      mata in.</li>
-      <li><b>Ändamål</b>Att leverera svaret till dig, och att räkna av din
-      förbrukning mot det tak som ingår i priset.</li>
-      <li><b>Vår roll</b>Personuppgiftsbiträde. Du, eller din arbetsgivare, är
-      personuppgiftsansvarig för innehållet. Ett personuppgiftsbiträdesavtal
-      tecknas innan du börjar använda tjänsten.</li>
-      <li><b>Rättslig grund</b>Vi behandlar uppgifterna på ditt uppdrag, enligt
-      biträdesavtalet. Grunden för din egen behandling bestämmer du.</li>
-      <li><b>Mottagare</b>Cloudflare, som kör servern, och den AI-leverantör vi
-      använder för nivån. Vilken det är framgår i portalen.</li>
-      <li><b>Lagringstid</b>Frågan och svaret mellanlagras bara så länge anropet
-      pågår och sparas inte av oss efteråt. Det vi behåller är räkneverket:
-      antal anrop och förbrukad mängd, som behövs för att taket ska fungera och
-      för att kunna fakturera rätt.</li>
-    </ul>
-    <p>Vill du inte att något av ditt innehåll passerar oss, välj en nivå med egen
-    nyckel. Då gäller punkt 3 i stället, och vi har ingen roll alls.</p>
-
-    <!-- ============ BEHANDLING 6 ============ -->
-    <h3 id="statistik">6. Besöksstatistik</h3>
+    <!-- ============ BEHANDLING 5 ============ -->
+    <h3 id="statistik">5. Besöksstatistik</h3>
     <p><b>I dag mäter webbplatsen ingenting.</b> Det finns inget analysverktyg, inga
     spårningsskript och inga kakor för statistik.</p>
     <p>När besöksstatistik införs blir den kakfri och räknar inte enskilda besökare
@@ -316,20 +395,61 @@
     berättigat intresse (artikel 6.1 f), och den här sidan uppdateras innan mätningen
     startar.</p>
 
-    <!-- ============ 8. TREDJE LAND ============ -->
+    <!-- ============ BITRÄDESAVTAL ============ -->
+    <h3 id="bitradesavtal">Personuppgiftsbiträdesavtal</h3>
+    <p>Eftersom vi behandlar personuppgifter för din räkning krävs ett skriftligt
+    personuppgiftsbiträdesavtal mellan oss, enligt artikel 28.3 i
+    dataskyddsförordningen. Det gäller alla kunder — det är inget tillval.</p>
+    <p>Avtalet ingås automatiskt när du beställer, som en del av
+    <a href="villkor.html">villkoren</a>, och behöver alltså inte undertecknas
+    separat för att gälla. Vill du eller din organisation ha det som en egen
+    handling att diarieföra, granska eller skriva under, mejlar du
+    <a href="mailto:info@mittaiteam.se">info@mittaiteam.se</a> så skickar vi det.
+    Det kostar ingenting, och du kan be om det både före och efter beställning.</p>
+    <p>Avtalet reglerar det som artikel 28 kräver: att vi bara behandlar uppgifter
+    enligt dina dokumenterade instruktioner, tystnadsplikt för den som hanterar
+    dem, tekniska och organisatoriska säkerhetsåtgärder, villkoren för de
+    underbiträden som räknas upp under <a href="#proxy">punkt 3</a>, hjälp när en
+    registrerad utövar sina rättigheter, underrättelse vid personuppgiftsincident,
+    samt att uppgifterna raderas när avtalet upphör.</p>
+    <p>Byter vi underbiträde — till exempel modellleverantör — meddelar vi det i
+    förväg så att du hinner invända. Har du en egen mall för biträdesavtal som ni
+    måste använda går det att titta på; skicka den så svarar vi om vi kan skriva
+    under den.</p>
+
+    <!-- ============ TREDJE LAND ============ -->
     <h3 id="tredjeland">Överföring utanför EU och EES</h3>
+    <p>Det här avsnittet är det som brukar avgöra om en byrå eller mottagning kan
+    använda tjänsten, så det står rakt.</p>
+    <p><b>Dina frågor kan behandlas utanför EU och EES.</b> Vi skickar dem via
+    OpenRouter, ett amerikanskt bolag, till den leverantör som driftar DeepSeek V4
+    Flash. Modellen är utvecklad av DeepSeek, ett kinesiskt AI-bolag, och den
+    leverantör som utför beräkningen kan finnas i eller utanför EU beroende på
+    vart anropet dirigeras. I dag styr vi anropet efter vilken leverantör som
+    svarar snabbast, och vi kan alltså inte lova att all behandling sker inom
+    EU. Behöver din verksamhet den garantin ska du
+    inte mata in materialet i portalen — hör av dig i stället, så säger vi rakt ut
+    om vi kan lösa det eller inte.</p>
     <p>Cloudflare och Google är amerikanska bolag, och deras behandling kan innebära
     överföring till länder utanför EU och EES. Överföringarna vilar på EU-kommissionens
     standardavtalsklausuler och, i förekommande fall, på beslutet om adekvat
     skyddsnivå för företag anslutna till EU–US Data Privacy Framework.</p>
-    <p>Använder du portalen med egen nyckel sker överföringen till din AI-leverantör
-    under ditt eget avtal med dem. Vilka garantier som gäller där bestäms av det
-    avtalet, inte av oss.</p>
+    <!-- ATT KONTROLLERA INNAN EN KUND MED SEKRETESSKRAV SÄLJS PÅ: läs OpenRouters
+         databehandlingsvillkor och verifiera vilka standardavtalsklausuler som
+         faktiskt gäller, samt vilka leverantörer kontot är begränsat till. Skriv
+         in det verifierade läget här. Påstå inte mer än vad avtalen bär. -->
+    <p>För överföringen till OpenRouter och vidare till den som driftar modellen
+    gäller de databehandlingsvillkor OpenRouter tillhandahåller, med
+    standardavtalsklausuler där sådana finns. Något beslut om adekvat skyddsnivå
+    finns inte för Kina. Frågar du oss vilka villkor och vilka leverantörer som
+    gäller för din tjänst redovisar vi dem skriftligt, och vi hänvisar hellre till
+    handlingen än till en formulering här. Se också rutan om känsliga uppgifter i
+    <a href="#ansvar">avsnittet om ansvar</a>.</p>
 
     <!-- ============ 9. RÄTTIGHETER ============ -->
     <h3 id="rattigheter">Dina rättigheter</h3>
-    <p>För de behandlingar där vi är personuppgiftsansvariga — punkt 1, 2 och 4 —
-    har du rätt att:</p>
+    <p>För de behandlingar där vi är personuppgiftsansvariga — punkt 1, 2, 4 och 5
+    — har du rätt att:</p>
     <ul>
       <li>få veta om vi behandlar uppgifter om dig och få en kopia av dem,</li>
       <li>få felaktiga uppgifter rättade,</li>
@@ -342,9 +462,12 @@
     <p>Begäran skickas till <a href="mailto:info@mittaiteam.se">info@mittaiteam.se</a>.
     Du får svar inom en månad. Vi kan behöva ställa en kontrollfråga för att vara
     säkra på att det är du som frågar. Rättigheterna är kostnadsfria att använda.</p>
-    <p>För det du matar in i portalen med egen nyckel kan vi inte hjälpa dig — det
-    materialet finns inte hos oss. Rensa det i portalen, i din mapp och hos din
-    AI-leverantör.</p>
+    <p>För det du matar in i portalen — punkt 3 — är det din arbetsgivare eller du
+    själv som är ansvarig, och rättigheterna utövas mot den ansvarige. Är du
+    anställd hos en kund och vill komma åt eller få bort något: vänd dig till
+    arbetsgivaren, så hjälper vi dem. Vi sparar inte innehållet i frågor och svar,
+    så det finns normalt ingenting hos oss att lämna ut eller radera; det som
+    finns kvar ligger i din webbläsare och i din mapp och rensas där.</p>
 
     <h4>Om du är missnöjd</h4>
     <p>Hör gärna av dig till oss först, det brukar gå snabbast. Du har också alltid

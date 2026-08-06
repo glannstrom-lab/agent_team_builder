@@ -40,13 +40,25 @@
 
   TEKNISKA PÅSTÅENDEN SOM MÅSTE HÅLLAS SYNKRONISERADE MED KODEN
   ············································································
-  - "Ingen drift att utlova" stämmer så länge portalen är statiska filer på
-    Cloudflare Pages och anropen går direkt från kundens webbläsare
-    (atb-claude.js rad 10–12). Byggs en proxy eller en hostad nivå måste
-    avsnitt 12 och 13 skrivas om.
-  - Moln-sparat team: functions/api/teams/[slug].js är i dag endast läsning.
-  - Kunden behåller markdown-filerna för att teamet är filer i kundens egen
-    mapp/nedladdning — inte en databaspost hos oss. Ändras det ändras § 9.
+  - ETT DRIFTLÄGE sedan 2026-08-06: vi kör AI:n på vår egen nyckel. Kunden har
+    ingen egen API-nyckel, i ingen nivå. Skriv aldrig tillbaka in "med egen
+    nyckel" som alternativ — den produkten säljs inte längre.
+  - Proxyn heter /api/ai (functions/api/ai.js) och är byggd 2026-08-06.
+    Förbrukningen räknas i ai_usage och ai_budget (migrations/0004_ai_proxy.sql),
+    inte i den gamla `usage`-tabellen. Ändras taken i koden ändras avsnitt 3.
+  - Fair use-taket i avsnitt 3 (1 000 svar per konto och månad) måste matcha
+    det tak som räknas i koden och visas i portalen. Ändras det ena ändras det
+    andra samma dag.
+  - Priserna i avsnitt 4 ska vara identiska med prislistan i index.html.
+    Beloppen är kopplade till vad som ingår per nivå, INTE till någon nyckel.
+    BESLUT 2026-08-06: TRE nivåer — 0 / 90 / 290 per mån — plus offert för flera
+    användare. 190, 490 och engångsköpet om 4 990 är strukna. Engångsköp av ett
+    team säljs inte alls: ingen text får bygga på att kunden äger ett team efter
+    ett köp, bara att den behåller filer den laddat ner.
+  - Moln-sparat team: functions/api/teams/[slug].js är endast läsning; raden
+    skrivs av functions/api/stripe-webhook.js vid betalning.
+  - Kunden behåller markdown-filerna för att teamet också är filer kunden kan
+    ladda ner. Ändras det ändras § 6 och § 9.
 -->
 
 <style>
@@ -88,7 +100,7 @@
 <section>
   <div class="wrap narrow legal">
 
-    <div class="lead-meta">Allmänna villkor · Version 1.0 · Gäller från 2026-08-05</div>
+    <div class="lead-meta">Allmänna villkor · Version 1.1 · Gäller från 2026-08-06</div>
     <h1 class="section-title" style="font-size:clamp(30px,4vw,44px)">Villkor</h1>
     <p class="section-lead" style="margin-bottom:10px">Vad du köper, vad du själv ansvarar för och vad som gäller om något går fel.
     Skrivet för att gå att läsa igenom på tio minuter.</p>
@@ -132,74 +144,85 @@
       text som du kan läsa, ändra och spara var du vill.</li>
       <li><b>Åtkomst till portalen</b> — webbgränssnittet där teamet används, med
       veckostart, rutiner, möten och delat minne.</li>
+      <li><b>Själva AI-förbrukningen</b> — du behöver inget konto och ingen
+      API-nyckel hos någon AI-leverantör. Vi kör modellen åt dig, inom det tak som
+      beskrivs i avsnitt 3.</li>
       <li><b>Ett dokumenterat första projekt</b>, när det ingår i paketet — ett
       konkret arbetsmoment att börja med och hur det ska följas upp.</li>
       <li><b>Genomgång och överlämning</b>, när det ingår i paketet.</li>
     </ul>
 
     <h4>Vad du inte får</h4>
-    <p>Du får inte AI-modellen. Vi varken utvecklar, driver eller vidareförsäljer
-    någon språkmodell. Det du köper är arbetet med att ta fram rollerna, plus
-    gränssnittet som gör dem användbara. Motorn är språkmodellen DeepSeek V4
-    Flash, som nås via tjänsten OpenRouter, och du hämtar tillgången till den
-    själv genom ett eget konto där.</p>
+    <p>Du får inte AI-modellen. Vi varken utvecklar eller driver någon språkmodell.
+    Det du köper är arbetet med att ta fram rollerna, gränssnittet som gör dem
+    användbara, och tillgången till modellen genom oss. Motorn är språkmodellen
+    DeepSeek V4 Flash, som vi når via tjänsten OpenRouter. Du får använda den
+    genom portalen, inom ramen för avsnitt 3 — inte som en fristående
+    AI-tjänst att bygga vidare på eller sälja åtkomst till.</p>
     <p>Du får inte heller en garanterad tidsbesparing, ett visst resultat eller
     någon utfästelse om vad AI kommer att kunna göra i din verksamhet. Vi beskriver
     vad verktyget gör; vad det ger beror på hur ni använder det.</p>
 
     <!-- ============ 3 ============ -->
-    <h3 id="nyckel">3. Motorn bakom portalen</h3>
-    <p>Portalen behöver en språkmodell för att svara. Det finns två sätt att lösa
-    det, och de skiljer sig i vem som betalar förbrukningen och vem som är ansvarig
-    för behandlingen.</p>
+    <!-- Skrivet mot functions/api/ai.js (2026-08-06): MAX_CALLS_PER_ACCOUNT =
+         1000 per månad, MAX_CALLS_PER_IP = 24 per kvart, MAX_CALLS_PER_DAY =
+         4000 globalt. Ändras något av talen ändras texten nedan samma dag —
+         villkoren får inte lova mer än koden gör. Se även avsnitt 9 och 11. -->
+    <h3 id="motor">3. Motorn bakom portalen, och vad som ingår</h3>
+    <p>Portalen behöver en språkmodell för att svara. Den står vi för. Du behöver
+    inget konto hos någon AI-leverantör, ingen API-nyckel och inget eget abonnemang
+    — allt det ligger hos oss och ingår i priset.</p>
+    <p>Rent tekniskt går din fråga från webbläsaren till vår server, vidare till
+    tjänsten OpenRouter på vårt konto, och därifrån till den leverantör som driftar
+    språkmodellen DeepSeek V4 Flash. Svaret tar samma väg tillbaka.</p>
 
-    <h4>Med din egen nyckel</h4>
-    <p>Du skaffar ett eget konto hos en AI-leverantör och lägger in en egen
-    API-nyckel i portalen. Du betalar förbrukningen själv och lyder den
-    leverantörens villkor.</p>
+    <h4>Vad det innebär för dig</h4>
     <ul>
-      <li>Användningen debiteras av leverantören direkt mot ditt konto. Vi ser
-      varken din förbrukning eller dina fakturor, och vi tar inget påslag.</li>
-      <li>Vad din leverantör gör med innehållet i dina frågor styrs av deras avtal
-      med dig. Behöver ditt företag ett databehandlingsavtal för den behandlingen
-      tecknar ni det med leverantören.</li>
-      <li>Ändrar leverantören sina priser, sina villkor eller sina modeller påverkar
-      det dig direkt. Vi kan inte hindra det och ersätter inte kostnader som
-      uppstår ur det.</li>
-      <li>Nyckeln är din. Sätt ett utgiftstak hos leverantören, och lägg inte in en
-      nyckel på en dator som andra använder utan att du vet vilka.</li>
-    </ul>
-
-    <!-- OBS FÖR UTVECKLING: styckena nedan beskriver ett läge där anropen går via
-         vår server på vår nyckel. Det kräver en proxy (/api/chat) med kvot- och
-         takräkning som INTE är byggd ännu. Sälj ingen nyckelfri nivå förrän den
-         finns — då är texten här sann, inte innan. Se även avsnitt 9 och 11. -->
-    <h4>Utan egen nyckel</h4>
-    <p>På de nivåer där ingen nyckel behövs går anropen i stället via oss, på vårt
-    konto hos leverantören. Då gäller följande:</p>
-    <ul>
-      <li>Förbrukningen ingår i priset. Du får ingen separat räkning för den.</li>
-      <li>Användningen har ett tak, som anges när du beställer. Taket finns för att
-      priset ska gå att hålla, och du ser hur mycket av det du har använt i
-      portalen. När taket är nått pausas svaren till nästa period, eller så kan du
-      välja att lägga in en egen nyckel och fortsätta obegränsat.</li>
+      <li>Du får ingen separat räkning för AI-förbrukningen, och vi debiterar inte
+      per fråga, per ord eller per token. Du betalar det som står i prislistan,
+      oavsett hur mycket eller lite modellen kostar oss den månaden.</li>
       <li>Vi väljer vilken modell som används, och kan byta den. Vi meddelar i
       förväg om bytet märkbart påverkar hur tjänsten fungerar.</li>
-      <li>I det här läget passerar dina frågor vår server. Vi blir då ditt
-      personuppgiftsbiträde för den överföringen, och ett
-      personuppgiftsbiträdesavtal tecknas innan du börjar använda tjänsten. Se
+      <li>Dina frågor och de underlag du skickar med passerar våra servrar. Vi är
+      därmed ditt personuppgiftsbiträde, och ett personuppgiftsbiträdesavtal ingås
+      genom dessa villkor. Vad det innebär, vilka underleverantörer vi anlitar och
+      var behandlingen sker står i
       <a href="integritet.html#proxy">integritetspolicyn</a>.</li>
-      <li>Automatiserad eller maskinell användning, vidareförsäljning av
-      åtkomsten och delning av inloggningen utanför din egen verksamhet är inte
-      tillåtet. Vi får stänga av vid missbruk.</li>
+      <li>Automatiserad eller maskinell användning, vidareförsäljning av åtkomsten
+      och delning av inloggningen utanför din egen verksamhet är inte tillåtet.
+      Vi får stänga av vid missbruk.</li>
     </ul>
+
+    <h4 id="fairuse">Fair use — 1 000 svar per konto och månad</h4>
+    <p>I priset ingår AI-förbrukning upp till <b>1 000 svar per konto och
+    kalendermånad</b>. Taket är satt för att rymma normal daglig användning med god
+    marginal — det motsvarar omkring femtio svar varje arbetsdag — och de allra
+    flesta kommer inte i närheten av det.</p>
+    <p>Vi debiterar aldrig automatiskt för förbrukning över taket, och du kan inte
+    få en oväntad räkning i efterhand. Når du taket får du i stället ett meddelande
+    i portalen som ber dig höra av dig, och svaren pausas till dess. Då kommer vi
+    överens om vad som är rimligt: vi öppnar upp resten av månaden om det var en
+    intensiv period, eller går över till en nivå som passar användningen om det är
+    det nya normalläget. Kostar det något är vi överens om det innan det börjar
+    gälla. Nästa kalendermånad börjar räkningen om från noll.</p>
+    <p>Utöver månadstaket finns en spärr mot ovanligt många anrop på kort tid, och
+    ett tak för hela tjänstens användning per dygn. De finns för att en enskild
+    användare inte ska kunna sänka tjänsten för alla, och märks inte vid vanligt
+    arbete.</p>
+    <p>Taket gäller ditt eget arbete i portalen. Automatiserad användning, eller
+    användning som gör att ett konto förbrukar mångdubbelt mer än vad en människa
+    hinner med, är inte fair use och hanteras enligt punkten om missbruk ovan.</p>
 
     <!-- ============ 4 ============ -->
     <h3 id="pris">4. Priser och betalning</h3>
     <!-- Beslutat 2026-08-05: momsregistrerat. Priser anges inklusive moms som
          huvudtal (krav mot konsument) med exkl.-talet utsatt för företagskunder.
          9 § e-handelslagen: pris ska anges klart, med skatter angivna för sig.
-         Ändras prislistan här måste den ändras i index.html samtidigt. -->
+         Ändras prislistan här måste den ändras i index.html samtidigt.
+         BESLUT 2026-08-06: beloppen står kvar men skiljer sig i VAD SOM INGÅR,
+         aldrig i vem som håller i en API-nyckel. Nyckeln finns inte längre som
+         val — skriv inte in den här igen. Indelningen nedan måste vara identisk
+         med prisavsnittet i index.html. -->
     <p>Verksamheten är momsregistrerad. Priserna nedan anges <b>inklusive moms om
     25 %</b>, med beloppet exklusive moms angivet för dig som köper som företag och
     drar av den.</p>
@@ -207,12 +230,33 @@
     <div class="kort">
       <h4>Prislista</h4>
       <div class="prisrad"><b>Bygga ett team</b><span>0 kr</span></div>
-      <div class="prisrad"><b>Provmånad med egen nyckel</b><span>90 kr (72 kr exkl.)</span></div>
-      <div class="prisrad"><b>Provmånad utan nyckel</b><span>190 kr (152 kr exkl.)</span></div>
-      <div class="prisrad"><b>Köp teamet, egen nyckel</b><span>4 990 kr (3 992 kr exkl.)</span></div>
-      <div class="prisrad"><b>Vi kör det åt er, per månad</b><span>490 kr (392 kr exkl.)</span></div>
+      <div class="prisrad"><b>Provmånad, en månad</b><span>90 kr (72 kr exkl.)</span></div>
+      <div class="prisrad"><b>Standard, löpande</b><span>290 kr/mån (232 kr exkl.)</span></div>
       <div class="prisrad"><b>Team i molnet, flera användare</b><span>offert</span></div>
     </div>
+
+    <h4>Vad som ingår per nivå</h4>
+    <p>AI-användningen ingår på varje nivå, inom fair use-taket i avsnitt 3. Du
+    skaffar alltså ingenting hos någon AI-leverantör, och du får ingen separat
+    räkning för användningen. Det som skiljer nivåerna åt är hur länge du har
+    tillgång och hur många ni är.</p>
+    <ul>
+      <li><b>0 kr — bygga ett team.</b> Hela byggkörningen i webbläsaren, och
+      underlaget att läsa och ta med dig. Inget konto, inget kort, ingen bindning.
+      AI-kostnaden för själva bygget står vi för.</li>
+      <li><b>90 kr — provmånad.</b> Teamet i portalen i en månad, med allt som
+      portalen innehåller. En engångsbetalning som tar slut av sig själv och inte
+      övergår i något abonnemang.</li>
+      <li><b>290 kr per månad — standard.</b> Portalen löpande, med AI:n inkluderad
+      inom fair use. Uppsägningsbar när som helst. Se avsnitt 6.</li>
+      <li><b>Offert — flera användare.</b> Fler platser på samma team prissätts
+      efter antal och behov. Se avsnitt 5.</li>
+    </ul>
+    <p>Fler nivåer än så finns inte, och det är ett medvetet val: vi säljer bara
+    det vi kan leverera i dag. Vi har ännu ingen struktur för att underhålla och
+    vidareutveckla team åt många kunder löpande, och säljer därför ingen nivå som
+    lovar det. Molnstrukturen byggs ut efterhand, och när något nytt går att
+    leverera dyker det upp i den här listan — inte innan.</p>
 
     <p>Provmånaden löper i en månad från beställningen och övergår inte automatiskt
     i något annat. Vill du fortsätta väljer du själv aktivt, och vill du inte det
@@ -225,41 +269,52 @@
     fakturerar vi med 15 dagars betalningsvillkor. Vid försenad betalning tas
     dröjsmålsränta enligt räntelagen ut samt lagstadgad påminnelseavgift.</p>
     <p>Att bygga ett team på webbplatsen är kostnadsfritt och förutsätter inget
-    köp. Bygger du med din egen nyckel betalar du din leverantörs förbrukning för
-    den byggkörningen, vilket i skrivande stund rör sig om ören.</p>
+    köp. Du behöver varken konto eller kort för att göra det, och
+    AI-förbrukningen för byggkörningen står vi för.</p>
 
     <!-- ============ 5 ============ -->
-    <h3 id="engang">5. Engångsköp</h3>
-    <p>Ett engångsköp omfattar framtagning och leverans av teamet, samt det som
-    uttryckligen står i offerten.</p>
+    <!-- OBS: här stod tidigare "5. Engångsköp". Den produkten finns inte längre —
+         teamet säljs inte som en engångsleverans att ta med sig, och ingen text i
+         filen får bygga på att kunden äger ett team efter ett köp. Skriv inte
+         tillbaka den utan att prislistan i avsnitt 4 och index.html ändras först. -->
+    <h3 id="engang">5. Offertuppdrag</h3>
+    <p>Vissa saker går inte att sätta ett listpris på: fler användare på samma
+    team, ett större omtag när verksamheten har förändrats, eller arbete utöver
+    det tjänsten gör av sig själv. Sådant lämnar vi offert på.</p>
     <ul>
-      <li>Arbetet påbörjas när du har bekräftat beställningen och lämnat det
-      underlag vi behöver.</li>
+      <li>Offerten säger vad som ska göras, vad det kostar och när det är klart.
+      Arbetet påbörjas när du har bekräftat den och lämnat det underlag vi
+      behöver.</li>
       <li>Leverans sker inom 10 arbetsdagar från bekräftad beställning, om inget
-      annat avtalats. Köper du ett team du redan har byggt och provkört är
-      leveransen normalt samma eller nästa arbetsdag.</li>
+      annat avtalats i offerten.</li>
       <li>I priset ingår en justeringsrunda inom 30 dagar efter leverans. Därefter
       debiteras ändringar löpande.</li>
-      <li>När teamet är levererat är köpet slutfört. Det finns ingen löpande
-      kostnad, och heller ingen löpande tjänst.</li>
+      <li>Ett offertuppdrag är ett arbete, inte ett abonnemang. Vill du fortsätta
+      använda teamet i portalen efteråt förutsätter det den löpande nivån i
+      avsnitt 6.</li>
     </ul>
+    <p>Vi offererar bara sådant vi vet att vi kan leverera. Frågar du efter något
+    som kräver drift vi inte har byggt ännu säger vi det rakt ut i stället för att
+    ta betalt för ett löfte.</p>
 
     <!-- ============ 6 ============ -->
-    <h3 id="abonnemang">6. Abonnemang</h3>
-    <p>Väljer du en löpande tjänst gäller följande.</p>
+    <h3 id="abonnemang">6. Standard, löpande</h3>
+    <p>Väljer du månadsnivån om 290 kr gäller följande.</p>
     <h4>Vad som ingår per månad</h4>
     <ul>
-      <li>Molnlagring av teamet och en delbar länk till portalen.</li>
-      <li>AI-förbrukningen upp till det tak som anges vid beställning — du behöver
-      alltså ingen egen nyckel.</li>
-      <li>Löpande uppdatering av teamet: nya agenter när verksamheten förändras,
-      och justering av befintliga roller. En uppdateringsrunda per kvartal ingår,
-      och görs på din begäran.</li>
+      <li>Molnlagring av teamet och åtkomst till portalen för dig och de kollegor
+      som har en plats.</li>
+      <li>AI-förbrukningen inom fair use-taket i avsnitt 3 — du skaffar ingenting
+      själv och får ingen separat räkning för användningen.</li>
       <li>Support via e-post med svar inom två arbetsdagar under kontorstid.</li>
       <li>Nya funktioner i portalen allteftersom de släpps.</li>
     </ul>
-    <p>Ingår inte: egna utvecklingsuppdrag, arbete utöver en uppdateringsrunda per
-    kvartal, och förbrukning över taket.</p>
+    <p><b>Ingår inte: att vi underhåller eller vidareutvecklar teamet åt dig.</b>
+    Det säljs inte som tjänst i dag, eftersom vi ännu inte har någon struktur för
+    att göra det löpande åt flera kunder. Teamet kan du ändra själv i portalen,
+    och behöver du hjälp med en större omarbetning offererar vi den separat. Ingår
+    gör heller inte egna utvecklingsuppdrag, eller användning utöver fair use-taket
+    — den kommer vi i så fall överens om enligt avsnitt 3.</p>
     <h4>Bindningstid och uppsägning</h4>
     <ul>
       <li>Abonnemanget löper per kalendermånad utan bindningstid.</li>
@@ -271,15 +326,20 @@
       <li>Prisändring aviseras minst 30 dagar i förväg och gäller från nästa
       betalperiod. Accepterar du inte den kan du säga upp innan den träder i kraft.</li>
     </ul>
-    <h4>Vad som händer med teamet när du säger upp</h4>
-    <p>Du behåller ditt team. Teamet är markdown-filer, och de filerna är dina —
-    du får ut dem vid leverans och kan alltid ladda ner dem från portalen. De går
-    att läsa i vilken textredigerare som helst och att använda i andra AI-verktyg.</p>
-    <p>Det du förlorar vid uppsägning är molnlagringen och den delbara länken. Dina
-    samtal, ditt företagsminne och dina underlag berörs inte alls, eftersom de
-    ligger i din egen webbläsare och i din egen mapp. Molnposten raderas 90 dagar
-    efter att abonnemanget upphört. Vill du ha den raderad direkt säger du bara
-    till.</p>
+    <h4>Vad som händer när du säger upp</h4>
+    <p>Det du förlorar är åtkomsten till portalen, molnlagringen av teamet och
+    möjligheten att ställa frågor genom oss — det är den tjänsten du har betalat
+    för, och den upphör med abonnemanget.</p>
+    <p>Det du behåller är filerna. Portalen har en knapp som samlar teamet,
+    företagsminnet och hela chatthistoriken i en läsbar fil, och allt du har laddat
+    ner är ditt att behålla, läsa och använda internt i din verksamhet — även i
+    andra AI-verktyg. <b>Ladda ner det du vill ha kvar innan perioden går ut</b>,
+    för efteråt kommer du inte åt portalen. Vi låser inte in något, men vi driver
+    det heller inte längre åt dig.</p>
+    <p>Dina samtal, ditt företagsminne och dina underlag berörs inte av
+    uppsägningen i sig, eftersom de ligger i din egen webbläsare och i din egen
+    mapp. Molnposten hos oss raderas 90 dagar efter att abonnemanget upphört. Vill
+    du ha den raderad direkt säger du bara till.</p>
     <p>Har du lagt till egna agenter i portalen med "Utveckla teamet" sparas de i
     den webbläsare du använde. Rensar du webbläsarens lagring försvinner de, och
     de följer inte automatiskt med till en annan dator. Vill du ha dem bevarade:
@@ -288,14 +348,21 @@
     <!-- ============ 7 ============ -->
     <h3 id="ip">7. Immaterialrätt</h3>
     <h4>Det du äger</h4>
-    <p>Den teamkonfiguration vi tar fram åt dig är din att använda, ändra, kopiera
-    inom din verksamhet och behålla utan tidsgräns. Det du och dina medarbetare
+    <p>Den teamkonfiguration vi tar fram åt dig får du använda, ändra och kopiera
+    inom din verksamhet så länge tjänsten löper, och de filer du har laddat ner får
+    du behålla och fortsätta använda internt även efter att abonnemanget upphört.
+    Vad du inte köper är en tjänst som fortsätter fungera hos oss utan
+    abonnemang — det är åtkomsten till portalen och driften du betalar för. Det du
+    och dina medarbetare
     producerar med teamet — texter, underlag, sammanställningar — är ert. Vi gör
-    inga anspråk på det och har ingen åtkomst till det.</p>
+    inga anspråk på det. Att materialet passerar våra servrar för att kunna
+    besvaras ger oss inga rättigheter till det, och vi sparar det inte; se
+    <a href="integritet.html#proxy">integritetspolicyn</a>.</p>
     <h4>Det vi äger</h4>
     <p>Verktyget bakom leveransen är vårt: metoden, prompterna, mallarna, portalen,
-    Builder och webbplatsen. Att köpa ett team ger dig inte rätt att vidaresälja,
-    licensiera eller bygga en konkurrerande tjänst på vårt underlag. Intern
+    Builder och webbplatsen. Att vara kund hos oss ger dig inte rätt att
+    vidaresälja, licensiera eller bygga en konkurrerande tjänst på vårt underlag,
+    och det gäller även de filer du har laddat ner. Intern
     användning i din egen verksamhet, i hur många led som helst, är däremot fri.</p>
     <h4>Referenser</h4>
     <p>Vi nämner dig som kund eller använder ditt uppdrag som exempel bara om du
@@ -334,18 +401,19 @@
 
     <!-- ============ 9 ============ -->
     <h3 id="tillgang">9. Tillgänglighet och support</h3>
-    <p>Vi lämnar ingen servicenivågaranti, och det är ett medvetet val som följer
-    av hur tjänsten är byggd.</p>
-    <p>Portalen är statiska filer som körs i din webbläsare. Använder du din egen
-    nyckel finns ingen server hos oss som behandlar dina frågor, och därför ingen
-    drift att utlova. Går något ned är det antingen din internetuppkoppling, din
-    AI-leverantör eller webbhotellet som levererar filerna — inget av det styr vi
-    över. Fördelen är den motsatta: skulle vår verksamhet upphöra fortsätter ditt
-    team att fungera, eftersom filerna är dina och motorn är din.</p>
-    <p>Använder du en nivå utan egen nyckel går anropen via oss, och då är vi
-    beroende av att vår leverantör fungerar. Vi lämnar ingen garanterad
-    tillgänglighet för det heller, men ligger tjänsten nere mer än några dagar i
-    följd under en betald period förlänger vi perioden i motsvarande mån.</p>
+    <p>Vi lämnar ingen servicenivågaranti. Verksamheten är liten, och ett löfte om
+    tillgänglighet dygnet runt vore ett löfte vi inte kunde hålla.</p>
+    <p>För att portalen ska kunna svara krävs att vår server, vår
+    AI-leverantör och den som driftar modellen fungerar. Ingen av de delarna är
+    vår egen, och vi kan inte utlova drift för dem. Vad vi lovar är det här:
+    ligger tjänsten nere mer än några dagar i följd under en betald period
+    förlänger vi perioden i motsvarande mån, och blir avbrottet långvarigt kan du
+    säga upp med återbetalning av den tid du inte kunnat använda.</p>
+    <p>Skulle vår verksamhet upphöra, eller skulle du sluta som kund, behåller du
+    de filer du har laddat ner — men inte möjligheten att köra teamet genom oss.
+    Filerna är vanlig text och går att använda i andra AI-verktyg. Skulle tjänsten
+    läggas ned meddelar vi det i förväg, så att du hinner ta ut det du vill ha
+    kvar.</p>
     <p>Support ges via <a href="mailto:info@mittaiteam.se">info@mittaiteam.se</a>
     på svenska, under kontorstid, med svar inom två arbetsdagar.</p>
     <p>Vi utvecklar verktyget löpande och kan ändra eller ta bort funktioner.
@@ -360,7 +428,8 @@
     <ul>
       <li>innehållet i svar som genereras av en AI-modell, eller vad du gör med dem,</li>
       <li>beslut som fattas med stöd av tjänsten,</li>
-      <li>avbrott, prisändringar eller ändrade villkor hos din AI-leverantör,</li>
+      <li>avbrott, prisändringar eller ändrade villkor hos de leverantörer vi i vår
+      tur är beroende av,</li>
       <li>förlust av material som du själv lagrar lokalt eller i din egen mapp,</li>
       <li>indirekt skada, utebliven vinst, produktionsbortfall eller förlorade data.</li>
     </ul>
@@ -374,12 +443,27 @@
     <h3 id="personuppgifter">11. Personuppgifter</h3>
     <p>Hur personuppgifter behandlas beskrivs i
     <a href="integritet.html">integritetspolicyn</a>, som är en del av dessa villkor.</p>
-    <p>Kortfattat: använder du portalen med din egen nyckel är du
-    personuppgiftsansvarig för det du matar in, och vi har ingen roll i den
-    behandlingen. Sparar vi ett team åt dig i molnet blir vi ditt
-    personuppgiftsbiträde för den lagringen, och då tecknar vi ett
-    personuppgiftsbiträdesavtal innan lagringen börjar. Detsamma gäller om du
-    använder en nivå utan egen nyckel, eftersom dina frågor då passerar oss.</p>
+    <p>Kortfattat: du, eller din arbetsgivare, är personuppgiftsansvarig för det du
+    matar in i portalen och bestämmer vad som får matas in. Eftersom dina frågor
+    och underlag passerar våra servrar, och eftersom vi lagrar ditt team åt dig, är
+    vi ditt <b>personuppgiftsbiträde</b>. Vi behandlar uppgifterna bara för att
+    leverera tjänsten till dig, aldrig för egna ändamål, och vi sparar inte
+    innehållet i frågor och svar.</p>
+    <h4>Personuppgiftsbiträdesavtal</h4>
+    <p>Ett personuppgiftsbiträdesavtal enligt artikel 28.3 i dataskyddsförordningen
+    ingås mellan oss genom dessa villkor tillsammans med
+    <a href="integritet.html#bitradesavtal">integritetspolicyn</a>, som beskriver
+    behandlingens föremål, varaktighet, art och ändamål, typen av personuppgifter,
+    kategorierna av registrerade, våra underbiträden och vad som gäller vid
+    överföring utanför EU och EES.</p>
+    <p>Behöver din organisation avtalet som en egen handling att granska,
+    diarieföra eller skriva under, mejlar du
+    <a href="mailto:info@mittaiteam.se">info@mittaiteam.se</a> så skickar vi det
+    utan kostnad, före eller efter beställning. Har ni en egen mall ni måste
+    använda tittar vi på den och svarar om vi kan skriva under den.</p>
+    <p>Vi anlitar underbiträden — i dag Cloudflare, OpenRouter och den leverantör
+    som driftar språkmodellen. Byter vi något av dem meddelar vi det i förväg så
+    att du hinner invända.</p>
 
     <!-- ============ 12 ============ -->
     <h3 id="sekretess">12. Sekretess</h3>
@@ -391,8 +475,9 @@
     <!-- ============ 13 ============ -->
     <h3 id="andring">13. Ändring av villkoren</h3>
     <p>Vi kan ändra dessa villkor. Har du ett pågående abonnemang meddelas ändringen
-    minst 30 dagar i förväg, och du kan säga upp innan den träder i kraft. För
-    engångsköp gäller de villkor som fanns när du beställde.</p>
+    minst 30 dagar i förväg, och du kan säga upp innan den träder i kraft. För en
+    provmånad och för offertuppdrag gäller de villkor som fanns när du
+    beställde.</p>
 
     <!-- ============ 14 ============ -->
     <h3 id="lag">14. Tillämplig lag och tvist</h3>

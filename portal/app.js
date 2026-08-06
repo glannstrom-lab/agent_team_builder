@@ -14,31 +14,36 @@ const HIST_PREFIX = "atb_hist_"; // + team-slug → sparad chatthistorik
 const MEM_PREFIX = "atb_mem_";   // + team-slug → delat företagsminne (instruktioner)
 const DOCS_PREFIX = "atb_docs_"; // + team-slug → inklistrade underlag [{title,text,on}]
 const DOCSON_PREFIX = "atb_docson_"; // + team-slug → { filnamn: bool } på/av för mapp-underlag
-const DEFAULT_MODEL = "deepseek/deepseek-v4-flash-latest"; // en modell gäller — se atb-claude.js
-// OpenRouter-nycklar (sk-or-) har eget modellval — sparas separat så det
-// aldrig krockar med Anthropic-valet när man byter nyckel fram och tillbaka.
+// Ingen DEFAULT_MODEL och inget sparat val: modellen bor i atb-claude.js och
+// ingen annanstans. Fanns den på två ställen glred de isär, vilket de gjorde.
+// API-URL och själva strömningen ligger i ../atb-claude.js (window.ATBClaude)
+// — delat med Buildern så de inte kan glida isär.
+//
+// ETT SPARAT MODELLVAL FICK INTE FINNAS KVAR (rättat 2026-08-06).
+// Det gjorde det ändå: portalen skrev "deepseek/deepseek-v4-flash-latest" till
+// atb_model_or, medan atb-claude.js kör "deepseek/deepseek-v4-flash" — exakt
+// det suffix som kommentaren där varnar för. Buildern läste samma nyckel och
+// visade därför TVÅ DeepSeek-rader i en väljare som ändå inte styrde något,
+// eftersom stream() ignorerar modellen som skickas med.
+//
+// Ett val som inte gäller är värre än inget val: det får produkten att se ut
+// att göra något annat än den gör. Här finns bara den låsta modellen kvar, och
+// gamla sparade värden städas bort så de inte spökar i en webbläsare som
+// besökt sajten tidigare.
 const OR_MODEL_STORAGE = "atb_model_or";
-const DEFAULT_OR_MODEL = "deepseek/deepseek-v4-flash-latest"; // samma id som atb-claude.js MODEL_ID
-// API-URL, anthropic-version och själva strömningen ligger i ../atb-claude.js
-// (window.ATBClaude) — delat med Buildern så de inte kan glida isär.
+try { localStorage.removeItem(OR_MODEL_STORAGE); localStorage.removeItem("atb_model"); } catch (_) { /* privat läge */ }
 
 const MODELS = [{ id: window.ATBClaude.MODEL_ID, label: window.ATBClaude.MODEL_LABEL }];
-// En modell, inga alternativ (2026-08-05). Listan finns kvar för att
-// anropande kod inte ska behöva skrivas om, men har exakt ett element
-// och hämtar det från atb-claude.js — modellvalet bor på ett ställe.
 
 function isOpenRouter() { return window.ATBClaude.providerFor(state.apiKey) === "openrouter"; }
-// Läs rätt sparat modellval för nyckelns leverantör (anropas vid boot och nyckelbyte).
 function syncModelForProvider() {
-  state.model = isOpenRouter()
-    ? (localStorage.getItem(OR_MODEL_STORAGE) || DEFAULT_OR_MODEL)
-    : (localStorage.getItem(MODEL_STORAGE) || DEFAULT_MODEL);
+  state.model = window.ATBClaude.MODEL_ID;
 }
 
 let team = null; // sätts när ett team laddats
 const state = {
   apiKey: localStorage.getItem(KEY_STORAGE) || "",
-  model: localStorage.getItem(MODEL_STORAGE) || DEFAULT_MODEL,
+  model: window.ATBClaude.MODEL_ID,
   // Demoläge: bläddra och chatta utan nyckel — svaren är förskrivna exempel.
   // Aktiveras via knapp eller ?demo=1 (delbar demolänk).
   demo: new URLSearchParams(location.search).get("demo") === "1",
@@ -1250,34 +1255,11 @@ function renderSidebar() {
   // dropdown vore ett val som inte finns. Etiketten visar vilken det är.
   const sl = el("div", "side-label", "Modell: " + window.ATBClaude.MODEL_LABEL);
   foot.appendChild(sl);
-  const sel = el("select", "model-select"); sel.id = "model-select";
-  const fillOptions = (list) => {
-    sel.innerHTML = "";
-    list.forEach((m) => {
-      const o = el("option", null, m.label || m.name || m.id); o.value = m.id;
-      if (m.id === state.model) o.selected = true;
-      sel.appendChild(o);
-    });
-  };
-  if (!state.demo && isOpenRouter()) {
-    // OpenRouter: hämta katalogen live (kurerad i atb-claude.js). Tills den
-    // laddats visas bara nuvarande val — dropdownen fungerar hela tiden.
-    fillOptions([{ id: state.model, name: state.model }]);
-    window.ATBClaude.openrouterModels()
-      .then((models) => {
-        const extra = models.some((m) => m.id === state.model) ? [] : [{ id: state.model, name: state.model }];
-        fillOptions(extra.concat(models));
-      })
-      .catch(() => { /* offline/fel — behåll nuvarande val */ });
-  } else {
-    fillOptions(MODELS);
-  }
-  sel.onchange = () => {
-    state.model = sel.value;
-    localStorage.setItem(isOpenRouter() ? OR_MODEL_STORAGE : MODEL_STORAGE, sel.value);
-  };
-  // sel byggs fortfarande (koden nedan refererar den) men läggs INTE in i
-  // sidfoten — det finns inget val att göra. Etiketten ovan visar modellen.
+  // Här låg en <select> som byggdes, fylldes från OpenRouters katalog och
+  // aldrig lades in i sidfoten. Den syntes alltså inte, men skrev fortfarande
+  // ett modellval till localStorage — samma nyckel som Buildern läste, och det
+  // var så den dubblerade DeepSeek-raden i Builderns väljare uppstod.
+  // Död kod som ändå har biverkningar är värre än död kod. Borttagen.
 
   const share = el("button", "link-btn", "Dela / exportera team");
   share.onclick = openShare;
@@ -2493,7 +2475,9 @@ function msFromStamp(v) {
 function trialNoticeFor(me, slug) {
   if (!me || typeof me !== "object" || !Array.isArray(me.teams)) return null;
   const t = me.teams.find((x) => x && x.slug === slug);
-  if (!t || t.plan !== "trial-byo") return null;
+  // "trial-byo" är det gamla namnet och ligger kvar på team som köptes före
+  // 2026-08-06. Att glömma det hade tystat påminnelsen för just de kunderna.
+  if (!t || (t.plan !== "trial" && t.plan !== "trial-byo")) return null;
   const started = msFromStamp(t.createdAt);
   if (!started) return null;
   const daysIn = Math.floor((Date.now() - started) / 86400000);

@@ -12,11 +12,11 @@ const DRAFT_STORAGE = "atb_draft_team";
 // avklarat pipeline-steg så att ett fel eller en F5 aldrig kastar bort betalda
 // steg. Utan detta är en refresh mitt i produktens dyraste operation = börja om.
 const RUN_STORAGE = "atb_last_run";
-const DEFAULT_MODEL = "claude-opus-4-8";
-// OpenRouter-nycklar (sk-or-) har eget modellval, sparat separat — samma
-// mönster som portalen så valen inte krockar vid nyckelbyte.
+// Inget sparat modellval längre. Modellen är låst i atb-claude.js; de gamla
+// nycklarna städas bort så att en webbläsare som varit här förut inte bär
+// omkring på ett val som inte finns.
 const OR_MODEL_STORAGE = "atb_model_or";
-const DEFAULT_OR_MODEL = "deepseek/deepseek-v4-flash"; // billigast som klarar jobbet bra
+try { localStorage.removeItem(OR_MODEL_STORAGE); localStorage.removeItem(MODEL_STORAGE); } catch (_) { /* privat läge */ }
 // API-URL, anthropic-version och strömningen ligger i ../atb-claude.js
 // (window.ATBClaude) — delat med Portalen så de inte kan glida isär.
 
@@ -27,9 +27,7 @@ const MODELS = [{ id: window.ATBClaude.MODEL_ID, label: window.ATBClaude.MODEL_L
 
 function isOpenRouter() { return window.ATBClaude.providerFor(state.apiKey) === "openrouter"; }
 function syncModelForProvider() {
-  state.model = isOpenRouter()
-    ? (localStorage.getItem(OR_MODEL_STORAGE) || DEFAULT_OR_MODEL)
-    : (localStorage.getItem(MODEL_STORAGE) || DEFAULT_MODEL);
+  state.model = window.ATBClaude.MODEL_ID;
 }
 
 // Regler för hur en agent blir en portal-systemprompt (speglar templates/shared/portal-team.md).
@@ -48,11 +46,15 @@ const PORTAL_RULES = `Bygg varje agents "system" som en komplett systemprompt SK
 const PROMPTS = {}; // cache av hämtade prompt-filer
 const state = {
   apiKey: localStorage.getItem(KEY_STORAGE) || "",
-  model: localStorage.getItem(MODEL_STORAGE) || DEFAULT_MODEL,
+  model: window.ATBClaude.MODEL_ID,
   // Demoläge: spela upp en inspelad körning utan nyckel (knapp eller ?demo=1).
   demo: new URLSearchParams(location.search).get("demo") === "1",
   busy: false, team: null, abort: null,
   lastRun: null, // { intake, intakeBlock, r } — för "sammanställ igen"
+  // Vem teamet byggs för: "verksamhet" | "person" | null (inte valt än).
+  // Styr hela formuläret, enkäten och intake-blocket.
+  audience: null,
+  formDraft: {}, // ifyllda fält som ska överleva ett byte av vägval
 };
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -95,20 +97,31 @@ function fillIcon(box, a) {
 }
 
 // ---------- boot ----------
-function boot() { if (state.apiKey) syncModelForProvider(); (state.apiKey || state.demo) ? renderForm() : renderKeySetup(); }
+// Buildern frågar aldrig efter en nyckel. Bygget körs på VÅR nyckel via
+// /api/ai (beslutat 2026-08-06) — den fria körningen är själva säljargumentet,
+// och en nyckelruta framför den är att ta betalt i tid av någon som ännu inte
+// vet om produkten är något värd. state.apiKey nollställs med flit: fanns en
+// gammal nyckel kvar i webbläsaren skulle kunden betala för vårt bygge.
+function boot() {
+  state.apiKey = "";
+  syncModelForProvider();
+  renderForm();
+}
 
 // Liten banner som visas i demoläget.
 function demoBanner() {
   const b = el("div", "demo-banner");
   b.appendChild(el("span", "demo-dot"));
-  b.appendChild(el("span", "demo-text", "Demoläge — en inspelad körning spelas upp. Koppla in din nyckel för att bygga mot ett riktigt företag."));
-  const c = el("button", "demo-connect", "Koppla in din nyckel →");
+  b.appendChild(el("span", "demo-text", "Demoläge — en inspelad körning spelas upp. Bygg mot ert eget företag i stället, det är gratis och tar en kvart."));
+  const c = el("button", "demo-connect", "Bygg på riktigt →");
   c.onclick = connectKey;
   b.appendChild(c);
   return b;
 }
 
-// Lämna demoläget och visa nyckel-skärmen.
+// Lämna demoläget och gå till det riktiga formuläret. Hette connectKey när
+// det fanns en nyckel att koppla in; namnet står kvar tills anropsställena
+// bytts, men den kopplar inte in någonting längre.
 function connectKey() {
   state.demo = false;
   const params = new URLSearchParams(location.search);
@@ -117,7 +130,7 @@ function connectKey() {
     const q = params.toString();
     history.replaceState(null, "", location.pathname + (q ? "?" + q : ""));
   }
-  renderKeySetup();
+  renderForm();
 }
 
 // ---------- nyckelkontroll (delad av nyckelrutan och köppanelens grind) ----------
@@ -201,17 +214,95 @@ function renderKeySetup() {
   root.appendChild(wrap); setTimeout(() => input.focus(), 50);
 }
 
+// ---------- vägval: vem är teamet till för? ----------
+//
+// Produkten antog länge att den som fyller i formuläret är en verksamhet. Men
+// en ekonomiassistent som vill ha hjälp i sitt eget jobb är ett lika vanligt
+// fall — och en helt annan intervju. "Hur många anställda är ni" och "vilka är
+// era kunder" är fel frågor till henne; rätt frågor är rollen, veckan,
+// systemen hon sitter i och vad omgivningen förväntar sig. Får båda fallen
+// samma formulär får de i praktiken samma team, och då faller projektets enda
+// bärande regel. Därför är det här första frågan, före allt annat, och den
+// ritar om resten av formuläret.
+function audiencePicker() {
+  const box = el("div", "aud");
+  box.appendChild(el("div", "flabel", "Vem ska teamet vara till för?"));
+  box.appendChild(el("p", "aud-hint", "Valet styr resten av frågorna. En verksamhet och en enskild person behöver olika underlag — och får olika team."));
+  const grid = el("div", "aud-grid");
+  const opts = [
+    ["verksamhet", "🏢", "En verksamhet",
+      "Ett företag, en byrå, en förening — eller din egen firma. Teamet byggs runt verksamhetens vecka: kunder, försäljning, drift och administration."],
+    ["person", "🙋", "En person i sitt jobb",
+      "Du själv eller en medarbetare — anställd, eller egen företagare som jobbar ensam. Teamet byggs runt en arbetsvecka: rollen, systemen och det som stjäl tid."],
+  ];
+  opts.forEach(([val, icon, title, body]) => {
+    const b = el("button", "aud-card" + (state.audience === val ? " sel" : ""));
+    b.type = "button";
+    b.setAttribute("aria-pressed", state.audience === val ? "true" : "false");
+    b.appendChild(el("span", "aud-icon", icon));
+    b.appendChild(el("span", "aud-title", title));
+    b.appendChild(el("span", "aud-body", body));
+    b.onclick = () => {
+      if (state.audience === val) return;
+      snapshotForm(); // det som redan är ifyllt och betyder samma sak ska överleva bytet
+      state.carrySurvey = true;
+      state.audience = val;
+      renderForm();
+    };
+    grid.appendChild(b);
+  });
+  box.appendChild(grid);
+  return box;
+}
+
+// Byter man vägval ritas formuläret om från grunden. Den som upptäcker halvvägs
+// att hen valde fel dörr ska inte straffas med att skriva om allt — fält som
+// heter samma sak i båda fallen bär över. Select-värden som inte finns i det
+// nya fallet hoppas över, annars nollställs de till tomt.
+function snapshotForm() {
+  const f = $("#intake-form");
+  if (!f) return;
+  state.formDraft = Object.assign({}, state.formDraft, Object.fromEntries(new FormData(f).entries()));
+}
+function applyDraft(form) {
+  // Det som placerats i ett fält är förbrukat — det lever i DOM:en nu och
+  // snapshottas om vid nästa byte. Det som INTE har något fält här (rollen när
+  // man tittar på verksamhetsformuläret) sparas, så att en resa fram och
+  // tillbaka mellan de två dörrarna inte kostar det man redan skrivit.
+  const rest = {};
+  Object.entries(state.formDraft || {}).forEach(([k, v]) => {
+    if (v == null || v === "") return;
+    const e = form.elements[k];
+    if (!e || (e.tagName === "SELECT" && ![...e.options].some((o) => o.value === v))) { rest[k] = v; return; }
+    e.value = v;
+  });
+  state.formDraft = rest;
+}
+
 // ---------- intake form ----------
 function renderForm() {
+  // Demoläget spelar upp en inspelad körning åt ett företag — då är vägvalet
+  // redan gjort och ska inte stå i vägen för uppspelningen.
+  if (state.demo && !state.audience) state.audience = "verksamhet";
+  const person = state.audience === "person";
   const root = $("#root"); root.innerHTML = "";
   const wrap = el("main", "form-wrap");
   wrap.appendChild(hubLink());
   if (state.demo) wrap.appendChild(demoBanner());
   const head = el("div", "form-head");
   head.appendChild(el("div", "eyebrow", "● Ny körning · djup pipeline"));
-  const h = el("h1"); h.innerHTML = `Berätta om kunden — så bygger vi <span class="grad">teamet</span>`;
+  const h = el("h1");
+  h.innerHTML = !state.audience
+    ? `Bygg ett <span class="grad">AI-team</span>`
+    : person
+      ? `Berätta om ditt jobb — så bygger vi <span class="grad">ditt team</span>`
+      : `Berätta om verksamheten — så bygger vi <span class="grad">teamet</span>`;
   head.appendChild(h);
-  head.appendChild(el("p", "form-lead", "Fyll i, tryck Bygg, och se hela den riktiga analysen växa fram live. Det tar ett par minuter — och resultatet blir korrekt."));
+  head.appendChild(el("p", "form-lead", !state.audience
+    ? "En fråga först: vem ska teamet vara till för? Resten av formuläret följer det valet."
+    : person
+      ? "Fyll i, tryck Bygg, och se hela den riktiga analysen växa fram live. Teamet byggs runt din arbetsvecka — inte runt arbetsplatsens organisationsschema."
+      : "Fyll i, tryck Bygg, och se hela den riktiga analysen växa fram live. Det tar ett par minuter — och resultatet blir korrekt."));
   wrap.appendChild(head);
 
   // Sparad körning? Erbjud återupptagning — de klara stegen är redan betalda.
@@ -224,6 +315,7 @@ function renderForm() {
     const row = el("div", "clarify-actions");
     const go = el("button", "btn-primary", saved.team ? "Visa teamet igen" : "↻ Återuppta körningen"); go.type = "button";
     go.onclick = () => {
+      state.audience = saved.intake.audience || state.audience; // körningen bär sitt eget vägval
       state.lastRun = { intake: saved.intake, intakeBlock: buildIntakeBlock(saved.intake), r: saved.r || {} };
       if (saved.team) { state.team = saved.team; renderResult(saved.team); }
       else runBuild(saved.intake, saved.r || {});
@@ -234,65 +326,98 @@ function renderForm() {
     wrap.appendChild(box);
   }
 
-  const form = el("form", "intake");
-  form.appendChild(fieldRow("Företag / projekt", inputEl("company", "company", "T.ex. CoachOnline")));
+  wrap.appendChild(audiencePicker());
+  // Inget vägval, inga frågor. Att visa ett formulär som ändå ska ritas om vore
+  // att be någon fylla i sådant vi kanske slänger.
+  if (!state.audience) { root.appendChild(wrap); return; }
+
+  const form = el("form", "intake"); form.id = "intake-form";
+
+  if (person) {
+    form.appendChild(fieldRow("Vem är teamet till för?", inputEl("company", "company", 'T.ex. Anna — eller bara "Ekonomiassistenten"'),
+      "Namnet blir teamets rubrik. Vill du vara anonym räcker rollen."));
+    form.appendChild(fieldRow("Vad har du för roll?", inputEl("role", "role", "T.ex. ekonomiassistent, projektledare, säljare, handläggare")));
+    form.appendChild(fieldRow("Vad gör arbetsplatsen?", inputEl("workplace", "workplace", "En mening räcker. T.ex. byggfirma som gör om- och tillbyggnader åt privatpersoner"),
+      "Samma roll ser olika ut på ett bygge och på en advokatbyrå."));
+    form.appendChild(fieldRow("Hur stor är arbetsplatsen?", selectEl("workplaceSize", "workplaceSize", [
+      ["ensam", "Jag jobbar ensam"],
+      ["några", "Vi är några stycken (2–10)"],
+      ["mellan", "Mellanstor (10–100)"],
+      ["stor", "Stor (100+)"],
+      ["okänt", "Spelar ingen roll / vill inte säga"],
+    ]), "Bara bakgrund. Teamet skalas efter din vecka, inte efter antalet anställda."));
+  } else {
+    form.appendChild(fieldRow("Företag / projekt", inputEl("company", "company", "T.ex. CoachOnline")));
+    form.appendChild(fieldRow("Storlek", selectEl("size", "size", [
+      ["solo", "Solo (1 person)"], ["mikro", "Mikro (2)"], ["litet", "Litet team (3–10)"],
+      ["medelstort", "Medelstort (10–100)"], ["stort", "Stort (100+)"],
+    ])));
+  }
+
   // Etiketterna hette förut "Team-builder (för dig själv / tekniska)" och
   // "AI-konsult (för kunduppdrag)" — projektets egna arbetsnamn, obegripliga
   // för den som bara vill ha ett team. Värdena är oförändrade; det är bara
   // vad kunden ser som är omskrivet.
-  const modeSel = selectEl("mode", "mode", [["team-builder", "Bara teamet — jag vet vad jag vill ha"], ["ai-consultant", "Teamet plus ett första projekt att börja med"]]);
+  const modeSel = selectEl("mode", "mode", [
+    ["team-builder", person ? "Bara teamet — jag sätter igång själv" : "Bara teamet — jag vet vad jag vill ha"],
+    ["ai-consultant", "Teamet plus ett första projekt att börja med"],
+  ]);
   form.appendChild(fieldRow("Vad vill du få ut?", modeSel));
-  const sizeSel = selectEl("size", "size", [["solo", "Solo (1 person)"], ["mikro", "Mikro (2)"], ["litet", "Litet team (3–10)"], ["medelstort", "Medelstort (10–100)"], ["stort", "Stort (100+)"]]);
-  form.appendChild(fieldRow("Storlek", sizeSel));
-  const matRow = fieldRow("AI-mognad", selectEl("maturity", "maturity", [["nybörjare", "Nybörjare — har inte börjat"], ["van", "Van — provat ChatGPT osv."], ["byggare", "Byggare — bygger redan egna verktyg"]]));
+
+  const matRow = fieldRow(person ? "Hur van är du vid AI?" : "Hur vana är ni vid AI?", selectEl("maturity", "maturity", person ? [
+    ["nybörjare", "Har inte börjat"], ["van", "Har provat ChatGPT och liknande"], ["byggare", "Bygger redan egna verktyg"],
+  ] : [
+    ["nybörjare", "Nybörjare — har inte börjat"], ["van", "Van — har provat ChatGPT och liknande"], ["byggare", "Byggare — bygger redan egna verktyg"],
+  ]));
   matRow.style.display = "none"; form.appendChild(matRow);
   modeSel.onchange = () => { matRow.style.display = modeSel.value === "ai-consultant" ? "" : "none"; };
 
-  // Arbetsledarläge: kunder som redan betalar för en egen AI (ChatGPT m.fl.)
-  // kan låta teamet briefa/coacha i stället för att utföra — portalen förblir
-  // navet (rutiner, minne, uppföljning), utförandet sker i kundens AI.
+  // Arbetsledarläge: den som redan betalar för en egen AI (ChatGPT m.fl.) kan
+  // låta teamet briefa/coacha i stället för att utföra — portalen förblir
+  // navet (rutiner, minne, uppföljning), utförandet sker i kundens egen AI.
+  // För en anställd är det ofta enda vägen: arbetsgivaren har redan valt verktyg.
   form.appendChild(fieldRow("Hur ska teamet arbeta?", selectEl("workstyle", "workstyle", [
     ["team", "Teamet gör jobbet — allt sker i portalen (standard)"],
-    ["coach", "Arbetsledarläge — teamet briefar & coachar, ni kör er egen AI (t.ex. ChatGPT)"],
+    ["coach", person
+      ? "Arbetsledarläge — teamet briefar & coachar, du kör den AI du redan har på jobbet"
+      : "Arbetsledarläge — teamet briefar & coachar, ni kör er egen AI (t.ex. ChatGPT)"],
   ])));
 
-  let modelSel;
-  if (!state.demo && isOpenRouter()) {
-    // OpenRouter: hämta katalogen live (kurerad i atb-claude.js); tills dess
-    // visas bara nuvarande val så formuläret fungerar direkt.
-    modelSel = selectEl("model", "model", [[state.model, state.model]]);
-    window.ATBClaude.openrouterModels()
-      .then((models) => {
-        const list = models.some((m) => m.id === state.model) ? models : [{ id: state.model, name: state.model }].concat(models);
-        modelSel.innerHTML = "";
-        list.forEach((m) => { const o = el("option", null, m.name || m.id); o.value = m.id; modelSel.appendChild(o); });
-        modelSel.value = state.model;
-      })
-      .catch(() => { /* offline/fel — behåll nuvarande val */ });
-  } else {
-    modelSel = selectEl("model", "model", MODELS.map((m) => [m.id, m.label]));
-  }
-  modelSel.value = state.model;
-  modelSel.onchange = () => {
-    state.model = modelSel.value;
-    localStorage.setItem(isOpenRouter() ? OR_MODEL_STORAGE : MODEL_STORAGE, modelSel.value);
-  };
-  form.appendChild(fieldRow("Modell", modelSel));
+  // INGEN MODELLVÄLJARE. Modellen är låst i atb-claude.js sedan 2026-08-05 och
+  // stream() ignorerar vilken modell anropet än skickar med — väljaren styrde
+  // alltså ingenting. Värre: den visade två DeepSeek-rader, för portalen sparade
+  // id:t med suffixet "-latest" i samma localStorage-nyckel som buildern läste,
+  // och de två strängarna matchade inte varandra. En väljare som inte väljer
+  // något, med ett dubblerat alternativ, är sämre än ingen väljare alls.
 
-  // Valbar förvalsenkät — för den som tycker det är svårt att formulera sin
-  // verksamhet i fritext. Allt går att kryssa, inget kräver text.
-  form.appendChild(renderSurvey());
+  // Valbar förvalsenkät — för den som tycker det är svårt att formulera sitt
+  // arbete i fritext. Allt går att kryssa, inget kräver text. Vägvalet avgör
+  // vilken av de två enkäterna som visas.
+  form.appendChild(renderSurvey(state.audience));
 
   // Strukturerat frågeformulär istället för en tom textruta — kunden vet vad
   // den ska svara på, och research-steget får jämnt råmaterial i exakt det
   // format intake-kontraktet (prompts/shared/research.md) kräver.
   const taEl = (name, rows, ph) => { const t = el("textarea", "intake-text"); t.name = name; t.id = "f-" + name; t.rows = rows; t.placeholder = ph || ""; return t; };
-  form.appendChild(fieldRow("Vad gör företaget?", taEl("what", 2, "1–2 meningar. T.ex: Livs- och karriärcoach som säljer 1-on-1-sessioner online. Har du fyllt i enkäten räcker det att komplettera med det den inte fångar.")));
-  form.appendChild(fieldRow("Veckans återkommande moment — vad tar mest tid?", taEl("moments", 4, "De 2–4 moment som återkommer varje vecka, gärna med ungefärlig tid.\nT.ex: 1) Nyhetsbrev och blogg, 5–7 h. 2) Svara på inkommande leads (mail, DM).")));
-  form.appendChild(fieldRow("Var klämmer skon?", taEl("pains", 2, "Det som är frustrerande eller blir liggande. Valfritt men gör analysen skarpare.")));
-  form.appendChild(fieldRow("Program & system ni använder dagligen", inputEl("tools", "tools", "T.ex. Fortnox, Outlook, Shopify, Google Kalender")));
-  form.appendChild(fieldRow("Vad ska AI-teamet uppnå?", inputEl("goals", "goals", "T.ex. frigöra 5 h/vecka från admin till betalt arbete")));
-  form.appendChild(fieldRow("Något AI inte ska röra?", inputEl("nogo", "nogo", "T.ex. kundsamtalen, prissättningen. Lämna tomt om inget.")));
+
+  if (person) {
+    form.appendChild(fieldRow("Vad går din vecka åt till?", taEl("moments", 4, "De 2–4 saker som återkommer varje vecka, gärna med ungefärlig tid.\nT.ex: 1) Registrera och kontera leverantörsfakturor, 6–8 h. 2) Svara på säljarnas frågor om vad som är betalt."),
+      "Det här är det viktigaste fältet — teamet byggs runt de här momenten."));
+    form.appendChild(fieldRow("Vad förväntas av dig?", taEl("expectations", 2, "Det chefen, kollegorna eller kunderna bedömer dig på. T.ex: att månadsskiftet är klart den femte, att ingen faktura blir liggande."),
+      "Det du mäts på men inte hinner med är oftast där ett team gör störst nytta."));
+    form.appendChild(fieldRow("Vad stjäl tid utan att synas?", taEl("pains", 2, "Det som inte står i någon arbetsbeskrivning men ändå äter timmar. Avbrott, letande, dubbelregistrering.")));
+    form.appendChild(fieldRow("System du sitter i dagligen", inputEl("tools", "tools", "T.ex. Outlook, Excel, Business Central, Teams")));
+    form.appendChild(fieldRow("Vad vill du att teamet ska ge dig?", inputEl("goals", "goals", "T.ex. sluta ta med jobbet hem på torsdagar")));
+    form.appendChild(fieldRow("Något teamet inte ska röra?", inputEl("nogo", "nogo", "T.ex. personuppgifter, löner, ärenden med sekretess."),
+      "Ta med det arbetsgivaren har bestämt, inte bara det du själv tycker."));
+  } else {
+    form.appendChild(fieldRow("Vad gör företaget?", taEl("what", 2, "1–2 meningar. T.ex: Livs- och karriärcoach som säljer 1-on-1-sessioner online. Har ni fyllt i enkäten räcker det att komplettera med det den inte fångar.")));
+    form.appendChild(fieldRow("Veckans återkommande moment — vad tar mest tid?", taEl("moments", 4, "De 2–4 moment som återkommer varje vecka, gärna med ungefärlig tid.\nT.ex: 1) Nyhetsbrev och blogg, 5–7 h. 2) Svara på inkommande leads (mail, DM).")));
+    form.appendChild(fieldRow("Var klämmer skon?", taEl("pains", 2, "Det som är frustrerande eller blir liggande. Valfritt men gör analysen skarpare.")));
+    form.appendChild(fieldRow("Program & system ni använder dagligen", inputEl("tools", "tools", "T.ex. Fortnox, Outlook, Shopify, Google Kalender")));
+    form.appendChild(fieldRow("Vad ska AI-teamet uppnå?", inputEl("goals", "goals", "T.ex. frigöra 5 h/vecka från admin till betalt arbete")));
+    form.appendChild(fieldRow("Något AI inte ska röra?", inputEl("nogo", "nogo", "T.ex. kundsamtalen, prissättningen. Lämna tomt om inget.")));
+  }
 
   const err = el("div", "fin-err"); err.id = "form-err"; err.style.display = "none";
   form.appendChild(err);
@@ -301,47 +426,62 @@ function renderForm() {
   form.appendChild(btn);
 
   // Grov kostnadsbild vid knappen — ovisshet om pris är den största bromsen
-  // för BYO-användare. Uppskattning, inte löfte; uppdateras med modellvalet.
-  const costHint = el("div", "cost-hint");
-  const paintCost = () => {
-    if (state.demo) { costHint.textContent = "I demoläget anropas inget API — att bygga på riktigt kostar bara dina egna API-ören."; return; }
-    costHint.textContent = isOpenRouter()
-      ? "En körning gör 4–6 anrop via din OpenRouter-nyckel. Kostnaden beror på modellen — billiga modeller bygger ett team för under en krona."
-      : (state.model.includes("opus")
-        ? "En körning gör 4–6 anrop via din egen nyckel — med Opus typiskt ca 10–20 kr."
-        : "En körning gör 4–6 anrop via din egen nyckel — med Sonnet typiskt ca 2–4 kr.");
-  };
-  paintCost();
-  modelSel.addEventListener("change", paintCost);
+  // för BYO-användare. Uppskattning, inte löfte. Ingen lyssnare på något
+  // modellval längre: modellen är låst, och den gamla raden lyssnade på ett
+  // element som inte finns kvar.
+  const costHint = el("div", "cost-hint", state.demo
+    ? "I demoläget anropas inget API — att bygga på riktigt kostar bara dina egna API-ören."
+    : "En körning gör 4–6 anrop via din egen OpenRouter-nyckel och kostar ungefär åtta öre.");
   form.appendChild(costHint);
+
   form.onsubmit = (e) => {
     e.preventDefault();
     const intake = collect(form);
     intake.survey = surveyCollect();
     const sv = intake.survey || {};
-    // Enkäten kan ersätta fritexten: bransch + kundbild räcker som "vad
-    // företaget gör", och ≥3 ikryssade moment räcker som veckomoment.
-    const surveyProfile = sv.industry && ((sv.customers || []).length || (sv.sales || []).length);
+    // Enkäten kan ersätta fritexten helt — det är hela poängen med den.
+    // Verksamhet: bransch + kundbild räcker som "vad företaget gör".
+    // Person: en vald roll räcker som beskrivning av jobbet.
+    // Båda: ≥3 ikryssade moment räcker som veckomoment.
+    const surveyProfile = person
+      ? !!(sv.prole || sv.industry)
+      : !!(sv.industry && ((sv.customers || []).length || (sv.sales || []).length));
     const surveyMoments = (sv.moments || []).length + (sv.tidstjuvar || []).length;
     if (!intake.company) {
-      err.textContent = "Fyll i företagets eller projektets namn."; err.style.display = "block"; return;
+      err.textContent = person
+        ? "Skriv ett namn eller en roll — det blir teamets rubrik."
+        : "Fyll i företagets eller projektets namn.";
+      err.style.display = "block"; return;
     }
-    if ((!intake.what || intake.what.trim().length < 10) && !surveyProfile) {
+    if (person && (!intake.role || intake.role.trim().length < 2) && !surveyProfile) {
+      err.textContent = "Skriv vad du har för roll — eller välj en roll i enkäten."; err.style.display = "block"; return;
+    }
+    if (!person && (!intake.what || intake.what.trim().length < 10) && !surveyProfile) {
       err.textContent = "Beskriv vad företaget gör med en mening — eller öppna enkäten och välj bransch + kunder."; err.style.display = "block"; return;
     }
     if ((!intake.moments || intake.moments.trim().length < 20) && surveyMoments < 3) {
-      err.textContent = "Veckans moment är det viktigaste underlaget — beskriv ett par moment i fritext eller kryssa i minst tre i enkäten."; err.style.display = "block"; return;
+      err.textContent = person
+        ? "Din vecka är det viktigaste underlaget — beskriv ett par moment i fritext eller kryssa i minst tre i enkäten."
+        : "Veckans moment är det viktigaste underlaget — beskriv ett par moment i fritext eller kryssa i minst tre i enkäten.";
+      err.style.display = "block"; return;
     }
     err.style.display = "none";
     if (state.demo) runBuild(intake);
     else clarifyThenBuild(intake, form, btn); // 1–2 AI-följdfrågor innan pipelinen
   };
   wrap.appendChild(form);
+  applyDraft(form);
+  if (modeSel.value === "ai-consultant") matRow.style.display = ""; // draften kan ha valt första projektet
 
   const foot = el("div", "form-foot");
-  const reset = el("button", "link-btn", state.demo ? "Koppla in din nyckel" : "Byt API-nyckel");
-  reset.onclick = state.demo ? connectKey : () => { if (confirm("Ta bort sparad nyckel?")) { localStorage.removeItem(KEY_STORAGE); state.apiKey = ""; renderKeySetup(); } };
-  foot.appendChild(reset); wrap.appendChild(foot);
+  // Bara demoläget har något att lämna. I det riktiga läget finns ingen
+  // nyckel att byta och inget att koppla in — därför ingen knapp.
+  if (state.demo) {
+    const reset = el("button", "link-btn", "Bygg på riktigt i stället");
+    reset.onclick = connectKey;
+    foot.appendChild(reset);
+  }
+  wrap.appendChild(foot);
   root.appendChild(wrap);
   if (state.demo) prefillDemo();
 }
@@ -357,26 +497,52 @@ function prefillDemo() {
   if (d.maturity) set("maturity", d.maturity);
 }
 
-function fieldRow(label, control) {
+function fieldRow(label, control, hint) {
   const r = el("div", "frow");
   const lab = el("label", "flabel", label);
   if (control.id) lab.setAttribute("for", control.id);
-  r.appendChild(lab); r.appendChild(control); return r;
+  r.appendChild(lab);
+  if (hint) r.appendChild(el("div", "fhint", hint));
+  r.appendChild(control); return r;
 }
 function inputEl(name, id, ph) { const i = el("input", "fin"); i.name = name; i.id = "f-" + id; i.placeholder = ph || ""; return i; }
 function selectEl(name, id, opts) { const s = el("select", "fin"); s.name = name; s.id = "f-" + id; opts.forEach(([v, l]) => { const o = el("option", null, l); o.value = v; s.appendChild(o); }); return s; }
-function collect(form) { const d = Object.fromEntries(new FormData(form).entries()); if (d.mode !== "ai-consultant") delete d.maturity; return d; }
+function collect(form) {
+  const d = Object.fromEntries(new FormData(form).entries());
+  if (d.mode !== "ai-consultant") delete d.maturity;
+  d.audience = state.audience === "person" ? "person" : "verksamhet";
+  // En person skalas som solo oavsett hur stor arbetsplatsen är — se
+  // docs/scaling.md. Arbetsplatsens storlek följer med som ren kontext.
+  if (d.audience === "person") { d.size = "solo"; }
+  return d;
+}
 
 // ---------- förvalsenkät ----------
 // UI för window.BUILDER_SURVEY (builder/survey-data.js). Helt valbar: chips
 // som togglas med klick, inga textfält. Moments-sektionen har tre lägen:
 // av → ingår i vardagen → stor tidstjuv (⏱) → av.
+// Två uppsättningar sektioner: `sections` för en verksamhet, `personSections`
+// för en enskild person. Vilken som visas avgörs av vägvalet.
 let surveyState = null;
-function newSurveyState() {
+function surveySections(audience) {
+  const d = window.BUILDER_SURVEY || {};
+  return (audience === "person" ? d.personSections : d.sections) || [];
+}
+// prev: föregående enkätsvar. Nycklar som finns i båda enkäterna (bransch,
+// system, mål, avgränsningar …) följer med när vägvalet byts — momenten gör
+// det inte, eftersom listorna är olika och ett kryss annars skulle överleva
+// utan att alternativet gör det.
+function newSurveyState(audience, prev) {
   const s = { single: {}, multi: {}, momSel: new Set(), momHot: new Set() };
-  (window.BUILDER_SURVEY?.sections || []).forEach((sec) => {
-    if (sec.type === "multi") s.multi[sec.key] = new Set();
-    if (sec.type === "single") s.single[sec.key] = null;
+  surveySections(audience).forEach((sec) => {
+    if (sec.type === "multi") {
+      const keep = prev && prev.multi[sec.key];
+      s.multi[sec.key] = new Set(keep ? [...keep].filter((v) => (sec.options || []).includes(v)) : []);
+    }
+    if (sec.type === "single") {
+      const keep = prev && prev.single[sec.key];
+      s.single[sec.key] = keep && (sec.options || []).includes(keep) ? keep : null;
+    }
   });
   return s;
 }
@@ -387,32 +553,31 @@ function surveyCount() {
   Object.values(surveyState.multi).forEach((set) => { n += set.size; });
   return n;
 }
+// Plockar ut allt som kryssats, oavsett vilken av de två enkäterna som visades.
+// Generisk över nycklarna: de personspecifika (prole, who, expect, friction)
+// hamnar i objektet utan att den här funktionen behöver känna till dem.
 function surveyCollect() {
   if (!surveyState) return null;
-  const out = {
-    industry: surveyState.single.industry || null,
-    rhythm: surveyState.single.rhythm || null,
-    ownai: surveyState.single.ownai || null,
-    customers: [...(surveyState.multi.customers || [])],
-    sales: [...(surveyState.multi.sales || [])],
-    tools: [...(surveyState.multi.tools || [])],
-    channels: [...(surveyState.multi.channels || [])],
-    goals: [...(surveyState.multi.goals || [])],
-    nogo: [...(surveyState.multi.nogo || [])],
-    moments: [...surveyState.momSel],
-    tidstjuvar: [...surveyState.momHot],
-  };
+  const out = { moments: [...surveyState.momSel], tidstjuvar: [...surveyState.momHot] };
+  Object.entries(surveyState.single).forEach(([k, v]) => { out[k] = v || null; });
+  Object.entries(surveyState.multi).forEach(([k, set]) => { out[k] = [...set]; });
   return surveyCount() ? out : null;
 }
 
-function renderSurvey() {
-  surveyState = newSurveyState();
-  const data = window.BUILDER_SURVEY;
+function renderSurvey(audience) {
+  const sections = surveySections(audience);
+  // Svaren bärs bara över när användaren just bytt vägval — inte när
+  // formuläret ritas om av andra skäl ("Bygg ett till" ska börja rent).
+  const prev = state.carrySurvey ? surveyState : null;
+  state.carrySurvey = false;
+  surveyState = newSurveyState(audience, prev);
   const wrap = el("div", "survey-wrap");
-  if (!data || !Array.isArray(data.sections)) return wrap; // datafilen saknas — formuläret funkar ändå
+  if (!sections.length) return wrap; // datafilen saknas — formuläret funkar ändå
 
   const toggle = el("button", "survey-toggle"); toggle.type = "button";
-  const tLabel = el("span", "survey-toggle-label", "📋 Svårt att sätta ord på verksamheten? Öppna enkäten och kryssa i stället");
+  const tLabel = el("span", "survey-toggle-label", audience === "person"
+    ? "📋 Svårt att sätta ord på ditt jobb? Öppna enkäten och kryssa i stället"
+    : "📋 Svårt att sätta ord på verksamheten? Öppna enkäten och kryssa i stället");
   const tBadge = el("span", "survey-badge"); tBadge.style.display = "none";
   const tChev = el("span", "survey-chev", "▾");
   toggle.append(tLabel, tBadge, tChev);
@@ -439,7 +604,7 @@ function renderSurvey() {
     return b;
   };
 
-  data.sections.forEach((sec) => {
+  sections.forEach((sec) => {
     const box = el("div", "survey-sec");
     box.appendChild(el("div", "survey-sec-title", sec.title));
     if (sec.hint) box.appendChild(el("div", "survey-hint", sec.hint));
@@ -488,6 +653,10 @@ function renderSurvey() {
     const open = wrap.classList.toggle("open");
     tChev.textContent = open ? "▴" : "▾";
   };
+  // Kryss som burits över från det andra vägvalet ska synas direkt — annars
+  // ser enkäten tom ut fast svaren finns kvar, och användaren kryssar om allt.
+  updateBadge();
+  if (surveyCount()) { wrap.classList.add("open"); tChev.textContent = "▴"; }
   return wrap;
 }
 
@@ -496,10 +665,17 @@ function renderSurvey() {
 // samma sektioner (inkl. ## Avgränsningar) som intervju-prompterna levererar.
 // Enkätsvaren (intake.survey) vävs in i respektive sektion: fritext först
 // (användarens egna ord väger tyngst i research), förval som komplement.
+//
+// Vägvalet (teamet_för) står först i blocket och styr både vilka extra rader
+// som skrivs och hur research ska läsa momenten — reglerna för det står i
+// prompts/shared/research.md under "När teamet byggs för en enskild person".
+// Sektionsrubrikerna är desamma i båda fallen; kontraktet ändras inte, det
+// får bara sällskap av ett par personspecifika sektioner.
 function buildIntakeBlock(intake) {
   const val = (v, alt) => (v && v.trim() ? v.trim() : alt);
   const sv = intake.survey || {};
   const list = (a) => (Array.isArray(a) && a.length ? a.join(", ") : "");
+  const person = intake.audience === "person";
 
   // Fritext + enkätrader kombinerat; alt används bara om båda saknas.
   const merge = (free, surveyLines, alt) => {
@@ -509,20 +685,40 @@ function buildIntakeBlock(intake) {
     return parts.length ? parts.join("\n") : alt;
   };
 
-  const what = merge(intake.what, [
-    !intake.what?.trim() && sv.industry
-      ? `(Fri beskrivning saknas — ur enkäten: ${sv.industry}${list(sv.customers) ? ", säljer till " + list(sv.customers).toLowerCase() : ""}${list(sv.sales) ? ", via " + list(sv.sales).toLowerCase() : ""}.)`
-      : null,
-  ], "(saknas)");
+  // "Vad företaget gör" i personfallet = vad JOBBET går ut på. Sektionsnamnet
+  // är kontraktets, innehållet är personens: roll först, arbetsplats som
+  // kontext. Utan rollen först läser research det som en verksamhet.
+  const roleTxt = val(intake.role, sv.prole || "");
+  const workplaceTxt = val(intake.workplace, "");
+  const what = person
+    ? merge([
+      roleTxt ? `Roll: ${roleTxt}.` : null,
+      workplaceTxt ? `Arbetsplatsen: ${workplaceTxt}${/[.!?]$/.test(workplaceTxt) ? "" : "."}` : null,
+    ].filter(Boolean).join(" "), [
+      !intake.workplace?.trim() && sv.industry ? `Arbetsplatsens bransch enligt enkäten: ${sv.industry}.` : null,
+      list(sv.who) ? `Jobbar till vardags mot: ${list(sv.who)}.` : null,
+    ], "(saknas)")
+    : merge(intake.what, [
+      !intake.what?.trim() && sv.industry
+        ? `(Fri beskrivning saknas — ur enkäten: ${sv.industry}${list(sv.customers) ? ", säljer till " + list(sv.customers).toLowerCase() : ""}${list(sv.sales) ? ", via " + list(sv.sales).toLowerCase() : ""}.)`
+        : null,
+    ], "(saknas)");
 
   const moments = merge(intake.moments, [
-    list(sv.moments) ? `Ur enkäten — ingår i vardagen: ${list(sv.moments)}.` : null,
+    list(sv.moments) ? `Ur enkäten — ingår i ${person ? "veckan" : "vardagen"}: ${list(sv.moments)}.` : null,
     list(sv.tidstjuvar) ? `Ur enkäten — markerade som STORA TIDSTJUVAR: ${list(sv.tidstjuvar)}. Väg dessa tyngst.` : null,
   ], "(saknas)");
 
   const pains = merge(intake.pains, [
     list(sv.tidstjuvar) ? `Tidstjuvarna ur enkäten (${list(sv.tidstjuvar)}) är sannolikt där det klämmer.` : null,
+    person && list(sv.friction) ? `Stjäl tid utan att synas (ur enkäten): ${list(sv.friction)}.` : null,
   ], "Framgår inte uttryckligen — härled försiktigt ur momenten.");
+
+  // Bara personfallet: det omgivningen mäter personen på. En uppgift man
+  // bedöms på men inte hinner med gör ont även när ingen kallar det smärta.
+  const expectations = person ? merge(intake.expectations, [
+    list(sv.expect) ? `Ur enkäten: ${list(sv.expect)}.` : null,
+  ], "Framgår inte — notera det som en osäkerhet i stället för att gissa.") : null;
 
   const tools = merge(intake.tools, [
     list(sv.tools) ? `Ur enkäten: ${list(sv.tools)}.` : null,
@@ -539,7 +735,19 @@ function buildIntakeBlock(intake) {
   ], "Inga uttryckliga avgränsningar.");
 
   // Profilrader som saknar egen sektion i kontraktet — extra kontext för research.
-  const profile = [
+  const WORKPLACE_SIZE = {
+    ensam: "jag jobbar ensam", några: "några stycken (2–10)",
+    mellan: "mellanstor (10–100)", stor: "stor (100+)", okänt: "okänd",
+  };
+  const profile = person ? [
+    `roll:           ${roleTxt || "(framgår inte)"}`,
+    `arbetsplats:    ${workplaceTxt || sv.industry || "(framgår inte)"}`,
+    intake.workplaceSize && intake.workplaceSize !== "okänt"
+      ? `arbetsplatsens_storlek: ${WORKPLACE_SIZE[intake.workplaceSize] || intake.workplaceSize}  (kontext — skalningen följer personen)` : null,
+    list(sv.who) ? `jobbar mot:     ${list(sv.who)}` : null,
+    sv.rhythm ? `årsrytm:        ${sv.rhythm}` : null,
+    sv.ownai && !/^nej/i.test(sv.ownai) ? `egen_ai:        ${sv.ownai}` : null,
+  ].filter(Boolean) : [
     list(sv.customers) ? `kunder:         ${list(sv.customers)}` : null,
     list(sv.sales) ? `försäljning:    ${list(sv.sales)}` : null,
     list(sv.channels) ? `kanaler:        ${list(sv.channels)}` : null,
@@ -553,14 +761,23 @@ function buildIntakeBlock(intake) {
 
   return [
     "```",
+    `teamet_för:     ${person ? "en enskild person i sitt jobb" : "en verksamhet"}`,
     `företagsnamn:   ${intake.company}`,
     `bransch:        ${sv.industry || "(härled ur beskrivningen)"}`,
-    `storlek:        ${intake.size}`,
+    `storlek:        ${person ? "solo" : intake.size}`,
+    person ? `antal_personer: 1` : null,
     `läge:           ${intake.mode}`,
     intake.maturity ? `ai_mognad:      ${intake.maturity}` : null,
     `källa:          intervju`,
     ...profile,
     "",
+    // Vägvalet upprepas som egen sektion, inte bara som en rad högst upp. En
+    // rad i en huvudlista är lätt att läsa förbi; den här sektionen är svår
+    // att missa, och den är det som avgör om researchen blir en persons
+    // vecka eller ett företags organisationsschema.
+    person ? "## Vem teamet byggs för" : null,
+    person ? "Det här teamet byggs för EN ENSKILD PERSON i hens eget jobb — inte för en verksamhet. Momenten nedan är en persons arbetsvecka, inte en organisations. Läs dem som det: fyrtio timmar, en människa, en roll. Se prompts/shared/research.md, avsnittet \"När teamet byggs för en enskild person\"." : null,
+    person ? "" : null,
     "## Vad företaget gör",
     what,
     "",
@@ -570,6 +787,9 @@ function buildIntakeBlock(intake) {
     "## Var det klämmer",
     pains,
     "",
+    person ? "## Vad omgivningen förväntar sig" : null,
+    person ? expectations : null,
+    person ? "" : null,
     "## Befintliga verktyg och vanor",
     tools,
     "",
@@ -578,7 +798,7 @@ function buildIntakeBlock(intake) {
     "",
     "## Avgränsningar",
     nogo,
-    coach ? `\n## Arbetssätt (viktigt för förslaget)\nKunden vill fortsätta göra själva utförandet i sin egen AI${sv.ownai && !/^nej/i.test(sv.ownai) ? ` (${sv.ownai})` : " (t.ex. ChatGPT)"}. Teamets agenter ska därför ARBETSLEDA, inte utföra: varje agents Leverans blir ett arbetspaket — en kort brief, en FÄRDIG självbärande prompt att klistra in i kundens AI, och en "Klart när"-checklista för att bedöma resultatet. Portalen förblir navet för rutiner, minne och uppföljning.` : null,
+    coach ? `\n## Arbetssätt (viktigt för förslaget)\n${person ? "Personen" : "Kunden"} vill fortsätta göra själva utförandet i sin egen AI${sv.ownai && !/^nej/i.test(sv.ownai) ? ` (${sv.ownai})` : " (t.ex. ChatGPT)"}. Teamets agenter ska därför ARBETSLEDA, inte utföra: varje agents Leverans blir ett arbetspaket — en kort brief, en FÄRDIG självbärande prompt att klistra in i ${person ? "personens" : "kundens"} AI, och en "Klart när"-checklista för att bedöma resultatet. Portalen förblir navet för rutiner, minne och uppföljning.` : null,
     intake.extra ? "\n## Kompletterande svar (följdfrågor)\n" + intake.extra : null,
     "```",
   ].filter((x) => x !== null).join("\n");
@@ -601,7 +821,11 @@ async function clarifyThenBuild(intake, form, btn) {
   try {
     out = (await window.ATBClaude.collect({
       apiKey: state.apiKey, model: state.model,
-      system: CLARIFY_PROMPT,
+      // Följdfrågorna måste fråga om rätt sak. Utan tillägget nedan frågar
+      // modellen gärna en ekonomiassistent hur många anställda hon har.
+      system: CLARIFY_PROMPT + (intake.audience === "person"
+        ? "\nUNDERLAGET GÄLLER EN ENSKILD PERSON i sitt jobb. Fråga om personens vecka, roll, system och förväntningar — aldrig om företagets storlek, kunder, omsättning eller marknadsföring."
+        : ""),
       messages: [{ role: "user", content: buildIntakeBlock(intake) }],
       maxTokens: 300,
     })).trim();
@@ -1065,8 +1289,8 @@ function stripTeam(team) {
 // från Stripe, och prislistan i index.html och villkor.html § 4 måste följa med
 // om de ändras.
 const PLANS = [
-  { tier: "trial-byo", label: "Provmånad", price: "90 kr", note: "En månad med teamet i portalen, på er egen API-nyckel. Ingen bindning." },
-  { tier: "buy", label: "Köp teamet", price: "4 990 kr", note: "Teamet är ert, med uppdateringar. Engångsbetalning." },
+  { tier: "trial", label: "Provmånad", price: "90 kr", note: "En månad med teamet i portalen. AI-användningen ingår. Slutar av sig själv — inget att säga upp." },
+  { tier: "standard", label: "Standard", price: "290 kr/mån", note: "Teamet löpande, med allt inkluderat. Uppsägningsbart när som helst." },
 ];
 
 // Nyckelrutan inuti köppanelen. Samma validering, samma test och samma
@@ -1169,14 +1393,12 @@ function renderPurchase(team, hero, trigger) {
   // öppna. Det är kundresans värsta fel, och en varningsruta räcker inte mot
   // det — den går att klicka förbi. Därför får planknapparna inte gå att trycka
   // på förrän en nyckel faktiskt har testats mot leverantören.
-  const needsKey = !state.apiKey;
   const planBtns = [];
 
   PLANS.forEach((plan) => {
     const row = el("button", "btn-ghost");
     row.style.cssText = "display:block;width:100%;text-align:left;margin-bottom:8px";
     row.innerHTML = `<b>${esc(plan.label)} — ${esc(plan.price)}</b><br><span style="color:var(--text-dim);font-weight:400">${esc(plan.note)}</span>`;
-    row.disabled = needsKey;
     planBtns.push(row);
     row.onclick = async () => {
       panel.querySelectorAll("button").forEach((b) => (b.disabled = true));
@@ -1200,7 +1422,9 @@ function renderPurchase(team, hero, trigger) {
     panel.appendChild(row);
   });
 
-  if (needsKey) panel.insertBefore(buildKeyGate(() => planBtns.forEach((b) => (b.disabled = false))), planBtns[0]);
+  // Ingen nyckelgrind längre: AI:n ingår i alla nivåer utom köpet, och där
+  // skaffas nyckeln efter leveransen. Grinden fanns för att ingen skulle
+  // betala för en dörr hen inte kunde öppna — nu är dörren alltid öppen.
 
   const cancel = el("button", "btn-ghost", "Inte nu");
   cancel.style.marginTop = "4px";

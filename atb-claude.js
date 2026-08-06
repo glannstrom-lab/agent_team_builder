@@ -44,7 +44,11 @@
     if (ct.includes("application/json")) {
       try {
         const j = await res.json();
-        if (j && j.error && j.error.message) msg = j.error.message;
+        // Två format: OpenRouter svarar {error:{message}}, vår egen proxy
+        // svarar {error:"text på svenska"}. Utan det andra fallet tappas
+        // proxyns meddelanden — som taket och fair use-gränsen — och kunden
+        // får ett nummer i stället för en förklaring.
+        if (j && j.error) msg = (typeof j.error === "string" ? j.error : j.error.message) || msg;
       } catch (_) { /* trasig JSON — behåll status-meddelandet */ }
     } else if (res.status >= 500) {
       msg = "Serverfel hos modell-API:t — försök igen om en stund.";
@@ -90,8 +94,29 @@
     const model = MODEL_ID;
     const openrouter = true;
 
+    // INGEN NYCKEL = VÅR NYCKEL (2026-08-06).
+    //
+    // Saknas apiKey går anropet till vår egen proxy i stället för direkt till
+    // OpenRouter. Det är inte ett undantag utan huvudvägen: kunden ska aldrig
+    // behöva skaffa en nyckel, varken för att bygga ett team eller för att
+    // använda det. Kravet var den enskilt största avhoppspunkten för alla som
+    // inte redan var utvecklare.
+    //
+    // Svarsformatet är identiskt — proxyn skickar OpenRouters ström vidare
+    // orörd — så parsningen nedan behöver inte veta vilken väg det tog.
+    // Nyckelvägen finns kvar för att portalen ännu har kvar sin nyckelruta;
+    // den dagen den är borta kan hela else-grenen strykas.
     let url, init;
-    if (openrouter) {
+    if (!apiKey) {
+      url = "/api/ai";
+      init = {
+        method: "POST",
+        signal: signal || undefined,
+        credentials: "same-origin", // sessionen avgör om förbrukningen räknas per konto
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ system, messages, maxTokens: maxTokens || 4096 }),
+      };
+    } else if (openrouter) {
       // OpenAI-kompatibelt format: system som första message, Bearer-auth.
       const orMessages = system ? [{ role: "system", content: system }].concat(messages) : messages;
       url = OPENROUTER_URL;

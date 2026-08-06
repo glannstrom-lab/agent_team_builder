@@ -6,6 +6,13 @@
    mappas in i intake-kontraktet (prompts/shared/research.md), de
    ersätter inget — fritexten är fortfarande det som ger mest skärpa.
    Utöka gärna listorna; logiken läser bara strukturen.
+
+   TVÅ ENKÄTER, INTE EN. `sections` frågar en verksamhet om sin vecka;
+   `personSections` frågar en enskild person om sin. Det är inte samma
+   intervju med andra pronomen: "hur många anställda" och "vilka är era
+   kunder" är fel frågor till en ekonomiassistent, och "vad förväntas av
+   dig" är fel fråga till ett bolag. Delar de frågeformulär blir teamen
+   lika, och då är hela produkten trasig.
    ============================================================ */
 window.BUILDER_SURVEY = {
   // type: "single" → en chip kan väljas; "multi" → flera; "moments" →
@@ -43,7 +50,7 @@ window.BUILDER_SURVEY = {
       ],
     },
     {
-      key: "moments", type: "moments", title: "Vad ingår i din vardag?",
+      key: "moments", type: "moments", title: "Vad ingår i er vardag?",
       hint: "Klicka en gång = ingår i vardagen. Klicka en gång till = stor tidstjuv ⏱. Det här är enkätens viktigaste fråga.",
       groups: [
         { label: "Försäljning & offerter", items: [
@@ -134,6 +141,166 @@ window.BUILDER_SURVEY = {
         "Prissättning & slutgiltiga offerter", "Kundsamtalen & relationerna",
         "Bokföring & ekonomi", "Juridik & avtal", "Personalfrågor",
         "Det kreativa hantverket", "Rösten i sociala medier",
+        "Inget särskilt — AI får hjälpa till överallt",
+      ],
+    },
+  ],
+
+  /* ---------------------------------------------------------------
+     Enkäten för en enskild person i sitt jobb.
+     Nycklarna återanvänds där betydelsen bär över (industry, tools,
+     rhythm, ownai, goals, nogo, moments/tidstjuvar) så att intake-
+     blocket kan behandla dem likadant. De personspecifika nycklarna
+     — prole, who, expect, friction — finns bara här och blir egna
+     rader i intaket.
+     --------------------------------------------------------------- */
+  personSections: [
+    {
+      key: "prole", type: "single", title: "Vad är din roll?",
+      hint: "Närmast passande. Titeln spelar mindre roll än vad veckan faktiskt består av — den frågan kommer strax.",
+      options: [
+        "Ekonomi & lön", "Administration & kontor", "Kundtjänst & support",
+        "Försäljning", "Marknad & kommunikation", "Projektledning",
+        "Inköp", "Logistik & lager", "HR & personal", "IT & teknik",
+        "Handläggare", "Chef eller arbetsledare", "Konsult & rådgivare",
+        "Lärare & utbildare", "Vård & omsorg", "Hantverk & montage",
+        "Egen firma utan anställda", "Annat",
+      ],
+    },
+    {
+      key: "industry", type: "single", title: "Vad gör arbetsplatsen?",
+      hint: "Samma roll ser helt olika ut på ett bygge och på en advokatbyrå — därför frågar vi.",
+      options: [
+        "Bygg & hantverk", "Redovisning & ekonomitjänster", "Restaurang & café",
+        "Butik & detaljhandel", "E-handel", "Skönhet & hälsa",
+        "Träning & friskvård", "Konsult & rådgivning", "Marknadsföring & kommunikation",
+        "IT & teknik", "Foto, film & kreativt", "Utbildning & kurser",
+        "Vård & omsorg", "Fastighet & förvaltning", "Transport & logistik",
+        "Jord- & skogsbruk", "Turism & upplevelser", "Förening & organisation",
+        "Industri & tillverkning", "Juridik", "Kommun, region eller myndighet",
+      ],
+    },
+    {
+      key: "who", type: "multi", title: "Vem jobbar du mot till vardags?",
+      options: [
+        "Kunder & beställare", "Kollegor på min avdelning", "Andra avdelningar",
+        "Min chef", "Personal jag leder", "Leverantörer & underentreprenörer",
+        "Myndigheter", "Medlemmar, patienter eller elever",
+        "Externa konsulter & byråer", "Mest på egen hand",
+      ],
+    },
+    {
+      key: "moments", type: "moments", title: "Vad består din vecka av?",
+      hint: "Klicka en gång = ingår i veckan. Klicka en gång till = stor tidstjuv ⏱. Det här är enkätens viktigaste fråga — teamet byggs runt de här kryssen.",
+      groups: [
+        { label: "Mejl, möten och avbrott", items: [
+          "Läsa och svara på mejl", "Sitta i möten", "Skriva mötesanteckningar",
+          "Svara på frågor från kollegor", "Boka och flytta möten",
+          "Ringa och bli uppringd", "Bli avbruten mitt i något",
+        ]},
+        { label: "Underlag och dokument", items: [
+          "Leta rätt på information", "Läsa och sammanfatta långa underlag",
+          "Skriva rapporter & beslutsunderlag", "Fylla i mallar & blanketter",
+          "Granska och rätta andras texter", "Göra presentationer",
+          "Skriva protokoll & minnesanteckningar",
+        ]},
+        { label: "System och registrering", items: [
+          "Registrera uppgifter i systemet", "Mata in samma sak på flera ställen",
+          "Ta ut listor & rapporter", "Kontrollera att uppgifter stämmer",
+          "Följa upp status på ärenden", "Rätta fel i efterhand",
+        ]},
+        { label: "Kontakter utåt", items: [
+          "Svara kunder & beställare", "Reda ut klagomål & missförstånd",
+          "Skriva offerter & prisuppgifter", "Följa upp obesvarade ärenden",
+          "Boka in kunder & besök", "Skriva utskick & information",
+        ]},
+        { label: "Siffror och ekonomi", items: [
+          "Fakturera", "Attestera & kontera", "Stämma av och leta differenser",
+          "Sammanställa siffror åt någon annan", "Tidrapportering",
+          "Hålla koll på budget & utfall",
+        ]},
+        { label: "Planering och egen struktur", items: [
+          "Planera min vecka", "Prioritera när allt är brådskande",
+          "Påminna andra om sådant de ska göra", "Hålla koll på deadlines",
+          "Förbereda inför möten", "Rapportera läget uppåt",
+        ]},
+        { label: "Rollen och utvecklingen", items: [
+          "Lära mig nya system", "Skriva instruktioner & rutiner",
+          "Introducera nya kollegor", "Föreslå förbättringar",
+          "Hålla mig uppdaterad i mitt område", "Utbilda eller stötta andra",
+        ]},
+      ],
+    },
+    {
+      key: "expect", type: "multi", title: "Vad förväntas av dig?",
+      hint: "Det du mäts på — av chefen, kollegorna eller kunderna. Analysen läser detta som smärta: ett moment du bedöms på men inte hinner med väger tungt.",
+      options: [
+        "Att jag svarar snabbt", "Att inget faller mellan stolarna",
+        "Att deadlines hålls", "Att siffrorna stämmer", "Att kunden är nöjd",
+        "Att jag hittar felen innan någon annan gör det",
+        "Att jag är tillgänglig", "Att jag håller budget",
+        "Att jag hinner med volymen", "Att kvaliteten är hög",
+        "Att jag håller ordning åt andra", "Vet inte riktigt — det sägs aldrig rakt ut",
+      ],
+    },
+    {
+      key: "friction", type: "multi", title: "Vad stjäl tid utan att synas?",
+      hint: "Det som aldrig står i någon arbetsbeskrivning men ändå äter timmar.",
+      options: [
+        "Avbrott och frågor", "Leta efter information jag vet finns",
+        "Mata in samma uppgift på flera ställen", "Vänta på svar från andra",
+        "Skriva ungefär samma mejl om igen", "Möten som inte ger något",
+        "Rätta underlag som kommer halvfärdiga", "Formatera dokument",
+        "Komma ihåg vad jag lovade", "Byta mellan för många system",
+        "Städa i mappar och mejl",
+      ],
+    },
+    {
+      key: "tools", type: "multi", title: "System du sitter i dagligen",
+      options: [
+        "Outlook", "Gmail", "Teams", "Slack", "Excel / Google Kalkylark",
+        "Word / Google Dokument", "PowerPoint", "SharePoint / OneDrive",
+        "Affärssystem (SAP, Business Central …)", "Fortnox", "Visma",
+        "CRM-system", "Ärendehanteringssystem", "Journal- eller elevsystem",
+        "Tidrapporteringssystem", "Jira / Trello / Asana", "Canva",
+        "Bokningssystem", "Mest papper & pärm",
+      ],
+    },
+    {
+      key: "rhythm", type: "single", title: "Hur ser ditt år ut?",
+      options: [
+        "Jämnt året runt", "Tungt vid månadsskiften", "Tungt vid bokslut & deklaration",
+        "Terminsstyrt", "Kampanj- & säsongstyrt", "Projektstyrt — toppar när något ska levereras",
+        "Sommaren är lugn, resten är full fart",
+      ],
+    },
+    {
+      key: "ownai", type: "single", title: "Använder du redan AI i jobbet?",
+      hint: "Betalar arbetsgivaren redan för ett AI-verktyg kan teamet arbetsleda det i stället för att göra allt själv.",
+      options: [
+        "Nej / knappt", "ChatGPT som jag betalar privat",
+        "ChatGPT som jobbet betalar", "Microsoft Copilot på jobbet",
+        "Google Gemini", "Claude", "Jobbet tillåter inte AI-verktyg än",
+      ],
+    },
+    {
+      key: "goals", type: "multi", title: "Vad ska teamet framför allt ge dig?",
+      options: [
+        "Mer tid till det jag faktiskt är anställd för", "Slippa jobba över",
+        "Färre fel och missar", "Snabbare svar till dem som väntar",
+        "Bättre ordning på mitt eget", "Skriva bättre och snabbare",
+        "Komma ikapp när det blir för mycket", "Kunna säga ifrån med underlag",
+        "Lugnare huvud på kvällarna", "Utvecklas i rollen",
+      ],
+    },
+    {
+      key: "nogo", type: "multi", title: "Vad ska AI inte röra?",
+      hint: "Blir Avgränsningar i analysen. Ta med det arbetsgivaren har bestämt, inte bara det du själv tycker.",
+      options: [
+        "Personuppgifter om kunder, patienter eller elever",
+        "Löner och känsliga siffror", "Interna dokument som inte får lämna huset",
+        "Mina samtal och relationer", "Det jag har yrkesansvar för",
+        "Beslut som chefen ska fatta", "Ärenden med sekretess",
         "Inget särskilt — AI får hjälpa till överallt",
       ],
     },

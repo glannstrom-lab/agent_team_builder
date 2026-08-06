@@ -9,6 +9,27 @@
 > (livscoach, solo, icke-teknisk) och ett företag (redovisningsbyrå, nio
 > anställda, IT-leverantör som granskar).
 
+## Den stora omläggningen 2026-08-06 (eftermiddag)
+
+Två beslut som ändrar produkten mer än allt annat i listan nedan:
+
+**1. Kunden har aldrig en egen API-nyckel.** Vi kör AI:n på vår nyckel via
+`POST /api/ai`. Kravet på en egen nyckel var den enskilt största
+avhoppspunkten för alla som inte redan var utvecklare — och kostnaden vi tar
+över är 2–4 kr per kund och månad mot 90–290 kr i intäkt. Priset för bytet:
+vi är personuppgiftsbiträde, och en öppen rutt på vår nyckel måste bevakas.
+Tre tak i `functions/api/ai.js`: per IP, per konto (1 000 svar/mån = villkorens
+fair use) och ett globalt dygnstak som skyddar kassan.
+
+**2. Prisstegen är tre nivåer: 0 / 90 / 290 per månad.** Engångsköpet på
+4 990 är skrotat, liksom 190 och 490. Skälet är hederligt: vi har ingen
+molnstruktur för att underhålla team åt kunder, och "ert för alltid" vore ett
+löfte utan drift bakom sig. Molnstrukturen byggs ut när det finns intäkt.
+
+**Detta får inte deployas förrän `OPENROUTER_KEY` är satt.** Sajten säljer nu
+"AI:n ingår" och Buildern frågar inte längre kunden om någon nyckel — utan vår
+svarar `/api/ai` 503 och produkten är död i vattnet.
+
 ## Läget just nu
 
 Köpflödet fungerar hela vägen och är verifierat i riktig webbläsare: bygge →

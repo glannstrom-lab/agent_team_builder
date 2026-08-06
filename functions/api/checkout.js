@@ -55,26 +55,29 @@ export async function onRequestPost({ request, env }) {
   // Då fungerar flödet likadant på en förhandsdeploy som på mittaiteam.se.
   const origin = new URL(request.url).origin;
 
+  // Två parametrar gäller BARA engångsbetalningar och ger fel i subscription-
+  // läge: customer_creation (Stripe skapar alltid en kund åt en prenumeration)
+  // och payment_intent_data (en prenumeration har fakturor, inte en enskild
+  // betalningsavsikt). Skickas de ändå går abonnemangsnivån inte att köpa alls.
+  const modeParams = spec.mode === "subscription"
+    ? { "subscription_data[metadata][draft_id]": draftId }
+    : { customer_creation: "always", "payment_intent_data[metadata][draft_id]": draftId };
+
   let session;
   try {
     session = await stripeCall(env, "/checkout/sessions", {
       mode: spec.mode,
+      ...modeParams,
       "line_items[0][price]": price,
       "line_items[0][quantity]": "1",
       // {CHECKOUT_SESSION_ID} är Stripes egen platshållare och fylls i av dem.
       success_url: origin + "/portal/aktivera.html?session_id={CHECKOUT_SESSION_ID}",
       cancel_url: origin + "/builder/",
       locale: "sv",
-      // Skapa en Stripe-kund även vid engångsköp. Utan den är ett köp en lös
-      // betalning utan historik — och abonnemangsnivån, när proxyn finns,
-      // kräver en kund att hänga prenumerationen på.
-      customer_creation: "always",
       // Mejladressen är leveransadressen: den blir kundens konto. Stripe samlar
       // alltid in den i payment-läge, så vi behöver inte fråga två gånger.
       "metadata[draft_id]": draftId,
       "metadata[plan]": tier,
-      // Kvitto direkt från Stripe. Ett köp utan kvitto blir ett supportärende.
-      "payment_intent_data[metadata][draft_id]": draftId,
     }, "checkout:" + draftId);
   } catch (e) {
     // Utkastet städas bort direkt i stället för att ligga kvar som skräp.

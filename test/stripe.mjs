@@ -104,10 +104,11 @@ test("slugens tecken är jämnt fördelade — ingen modulo-bias", () => {
 });
 
 test("bara nivåer som går att leverera är köpbara", () => {
-  // De nyckelfria nivåerna kräver en proxy som inte är byggd. Råkar någon
-  // lägga tillbaka dem här går de att köpa direkt, och då har vi tagit betalt
-  // för något vi inte kan leverera.
-  assert.deepEqual(Object.keys(TIERS).sort(), ["buy", "trial-byo"]);
+  // Stegen är 0 / 90 / 290 per månad (beslutad 2026-08-06). Engångsköpet är
+  // skrotat: vi har ingen molnstruktur för att underhålla team, och "ert för
+  // alltid" vore ett löfte utan drift bakom sig. Växer listan utan att någon
+  // tänkt efter ska bygget gå rött, inte kassan öppna.
+  assert.deepEqual(Object.keys(TIERS).sort(), ["standard", "trial"]);
   for (const [namn, spec] of Object.entries(TIERS)) {
     assert.ok(spec.env && spec.env.startsWith("STRIPE_PRICE_"), namn + " saknar prisvariabel");
     assert.ok(["payment", "subscription"].includes(spec.mode), namn + " har ogiltigt mode");
