@@ -490,10 +490,18 @@ ny kund dyker upp i både galleri och portal automatiskt.
 > ska dö helt, och var "Utveckla teamet" ska spara. De två första är fattade
 > 2026-08-06: **noll provsvar** och **ingen live-provning av eget team**.
 >
-> **Pass 2 är gjort 2026-08-07** — planen har en livscykel (se avsnittet ovan).
-> Två steg återstår som inte är kod och som gör passet verkningslöst om de
-> glöms: kör `npm run db:migrate` (0005), och slå på de fyra händelsetyperna
-> för webhooken i Stripes dashboard.
+> **Pass 2 är gjort och driftsatt 2026-08-07** — planen har en livscykel (se
+> avsnittet ovan). Migration 0005 körd skarpt, koden deployad (commit `a50ecf3`),
+> webhook-endpointen uppgraderad till fem händelsetyper.
+>
+> **Fynd på vägen, nu hål 0 i `docs/lansering.md`: hela Stripe-uppsättningen kör
+> i TESTLÄGE.** `/api/checkout` mot mittaiteam.se returnerar `cs_test_…`, och
+> produktionen accepterar testlägets webhook-hemlighet — alltså är Pages-secrets
+> testnycklar. Kassan fungerar men tar inga pengar; ett riktigt kort avvisas.
+> "Verifierat skarpt 2026-08-06" betydde verifierat mot den riktiga deployen i
+> testläge, vilket är en teknisk verifiering men inte en kommersiell. Bara Mikael
+> kan stänga det: aktivera Stripe-kontot, skapa priserna i live-läge, byta fyra
+> Pages-secrets och ge live-endpointen samma fem händelsetyper.
 >
 > **Nästa pass:** pass 3.3 och 3.1 i `docs/roadmap.md` — täpp till teckentaket
 > som går att kringgå (`content` som array mäts som 15 tecken och släpper igenom

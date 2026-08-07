@@ -153,9 +153,17 @@ Genomfört. Sammanfattning av vad som ändrades:
   att gränsen går exakt på dygn 30, och att portalens `TRIAL_LENGTH_DAYS` och
   serverns `TRIAL_DAYS` är samma tal. `npm test` 69/69.
 
-**Kvar från passet:** migrationen är inte körd skarpt (`npm run db:migrate`),
-och de fyra nya händelsetyperna måste slås på i Stripes dashboard — utan det
-gör webhookkoden ingenting. Se **Att göra innan det är i drift** nedan.
+**Driftsatt samma dag.** Migration 0005 körd skarpt, koden deployad
+(`8a73e000`, Production/main, commit `a50ecf3`), och webhook-endpointen
+uppgraderad från en till fem händelsetyper via Stripes API. Verifierat mot
+mittaiteam.se: `/api/subscription/cancel` svarar 401 utan inloggning,
+uppgraderingsgrenen i `/api/checkout` svarar 401 utan inloggning, `sw.js` står
+på v26 och villkorens nya uppsägningstext är live.
+
+**Ett fynd på vägen som inte hörde till passet:** hela Stripe-uppsättningen kör
+i **testläge** — `/api/checkout` returnerar `cs_test_…`, och produktionen
+accepterar testlägets webhook-hemlighet. Kassan fungerar men tar inga pengar.
+Det är nu hål 0 i `docs/lansering.md`, och bara Mikael kan stänga det.
 
 Originalbeskrivningen står kvar nedan som underlag.
 
@@ -175,17 +183,22 @@ Konsekvenserna, i tur och ordning:
 - En uppsagd prenumeration behöll åtkomsten tills någon ändrade raden för hand.
 - En återbetalning likaså.
 
-### Att göra innan det är i drift
+### Driftsteg — gjorda 2026-08-07
 
-Två steg som inte är kod, och som gör hela passet verkningslöst om de glöms:
+Två steg som inte är kod, och som hade gjort hela passet verkningslöst om de
+glömts. Båda är gjorda; noterade här för nästa gång något liknande byggs:
 
-1. **`npm run db:migrate`** — 0005 lägger till `stripe_subscription` och
+1. ~~`npm run db:migrate`~~ — 0005 lägger till `stripe_subscription` och
    `plan_changed_at`. Utan dem faller webhookens uppslag tillbaka på kunden,
    och `/api/subscription/cancel` hittar inget abonnemang att säga upp.
-2. **Slå på fyra händelser i Stripes dashboard** för webhook-endpointen:
+2. ~~Slå på fyra händelser för webhook-endpointen~~ —
    `customer.subscription.deleted`, `invoice.payment_failed`, `invoice.paid`,
    `charge.refunded`. Skickas de inte körs koden aldrig, och allt ser ut att
    fungera precis som förut — vilket är exakt det fel passet lagade.
+
+**Gäller Stripes testläge.** Skapas ett live-läge måste dess endpoint få samma
+fem händelsetyper — annars är felet tillbaka, men bara för kunder som betalar
+på riktigt. Det är den värsta varianten: den syns aldrig i testerna.
 
 ---
 

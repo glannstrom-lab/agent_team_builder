@@ -94,6 +94,28 @@ produkten går igenom den.
 
 ## Blockerande — måste vara löst innan en okänd kund betalar
 
+### 0. Stripe kör i TESTLÄGE — ingen kan betala på riktigt · NYTT 2026-08-07
+
+Mätt, inte gissat. `POST /api/checkout` mot mittaiteam.se returnerar en session
+vars id börjar på **`cs_test_`**. Webhook-endpointen i Stripes testläge pekar på
+produktionsadressen `https://mittaiteam.se/api/stripe-webhook`, och produktionen
+accepterar en signatur räknad med testlägets hemlighet — alltså är
+`STRIPE_SECRET_KEY` och `STRIPE_WEBHOOK_SECRET` hos Cloudflare testnycklar.
+
+Följden: **kassan fungerar men tar inga pengar.** Ett riktigt kort avvisas i
+Stripes kassa, och det enda som går igenom är testkortsnummer. Prislistan säljer
+en provmånad för 90 kr som ingen kan köpa.
+
+Det förklarar också vad "verifierat skarpt 2026-08-06" faktiskt betydde: verifierat
+mot den riktiga deployen, i Stripes testläge. Det är en fullgod teknisk
+verifiering — men inte en kommersiell.
+
+Att göra, och bara Mikael kan göra det: aktivera kontot hos Stripe (bolagsuppgifter,
+bankkonto), skapa priserna på nytt i live-läge, och lägga in fyra live-värden som
+Pages-secrets — `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_TRIAL`,
+`STRIPE_PRICE_STANDARD`. Live-lägets webhook-endpoint behöver samma fem
+händelsetyper som testlägets nu har.
+
 ### ~~1. Nyckelkravet lever kvar i portalen~~ — STÄNGT 2026-08-06 (kväll)
 
 Hålet stängdes först i Buildern och köppanelen, men omläggningen "kunden har
@@ -177,9 +199,10 @@ finns: `POST /api/checkout { tier, slug }` fortsätter med samma team, och
 `POST /api/subscription/cancel` säger upp i portalen. Se `docs/roadmap.md`
 pass 2 för filraderna.
 
-**Kvar innan det är i drift:** `npm run db:migrate` (0005), och de fyra nya
-händelsetyperna måste slås på i Stripes dashboard. Utan det körs koden aldrig,
-och allt ser ut att fungera precis som förut.
+**I drift 2026-08-07:** migration 0005 körd skarpt, koden deployad
+(`8a73e000`, Production/main, commit `a50ecf3`), och webhook-endpointen
+uppgraderad från en till fem händelsetyper. Verifierat mot mittaiteam.se.
+Gäller Stripes **testläge** — se hål 0 ovan; live-läget har ingen endpoint än.
 
 ### ~~4. Ingen självbetjänad väg ut~~ — STÄNGT 2026-08-06
 
