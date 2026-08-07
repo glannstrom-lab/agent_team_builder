@@ -163,24 +163,32 @@ byggd: `/api/ai` på vår nyckel, fyra tak, förbrukning i `ai_budget`/`ai_usage
 Kontextbudget-buggen som blockerade den fixades i `6959aa4` (`contextFor`,
 `portal/app.js:519-549`).
 
-### 3b. Provmånaden tar aldrig slut — NYTT
+### ~~3b. Provmånaden tar aldrig slut~~ — STÄNGT 2026-08-07
 
-Ingen kod skriver någonsin `expired`, `cancelled` eller `refunded` till
-`teams.plan`. `PLANS_WITHOUT_PORTAL` (`functions/api/ai.js:162`) är en
-spärrlista som ingen fyller, och `stripe-webhook.js:42` hanterar bara
-`checkout.session.completed`.
+Var: ingen kod skrev någonsin `expired`, `cancelled` eller `refunded` till
+`teams.plan`. Spärrlistan fylldes av ingen, och webhooken hanterade bara
+`checkout.session.completed`. Följden var att 90 kr gav obegränsad
+portalåtkomst i evighet, vilket gjorde 290-nivån osäljbar.
 
-Följd: **90 kr engångsbetalning ger obegränsad portalåtkomst i evighet.** Därmed
-säljer 290-nivån sig aldrig, en uppsagd prenumeration behåller åtkomsten, och en
-återbetalning likaså. Det är den enda punkten på hela listan som direkt avgör
-intäkten. Åtgärd: `docs/roadmap.md`, pass 2.
+Nu: reglerna bor i `functions/api/_plan.js` och läses av både `/api/ai` och
+`/api/teams/:slug`. Provmånaden är 30 dagar ur `teams.created_at`, kontrollerad
+lat utan cron. Webhooken är en dispatcher över fem händelsetyper. Vägen vidare
+finns: `POST /api/checkout { tier, slug }` fortsätter med samma team, och
+`POST /api/subscription/cancel` säger upp i portalen. Se `docs/roadmap.md`
+pass 2 för filraderna.
+
+**Kvar innan det är i drift:** `npm run db:migrate` (0005), och de fyra nya
+händelsetyperna måste slås på i Stripes dashboard. Utan det körs koden aldrig,
+och allt ser ut att fungera precis som förut.
 
 ### ~~4. Ingen självbetjänad väg ut~~ — STÄNGT 2026-08-06
 
 Kort i arbetsytan från dag 25 som säger vilket datum provmånaden tar slut och
 att ingenting dras automatiskt. "Ladda ner allt" som samlar företagsminne,
 underlag och hela chatthistoriken i en läsbar markdown-fil. Uppsägningslänk som
-öppnar ett förifyllt mejl med företagsnamn och slug.
+öppnar ett förifyllt mejl med företagsnamn och slug. *(Mejlet blev en riktig
+uppsägning 2026-08-07 — `/api/subscription/cancel`; mejlvägen ligger kvar som
+reserv om anropet fallerar.)*
 
 **Bugg som hittades på vägen:** de befintliga nedladdningsknapparna (per svar,
 och "Ladda ner teamfil") fungerade sannolikt inte alls — en frikopplad

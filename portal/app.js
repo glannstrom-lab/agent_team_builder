@@ -704,6 +704,18 @@ async function loadTeam(slug) {
       const res = await window.ATBClaude.fetchWithTimeout(`/api/teams/${encodeURIComponent(slug)}`)
         .catch((e) => { console.warn("Moln-team kunde inte hämtas:", slug, e && e.message); return null; });
       if (res && res.ok) window.TEAM = await res.json().catch(() => null);
+      // 402 = teamet finns och är kundens, men planen har tagit slut. Skiljs
+      // det inte från "hittade inget team" möts en kund vars provmånad gått ut
+      // av en trasig-länk-text — och tror att felet är vårt, inte att månaden
+      // är slut. Kastas vidare med kod, så boot() kan visa den låsta vyn.
+      else if (res && res.status === 402) {
+        const info = await res.json().catch(() => ({}));
+        const err = new Error(info.error || "Teamets plan har tagit slut.");
+        err.planEnded = info.plan || "expired";
+        err.company = info.company || null;
+        err.canResume = info.canResume !== false;
+        throw err;
+      }
     }
   }
   if (!window.TEAM) throw new Error("Hittade inget team med den länken — kontrollera att den är komplett.");
@@ -803,6 +815,10 @@ async function boot() {
     // "hittade inget team", men den sväljer lika gärna ett programfel i
     // renderingen — och då ser det ut som en trasig länk i stället för en bugg.
     console.error("[portal] kunde inte öppna teamet:", err);
+    // Planen har tagit slut: teamet ÄR kundens, det är bara inte igång. Den
+    // låsta vyn säger det, och erbjuder vägen tillbaka i stället för att be
+    // henne bygga ett nytt team.
+    if (err && err.planEnded) { renderPlanEnded(slug, err); return; }
     renderPicker(err.message);
   }
 }
@@ -857,6 +873,136 @@ function renderLocked(reason) {
   wrap.appendChild(peek);
 
   root.appendChild(wrap);
+}
+
+// ---------- planen har tagit slut ----------
+//
+// Syskonet till renderLocked(), men för motsatt situation. Där handlar det om
+// ett team som aldrig aktiverats; här om ett som varit igång och slutat. Det
+// är skillnaden mellan "du har inte köpt något" och "din månad är slut", och
+// att säga fel av de två är att antingen glömma att kunden betalat eller att
+// be någon köpa något hon redan äger.
+//
+// Innehållet ligger kvar orört: samtal, minne och underlag bor i webbläsaren
+// och i kundens egen mapp, inte hos oss. Det ska stå i klartext här — annars
+// läser en kund "teamet är avstängt" som "allt jag skrivit är borta", och då
+// blir uppsägningen ett bråk i stället för ett avslut.
+const PLAN_ENDED_TEXT = {
+  expired: {
+    badge: "⏳ Provmånaden är slut",
+    lead: "Provmånaden är slut, så agenterna svarar inte just nu. Ingenting har försvunnit: "
+      + "samtalen, företagsminnet och era underlag ligger kvar i den här webbläsaren och i mappen ni kopplat.",
+    cta: "Fortsätt löpande — 290 kr/mån →",
+  },
+  cancelled: {
+    badge: "✔ Abonnemanget är avslutat",
+    lead: "Abonnemanget är uppsagt och perioden har löpt ut, så agenterna svarar inte längre. "
+      + "Allt ni lagt in ligger kvar i den här webbläsaren och i mappen ni kopplat — det är ert att behålla.",
+    cta: "Starta om teamet — 290 kr/mån →",
+  },
+  past_due: {
+    badge: "💳 Betalningen gick inte igenom",
+    lead: "Vi fick inte betalt för senaste fakturan, så teamet är pausat. Det är oftast ett kort som "
+      + "gått ut. Teckna om så öppnas allt igen — ingenting har försvunnit under tiden.",
+    cta: "Starta abonnemanget igen →",
+  },
+  refunded: {
+    badge: "↩ Köpet är återbetalat",
+    lead: "Köpet är återbetalat, så agenterna svarar inte längre. Teamet och allt ni lagt in finns kvar "
+      + "i den här webbläsaren.",
+    cta: "Börja om — 290 kr/mån →",
+  },
+};
+
+function renderPlanEnded(slug, info) {
+  const t = PLAN_ENDED_TEXT[info.planEnded] || PLAN_ENDED_TEXT.expired;
+  const root = $("#root");
+  root.innerHTML = "";
+  const wrap = el("main", "setup");
+  wrap.appendChild(hubLink());
+  wrap.appendChild(el("div", "setup-badge", t.badge));
+
+  // Företagsnamnet kommer från servern och är kundens eget — textnoder ändå,
+  // samma regel som i renderLocked().
+  const h = el("h1");
+  h.append(
+    document.createTextNode((info.company || "Ert team") + " står "),
+    el("span", "grad", "kvar"),
+    document.createTextNode(" — men är pausat"),
+  );
+  wrap.appendChild(h);
+  wrap.appendChild(el("p", "setup-lead", t.lead));
+
+  if (info.canResume) {
+    const btn = el("button", "btn-primary", t.cta);
+    btn.onclick = async () => {
+      btn.disabled = true;
+      const orig = btn.textContent;
+      btn.textContent = "Öppnar betalningen …";
+      try {
+        // Samma team, ny plan. Servern kontrollerar att kontot äger slugen —
+        // det som skickas härifrån är bara vilket team det gäller.
+        const res = await window.ATBClaude.fetchWithTimeout("/api/checkout", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          credentials: "same-origin",
+          body: JSON.stringify({ tier: "standard", slug }),
+        }, 15000);
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || !data.url) throw new Error(data.error || "Kunde inte öppna betalningen.");
+        location.href = data.url;
+      } catch (e) {
+        btn.disabled = false;
+        btn.textContent = orig;
+        const msg = el("p", "setup-help", (e && e.message) || "Något gick fel. Mejla info@mittaiteam.se så löser vi det.");
+        wrap.insertBefore(msg, btn.nextSibling);
+      }
+    };
+    wrap.appendChild(btn);
+  }
+
+  const dl = el("button", "demo-link", "Ladda ner allt ni lagt in →");
+  dl.onclick = () => {
+    // Uttaget bygger på state.slug och team — båda saknas här, eftersom
+    // konfigen aldrig levererades. Historiken finns däremot lokalt, så vi
+    // skickar kunden till det som faktiskt går att få ut.
+    downloadRawHistory(slug);
+  };
+  wrap.appendChild(dl);
+
+  const help = el("p", "setup-help");
+  help.append(
+    document.createTextNode("Stämmer det inte — hör av er till "),
+    (() => { const a = el("a"); a.href = "mailto:info@mittaiteam.se"; a.textContent = "info@mittaiteam.se"; return a; })(),
+    document.createTextNode(", så tittar vi på det."),
+  );
+  wrap.appendChild(help);
+
+  root.appendChild(wrap);
+}
+
+// Nöduttag när teamkonfigen inte finns: exportEverything() behöver agenternas
+// namn för att skriva en läsbar fil, och de kommer ur konfigen. Här skrivs
+// råhistoriken i stället — mindre snyggt, men det är kundens text och den ska
+// aldrig sitta fast bakom en plan som tagit slut.
+function downloadRawHistory(slug) {
+  const out = [`# Sparat från portalen — ${slug}`, "", `Uttag ${new Date().toLocaleString("sv-SE")}.`, ""];
+  const hist = loadHistory(slug);
+  let any = false;
+  Object.keys(hist || {}).forEach((agentId) => {
+    const msgs = hist[agentId] || [];
+    if (!msgs.length) return;
+    any = true;
+    out.push(`## ${agentId}`, "");
+    msgs.forEach((m) => {
+      out.push(`**${m.role === "user" ? "Du" : "Teamet"}**${m.at ? " · " + new Date(m.at).toLocaleString("sv-SE") : ""}`, "", m.content || "", "");
+    });
+  });
+  let mem = "";
+  try { mem = (localStorage.getItem(MEM_PREFIX + slug) || "").trim(); } catch (_) { /* läsfel */ }
+  if (mem) { out.push("## Företagsminne", "", mem, ""); any = true; }
+  if (!any) out.push("_(ingenting sparat i den här webbläsaren)_");
+  downloadFile(`${slug}-sparat-${isoDay()}.md`, out.join("\n"));
 }
 
 // Lämna demoläget. Demot säljer ingenting (beslut 2026-08-06) — teamet på
@@ -1341,9 +1487,9 @@ function renderSidebar() {
     // upp, och raden skulle bara förvirra. Nerladdningen finns däremot överallt
     // där det finns data — den hör till kunden, inte till avtalet.
     if (!state.slug.startsWith("__")) {
-      const quit = el("a", "link-btn", "Säg upp");
-      quit.href = quitMailto();
-      quit.title = "Öppnar ett förifyllt mejl till info@mittaiteam.se. Uppsägning gäller från utgången av innevarande betalperiod — teamet och era filer är era att behålla.";
+      const quit = el("button", "link-btn", "Säg upp");
+      quit.title = "Avslutar abonnemanget från utgången av innevarande betalperiod. Teamet och era filer är era att behålla.";
+      quit.onclick = openCancel;
       foot.appendChild(quit);
     }
   }
@@ -2716,17 +2862,78 @@ function downloadEverything(btn) {
 }
 
 // ---------- uppsägning ----------
-// Villkoren säger att uppsägning görs skriftligt till info@mittaiteam.se. Då
-// ska portalen skriva mejlet — kunden ska inte behöva formulera en uppsägning
-// från tomt papper för att komma ur något hen betalar för.
+//
+// Säljsidan lovar "uppsägningsbart när som helst". Fram till 2026-08-07 öppnade
+// knappen ett förifyllt mejl till supporten — vilket är "när vi läser mejlen",
+// inte "när som helst". För en kund som bestämt sig är väntan på svar precis
+// det som gör en avslutad affär till ett dåligt minne, och det är i det läget
+// hon berättar för andra hur det gick.
+//
+// Nu går uppsägningen genom /api/subscription/cancel, som sätter
+// cancel_at_period_end hos Stripe. Åtkomsten upphör alltså inte i dag utan när
+// den betalda perioden är slut — då skickar Stripe customer.subscription.deleted
+// och webhooken sätter plan = 'cancelled'.
+//
+// Mejlvägen finns kvar som reserv i rutan: går anropet inte igenom ska kunden
+// inte lämnas utan väg ut.
 function quitMailto() {
-  const subject = `Uppsägning — ${team.company} (${state.slug})`;
+  const company = (team && team.company) || "vårt företag";
+  const subject = `Uppsägning — ${company} (${state.slug})`;
   const body =
     `Hej!\n\nJag vill säga upp vårt AI-team.\n\n` +
-    `Företag: ${team.company}\nTeam: ${state.slug}\n\n` +
+    `Företag: ${company}\nTeam: ${state.slug}\n\n` +
     `Vad som fick mig att sluta (frivilligt, men det hjälper oss):\n\n\n` +
     `Vänliga hälsningar,\n`;
   return "mailto:info@mittaiteam.se?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
+}
+
+function openCancel() {
+  const box = openOverlay("Säg upp teamet");
+  box.appendChild(el("p", "ovl-lead",
+    "Uppsägningen gäller från utgången av innevarande betalperiod — ni betalar inte för tid ni inte använder, "
+    + "och ni behåller teamet perioden ut."));
+  box.appendChild(el("p", "ovl-note",
+    "Det ni har lagt in ligger i den här webbläsaren och i mappen ni kopplat, inte hos oss. Det påverkas inte av "
+    + "uppsägningen. Ladda gärna ner allt först — knappen finns i sidfoten."));
+
+  const status = el("p", "ovl-note");
+  const btn = el("button", "btn-primary ovl-save", "Ja, säg upp abonnemanget");
+  btn.type = "button";
+  btn.onclick = async () => {
+    btn.disabled = true;
+    btn.textContent = "Säger upp …";
+    try {
+      const res = await window.ATBClaude.fetchWithTimeout("/api/subscription/cancel", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ team: state.slug }),
+      }, 15000);
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.ok) throw new Error(data.error || "Uppsägningen gick inte igenom.");
+
+      btn.remove();
+      if (data.state === "nothing_to_cancel") {
+        status.textContent = data.message;
+      } else {
+        const slut = data.endsAt ? new Date(data.endsAt).toLocaleDateString("sv-SE", { day: "numeric", month: "long", year: "numeric" }) : null;
+        status.textContent = slut
+          ? `Klart. Abonnemanget avslutas ${slut} och förnyas inte. Fram till dess fungerar teamet som vanligt.`
+          : "Klart. Abonnemanget avslutas vid periodens slut och förnyas inte.";
+      }
+    } catch (e) {
+      btn.disabled = false;
+      btn.textContent = "Ja, säg upp abonnemanget";
+      status.textContent = (e && e.message) || "Något gick fel.";
+      // Reserven, inte som förstahandsval: en kund som klickat "säg upp" ska
+      // aldrig lämnas kvar i tjänsten bara för att ett anrop misslyckades.
+      const mail = el("a", "link-btn", "Säg upp via mejl i stället");
+      mail.href = quitMailto();
+      box.appendChild(mail);
+    }
+  };
+  box.appendChild(btn);
+  box.appendChild(status);
 }
 
 // ---------- provmånaden går mot sitt slut ----------
@@ -2812,10 +3019,35 @@ function renderTrialCard(info, today) {
     ? `Provmånaden för ${team.company} tar slut den ${ends}.`
     : `Provmånaden för ${team.company} tog slut den ${ends}.`));
   card.appendChild(el("p", "trial-note",
-    "Ingenting dras automatiskt. Provmånaden är ett engångsköp som inte förnyas — vill ni inte fortsätta behöver ni inte göra någonting. Samtal, minne och underlag ligger i den här webbläsaren och berörs inte."));
+    "Ingenting dras automatiskt. Provmånaden är ett engångsköp som inte förnyas — vill ni inte fortsätta behöver ni inte göra någonting. "
+    + "Samtal, minne och underlag ligger i den här webbläsaren och berörs inte. Fortsätter ni är det samma team som rullar vidare; "
+    + "ingenting byggs om."));
 
-  const cont = el("a", "trial-act", "Vill ni fortsätta? Se vad teamet kostar →");
-  cont.href = "../#priser";
+  // Knapp, inte länk till prislistan. Kunden har redan bestämt vad teamet är
+  // värt — att skicka henne till en säljsida för att läsa om det igen är ett
+  // extra steg på precis det ställe där de flesta faller ifrån.
+  const cont = el("button", "trial-act", "Fortsätt löpande — 290 kr/mån →");
+  cont.type = "button";
+  cont.onclick = async () => {
+    cont.disabled = true;
+    const orig = cont.textContent;
+    cont.textContent = "Öppnar betalningen …";
+    try {
+      const res = await window.ATBClaude.fetchWithTimeout("/api/checkout", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ tier: "standard", slug: state.slug }),
+      }, 15000);
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.url) throw new Error(data.error || "Kunde inte öppna betalningen.");
+      location.href = data.url;
+    } catch (e) {
+      cont.disabled = false;
+      cont.textContent = orig;
+      card.appendChild(el("p", "trial-note", (e && e.message) || "Något gick fel — mejla info@mittaiteam.se så löser vi det."));
+    }
+  };
   card.appendChild(cont);
 
   const dl = el("button", "trial-act", "Ladda ner allt ni lagt in"); dl.type = "button";

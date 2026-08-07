@@ -115,30 +115,77 @@ Det här är ett beslut, inte en bugg — se **Beslut som krävs** nedan.
 
 ---
 
-## Pass 2 — Provmånaden måste kunna ta slut
+## Pass 2 — Provmånaden måste kunna ta slut ✅ GJORT 2026-08-07
 
-Det här är den enda punkten på hela listan som direkt avgör intäkten, och den är
-inte med i `docs/lansering.md` alls.
+Genomfört. Sammanfattning av vad som ändrades:
 
-**`teams.plan` skrivs aldrig om.** `PLANS_WITHOUT_PORTAL` (`functions/api/ai.js:162`)
-är en spärrlista som läser `expired`, `cancelled` och `refunded` — men ingen kod
-i `functions/` eller `scripts/` skriver någonsin de värdena. Och
-`stripe-webhook.js:42` hanterar bara `checkout.session.completed`.
+- **`functions/api/_plan.js`** (ny) — planens regler på ett ställe: 30 dagars
+  provmånad räknad ur `teams.created_at`, spärrlista, och `planState()` som är
+  en ren funktion utan databas eller klocka. Låg tidigare bara i `ai.js`, och
+  `/api/teams/:slug` läste planen inte alls.
+- **`stripe-webhook.js`** — dispatcher i stället för en enda händelse. Nu:
+  `customer.subscription.deleted` → `cancelled`, `invoice.payment_failed` (först
+  när `next_payment_attempt` är null, alltså när Stripe gett upp) → `past_due`,
+  `invoice.paid` → öppnar igen om raden var spärrad, `charge.refunded` (full
+  återbetalning, bara engångsplaner) → `refunded`. Uppslaget går på
+  abonnemangets id först och på kunden bara som andrahandsval — annars kunde en
+  avslutad provmånad stänga av samma kunds löpande team.
+- **Provmånaden tar slut lat**, utan cron: `planState()` jämför mot
+  `created_at + 30 dygn` och `ai.js`/`teams/[slug].js` skriver `expired` till
+  raden första gången någon knackar på efteråt.
+- **Grinden flyttad till dörren.** `/api/teams/:slug` svarar 402 `plan_ended` i
+  stället för att leverera hela teamet till en kund vars månad tagit slut.
+  Portalen visar `renderPlanEnded()` — inte felbubblan mitt i första frågan.
+  (Löser också första punkten under pass 6 → Portalen, för det här fallet.)
+- **Vägen vidare, som är själva förutsättningen för att få stänga dörren:**
+  `POST /api/checkout { tier, slug }` uppgraderar ett team kunden redan äger.
+  Ingen ny konfiguration, inget ombyggt team, samma slug. Utan den vore
+  utgången en återvändsgränd, och en kund som just tvingats bygga om allt köper
+  inte 290-nivån.
+- **`POST /api/subscription/cancel`** — uppsägning i portalen, `cancel_at_period_end`
+  hos Stripe. "Uppsägningsbart när som helst" (`index.html`) är sant nu; mejlet
+  finns kvar som reserv i rutan. `villkor.html` §6 ändrad därefter.
+- **`migrations/0005_plan_lifecycle.sql`** — `stripe_subscription`,
+  `plan_changed_at`, index på kund och abonnemang. Provmånadens slutdatum fick
+  medvetet ingen kolumn: det räknas ur `created_at`, samma sätt som portalens
+  eget kort redan gjorde, och två sanningar om samma datum glider isär.
+- **`test/plan.mjs`** (13 tester) — bl.a. att `trial-byo` räknas som provmånad,
+  att gränsen går exakt på dygn 30, och att portalens `TRIAL_LENGTH_DAYS` och
+  serverns `TRIAL_DAYS` är samma tal. `npm test` 69/69.
+
+**Kvar från passet:** migrationen är inte körd skarpt (`npm run db:migrate`),
+och de fyra nya händelsetyperna måste slås på i Stripes dashboard — utan det
+gör webhookkoden ingenting. Se **Att göra innan det är i drift** nedan.
+
+Originalbeskrivningen står kvar nedan som underlag.
+
+### 2.1 `teams.plan` skrevs aldrig om
+
+`PLANS_WITHOUT_PORTAL` (`functions/api/ai.js:162`) var en spärrlista som läste
+`expired`, `cancelled` och `refunded` — men ingen kod i `functions/` eller
+`scripts/` skrev någonsin de värdena. Och `stripe-webhook.js:42` hanterade bara
+`checkout.session.completed`.
 
 Konsekvenserna, i tur och ordning:
 
-- En provmånad på 90 kr (engångsbetalning, `_stripe.js:103`) ger **obegränsad
-  portalåtkomst i evighet**. Provmånaden tar aldrig slut.
-- Därmed säljer 290-nivån sig aldrig. Varför betala månadsvis för något
+- En provmånad på 90 kr (engångsbetalning, `_stripe.js:103`) gav **obegränsad
+  portalåtkomst i evighet**. Provmånaden tog aldrig slut.
+- Därmed sålde 290-nivån sig aldrig. Varför betala månadsvis för något
   engångsbeloppet redan gav?
-- En uppsagd prenumeration behåller åtkomsten tills någon ändrar raden för hand.
+- En uppsagd prenumeration behöll åtkomsten tills någon ändrade raden för hand.
 - En återbetalning likaså.
 
-Att göra: prenumerera på `customer.subscription.deleted`, `invoice.payment_failed`
-och `charge.refunded` i webhooken och sätt `plan` därefter. Lägg ett
-utgångsdatum på trial — billigast som lat kontroll i `ai.js` mot
-`teams.created_at`, alltså ingen cron. Och gör "uppsägningsbart när som helst"
-(`index.html:421`) sant: i dag kräver `villkor.html:328` ett mejl.
+### Att göra innan det är i drift
+
+Två steg som inte är kod, och som gör hela passet verkningslöst om de glöms:
+
+1. **`npm run db:migrate`** — 0005 lägger till `stripe_subscription` och
+   `plan_changed_at`. Utan dem faller webhookens uppslag tillbaka på kunden,
+   och `/api/subscription/cancel` hittar inget abonnemang att säga upp.
+2. **Slå på fyra händelser i Stripes dashboard** för webhook-endpointen:
+   `customer.subscription.deleted`, `invoice.payment_failed`, `invoice.paid`,
+   `charge.refunded`. Skickas de inte körs koden aldrig, och allt ser ut att
+   fungera precis som förut — vilket är exakt det fel passet lagade.
 
 ---
 
@@ -281,7 +328,7 @@ uppfylld.
 
 ## Pass 5 — Kvalitetsnätet
 
-`npm test` ger **56/56 gröna** på ~150 ms. Men det är två av femton filer i
+`npm test` ger **69/69 gröna** på ~150 ms. Men det är två av femton filer i
 `functions/` och noll rader av webblagrets logik, och **det finns ingen CI** —
 testerna körs bara när någon minns att skriva `npm test`.
 
@@ -320,9 +367,12 @@ felsökningsrundor. En rad i `build-dist.mjs` som hashar SHELL-filerna in i
 
 ### Portalen
 
-- **Betalspärren upptäcks först efter att man skrivit ett meddelande.** Hela
-  arbetsytan renderas för ett team utan giltig plan; 402:an kommer som en
-  felbubbla. Kontrollera planen vid laddning och visa köpkortet i stället.
+- ~~**Betalspärren upptäcks först efter att man skrivit ett meddelande.**~~
+  **Åtgärdat 2026-08-07 (pass 2)** för moln-team: `/api/teams/:slug` svarar 402
+  `plan_ended` vid laddning och portalen visar `renderPlanEnded()`. Kvar i
+  samma anda: `/api/ai` kan fortfarande svara 402 mitt i en session om planen
+  ändras medan fliken står öppen — då vore det rätt att byta till den låsta
+  vyn i stället för att visa en felbubbla.
 - **Fair use-taket förklaras bort.** `atb-claude.js:69` skriver över *alla*
   429-svar med "Vänta en minut och försök igen" — inklusive serverns korrekta
   *"Ni har nått månadens tak på 1 000 svar"* (`ai.js:292`). Kunden får rådet att

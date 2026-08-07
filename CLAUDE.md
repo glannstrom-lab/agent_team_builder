@@ -216,9 +216,29 @@ den. Med AI:n inkluderad i ett fast pris är samma siffra brus, och den inbjuder
 till frågan "varför debiteras jag?". Förbrukningen bokförs serversidan i
 `ai_usage`/`ai_budget` — det är vår sida av affären, inte kundens.
 
-**Men planen tar aldrig slut:** ingen kod skriver `expired`/`cancelled`/
-`refunded`, och webhooken lyssnar bara på `checkout.session.completed`. 90 kr
-ger i dag obegränsad åtkomst för alltid. Se `docs/roadmap.md` pass 2.
+**Planen har en livscykel (2026-08-07):** reglerna för vad `teams.plan` betyder
+bor i `functions/api/_plan.js` — en ren funktion `planState(rad, nu)` som både
+`/api/ai` och `/api/teams/:slug` frågar, så att de inte kan komma till olika
+slutsatser om samma rad. **Provmånaden är 30 dagar räknade ur
+`teams.created_at`**, kontrollerad lat (ingen cron): första gången någon knackar
+på efter utgången skrivs `expired` till raden. Samma tal, 30, står i portalens
+`TRIAL_LENGTH_DAYS` — ett test fäller bygget om de glider isär, för det är
+kortet i arbetsytan som annars säger "fem dagar kvar" samma dag som spärren
+slår till. `stripe-webhook.js` är numera en dispatcher:
+`customer.subscription.deleted` → `cancelled`, `invoice.payment_failed` (bara
+när Stripe gett upp, dvs `next_payment_attempt` är null) → `past_due`,
+`invoice.paid` → öppnar igen om raden var spärrad, `charge.refunded` → `refunded`
+på engångsplaner. **De fyra händelserna måste vara påslagna i Stripes
+dashboard** — annars körs koden aldrig och allt ser ut att fungera som förut.
+
+**Att stänga en dörr kräver att en annan öppnas.** `POST /api/checkout` tar
+numera `{ tier, slug }` och uppgraderar ett team kunden redan äger: samma slug,
+samma konfiguration, ny plan. Utan den vägen vore provmånadens slut en
+återvändsgränd — enda sättet att fortsätta hade varit att bygga om teamet från
+början, och den kunden köper inte 290-nivån. `POST /api/subscription/cancel`
+gör motsvarande åt andra hållet (`cancel_at_period_end` hos Stripe), så att
+"uppsägningsbart när som helst" i prislistan är sant och inte betyder "när vi
+läser mejlen".
 
 **Prisstegen är tre nivåer (2026-08-06):** 0 kr bygga · 90 kr provmånad ·
 290 kr/mån standard · offert för flera användare. Engångsköpet på 4 990 och
@@ -321,8 +341,9 @@ ny kund dyker upp i både galleri och portal automatiskt.
 │                                   #   Deployas inte — saknas medvetet i ITEMS
 ├── functions/                      # Cloudflare Pages Functions (/api/* — moln-team)
 │                                   #   OBS: deployas från repo-roten, aldrig via dist/
-├── migrations/                     # D1-schema (SQL): init, auth, commerce, ai_proxy
-├── test/                           # node --test: teams.mjs + stripe.mjs (56 tester)
+├── migrations/                     # D1-schema (SQL): init, auth, commerce, ai_proxy,
+│                                   #   plan_lifecycle
+├── test/                           # node --test: teams.mjs + stripe.mjs + plan.mjs (69 tester)
 ├── scripts/                        # provision.mjs — lägg upp en kund för hand
 ├── testoutput/                     # Råa pipeline-körningar (källmaterial, ej deployat)
 │
@@ -431,7 +452,7 @@ ny kund dyker upp i både galleri och portal automatiskt.
 >
 > Kärnan (fas 1–3 nedan) är klar och bevisat divergerande — se `examples/`.
 > Kassan, kontona, AI-proxyn och förbrukningsmätningen finns sedan 2026-08-06
-> och är verifierade skarpt. Testsviten är 56 gröna. Det som saknas är en
+> och är verifierade skarpt. Testsviten är 69 gröna. Det som saknas är en
 > betalande kund — och en fungerande väg fram till första svaret.
 >
 > **Sammanfattning av sjuagentsgranskningen 2026-08-06:** kedjan gick sönder
@@ -469,10 +490,16 @@ ny kund dyker upp i både galleri och portal automatiskt.
 > ska dö helt, och var "Utveckla teamet" ska spara. De två första är fattade
 > 2026-08-06: **noll provsvar** och **ingen live-provning av eget team**.
 >
-> **Nästa pass:** pass 2 i `docs/roadmap.md` — ge planen en livscykel. Skriv
-> `expired` när provmånaden passerat 30 dagar och hantera
-> `customer.subscription.deleted` / `invoice.payment_failed` i webhooken. Utan
-> det är 90 kr hela produkten och 290-nivån går inte att sälja.
+> **Pass 2 är gjort 2026-08-07** — planen har en livscykel (se avsnittet ovan).
+> Två steg återstår som inte är kod och som gör passet verkningslöst om de
+> glöms: kör `npm run db:migrate` (0005), och slå på de fyra händelsetyperna
+> för webhooken i Stripes dashboard.
+>
+> **Nästa pass:** pass 3.3 och 3.1 i `docs/roadmap.md` — täpp till teckentaket
+> som går att kringgå (`content` som array mäts som 15 tecken och släpper igenom
+> ett megabyte), och skilj det globala dygnstaket åt så att anonym byggtrafik
+> inte kan stänga ute betalande kunder resten av dygnet. Kassan är den
+> oskyddade flanken nu när intäktssidan håller.
 >
 > Fas 1–3 nedan står kvar som historik över hur kärnan byggdes.
 

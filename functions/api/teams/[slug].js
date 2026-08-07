@@ -14,10 +14,11 @@
 // Inbyggda exempelteam ("coachonline" m.fl.) serveras statiskt från
 // portal/teams/<slug>.js och når aldrig hit, så demoläget påverkas inte.
 
-import { json, sessionUser } from "../auth/_lib.js";
+import { json, nowMs, sessionUser } from "../auth/_lib.js";
+import { planState, planUpdateSql, wasEverPaid } from "../_plan.js";
 
 export async function onRequestGet(context) {
-  const { params, env, request } = context;
+  const { params, env, request, waitUntil } = context;
   const slug = (params.slug || "").trim();
 
   if (!slug) return json({ error: "saknar slug" }, 400);
@@ -34,7 +35,7 @@ export async function onRequestGet(context) {
     // tas bort ska stänga dörren i samma sekund — det är hela skillnaden mot
     // den gamla länken.
     row = await env.DB.prepare(
-      "SELECT t.config FROM teams t JOIN team_access a ON a.team_slug = t.slug " +
+      "SELECT t.config, t.plan, t.created_at FROM teams t JOIN team_access a ON a.team_slug = t.slug " +
       "WHERE t.slug = ?1 AND a.user_id = ?2"
     ).bind(slug, user.id).first();
   } catch (e) {
@@ -44,6 +45,30 @@ export async function onRequestGet(context) {
   // Samma svar på "finns inte" som på "du når det inte". Skillnaden vore ett
   // sätt att prova sig fram till vilka slugs som existerar.
   if (!row || !row.config) return json({ error: "hittade inget team" }, 404);
+
+  // Planen avgör här, inte bara i /api/ai. Tidigare levererades hela teamet
+  // till en kund vars provmånad tagit slut, och spärren visade sig först när
+  // hon skrivit ett meddelande — som en felbubbla, i ett läge där hon trodde
+  // att allt fungerade. Nu ser hon den låsta vyn direkt, med vägen vidare.
+  const now = nowMs();
+  const plan = planState(row, now);
+  if (!plan.ok) {
+    if (plan.expire) {
+      waitUntil(env.DB.prepare(planUpdateSql()).bind("expired", now, slug).run().catch(() => {}));
+    }
+    // Företagsnamnet följer med: den låsta vyn ska kunna säga "Lerverks team
+    // är byggt men inte igång" i stället för "ert team". Namnet är kundens
+    // eget och hon är inloggad med åtkomst till raden — inget läcker.
+    let company = null;
+    try { company = JSON.parse(row.config).company || null; } catch (_) { /* trasig konfig */ }
+    return json({
+      error: "Teamets plan har tagit slut.",
+      code: "plan_ended",
+      plan: plan.reason,
+      company,
+      canResume: wasEverPaid(plan.plan),
+    }, 402);
+  }
 
   // config är redan en JSON-sträng (window.TEAM-formatet) — skicka rakt igenom.
   return new Response(row.config, {

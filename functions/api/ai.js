@@ -30,6 +30,7 @@
 // felramar — se `SVENSKA FEL` längre ner.
 
 import { json, nowMs, allowAttempt, clientIp, sessionUser } from "./auth/_lib.js";
+import { planState, planUpdateSql, PLAN_REASON } from "./_plan.js";
 
 // ── tak ───────────────────────────────────────────────────────────────────
 //
@@ -151,15 +152,12 @@ const JSON_RETRY_MIN_MS = 20_000; // starta inget omförsök som ändå inte hin
 // inte en artighetsfråga.
 //
 // `teams.plan` säger VAD som köptes ('trial' | 'standard', se TIERS i
-// _stripe.js). Den läses för att gå att STÄNGA AV: sätt 'expired' på raden
-// när en provmånad tagit slut, så möts kunden av köpmeddelandet i stället för
-// av tystnad. Listan är alltså en spärrlista, inte en tillåtlista.
-//
-// Tomt plan-fält räknas som köpt, och det är ett medvetet val: webhooken
-// skriver NULL om Stripes metadata skulle saknas, och provision.mjs sätter
-// inget plan alls. Att låsa ute en kund som betalat är värre än att släppa in
-// en som fått teamet av oss för hand.
-const PLANS_WITHOUT_PORTAL = new Set(["expired", "cancelled", "refunded"]);
+// _stripe.js). Den läses för att gå att STÄNGA AV — reglerna för vad varje
+// värde betyder, och när en provmånad tar slut, bor i _plan.js så att den här
+// rutten och /api/teams/:slug inte kan komma till olika slutsatser om samma
+// rad. Fram till 2026-08-07 läste bara den här filen planen, och den betalande
+// kunden mötte därför spärren först efter att ha skrivit sitt första
+// meddelande.
 
 // Samma mönster som functions/api/team/_lib.js. Utkast och branschdemos i
 // portalen heter "__draft"/"__vertical"/"__link" och faller på första tecknet
@@ -176,6 +174,20 @@ const FEL = {
   purchase:
     "Det här teamet är inte aktiverat på ditt konto ännu. Starta provmånaden på mittaiteam.se och spara teamet i molnet, så öppnas det direkt. " +
     "Har du redan betalat — mejla info@mittaiteam.se, så ordnar vi det på en gång.",
+  // Egen text när planen tagit slut. Kunden HAR teamet, hon har använt det, och
+  // "inte aktiverat ännu" vore både fel och nedlåtande i det läget. Att skilja
+  // de två fallen åt läcker ingenting: hit kommer man bara med en rad i
+  // team_access, alltså med åtkomst till just det teamet.
+  ended: {
+    expired:
+      "Provmånaden för det här teamet är slut. Fortsätt löpande för 290 kr/mån i portalen, så svarar agenterna igen — minne, underlag och samtal ligger kvar orörda.",
+    cancelled:
+      "Abonnemanget för det här teamet är uppsagt, så agenterna svarar inte längre. Vill ni starta om går det när som helst i portalen.",
+    past_due:
+      "Vi fick inte betalt för senaste fakturan, så teamet är pausat. Uppdatera kortet i portalen eller mejla info@mittaiteam.se, så öppnar vi direkt.",
+    refunded:
+      "Köpet av det här teamet är återbetalat, så agenterna svarar inte längre. Vill ni börja om finns teamet kvar — hör av er till info@mittaiteam.se.",
+  },
   timeout: "Det tog för lång tid att få svar. Försök igen — händer det två gånger i rad, mejla info@mittaiteam.se så tittar vi på det.",
   strömTimeout: "Svaret tog för lång tid och avbröts. Försök igen.",
   strömBröts: "Svaret avbröts på vägen. Försök igen.",
@@ -250,12 +262,27 @@ export async function onRequestPost(context) {
     let row = null;
     if (looksLikeSlug(slug)) {
       row = await db.prepare(
-        "SELECT t.plan FROM teams t JOIN team_access a ON a.team_slug = t.slug " +
+        "SELECT t.plan, t.created_at FROM teams t JOIN team_access a ON a.team_slug = t.slug " +
         "WHERE t.slug = ?1 AND a.user_id = ?2"
       ).bind(slug, user.id).first().catch(() => null);
     }
-    if (!row || PLANS_WITHOUT_PORTAL.has(String(row.plan || ""))) {
-      return json({ error: FEL.purchase, code: "purchase_required" }, 402);
+    if (!row) return json({ error: FEL.purchase, code: "purchase_required" }, 402);
+
+    const plan = planState(row, t);
+    if (!plan.ok) {
+      // Provmånaden tar slut av sig själv, utan cron: kontrollen är lat och
+      // raden skrivs om första gången någon knackar på efter utgången. Skrivs
+      // den inte (databasfel, avbruten request) räknas den ut igen nästa gång —
+      // det enda som går förlorat är att stödpersonal ser 'trial' i tabellen.
+      if (plan.expire) {
+        waitUntil(db.prepare(planUpdateSql()).bind("expired", t, slug).run().catch(() => {}));
+      }
+      console.warn("[ai] avvisad plan", slug, plan.plan, PLAN_REASON[plan.reason] || plan.reason);
+      return json({
+        error: FEL.ended[plan.reason] || FEL.purchase,
+        code: "plan_ended",
+        plan: plan.reason,
+      }, 402);
     }
     subject = "team:" + slug;
   } else {

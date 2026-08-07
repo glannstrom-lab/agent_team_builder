@@ -1,4 +1,5 @@
-// POST /api/checkout  { tier, config }  → { url }
+// POST /api/checkout  { tier, config }  → { url }     nytt team
+// POST /api/checkout  { tier, slug }    → { url }     fortsätt med ett befintligt
 //
 // Steg ett i köpflödet (Beslut A i m2-backend-spec.md: bygg → betala → spara).
 // Teamet är redan byggt i webbläsaren när kunden kommer hit. Vi lägger undan
@@ -9,8 +10,14 @@
 // kvar en konfiguration på tiotusentals tecken genom en omdirigering till
 // Stripe och tillbaka — och en kund som stänger fliken mitt i har betalat för
 // ett team som ingen längre har.
+//
+// Den andra formen — `slug` i stället för `config` — kom till 2026-08-07,
+// samma dag som provmånaden fick ett slutdatum. Utan den hade utgången varit
+// en återvändsgränd: enda sättet att fortsätta vore att bygga om teamet från
+// början, och en kund som just tvingats göra om allt köper inte 290-nivån.
+// Här byts ingen konfiguration ut — bara planen på ett team kunden redan äger.
 
-import { json, readJson, nowMs, randomHex, allowAttempt, clientIp } from "./auth/_lib.js";
+import { json, readJson, nowMs, randomHex, allowAttempt, clientIp, sessionUser } from "./auth/_lib.js";
 import { stripeCall, TIERS } from "./_stripe.js";
 
 // Ett team-JSON är stort men inte hur stort som helst. Taket finns för att
@@ -35,6 +42,14 @@ export async function onRequestPost({ request, env }) {
   const price = env[spec.env];
   if (!price) return json({ error: "nivån är inte prissatt i den här miljön" }, 500);
 
+  const origin = new URL(request.url).origin;
+
+  // ── fortsätt med ett team som redan finns ──
+  const upgradeSlug = typeof body.slug === "string" ? body.slug.trim() : "";
+  if (upgradeSlug) {
+    return startUpgrade({ db, env, request, origin, tier, spec, price, slug: upgradeSlug });
+  }
+
   // Konfigen tas emot som objekt och sparas som sträng — samma format som
   // portal/teams/*.js (window.TEAM) och som /api/teams/:slug skickar tillbaka.
   const config = body.config;
@@ -51,10 +66,10 @@ export async function onRequestPost({ request, env }) {
     "INSERT INTO pending (id, config, plan, created_at) VALUES (?, ?, ?, ?)"
   ).bind(draftId, configText, tier, t).run();
 
-  // Adresserna byggs ur den begärans egen origin, inte ur en hårdkodad domän.
-  // Då fungerar flödet likadant på en förhandsdeploy som på mittaiteam.se.
-  const origin = new URL(request.url).origin;
-
+  // Adresserna byggs ur den begärans egen origin (`origin` ovan), inte ur en
+  // hårdkodad domän. Då fungerar flödet likadant på en förhandsdeploy som på
+  // mittaiteam.se.
+  //
   // Två parametrar gäller BARA engångsbetalningar och ger fel i subscription-
   // läge: customer_creation (Stripe skapar alltid en kund åt en prenumeration)
   // och payment_intent_data (en prenumeration har fakturor, inte en enskild
@@ -92,6 +107,64 @@ export async function onRequestPost({ request, env }) {
   // aldrig betalades har inget värde, och rutten körs ofta nog.
   await db.prepare("DELETE FROM pending WHERE created_at < ?")
     .bind(t - 24 * 60 * 60 * 1000).run().catch(() => {});
+
+  return json({ url: session.url, sessionId: session.id });
+}
+
+// ── fortsätt med ett befintligt team ──────────────────────────────────────
+//
+// Ingen konfiguration byter händer här, och inget nytt team skapas. Det enda
+// som ändras är planen på en rad kunden redan äger — därför är ägarskapet det
+// som måste stämma, inte utkastets storlek.
+async function startUpgrade({ db, env, request, origin, tier, spec, price, slug }) {
+  // Bara löpande nivåer går att fortsätta med. Att sälja en ny provmånad på
+  // ett team vars provmånad tagit slut vore att sälja samma sak två gånger,
+  // och att göra 90 kr till ett abonnemang i smyg.
+  if (spec.mode !== "subscription") {
+    return json({ error: "den nivån går inte att fortsätta med — välj den löpande" }, 400);
+  }
+
+  const user = await sessionUser(db, request).catch(() => null);
+  if (!user) return json({ error: "Logga in först, så vet vi vilket team det gäller.", code: "login_required" }, 401);
+
+  // Ägaren, inte vem som helst med åtkomst: en inbjuden kollega ska inte kunna
+  // teckna ett abonnemang i firmans namn.
+  const row = await db.prepare(
+    "SELECT t.slug, t.stripe_customer FROM teams t JOIN team_access a ON a.team_slug = t.slug " +
+    "WHERE t.slug = ?1 AND a.user_id = ?2 AND a.role = 'owner'"
+  ).bind(slug, user.id).first().catch(() => null);
+
+  // Samma svar på "finns inte" som på "du äger det inte" — se /api/teams/:slug.
+  if (!row) return json({ error: "hittade inget team att fortsätta med" }, 404);
+
+  // Idempotensnyckeln måste variera mellan försök: en kund som avbryter i
+  // Stripe och kommer tillbaka ska få en ny session, inte samma gamla.
+  const nonce = randomHex(8);
+
+  // Återanvänd kunden hos Stripe när den finns. Annars får samma person två
+  // kundposter, och kvitton, kort och återbetalningar hamnar på olika ställen.
+  const customerParams = row.stripe_customer ? { customer: row.stripe_customer } : {};
+
+  let session;
+  try {
+    session = await stripeCall(env, "/checkout/sessions", {
+      mode: spec.mode,
+      ...customerParams,
+      "subscription_data[metadata][upgrade_slug]": slug,
+      "line_items[0][price]": price,
+      "line_items[0][quantity]": "1",
+      success_url: origin + "/portal/aktivera.html?session_id={CHECKOUT_SESSION_ID}",
+      // Tillbaka till teamet, inte till Buildern: kunden har redan ett team och
+      // ska inte mötas av en uppmaning att bygga ett till om hon ångrar sig.
+      cancel_url: origin + "/portal/?team=" + encodeURIComponent(slug),
+      locale: "sv",
+      "metadata[upgrade_slug]": slug,
+      "metadata[plan]": tier,
+    }, "upgrade:" + slug + ":" + nonce);
+  } catch (e) {
+    console.error("[checkout] kunde inte starta uppgradering", slug, String(e));
+    return json({ error: "kunde inte starta betalningen" }, 502);
+  }
 
   return json({ url: session.url, sessionId: session.id });
 }
