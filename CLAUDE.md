@@ -509,6 +509,11 @@ ny kund dyker upp i både galleri och portal automatiskt.
 > inte kan stänga ute betalande kunder resten av dygnet. Kassan är den
 > oskyddade flanken nu när intäktssidan håller.
 >
+> **Det går parallellt med Mikaels enda uppgift**, som ingen kod kan göra åt
+> honom: aktivera Stripe-kontot och byta till live-nycklar (hål 0 i
+> `docs/lansering.md`). Börja inte ett pass med att föreslå det — det är
+> noterat, det är hans, och det står inte i vägen för något som byggs härnäst.
+>
 > Fas 1–3 nedan står kvar som historik över hur kärnan byggdes.
 
 Bygg i den här ordningen. Hoppa inte över steg.
