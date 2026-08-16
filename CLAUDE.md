@@ -304,9 +304,20 @@ Platsrutterna finns också (`functions/api/team/{invite,members,remove}.js`) men
 inget gränssnitt anropar dem än.
 
 **Portalens layout:** tre spalter på desktop — laget till vänster, chatten i
-mitten, arbetsytan och sidfoten till höger. **Ändras `portal/app.js` måste `CACHE`
-i `portal/sw.js` bumpas**, annars serverar service workern gammal kod hur mycket
-som än deployas. Det gäller varje fil i `SHELL`, inklusive `atb-claude.js`.
+mitten, arbetsytan och sidfoten till höger.
+
+**Cachningen sköter sig själv sedan 2026-08-16 — och `_headers` gör det inte.**
+Uppmätt i produktion: Cloudflare Pages **äger `Cache-Control` på statiska
+tillgångar** och skriver över den, så hela `no-cache`-listan som stod i
+`_headers` hade aldrig gjort någonting. Övriga headers därifrån (CSP, HSTS,
+X-Frame-Options) fungerar — det var därför felet överlevde så länge. Färskheten
+ligger nu i `build-dist.mjs`, som sätter `?v=<innehållshash>` på varje
+js/css-referens i HTML **och** i `portal/sw.js`s SHELL, med samma URL:er på båda
+ställena. `CACHE` får en hash av hela SHELL vid bygget, så **bumpen är inte
+längre ett minneskrav** — talet i källfilen är kvar som läsbar generation och
+gäller vid lokal körning. Bygget avbryter om SHELL- eller CACHE-raden skrivs om
+i en form mönstret inte känner igen. Sätt inte tillbaka `Cache-Control` i
+`_headers`; det ser ut att fungera och gör det inte.
 
 Säkerhetsheaders/CSP sätts via `_headers` (kopieras till `dist/` vid bygge).
 
