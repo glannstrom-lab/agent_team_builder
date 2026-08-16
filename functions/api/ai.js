@@ -73,6 +73,10 @@ const MAX_OUTPUT_TOKENS = 16384;
 // Ett normalt anrop med systemprompt, underlag och historik ligger långt under.
 // Taket finns för att en manipulerad klient inte ska kunna skicka en roman.
 const MAX_INPUT_CHARS = 200000;
+// Taket på ANTALET meddelanden. Utan det mäts en miljon meddelanden med tom
+// content som noll tecken, passerar teckentaket och går vidare uppströms som
+// ett tiotal megabyte. Portalens längsta historik ligger runt 40 turer.
+const MAX_MESSAGES = 200;
 
 const MODEL_ID = "openai/gpt-oss-120b";
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
@@ -232,11 +236,31 @@ export async function onRequestPost(context) {
     return json({ error: "trasig kropp" }, 400);
   }
 
-  const messages = Array.isArray(body.messages) ? body.messages : null;
-  if (!messages || !messages.length) return json({ error: "inga meddelanden" }, 400);
+  const rawMessages = Array.isArray(body.messages) ? body.messages : null;
+  if (!rawMessages || !rawMessages.length) return json({ error: "inga meddelanden" }, 400);
+  if (rawMessages.length > MAX_MESSAGES) return json({ error: "för många meddelanden i ett anrop" }, 413);
+
+  // Formen valideras, inte bara storleken — och det som går vidare uppströms är
+  // det vi själva byggt, aldrig klientens objekt.
+  //
+  // Teckentaket mätte tidigare `String(m.content).length`. Skickar man `content`
+  // som en ARRAY — vilket OpenAI-formatet tillåter, och uppströms accepterar —
+  // blir `String([...])` "[object Object]": femton tecken, oavsett om nyttolasten
+  // är en megabyte. Taket gick alltså att kliva rakt förbi, och räkningen är vår.
+  // Att mäta arrayen rekursivt hade lagat siffran men lämnat kvar det egentliga
+  // problemet: klientens objekt vidarebefordrades orört, med vilka nycklar som
+  // helst. Ingen av våra ytor skickar något annat än en sträng (builder.js:755
+  // m.fl.), så allt annat avvisas.
+  const messages = [];
+  for (const m of rawMessages) {
+    if (!m || typeof m !== "object" || typeof m.content !== "string") {
+      return json({ error: "ogiltigt meddelandeformat" }, 400);
+    }
+    messages.push({ role: m.role === "assistant" ? "assistant" : "user", content: m.content });
+  }
 
   const system = typeof body.system === "string" ? body.system : "";
-  const size = system.length + messages.reduce((n, m) => n + String((m && m.content) || "").length, 0);
+  const size = system.length + messages.reduce((n, m) => n + m.content.length, 0);
   if (size > MAX_INPUT_CHARS) return json({ error: "för mycket text i ett anrop" }, 413);
 
   const t = nowMs();

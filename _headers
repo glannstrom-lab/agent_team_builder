@@ -46,3 +46,27 @@
 
 /avatars.js
   Cache-Control: no-cache
+
+/verticals/app.js
+  Cache-Control: no-cache
+
+/site/gallery.js
+  Cache-Control: no-cache
+
+# CSS måste revalideras av samma skäl som JS, och glömdes bort när listan
+# skrevs. Designsystemet delar tokennamn mellan tre filer (showcase.css,
+# portal.css, builder.css) — hämtas två av dem färska och den tredje ur en
+# fyra timmar gammal cache blir resultatet inte "gammal design" utan en
+# blandning: halva sidan i nya färger, halva i gamla. Det ser ut som en bugg
+# i designen i stället för som en cache.
+/site/showcase.css
+  Cache-Control: no-cache
+
+/portal/portal.css
+  Cache-Control: no-cache
+
+/builder/builder.css
+  Cache-Control: no-cache
+
+/fonts/fonts.css
+  Cache-Control: no-cache

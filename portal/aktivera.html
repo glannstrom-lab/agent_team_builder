@@ -66,7 +66,20 @@
 
   var tries = 0;
 
-  function done(slug, email) {
+  // Vad som gäller om pengarna, per nivå. Provmånaden är ett engångsköp och
+  // standard ett abonnemang — sidan sa tidigare "engångsbetalning, inget
+  // abonnemang" åt båda, vilket var fel för den som just tecknat ett.
+  function betalningsText(plan) {
+    if (plan === "standard") {
+      return "<p>Standard löper månadsvis och förnyas automatiskt. Ni säger upp den själva i portalen när ni vill — den fortsätter då till periodens slut och stängs sedan. Inget mejl att skriva, ingen uppsägningstid.</p>";
+    }
+    if (plan === "trial") {
+      return "<p>Provmånaden är en engångsbetalning som gäller i 30 dagar — inget abonnemang som förnyas av sig själv. När den närmar sig sitt slut säger portalen till, och därifrån går det att fortsätta på Standard med samma team. Gör ni inget stängs teamet, men det raderas inte.</p>";
+    }
+    return "<p>Vad som gäller för just er betalning står i kvittot från Stripe. Är något oklart, mejla <a href=\"mailto:info@mittaiteam.se\">info@mittaiteam.se</a>.</p>";
+  }
+
+  function done(slug, email, plan) {
     show(
       '<div class="setup-badge">Klart</div>' +
       '<h1>Ert team är <span class="grad">redo</span></h1>' +
@@ -78,8 +91,8 @@
       "<li>Vi skickar en sexsiffrig kod. Den gäller i tio minuter.</li>" +
       "</ol>" +
       "<p>Inget lösenord att välja, och inget att glömma bort.</p>" +
-      "<p><b>Innan ni börjar chatta:</b> portalen ber om en egen AI-nyckel från OpenRouter — det är den som betalar för själva AI-svaren, till självkostnad, normalt någon krona i månaden. Fem minuter att skaffa, en gång. Instruktionen steg för steg finns på <a href=\"../#forbrukning\">mittaiteam.se, under Förbrukningen</a>. Har ni redan byggt teamet i Buildern har ni sannolikt kvar en nyckel som fungerar direkt.</p>" +
-      "<p>Köpet är en engångsbetalning — inget abonnemang som förnyas av sig själv. Vill ni fortsätta efter provmånaden hör ni av er; gör ni inget händer heller inget mer.</p>" +
+      "<p><b>Sedan är ni igång.</b> AI:n ingår i priset — ni behöver ingen egen API-nyckel och inget konto hos någon AI-leverantör. Det finns inget mer att installera eller koppla in.</p>" +
+      betalningsText(plan) +
       '<a class="btn-primary" href="./">Logga in och öppna teamet</a>'
     );
   }
@@ -97,7 +110,7 @@
     fetch("/api/checkout/status?session_id=" + encodeURIComponent(sessionId), { credentials: "same-origin" })
       .then(function (r) { return r.json(); })
       .then(function (d) {
-        if (d && d.ready && d.slug) return done(d.slug, d.email);
+        if (d && d.ready && d.slug) return done(d.slug, d.email, d.plan);
         // Drygt två minuter innan vi ger upp: webhooken kommer normalt inom
         // ett par sekunder, men Stripe kan köa vid driftstörning.
         if (++tries > 40) return stuck();

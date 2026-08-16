@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "build": "node build-dist.mjs",
-    "test": "node --test test/teams.mjs test/stripe.mjs test/plan.mjs",
+    "test": "node --test test/teams.mjs test/stripe.mjs test/plan.mjs test/ai.mjs",
     "serve": "node build-dist.mjs && npx --yes http-server dist -p 8420 -c-1",
     "dev": "npx --yes http-server . -p 8420 -c-1",
     "dev:cf": "node build-dist.mjs && npx --yes wrangler pages dev dist",

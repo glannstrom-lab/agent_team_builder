@@ -1,7 +1,9 @@
 /* ============================================================
    Mitt AI-team — Kundportal
-   Statisk app. Kundens egen Anthropic-nyckel lagras lokalt i
-   webbläsaren och anropar Claude direkt. Ingen backend.
+   Statisk app i webbläsaren, men inte utan server: AI-anropen går
+   till /api/ai på VÅR nyckel, och portalsvar kräver inloggning plus
+   ett köpt team (functions/api/ai.js). Kunden har aldrig en egen
+   nyckel. Allt arkiv — historik, minne, underlag — stannar lokalt.
 
    Multi-tenant: ?team=<slug> laddar portal/teams/<slug>.js.
    Utan parameter visas en kundväljare (window.TEAMS).
@@ -1513,7 +1515,7 @@ function renderSidebar() {
 }
 
 function wipeAll() {
-  if (!confirm("Ta bort ALLT sparat från den här webbläsaren?\n\n• API-nyckeln\n• All chatthistorik (alla team)\n• Företagsminne och underlag\n• Mappkopplingen (filerna i mappen rörs INTE)\n• Team-utkast från Builder och branschsidorna")) return;
+  if (!confirm("Ta bort ALLT sparat från den här webbläsaren?\n\n• All chatthistorik (alla team)\n• Företagsminne och underlag\n• Mappkopplingen (filerna i mappen rörs INTE)\n• Team-utkast från Builder och branschsidorna\n\nInloggningen och själva teamet ligger hos oss och påverkas inte.")) return;
   const doomed = [];
   for (let i = 0; i < localStorage.length; i++) {
     const k = localStorage.key(i);
@@ -2751,7 +2753,14 @@ function renderGrowPreview(preview, a, routine) {
 // ---------- dela & exportera team ----------
 function openShare() {
   const box = openOverlay("🔗 Dela & exportera teamet");
-  box.appendChild(el("p", "ovl-lead", "Teamet kan flyttas som en länk eller en fil — ingen server inblandad. Mottagaren använder sin egen nyckel. Chatthistorik, minne och underlag följer inte med — dem hämtar du med \"Ladda ner allt\" längst ner i arbetsytan."));
+  // Var ärlig om vad länken faktiskt ger. Den bär hela teamet i sitt fragment
+  // och når aldrig servern — men mottagaren kan LÄSA teamet, inte chatta med
+  // det: portalsvar kräver inloggning och ett köpt team. Texten lovade förut
+  // "mottagaren använder sin egen nyckel", vilket är dubbelt fel sedan
+  // 2026-08-06: det finns inga kundnycklar, och länken öppnar en låst vy.
+  // Ska en kollega kunna arbeta i teamet är det platser som gäller, inte en
+  // länk (functions/api/team/invite.js — utan gränssnitt än, se ROADMAP P5).
+  box.appendChild(el("p", "ovl-lead", "Teamet kan flyttas som en länk eller en fil — ingen server inblandad, allt ligger i länken själv. Mottagaren kan då LÄSA teamet: rollerna, uppdragen och hur det är uppbyggt. För att chatta med teamet krävs inloggning och ett eget köp — vill du ge en kollega tillgång till just det här teamet, mejla info@mittaiteam.se så lägger vi till platsen. Chatthistorik, minne och underlag följer aldrig med en delning — dem hämtar du med \"Ladda ner allt\" längst ner i arbetsytan."));
   const linkBtn = el("button", "btn-primary ovl-save", "🔗 Kopiera delningslänk"); linkBtn.type = "button";
   linkBtn.onclick = async () => {
     try {

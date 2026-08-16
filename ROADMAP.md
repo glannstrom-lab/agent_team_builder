@@ -13,27 +13,18 @@ Från genomgången 2026-08-15 · sex parallella linser + egen verifiering.
 
 ## Nu — riktiga fel
 
-- [ ] **K1** Teckentaket kringgås: `content` som array mäts som 15 tecken · `functions/api/ai.js:239` · `mätt` · ~30 min
 - [ ] **C1** Strikt schema blockerar `firstProject`, `seasons`, `triggers`, `scaling` som prompten beställer · `builder/builder.js:893-907` mot `:963` · `mätt` · ~45 min
-- [ ] **R1** Kvittosidan säljer in ett nyckelkrav som inte finns, direkt efter betalning · `portal/aktivera.html:81` · `läst i koden` · ~10 min
-- [ ] **P5** "Kopiera delningslänk" lovar åtkomst men ger mottagaren betalvägg · `portal/app.js:2754` mot `:578` · `läst i koden` · ~1–2 h
+- [ ] **P5** "Kopiera delningslänk" ger mottagaren en låst vy — texten är rättad, men vägen in för en kollega saknas fortfarande gränssnitt (`functions/api/team/invite.js` finns, oanropad) · `portal/app.js:2756` · `läst i koden` · ~1–2 h
 - [ ] **K3** Globala dygnstaket delas mellan gratis byggtrafik och betalande kunder · `functions/api/ai.js:326-329` · `läst i koden` · ~1–2 h
 - [ ] **K2** Takkontrollen sker före uppströmsanropet, bokföringen efter — fönstret är hela genereringstiden · `functions/api/ai.js:303-329`, `377-398` · `läst i koden` · ~3–4 h
 
 ## Sedan — skav som märks
 
-- [ ] **D5** `_headers` ger no-cache åt JS men inte åt CSS · `_headers:23-47` · `mätt` · ~5 min
-- [ ] **R6** FAQ säljer ett "konsultpaket" som inte finns i prislistan · `index.html:608` · `läst i koden` · ~5 min
-- [ ] **C7** `team.language` hårdkodad till `"sv"`, mot designprincip 9 · `builder/builder.js:948` · `läst i koden` · ~10 min
-- [ ] **R2** Varje branschsida påstår att kunden behöver egen AI-nyckel · `verticals/app.js:89` · `läst i koden` · ~10 min
-- [ ] **R5** Galleriet påstår fel motor ("Claude") efter modellbytet · `site/ikea.html`, `site/coachonline.html:258` · `läst i koden` · ~10 min
-- [ ] **R3** Nyckeltext kvar i "Töm allt" och i portalens meta description · `portal/app.js:1516`, `portal/index.html:7`, `site/en-vecka.html:200` · `läst i koden` · ~15 min
 - [ ] **C2** Personläget i `research.md` går inte att nå från `/build-team` · `prompts/team-builder/intake-interview.md:91-117` · `läst i koden` · ~15 min
 - [ ] **C3** `proposal.md` tillåter uttryckligen generisk VD-output, mot `research.md` · `prompts/shared/proposal.md:44-47` · `läst i koden` · ~15 min
 - [ ] **D4** Drift-skripten kör `npx --yes wrangler` utan pinnad version · `package.json:8-15` · `mätt` · ~20 min
-- [ ] **R7** Tidsåtgången för ett bygge anges med fem olika värden; uppmätt är 28 s · `index.html`, `builder/builder.js` · `läst i koden` · ~20 min
 - [ ] **R8** Builderns nedladdning använder inte den lagade `downloadFile()` · `builder/builder.js:1649` · `läst i koden` · ~20 min
-- [ ] **C5** `templates/shared/portal-team.md` har glidit isär från `builder.js` · `templates/shared/portal-team.md:7-8, 26, 74-85` · `läst i koden` · ~30 min
+- [ ] **C5** `templates/shared/portal-team.md` har glidit isär från `builder.js` — `language`/`defaultModel` rättade 2026-08-16, raderna 7-8 och 74-85 kvarstår · `läst i koden` · ~20 min
 - [ ] **D2** SHELL-bumpen i `portal/sw.js` är fortfarande ett minneskrav · `build-dist.mjs`, `portal/sw.js:9` · `mätt` · ~45 min
 - [ ] **D6** Testet kollar prisnivåernas namn, aldrig beloppen · `test/stripe.mjs:108-113` · `läst i koden` · ~45 min
 - [ ] **BL1** Interna arbetsanteckningar följer med i skarp `dist/` · `build-dist.mjs` (saknar comment-strip) · `mätt` · ~45 min
@@ -79,3 +70,50 @@ Rättade direkt i filerna (rent git-träd). Raderna står i terminalsvaret.
   en vän. Den var känd och uppmätt sedan 15 aug, uppskattad till fem minuter,
   och blev ändå liggande under sex punkter med lägre insats. Ett fel som gör
   produkten stum lagas samma pass som det hittas — det köar inte.
+
+- [x] **K1** Teckentaket gick att kliva förbi — löst 2026-08-16. Två vägar, inte
+  en: `content` som **array** mättes som `String([...])` = `"[object Object]"`,
+  femton tecken oavsett nyttolast; och en array med tusentals meddelanden med
+  tom `content` summerades till noll. Båda gick vidare orört uppströms, på vår
+  räkning. Lagat genom att validera **formen** i stället för att bara mäta
+  bättre: `content` måste vara en sträng, `role` normaliseras till
+  `user`/`assistant`, `MAX_MESSAGES = 200`, och det som skickas uppströms är
+  vårt eget objekt — aldrig klientens. `functions/api/ai.js`.
+
+- [x] **R1** Kvittosidan bad om en OpenRouter-nyckel som inte finns längre —
+  löst 2026-08-16. Rättat i samma svep: sidan påstod också "engångsbetalning,
+  inget abonnemang" åt alla, vilket är fel för den som just tecknat Standard.
+  `/api/checkout/status` returnerar nu `plan`, och texten säger sant per nivå.
+
+- [x] **R2 / R3 / R5** All kvarvarande nyckeltext i kundytorna — löst
+  2026-08-16. Branschsidorna ("kör på er egen AI-nyckel"), portalens "Töm
+  allt" och meta-beskrivningar, `site/en-vecka.html`s jämförelsetabell,
+  delningsrutans "mottagaren använder sin egen nyckel" (som dessutom lovade
+  åtkomst den inte ger), samt fem påståenden i galleriet om att motorn är
+  "Claude". Kundcitatet i `site/studio.html:72` står kvar — där är Claude
+  kundens eget verktyg, inte vår motor.
+
+- [x] **R6** FAQ sålde ett "konsultpaket" utanför prislistan — löst 2026-08-16.
+  Ersatt med det som faktiskt finns: gratis bygge, och offert för det större.
+
+- [x] **R7** Tio olika tidsangivelser för ett bygge — löst 2026-08-16. De mätte
+  **två olika saker** och blandades: körningen (28 s uppmätt) och totaltiden
+  inklusive formuläret. Nu skilda genomgående — "under en minut" om körningen,
+  "en kvart" om kundens totala tidsåtgång.
+
+- [x] **C7** `team.language` hårdkodad — löst 2026-08-16. Fältet låg på **två**
+  ställen (`structureTeam` och `stripTeam`, där det senare är det som faktiskt
+  når konfigen) och lästes av noll rader kod. Borttaget i stället för
+  omskrivet, med mallen uppdaterad — samma sortis dödfält som `defaultModel`,
+  som låg kvar i mallen och pekade ut en Claude-modell.
+
+- [x] **D5** CSS saknade no-cache — löst 2026-08-16. Lades till för
+  designsystemets tre filer plus `fonts.css`, `verticals/app.js` och
+  `site/gallery.js`. Följden av att missa dem var värre än gammal design: tre
+  filer som delar tokennamn, hämtade ur olika gamla cachar, ger en halv sida i
+  nya färger och en halv i gamla.
+
+- [x] **Tester för `/api/ai`** (2026-08-16) — rutten hade noll, trots att den
+  är den enda filen där en manipulerad klient kan kosta oss pengar. 12 tester
+  i `test/ai.mjs` kör den **riktiga** `onRequestPost` med stubbad databas och
+  stubbad uppström. Testsviten: 81 gröna.

@@ -228,7 +228,7 @@ function renderForm() {
     ? "En fråga först: vem ska teamet vara till för? Resten av formuläret följer det valet."
     : person
       ? "Fyll i, tryck Bygg, och se hela den riktiga analysen växa fram live. Teamet byggs runt din arbetsvecka — inte runt arbetsplatsens organisationsschema."
-      : "Fyll i, tryck Bygg, och se hela den riktiga analysen växa fram live. Det tar ett par minuter — och resultatet blir korrekt."));
+      : "Fyll i, tryck Bygg, och se hela den riktiga analysen växa fram live. Körningen tar under en minut — och resultatet blir korrekt."));
   wrap.appendChild(head);
 
   // Sparad körning? Erbjud återupptagning — de klara stegen är redan betalda.
@@ -883,7 +883,7 @@ async function structureWithStatus(intake, r) {
   if (panel) {
     panel.textContent = "Formaterar teamet för portalen — alla beslut är redan fattade, inget innehåll ändras.\n\n"
       + "Det här är körningens längsta steg och det strömmar inte: modellen skriver hela teamet klart innan något skickas tillbaka. "
-      + "Räknaren ovanför visar hur länge det pågått. Det brukar ta 1–2 minuter.";
+      + "Räknaren ovanför visar hur länge det pågått. Det brukar ta en halv minut, ibland ett par om leverantören är trög.";
   }
   return structureTeam(intake, r);
 }
@@ -945,7 +945,13 @@ ${schema}`;
     throw err;
   }
   team.slug = slugify(team.slug || intake.company);
-  team.language = "sv";
+  // Inget `language`-fält. Det stod hårdkodat till "sv" och lästes inte av en
+  // enda rad kod någonstans — ett påstått val som varken var ett val eller
+  // användes, och som dessutom sa emot designprincip 9 (språk följer input).
+  // Språket avgörs där det hör hemma: i prompterna, som svarar på samma språk
+  // som kunden skrev intaget på. Behövs fältet igen ska det sättas från
+  // intaget, inte från en konstant.
+  //
   // Ingen defaultModel: modellen är låst i atb-claude.js och samma för alla.
   // Ett fält som ser ut som ett val men inte är det förvirrar den som läser
   // konfigen — och den är gjord för att läsas.
@@ -1250,7 +1256,7 @@ function renderProgress(intake, stages) {
   const head = el("div", "prog-head");
   head.appendChild(el("div", "eyebrow", "● Bygger team för"));
   head.appendChild(el("h1", "prog-company", intake.company));
-  head.appendChild(el("p", "form-lead", "Den fullständiga pipelinen körs live och tar ett par minuter. Modellen tänker igenom varje steg innan den börjar skriva, så skärmen står still i perioder — räknaren nedan visar att arbetet pågår."));
+  head.appendChild(el("p", "form-lead", "Den fullständiga pipelinen körs live och tar under en minut. Modellen tänker igenom varje steg innan den börjar skriva, så skärmen står still i perioder — räknaren nedan visar att arbetet pågår."));
   wrap.appendChild(head);
 
   // Undertexter som förklarar vad som händer — och lyfter att analysen även
@@ -1530,7 +1536,12 @@ function stripTeam(team) {
   // routines + firstProject driver arbetsytan (rutinlistan och 🎯-panelen).
   // rejected + divergence + why följer med — de driver portalens
   // "Därför ser ert team ut så här"-sida (anställningsceremonin).
-  return { company: team.company, tagline: team.tagline, language: "sv", entryAgent: team.entryAgent,
+  // Inget `language`. Fältet stod hårdkodat till "sv" här och en gång till i
+  // structureTeam, lästes av noll rader kod, och sa emot designprincip 9 genom
+  // att påstå svenska även om kunden fyllt i formuläret på engelska. Språket
+  // avgörs av prompterna, som svarar på samma språk som intaget skrevs på —
+  // det syns i agenternas texter, vilket är det enda ställe det spelar roll.
+  return { company: team.company, tagline: team.tagline, entryAgent: team.entryAgent,
     routines: Array.isArray(team.routines) ? team.routines : [],
     seasons: Array.isArray(team.seasons) ? team.seasons : [],
     firstProject: team.firstProject || null,

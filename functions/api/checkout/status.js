@@ -17,7 +17,11 @@ export async function onRequestGet({ request, env }) {
   // blir en databasfråga.
   if (!/^cs_[A-Za-z0-9_]{10,120}$/.test(sessionId)) return json({ error: "ogiltigt session_id" }, 400);
 
-  const team = await db.prepare("SELECT slug FROM teams WHERE stripe_session = ?")
+  // `plan` följer med för att kvittosidan ska kunna säga sant om betalningen.
+  // Provmånaden är ett engångsköp, standard är ett abonnemang som förnyas —
+  // en text som ska passa båda blir antingen fel eller så vag att den inte
+  // svarar på frågan kunden faktiskt har direkt efter att ha betalat.
+  const team = await db.prepare("SELECT slug, plan FROM teams WHERE stripe_session = ?")
     .bind(sessionId).first();
 
   if (team) {
@@ -28,7 +32,7 @@ export async function onRequestGet({ request, env }) {
       "WHERE a.team_slug = ? AND a.role = 'owner' LIMIT 1"
     ).bind(team.slug).first();
 
-    return json({ ready: true, slug: team.slug, email: (owner && owner.email) || null });
+    return json({ ready: true, slug: team.slug, plan: team.plan || null, email: (owner && owner.email) || null });
   }
 
   // Skilj "vänta lite" från "det här blev fel". Finns utkastet kvar är

@@ -22,8 +22,11 @@ research — inget fabricerat.
 window.TEAM = {
   company: "<Företagsnamn>",
   tagline: "<en mening om vad företaget gör>",
-  language: "sv",            // följ output-språket
-  defaultModel: "claude-opus-4-8",
+  // Inget `language` och ingen `defaultModel` (borttagna 2026-08-16). Båda såg
+  // ut som val men var konstanter som ingen kod läste: modellen är låst i
+  // atb-claude.js och samma för alla, och språket avgörs av prompterna, som
+  // svarar på samma språk som intaget skrevs på. `defaultModel` pekade dessutom
+  // fortfarande ut en Claude-modell, ett modellbyte för sent.
   entryAgent: "<VD-assistentens id>",   // alltid den primära arbetspartnern
   routines: [ /* se nedan — driver "Veckans rutiner" i portalens arbetsyta */ ],
   seasons: [ /* årshjulet: { label, month: 1–12, day|null, agentId|null, prompt|null } — BARA händelser
