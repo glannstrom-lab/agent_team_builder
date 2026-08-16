@@ -18,9 +18,6 @@ Från genomgången 2026-08-15 · sex parallella linser + egen verifiering.
 
 ## Sedan — skav som märks
 
-- [ ] **R8** Builderns nedladdning använder inte den lagade `downloadFile()` · `builder/builder.js:1649` · `läst i koden` · ~20 min
-- [ ] **C5** `templates/shared/portal-team.md` har glidit isär från `builder.js` — `language`/`defaultModel` rättade 2026-08-16, raderna 7-8 och 74-85 kvarstår · `läst i koden` · ~20 min
-- [ ] **K5** `allowAttempt` gör SELECT→UPDATE utan atomicitet · `functions/api/auth/_lib.js:105-121` · `läst i koden` · ~1–2 h
 - [ ] **BL2** Ångerrätten saknar knapp — kodens egen TODO, vars villkor nu inträffat · `villkor.html:508-514` · `läst i koden` · ~1–2 h
 - [ ] **C6** Inget golv på systemprompternas innehåll; två teamfiler saknar `DITT PERSPEKTIV` helt · `builder/builder.js:980` · `mätt` · ~2 h
 - [ ] **C4** `examples/` är facit men saknar Perspektiv, Leverans och "Klart när" · `examples/**/test-output.md` · `mätt` · ~2 h
@@ -61,6 +58,39 @@ Rättade direkt i filerna (rent git-träd). Raderna står i terminalsvaret.
   en vän. Den var känd och uppmätt sedan 15 aug, uppskattad till fem minuter,
   och blev ändå liggande under sex punkter med lägre insats. Ett fel som gör
   produkten stum lagas samma pass som det hittas — det köar inte.
+
+- [x] **K5** `allowAttempt` hade en kapplöpning — löst 2026-08-16. SELECT följt
+  av UPDATE lämnade ett fönster där två samtidiga anrop båda läste samma värde,
+  båda bedömde sig som tillåtna, och taket överskreds. Inte teoretiskt: taken
+  finns för trafik som kommer många samtidigt, och ett skript skickar sina
+  anrop parallellt — precis då kontrollen behövde hålla.
+
+  Nu gör en enda `INSERT ... ON CONFLICT DO UPDATE ... RETURNING` hela jobbet;
+  räkningen och beslutet kan inte glida isär för de är samma sats. Fönstret
+  nollställs i ett CASE-uttryck, och `window_at` flyttas medvetet **inte** fram
+  vid varje träff — annars kunde den som fortsätter knacka hålla sitt eget
+  fönster öppet i evighet. Funktionen är dessutom fail-closed: uteblir svaret
+  stänger den, för det är inloggning och kassa den skyddar.
+
+  **Verifierat mot riktig databas, i två steg.** Åtta nya tester kör mot
+  `node:sqlite` (D1 *är* SQLite), och satsen provades sedan mot den skarpa D1:n
+  med en engångshink — den returnerade `{count: 2}`, alltså både RETURNING och
+  uppräkningsgrenen. Utan den kontrollen hade ett D1 som inte stödjer RETURNING
+  blockerat varje anrop till hela tjänsten. Testraden är borttagen.
+
+- [x] **R8** Builderns nedladdning — löst 2026-08-16. Buildern hade en egen
+  trerading som varken kopplade in `<a>` i dokumentet eller fördröjde
+  `revokeObjectURL`; portalen hade lagat båda och skrivit ner varför.
+  Implementationen bor nu i `atb-claude.js`, som båda ytorna redan laddar, så
+  det finns en version att laga i stället för två att glömma.
+
+- [x] **C5** `portal-team.md` mot `builder.js` — löst 2026-08-16. Kvar sedan
+  förra rundan: mallen beskrev fortfarande att kunden klistrar in en egen
+  Anthropic-nyckel och pratar direkt mot Claude, och att auto-rutiner kostar på
+  "kundens nyckel". Dessutom saknade agent-exemplet `job`, `capabilities` och
+  `starters` — de tre fält portalens agentkort byggs av, alltså det som skiljer
+  portalen från en tom chattruta. Mallen har nu en uttrycklig notis om att den
+  speglar `stripTeam()` för hand.
 
 - [x] **C2** Personläget gick inte att nå från `/build-team` — löst 2026-08-16.
   `research.md` har ett helt läge för när teamet byggs åt *en person i sitt

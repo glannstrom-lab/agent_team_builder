@@ -1712,8 +1712,12 @@ function renderPurchase(team, hero, trigger) {
 
 function downloadConfig(team) {
   const js = "// Genererad av Builder. Lägg i portal/teams/ och registrera i index.js.\nwindow.TEAM = " + JSON.stringify(stripTeam(team), null, 2) + ";\n";
-  const url = URL.createObjectURL(new Blob([js], { type: "text/javascript" }));
-  const a = el("a"); a.href = url; a.download = `${team.slug}.js`; a.click(); URL.revokeObjectURL(url);
+  // Delad hjälpare i atb-claude.js. Här stod tidigare en egen trerading som
+  // varken kopplade in <a> i dokumentet eller fördröjde revokeObjectURL — två
+  // fel som båda yttrar sig likadant: kunden klickar, och ingenting händer.
+  // Portalen hade redan lagat dem; Buildern hade en egen kopia som inte fick
+  // rättningen. Nu finns bara en version att laga.
+  window.ATBClaude.downloadFile(`${team.slug}.js`, js, "text/javascript");
 }
 
 function renderError(msg, canRetryStructure, canResume) {

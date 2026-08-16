@@ -586,17 +586,10 @@ const getSlug = () => new URLSearchParams(location.search).get("team");
 // Länken läggs in i dokumentet före klicket och plockas bort efteråt: en
 // lös <a> som aldrig kopplats in ignoreras av vissa webbläsare, och då händer
 // exakt ingenting när kunden klickar — verifierat i headless Chromium.
-function downloadFile(filename, text, mime) {
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(new Blob([text], { type: mime || "text/markdown" }));
-  a.download = filename;
-  a.style.display = "none";
-  document.body.appendChild(a);
-  a.click();
-  const url = a.href;
-  a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 5000);
-}
+// Implementationen bor i atb-claude.js sedan 2026-08-16, så att Buildern och
+// portalen delar EN version. Buildern hade en egen trerading med båda felen
+// kommentaren ovan varnar för. Anropsställena här är oförändrade.
+const downloadFile = (filename, text, mime) => window.ATBClaude.downloadFile(filename, text, mime);
 // Filnamnsvänligt företagsnamn — åäö skrivs om, resten blir bindestreck.
 const fileSlug = (s) => (s || "team").toLowerCase()
   .replace(/[åä]/g, "a").replace(/ö/g, "o")

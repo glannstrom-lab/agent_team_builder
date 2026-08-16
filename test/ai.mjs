@@ -10,12 +10,20 @@ import assert from "node:assert/strict";
 
 import { onRequestPost } from "../functions/api/ai.js";
 
-// En databas som säger ja till allt: inga rader finns, så varken spärren,
-// dygnstaket eller budgettaket slår till. Vi testar formvalideringen, som
-// ligger före allt sådant.
+// En databas som säger ja till allt: inga rader finns, så varken dygnstaket
+// eller budgettaket slår till. Vi testar formvalideringen, som ligger före
+// allt sådant.
+//
+// Undantaget är spärren: `allowAttempt` räknar och beslutar i EN sats med
+// RETURNING sedan 2026-08-16, och den är fail-closed — får den ingen rad
+// tillbaka stänger den. En stubb som svarade null på allt hade därför
+// blockerat varje anrop här, och blockeringen hade sett ut som ett fel i
+// rutten i stället för i stubben.
+const throttleRad = (sql) => (/auth_throttle/.test(sql) ? { count: 1 } : null);
+
 const dbStub = () => ({
-  prepare: () => ({
-    bind: () => ({ first: async () => null, run: async () => ({}) }),
+  prepare: (sql) => ({
+    bind: () => ({ first: async () => throttleRad(sql), run: async () => ({}) }),
   }),
   batch: async () => [],
 });
@@ -193,7 +201,7 @@ function rutin({ byggDygn = null, globalDygn = null, teamMånad = null, betaltTe
       if (String(args[0]).startsWith("team:")) return teamMånad === null ? null : { calls: teamMånad };
       return null; // ip-raden
     }
-    return null; // auth_throttle m.m.
+    return throttleRad(sql); // spärren behöver en rad tillbaka, se ovan
   };
 }
 

@@ -225,6 +225,32 @@
     return JSON.parse(new TextDecoder().decode(bytes));
   }
 
+  // ---------- ladda ner en fil ----------
+  // Bor här för att BÅDA ytorna ska använda samma, lagade version. Portalen
+  // hade den rättade varianten och Buildern en egen trerading som råkat ut för
+  // exakt de två fel kommentarerna nedan beskriver — samma sorts glidning som
+  // den här filen finns för att förhindra.
+  //
+  // Två saker är inte pynt:
+  //  1. Länken läggs in i dokumentet före klicket och plockas bort efteråt. En
+  //     lös <a> som aldrig kopplats in ignoreras av vissa webbläsare, och då
+  //     händer exakt ingenting när kunden klickar — verifierat i headless
+  //     Chromium.
+  //  2. revokeObjectURL fördröjs. Kallas den synkront direkt efter .click()
+  //     hinner webbläsaren inte alltid börja läsa blobben, och nedladdningen
+  //     avbryts tyst.
+  function downloadFile(filename, text, mime) {
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([text], { type: mime || "text/markdown" }));
+    a.download = filename;
+    a.style.display = "none";
+    document.body.appendChild(a);
+    a.click();
+    const url = a.href;
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+  }
+
   // fetch med hård timeout — så en seg/hängande request inte låser UI:t
   // (t.ex. portalens moln-team-hämtning). Kastar AbortError vid timeout.
   async function fetchWithTimeout(url, options, ms) {
@@ -237,5 +263,5 @@
     }
   }
 
-  window.ATBClaude = { stream, collect, setTeam, fetchWithTimeout, encodeTeamLink, decodeTeamLink, MODEL_ID, MODEL_LABEL };
+  window.ATBClaude = { stream, collect, setTeam, fetchWithTimeout, downloadFile, encodeTeamLink, decodeTeamLink, MODEL_ID, MODEL_LABEL };
 })();

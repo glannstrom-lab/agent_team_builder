@@ -7,7 +7,7 @@
   "//wrangler": "Pinnad version, inte 'senaste'. Wrangler är verktyget som rör produktionen: deploy, D1-migrationer och den lokala emulatorn. Med `npx --yes wrangler` hämtades vilken version som råkade vara ute den dagen, så en deploy kunde bete sig annorlunda än den förra utan att något i repot ändrats — och en trasig major hade upptäckts mitt i en driftsättning. 4.123.0 är den version alla deployer hittills är gjorda med. Höj den medvetet, kör `npm run dev:cf` en gång, och committa höjningen för sig.",
   "scripts": {
     "build": "node build-dist.mjs",
-    "test": "node --test test/teams.mjs test/stripe.mjs test/plan.mjs test/ai.mjs",
+    "test": "node --test test/teams.mjs test/stripe.mjs test/plan.mjs test/ai.mjs test/throttle.mjs",
     "check:dist": "node build-dist.mjs && node scripts/check-dist.mjs",
     "serve": "node build-dist.mjs && npx --yes http-server dist -p 8420 -c-1",
     "dev": "npx --yes http-server . -p 8420 -c-1",

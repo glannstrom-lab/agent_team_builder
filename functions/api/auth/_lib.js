@@ -102,22 +102,44 @@ export async function readJson(request) {
 
 // Returnerar true om anropet ska släppas igenom. Räknar upp i samma svep,
 // så anroparen behöver inte komma ihåg att göra det.
+//
+// ETT uttryck, inte SELECT följt av UPDATE (ändrat 2026-08-16). Den gamla
+// versionen läste först och skrev sedan, och mellan de två stegen fanns ett
+// fönster där en andra begäran hann läsa samma värde. Två samtidiga anrop såg
+// alltså båda `count = max - 1`, båda bedömde sig som tillåtna, och taket
+// överskreds. Det är inte teoretiskt: taken finns just för trafik som kommer
+// många samtidigt, och ett skript skickar sina anrop parallellt — det är
+// precis då kontrollen behövde hålla, och precis då den inte gjorde det.
+//
+// Nu gör en enda INSERT ... ON CONFLICT DO UPDATE hela jobbet och returnerar
+// det nya värdet med RETURNING. Räkningen och beslutet kan inte glida isär,
+// för de är samma sats.
+//
+// Fönstret nollställs inne i CASE-uttrycket i stället för i en egen gren:
+// har det gått mer än THROTTLE_WINDOW_MS sedan `window_at` börjar räkningen
+// om på 1 och fönstret flyttas fram, annars räknas det upp och fönstret står
+// kvar. Att `window_at` INTE flyttas fram vid varje träff är avsiktligt —
+// annars kunde den som fortsätter knacka hålla sitt eget fönster öppet i
+// evighet och aldrig bli släppt igen.
+//
+// Skillnad mot förr: även ett avvisat anrop räknas upp. Det förlänger inte
+// spärren (fönstret står stilla), men det gör att siffran i tabellen visar
+// hur många försök som faktiskt gjorts, inte hur många som släpptes igenom.
 export async function allowAttempt(db, bucket, max) {
   const t = nowMs();
-  const row = await db.prepare("SELECT count, window_at FROM auth_throttle WHERE bucket = ?")
-    .bind(bucket).first();
+  const row = await db.prepare(
+    "INSERT INTO auth_throttle (bucket, count, window_at) VALUES (?1, 1, ?2) " +
+    "ON CONFLICT(bucket) DO UPDATE SET " +
+    "  count = CASE WHEN ?2 - auth_throttle.window_at > ?3 THEN 1 ELSE auth_throttle.count + 1 END, " +
+    "  window_at = CASE WHEN ?2 - auth_throttle.window_at > ?3 THEN ?2 ELSE auth_throttle.window_at END " +
+    "RETURNING count"
+  ).bind(bucket, t, THROTTLE_WINDOW_MS).first();
 
-  if (!row || t - row.window_at > THROTTLE_WINDOW_MS) {
-    await db.prepare(
-      "INSERT INTO auth_throttle (bucket, count, window_at) VALUES (?, 1, ?) " +
-      "ON CONFLICT(bucket) DO UPDATE SET count = 1, window_at = excluded.window_at"
-    ).bind(bucket, t).run();
-    return true;
-  }
-  if (row.count >= max) return false;
-
-  await db.prepare("UPDATE auth_throttle SET count = count + 1 WHERE bucket = ?").bind(bucket).run();
-  return true;
+  // Går skrivningen inte att läsa tillbaka vet vi ingenting om läget. Att
+  // svara "släpp igenom" vore att öppna taket vid varje databasstörning, så
+  // vi stänger i stället — det är inloggning och kassa som skyddas.
+  if (!row || typeof row.count !== "number") return false;
+  return row.count <= max;
 }
 
 // Två skilda hinkar, för de skyddar mot olika saker och tål olika mycket:

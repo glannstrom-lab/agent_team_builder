@@ -4,10 +4,15 @@ Genereras i pipeline:n så att ett genererat team kan användas direkt i
 kundportalen (`portal/`). Producerar en JavaScript-fil som sätter
 `window.TEAM`, plus en rad i portalens register.
 
-Portalen är statisk: kunden klistrar in sin egen Anthropic-nyckel (lagras
-lokalt i webbläsaren) och pratar med agenterna direkt mot Claude. Varje
-agent blir en **systemprompt**. Allt innehåll kommer från proposal och
-research — inget fabricerat.
+Portalen körs i webbläsaren, men AI-anropen går till `POST /api/ai` på **vår**
+nyckel — kunden har aldrig en egen, och portalsvar kräver inloggning och ett
+köpt team. Varje agent blir en **systemprompt**. Allt innehåll kommer från
+proposal och research — inget fabricerat.
+
+> Den här filen speglar `PORTAL_RULES` och `stripTeam()` i
+> `builder/builder.js` **för hand**. Ändras den ena måste den andra följa med;
+> ingenting kontrollerar det åt oss. Fälten nedan är exakt de `stripTeam()`
+> skickar vidare — varken fler eller färre.
 
 ## Output
 
@@ -70,7 +75,9 @@ den här veckan").
 `auto: true` får bara sättas på **högst en** rutin, och bara när prompten är
 komplett utan `[fyll i]`-luckor (t.ex. en stående måndagsbrief). Portalen
 genererar då svaret i bakgrunden när kunden öppnar på rätt dag — "teamet har
-redan jobbat". Kostnad går på kundens nyckel, så var restriktiv.
+redan jobbat". Svaret körs utan att kunden bett om det och räknas mot teamets
+månadstak, så var restriktiv: högst en, och bara när den faktiskt är värd ett
+oombett anrop.
 
 ### Varje agent-objekt
 
@@ -83,6 +90,19 @@ redan jobbat". Kostnad går på kundens nyckel, så var restriktiv.
   tagline: "<kort, en rad — visas i sidebaren>",
   always: true,              // true för VD och VD-assistent, utelämna/false för specialister
   why: "<EN mening som knyter agenten till kundens egna ord: 'Du sa att offerterna tar söndagskvällarna — därför finns jag.'>",
+
+  // De tre nedan driver AGENTKORTET i portalen ("det här kan jag hjälpa dig
+  // med" + klickbara startförslag). Utelämnas de blir kortet tomt och agenten
+  // ser ut som en tom chattruta — vilket är precis vad portalen finns för att
+  // slippa vara.
+  job: "<en mening om vad agenten gör i kundens vecka, i du-form>",
+  capabilities: [            // minst 3, konkreta moment ur researchen
+    "<vad agenten kan hjälpa till med — inte en rolltitel>",
+  ],
+  starters: [                // EXAKT 3 klickbara startuppgifter, i du-form
+    "<en färdig uppgift kunden kan trycka på direkt>",
+  ],
+
   system: `...systemprompt...`
 }
 ```
