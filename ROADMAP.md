@@ -13,7 +13,6 @@ Från genomgången 2026-08-15 · sex parallella linser + egen verifiering.
 
 ## Nu — riktiga fel
 
-- [ ] **C1** Strikt schema blockerar `firstProject`, `seasons`, `triggers`, `scaling` som prompten beställer · `builder/builder.js:893-907` mot `:963` · `mätt` · ~45 min
 - [ ] **P5** "Kopiera delningslänk" ger mottagaren en låst vy — texten är rättad, men vägen in för en kollega saknas fortfarande gränssnitt (`functions/api/team/invite.js` finns, oanropad) · `portal/app.js:2756` · `läst i koden` · ~1–2 h
 - [ ] **K3** Globala dygnstaket delas mellan gratis byggtrafik och betalande kunder · `functions/api/ai.js:326-329` · `läst i koden` · ~1–2 h
 - [ ] **K2** Takkontrollen sker före uppströmsanropet, bokföringen efter — fönstret är hela genereringstiden · `functions/api/ai.js:303-329`, `377-398` · `läst i koden` · ~3–4 h
@@ -69,6 +68,29 @@ Rättade direkt i filerna (rent git-träd). Raderna står i terminalsvaret.
   en vän. Den var känd och uppmätt sedan 15 aug, uppskattad till fem minuter,
   och blev ändå liggande under sex punkter med lägre insats. Ett fel som gör
   produkten stum lagas samma pass som det hittas — det köar inte.
+
+- [x] **C1** Strikt schema mot prompt — löst 2026-08-16. `additionalProperties:
+  false` betyder att ett fält som saknas i schemat inte är valfritt utan
+  **förbjudet**, så de fält prompten beställde kunde modellen inte leverera hur
+  tydligt den än blev tillsagd. Följderna var tysta och gick åt två håll:
+  `seasons` saknades i **alla** genererade teamfiler (portalens årshjul var
+  permanent tomt), `firstProject` gick inte att producera (konsult-lägets
+  🎯-panel kunde aldrig fyllas trots att first-project-steget kördes och
+  betalades), och `triggers` gjorde "Triggas av"-chipsen döda. Omvänt krävde
+  schemat ett toppnivå-`why` som ingen prompt definierade och ingen kod läste —
+  modellen tvingades hitta på det.
+
+  Lagat i **båda** riktningarna: de tre fälten tillagda i schemat (nullbara
+  eller tomma där det är rimligt — inget `minItems` som beställer just de
+  påhittade datum prompten förbjuder), `why` borttaget ur schemat, `scaling`
+  borttaget ur prompten (lästes av ingen; skalningsbeslutet finns redan som
+  eget steg). Prompten fick också en `TRIGGERS`-instruktion — nyckeln fanns i
+  schemablocket utan att någonstans förklaras.
+
+  Verifierat **skarpt** mot `/api/ai` i strict-läge med schemat extraherat ur
+  `builder.js`: `seasons` kommer tillbaka ifylld, `firstProject`-nyckeln finns
+  (null i team-builder-läget), `triggers` genereras per agent, `why` och
+  `scaling` är borta, och golven för `starters`/`routines`/`rejected` håller.
 
 - [x] **K1** Teckentaket gick att kliva förbi — löst 2026-08-16. Två vägar, inte
   en: `content` som **array** mättes som `String([...])` = `"[object Object]"`,

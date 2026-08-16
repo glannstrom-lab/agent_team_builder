@@ -277,14 +277,23 @@ hjälpte. Felen varierade mellan körningar, så inläsningen gick inte att laga
 utelämnade modellen `starters` och `routines`, alltså portalens agentkort och
 veckorutiner. Med `required` och `minItems` kan den inte göra det.
 
-**Baksidan av strict: fält som saknas i schemat kan inte genereras alls.**
-Prompten i samma fil (`builder.js:967–982`) beställer `firstProject`, `seasons`,
-`scaling` och `agents[].triggers` — inget av dem finns i `TEAM_SCHEMA`, så de
-kommer aldrig tillbaka. Konsult-lägets 🎯-panel kan alltså inte produceras av
-Buildern trots att first-project-steget körs och betalas, och `seasons` saknas i
-**alla 14** filer i `portal/teams/`. Omvänt kräver schemat ett toppnivå-`why`
-som ingen prompt definierar. **Ändras prompten måste schemat följa med** — det är
-samma fällatyp som `starters`-fyndet, andra gången. Se `docs/roadmap.md` pass 4.
+**Baksidan av strict: fält som saknas i schemat kan inte genereras alls** —
+`additionalProperties: false` gör dem inte valfria utan förbjudna. Det slog till
+en gång (lagat 2026-08-16): prompten beställde `firstProject`, `seasons` och
+`agents[].triggers` utan att de fanns i `TEAM_SCHEMA`, så de kom aldrig
+tillbaka — konsult-lägets 🎯-panel kunde inte produceras trots att
+first-project-steget kördes och betalades, och `seasons` saknades i alla
+genererade teamfiler, vilket lämnade portalens årshjul permanent tomt. Omvänt
+krävde schemat ett toppnivå-`why` som ingen prompt definierade, så modellen
+tvingades hitta på det.
+
+**Prompten och `TEAM_SCHEMA` är ETT kontrakt i två filer** (`builder.js`,
+schemablocket i `structureTeam()` respektive konstanten längre ner). Ändras det
+ena måste det andra följa med, i **båda** riktningarna: ett fält som beställs men
+inte står i schemat kommer aldrig tillbaka, och ett fält som krävs i schemat men
+inte beställs blir påhittat. Lägg inte till något i schemat utan en läsare i
+koden — det var så `language` och `defaultModel` blev dödfält. Samma fällatyp som
+`starters`-fyndet; den har nu slagit till två gånger.
 
 Ändras modellraden måste kostnadssiffrorna i `index.html` (`#forbrukning`)
 och avsnitt 3–4 i `villkor.html` följa med. Nuvarande nivå: $0,037/$0,170 per

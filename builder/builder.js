@@ -890,11 +890,15 @@ async function structureWithStatus(intake, r) {
 
 // Sista steget: omvandla research + proposal till render-struktur + portal-systemprompter.
 async function structureTeam(intake, r) {
+  // Den här texten MÅSTE spegla TEAM_SCHEMA längre ner, fält för fält. De är
+  // ett kontrakt i två filer: det som inte står i schemat kan inte genereras
+  // (additionalProperties: false), och det som krävs i schemat men inte
+  // beställs här blir påhittat. `scaling` stod här förut och lästes av ingen —
+  // skalningsbeslutet finns redan som eget steg i `r.scaling`.
   const schema = `{
   "company": string,
   "slug": string,
   "tagline": string,
-  "scaling": string,
   "firstProject": ${intake.mode === "ai-consultant" ? '{ "name": string, "problem": string, "week1": string, "owner": string }' : "null"},
   "divergence": string,
   "rejected": [{ "name": string, "why": string }],
@@ -920,6 +924,8 @@ VD-assistenten ska ha id "vd-assistent" och vara först i listan, sedan VD (id "
 DIVERGENCE: en mening ur proposalens/researchens divergens-check — varför just DETTA team inte skulle passa en annan aktör i samma bransch ("Skulle det passa en annan keramiker? Nej, för …"). Hämta ur underlaget; finns ingen divergens-check, härled den ur teamets mest verksamhetsspecifika val.
 
 SEASONS: kundens årshjul — BARA händelser som uttryckligen nämns i intake/research (mässor, deklarationsdatum, högsäsonger, ansökningsdeadlines). month 1–12, day om känd annars null, agentId = mest relevant agent annars null, prompt = valfri startuppgift i du-form. Fabricera inga datum; tom lista om årsrytmen är okänd. Portalen påminner kunden i förväg ("X dagar till mässan").
+
+TRIGGERS: per agent, 0–3 konkreta situationer i kundens vardag då man ska vända sig till just den agenten ("När en offert ska ut", "Inför månadsbokslutet"). Hämta dem ur researchens arbetsmoment. Har en agent ingen tydlig utlösare — VD och VD-assistent har sällan det, de är alltid på — lämna listan tom. Hitta aldrig på en situation för att fylla ut.
 
 RUTINER: 3–5 stående rutiner hämtade ur kundens faktiska veckomoment (inte påhittade). label = kort namn; agentId = agenten som äger momentet; day = veckodag 1–7 (1=måndag) om momentet är dagbundet, annars null; timeEstimate = minuter momentet brukar ta manuellt ENLIGT RESEARCHEN (null om researchen inte anger tid — hitta aldrig på); auto = true på HÖGST EN rutin och bara om dess prompt är komplett utan [fyll i]-luckor (portalen kör den då automatiskt på rätt dag), annars false; prompt = uppgiften i du-form med [fyll i]-luckor för det agenten behöver av användaren, konkret nog att skicka direkt.
 
@@ -966,22 +972,51 @@ ${schema}`;
 // den strängheten som gör att starters och routines inte kan hoppas över.
 // Uppmätt 2026-08-06: med bara json_object utelämnade modellen båda, och
 // portalens agentkort och veckorutiner hade levererats tomma.
+//
+// BAKSIDAN, uppmätt 2026-08-15 och lagad 2026-08-16: `additionalProperties:
+// false` betyder att ett fält som saknas i schemat inte bara är valfritt —
+// det är FÖRBJUDET. Prompten ovan beställde `firstProject`, `seasons` och
+// `agents[].triggers`, och modellen kunde inte leverera något av dem hur
+// tydligt den än blev tillsagd. Följderna gick åt olika håll och båda var
+// tysta:
+//
+//   • `seasons` saknades i ALLA genererade teamfiler → portalens årshjul var
+//     permanent tomt, och ingen kunde se varför.
+//   • `firstProject` gick inte att producera → konsult-lägets 🎯-panel kunde
+//     aldrig fyllas, trots att first-project-steget kördes och betalades.
+//   • `triggers` → "Triggas av"-chipsen i builderns förhandsvisning var döda.
+//
+// Omvänt krävde schemat ett toppnivå-`why` som ingen prompt definierade och
+// ingen kod läste: modellen tvingades hitta på det för att svaret skulle
+// valideras.
+//
+// REGELN: prompten och schemat är ETT kontrakt i två filer. Ändras det ena
+// måste det andra följa med, i båda riktningarna — ett fält som beställs men
+// inte står här kommer aldrig tillbaka, och ett fält som krävs här men inte
+// beställs blir påhittat. Lägg inte till något här utan en läsare i koden;
+// det var så `language` och `defaultModel` blev dödfält.
 const TEAM_SCHEMA = {
   type: "object", additionalProperties: false,
-  required: ["company", "tagline", "slug", "why", "divergence", "agents", "rejected", "routines"],
+  // Allt i properties måste stå i required — strict-läget tillåter inga
+  // valfria fält. Det som får saknas uttrycks som nullbar typ eller tom lista,
+  // inte som en utelämnad nyckel.
+  required: ["company", "tagline", "slug", "divergence", "agents", "rejected", "routines", "seasons", "firstProject"],
   properties: {
     company: { type: "string" }, tagline: { type: "string" }, slug: { type: "string" },
-    why: { type: "string" }, divergence: { type: "string" },
+    divergence: { type: "string" },
     agents: {
       type: "array", minItems: 2,
       items: {
         type: "object", additionalProperties: false,
-        required: ["id", "name", "icon", "role", "tagline", "always", "job", "why", "capabilities", "starters", "system"],
+        required: ["id", "name", "icon", "role", "tagline", "always", "job", "why", "capabilities", "triggers", "starters", "system"],
         properties: {
           id: { type: "string" }, name: { type: "string" }, icon: { type: "string" },
           role: { type: "string" }, tagline: { type: "string" }, always: { type: "boolean" },
           job: { type: "string" }, why: { type: "string" },
           capabilities: { type: "array", minItems: 3, items: { type: "string" } },
+          // Inget minItems: alla agenter har inte en naturlig utlösare, och
+          // ett golv här hade betytt påhittade triggers i stället för tomma.
+          triggers: { type: "array", items: { type: "string" } },
           starters: { type: "array", minItems: 3, maxItems: 3, items: { type: "string" } },
           system: { type: "string" },
         },
@@ -999,6 +1034,25 @@ const TEAM_SCHEMA = {
         properties: { label: { type: "string" }, agentId: { type: "string" },
           day: { type: ["integer", "null"] }, timeEstimate: { type: ["integer", "null"] },
           auto: { type: "boolean" }, prompt: { type: "string" } } },
+    },
+    // Årshjulet. Tom lista är ett giltigt och vanligt svar — prompten förbjuder
+    // uttryckligen att datum fabriceras, så ett minItems här hade beställt just
+    // det den förbjuder.
+    seasons: {
+      type: "array",
+      items: { type: "object", additionalProperties: false,
+        required: ["label", "month", "day", "agentId", "prompt"],
+        properties: { label: { type: "string" }, month: { type: "integer" },
+          day: { type: ["integer", "null"] }, agentId: { type: ["string", "null"] },
+          prompt: { type: ["string", "null"] } } },
+    },
+    // Bara konsult-läget har ett första projekt. I team-builder-läget beställer
+    // prompten uttryckligen null, därför nullbar i stället för utelämnad.
+    firstProject: {
+      type: ["object", "null"], additionalProperties: false,
+      required: ["name", "problem", "week1", "owner"],
+      properties: { name: { type: "string" }, problem: { type: "string" },
+        week1: { type: "string" }, owner: { type: "string" } },
     },
   },
 };
