@@ -18,8 +18,6 @@ Från genomgången 2026-08-15 · sex parallella linser + egen verifiering.
 
 ## Sedan — skav som märks
 
-- [ ] **C2** Personläget i `research.md` går inte att nå från `/build-team` · `prompts/team-builder/intake-interview.md:91-117` · `läst i koden` · ~15 min
-- [ ] **C3** `proposal.md` tillåter uttryckligen generisk VD-output, mot `research.md` · `prompts/shared/proposal.md:44-47` · `läst i koden` · ~15 min
 - [ ] **R8** Builderns nedladdning använder inte den lagade `downloadFile()` · `builder/builder.js:1649` · `läst i koden` · ~20 min
 - [ ] **C5** `templates/shared/portal-team.md` har glidit isär från `builder.js` — `language`/`defaultModel` rättade 2026-08-16, raderna 7-8 och 74-85 kvarstår · `läst i koden` · ~20 min
 - [ ] **K5** `allowAttempt` gör SELECT→UPDATE utan atomicitet · `functions/api/auth/_lib.js:105-121` · `läst i koden` · ~1–2 h
@@ -63,6 +61,29 @@ Rättade direkt i filerna (rent git-träd). Raderna står i terminalsvaret.
   en vän. Den var känd och uppmätt sedan 15 aug, uppskattad till fem minuter,
   och blev ändå liggande under sex punkter med lägre insats. Ett fel som gör
   produkten stum lagas samma pass som det hittas — det köar inte.
+
+- [x] **C2** Personläget gick inte att nå från `/build-team` — löst 2026-08-16.
+  `research.md` har ett helt läge för när teamet byggs åt *en person i sitt
+  jobb* i stället för åt en verksamhet, men `intake-interview.md` frågade
+  aldrig, så `/build-team` kunde inte producera det kontraktet. Webb-Buildern
+  hade läget; kommandot hade det inte. Följden var att en anställd som ville ha
+  ett team runt sin egen vecka fick ett byggt runt arbetsgivarens
+  organisationsschema — precis den generiska output projektet finns för att
+  undvika. Intervjun har nu en **fråga 0** (verksamhet eller person?), två
+  följdfrågor för personläget (roll i egna ord, vad omgivningen bedömer på),
+  och output-formatet finns i två varianter som speglar `research.md` exakt —
+  inklusive att `storlek` står på `solo` oavsett hur stor arbetsplatsen är.
+
+- [x] **C3** `proposal.md` tillät generisk VD-output — löst 2026-08-16. Punkten
+  sa att om research inte hittade prioriteringsmoment fick VD ett *generiskt*
+  operativt eller strategiskt jobb. Det gjorde undantaget till en genväg förbi
+  kärnregeln, och VD är den agent som är lättast att fylla med branschklichéer
+  — alltså den vanligaste anledningen till att två kunder får team som liknar
+  varandra. Nu står motsatsen: inga funna prioriteringsmoment betyder att
+  research inte är klar, med konkreta anvisningar om var besluten faktiskt
+  fattas (vad som prioriteras bort när veckan inte räcker, vem som avgör vilken
+  kund som får vänta). Filen hämtas live av Buildern, så ändringen gäller båda
+  vägarna samtidigt.
 
 - [x] **D1** Ingen CI — löst 2026-08-16. `.github/workflows/test.yml` kör
   testsviten och bygget vid push och pull request. Bygget är inte pynt: det

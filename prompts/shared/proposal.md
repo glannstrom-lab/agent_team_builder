@@ -41,10 +41,24 @@ skalningen tillåter — slå ihop de minst distinkta.
 
 VD och VD-assistent formuleras alltid, baserat på:
 
-- **VD:** Om research identifierade prioriterings-/riktningsmoment,
-  bygg VD:ns jobb på dem. Om inte, notera det och ge VD ett generiskt
-  operativt jobb (för små team) eller rent strategiskt jobb (för
-  stora team). Använd `ceo-small.md` eller `ceo-large.md` som mall.
+- **VD:** bygg VD:ns jobb på de prioriterings- och riktningsmoment research
+  hittade. Använd `ceo-small.md` eller `ceo-large.md` som mall.
+
+  **Hittade research inga sådana moment är det inte klartecken för ett
+  generiskt jobb — det är ett tecken på att research inte är klar.** Gå
+  tillbaka och leta efter var besluten faktiskt fattas: vad som prioriteras
+  bort när veckan inte räcker, vem som avgör vilken kund som får vänta, vad
+  som skjuts upp gång på gång. De momenten finns alltid, även hos en person
+  som arbetar ensam — de är bara sällan uttalade, eftersom ingen kallar dem
+  "ledning".
+
+  Formulera hellre VD:ns jobb ur det mest verksamhetsspecifika du hittade än
+  ur en mall. En VD utan konkret jobb blir teater, och för ett solo-team är
+  abstrakt strategi just det (designprincip 3 i `CLAUDE.md`).
+
+  VD är den agent som är lättast att fylla med branschklichéer, och en
+  generisk VD är den vanligaste anledningen till att två olika kunder får
+  team som liknar varandra.
 
 - **VD-assistent:** Alltid operativ arbetspartner. Specificera vilka
   av teamets agenter den ska kunna hänvisa till. Använd
