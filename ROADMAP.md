@@ -14,7 +14,6 @@ Från genomgången 2026-08-15 · sex parallella linser + egen verifiering.
 ## Nu — riktiga fel
 
 - [ ] **P5** "Kopiera delningslänk" ger mottagaren en låst vy — texten är rättad, men vägen in för en kollega saknas fortfarande gränssnitt (`functions/api/team/invite.js` finns, oanropad) · `portal/app.js:2756` · `läst i koden` · ~1–2 h
-- [ ] **K3** Globala dygnstaket delas mellan gratis byggtrafik och betalande kunder · `functions/api/ai.js:326-329` · `läst i koden` · ~1–2 h
 - [ ] **K2** Takkontrollen sker före uppströmsanropet, bokföringen efter — fönstret är hela genereringstiden · `functions/api/ai.js:303-329`, `377-398` · `läst i koden` · ~3–4 h
 
 ## Sedan — skav som märks
@@ -68,6 +67,22 @@ Rättade direkt i filerna (rent git-träd). Raderna står i terminalsvaret.
   en vän. Den var känd och uppmätt sedan 15 aug, uppskattad till fem minuter,
   och blev ändå liggande under sex punkter med lägre insats. Ett fel som gör
   produkten stum lagas samma pass som det hittas — det köar inte.
+
+- [x] **K3** Byggtrafik kunde stänga ute betalande kunder — löst 2026-08-16.
+  Det globala dygnstaket (4 000) delades av allt, och bygget är gratis,
+  anonymt och obegränsat — alltså den trafik som kan explodera. En dag med
+  ovanligt många byggen hade gett betalande kunder 503 till midnatt. Fel kund
+  att svika: den som bygger gratis kan komma tillbaka i morgon.
+
+  Bygget har nu en egen andel, 2 500 av 4 000, bokförd på raden `build:global`
+  i `ai_usage` — ingen migration behövdes. Portalen har därmed alltid minst
+  1 500 svar kvar. Det globala taket gäller fortfarande alla: når vi 4 000 är
+  tjänsten nere för allihop, vilket är avsiktligt.
+
+  Både grinden **och** bokföringen är byggda — ett tak som läser en siffra
+  ingen skriver är inget tak, vilket är exakt vad planens livscykel led av
+  före 2026-08-07. Fem nya tester täcker båda, inklusive det som är hela
+  poängen: en betalande kund når fram när byggets tak är fullt.
 
 - [x] **C1** Strikt schema mot prompt — löst 2026-08-16. `additionalProperties:
   false` betyder att ett fält som saknas i schemat inte är valfritt utan

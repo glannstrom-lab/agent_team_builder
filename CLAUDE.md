@@ -187,11 +187,18 @@ skisser i `design/` (deployas inte).
 
 **Vår nyckel, inga kundnycklar (2026-08-06):** kunden har aldrig en egen
 API-nyckel. Allt går genom `POST /api/ai` (`functions/api/ai.js`) på vår
-OpenRouter-nyckel (`OPENROUTER_KEY` som Pages-secret). **Fyra tak**
-(`ai.js:53–57`) skyddar kassan: per IP och kvart (24 bygge / 90 portal), per IP
+OpenRouter-nyckel (`OPENROUTER_KEY` som Pages-secret). **Fem tak**
+skyddar kassan: per IP och kvart (24 bygge / 90 portal), per IP
 och dygn för bygget (200), per **team** och månad (1 000 = villkorens fair use)
 och ett globalt dygnstak (4 000). Förbrukningen bokförs i `ai_budget` och
 `ai_usage` (`migrations/0004_ai_proxy.sql`) — antal och tokens, aldrig innehåll.
+**Det femte taket** (2026-08-16) är byggets egen andel av dygnet: 2 500 av de
+4 000, bokförd på raden `build:global` i `ai_usage`. Utan den delade gratis,
+anonym byggtrafik hink med betalande kunder, och en dag med ovanligt många
+byggen kunde stänga portalen för dem som betalat — nu finns alltid minst 1 500
+svar kvar åt portalen. Taken har tester i `test/ai.mjs` (17 st); rutten hade
+noll fram till 2026-08-16, trots att den är den enda filen där en manipulerad
+klient kan kosta oss pengar.
 Nyckelvägen är borta: `renderKeySetup()` finns inte längre i portalen, och
 `atb-claude.js` har bara `/api/ai`.
 

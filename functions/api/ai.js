@@ -56,6 +56,23 @@ const MAX_CALLS_PER_IP_PAID = 90;        // portalen: per kvart — sex kollegor
 const MAX_BUILD_CALLS_PER_IP_DAY = 200;  // bygget: per dygn
 const MAX_CALLS_PER_TEAM = 1000;         // per månad — samma tal som villkorens fair use
 const MAX_CALLS_PER_DAY = 4000;          // globalt; ~ett par hundra kronor i värsta fall
+// Byggets andel av det globala dygnstaket. Utan den delade gratis, anonym
+// byggtrafik hink med betalande kunder — och eftersom bygget är obegränsat och
+// utan konto är det den trafik som kan explodera. En dag med ovanligt många
+// byggen (eller ett skript som roterar IP-adresser förbi de andra taken) hade
+// då stängt portalen för dem som betalat, resten av dygnet. Fel kund att svika:
+// den som bygger gratis kan komma tillbaka i morgon, den som betalar 290 kr i
+// månaden för att teamet ska finnas där kan inte det.
+//
+// Skillnaden mot MAX_BUILD_CALLS_PER_IP_DAY: det taket är per uppkoppling och
+// stoppar EN missbrukare. Det här är globalt och stoppar alla byggen
+// tillsammans, oavsett varifrån de kommer.
+//
+// 2500 av 4000 lämnar alltid minst 1500 svar åt portalen. Uppmätt bygge = fyra
+// anrop, alltså drygt 600 byggen per dygn innan den fria rutten stryps — långt
+// över allt vi sett, och taket säger ifrån i loggen (`build_busy`) om det ändå
+// nås, så siffran går att höja med data i handen i stället för på känsla.
+const MAX_BUILD_CALLS_PER_DAY = 2500;
 
 // Klientens maxTokens tas emot men klampas: en klient är inte att lita på, och
 // det är vi som betalar för svaret.
@@ -347,9 +364,31 @@ export async function onRequestPost(context) {
     }
   }
 
+  // Det globala kostnadstaket. Gäller alla — når vi det är tjänsten nere, och
+  // det är avsiktligt: en oväntad räkning går inte att ta tillbaka.
   const budget = await db.prepare("SELECT calls FROM ai_budget WHERE day = ?").bind(utcDay(t)).first();
   if (budget && budget.calls >= MAX_CALLS_PER_DAY) {
     return json({ error: "Tjänsten är hårt belastad just nu. Försök igen senare.", code: "service_busy" }, 503);
+  }
+
+  // Byggets egen andel av samma dygn. Räknas på en global rad i ai_usage
+  // (`build:global`) i stället för i ai_budget, så att ingen migration behövs
+  // och siffran går att läsa av separat.
+  //
+  // Den här kontrollen gäller BARA den fria rutten. Att den ligger efter det
+  // globala taket är med flit: når vi 4000 ska alla få samma besked, och först
+  // därunder skiljer vi på trafikslagen.
+  if (!portal) {
+    const byggDygn = await db.prepare("SELECT calls FROM ai_usage WHERE subject = ? AND period = ?")
+      .bind("build:global", utcDay(t)).first().catch(() => null);
+    if (byggDygn && byggDygn.calls >= MAX_BUILD_CALLS_PER_DAY) {
+      console.warn("[ai] byggets dygnstak nått", byggDygn.calls, "av", MAX_BUILD_CALLS_PER_DAY);
+      return json({
+        error: "Ovanligt många team byggs just nu. Försök igen om en stund, eller i morgon — " +
+          "det kostar ingenting att vänta, och er körning står kvar.",
+        code: "build_busy",
+      }, 503);
+    }
   }
 
   // ── uppströms ──────────────────────────────────────────────────────────
@@ -418,6 +457,14 @@ export async function onRequestPost(context) {
         "INSERT INTO ai_usage (subject, period, calls, input_tok, output_tok) VALUES (?, ?, 1, ?, ?) " +
         "ON CONFLICT(subject, period) DO UPDATE SET calls = calls + 1, input_tok = input_tok + excluded.input_tok, output_tok = output_tok + excluded.output_tok"
       ).bind("ip:" + ip, utcDay(t), inTok, outTok));
+      // Byggets globala dygnsrad — den som MAX_BUILD_CALLS_PER_DAY läser.
+      // Utan den här skrivningen är taket ovan en kontroll mot en siffra som
+      // aldrig växer, alltså inget tak alls. Samma fälla som planens livscykel
+      // var före 2026-08-07: en spärrlista som ingen kod fyllde på.
+      satser.push(db.prepare(
+        "INSERT INTO ai_usage (subject, period, calls, input_tok, output_tok) VALUES (?, ?, 1, ?, ?) " +
+        "ON CONFLICT(subject, period) DO UPDATE SET calls = calls + 1, input_tok = input_tok + excluded.input_tok, output_tok = output_tok + excluded.output_tok"
+      ).bind("build:global", utcDay(t), inTok, outTok));
     }
     return db.batch(satser).catch((e) => console.error("[ai] kunde inte bokföra förbrukning", String(e)));
   };
