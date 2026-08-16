@@ -1,0 +1,48 @@
+# Kör testsviten och bygget vid varje push och pull request.
+#
+# Varför den finns: fram till 2026-08-16 kördes de 86 testerna bara när någon
+# kom ihåg att skriva `npm test`. Ett projekt som arbetar i skurar — 35 commits
+# på sex dagar — är precis där ett grönt test i går inte säger något om i dag.
+#
+# Bygget körs också, och det är inte pyntning: `build-dist.mjs` fäller bygget
+# om index.html länkar till juridiksidor som inte publiceras, och om SHELL-
+# eller CACHE-raden i portal/sw.js skrivits om i en form versionsstämplingen
+# inte känner igen. Båda är fel som annars upptäcks först vid deploy.
+#
+# Deployar INTE. Driftsättningen sker för hand med `npm run deploy`, och att
+# automatisera den vore ett större beslut än att köra tester.
+name: test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          # node --test med ESM och inbyggd fetch/Response — det som
+          # test/ai.mjs använder för att köra rutten utan Cloudflare.
+          node-version: '22'
+
+      # Inga beroenden att installera: projektet har noll runtime-dependencies
+      # och testerna kör på nodes egen test runner. Därför inget npm ci.
+      - name: Tester
+        run: npm test
+
+      - name: Bygget går igenom
+        run: npm run build
+
+      # Fångar det versionsstämplingen finns för: att en referens pekar på en
+      # fil som inte finns, eller på en hash som inte stämmer med innehållet.
+      - name: Versionsstämplade referenser stämmer
+        run: node scripts/check-dist.mjs

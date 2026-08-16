@@ -13,6 +13,7 @@
 
 import { test } from "node:test";
 import assert from "node:assert";
+import { readFileSync } from "node:fs";
 import { verifyStripeSignature, newSlug, TIERS } from "../functions/api/_stripe.js";
 
 const SECRET = "whsec_testhemlighet_som_aldrig_anvants_skarpt";
@@ -101,6 +102,55 @@ test("slugens tecken är jämnt fördelade — ingen modulo-bias", () => {
   const värden = [...räknare.values()];
   assert.equal(räknare.size, 62, "alla 62 tecken ska förekomma");
   assert.ok(Math.max(...värden) / Math.min(...värden) < 1.5, "för ojämn fördelning: " + Math.max(...värden) + "/" + Math.min(...värden));
+});
+
+// ── prislistan på tre ställen (D6) ──────────────────────────────────────────
+//
+// Testet ovan kollade att nivåernas NAMN inte växer, men aldrig beloppen. Det
+// är beloppen som står på tre ställen och som CLAUDE.md kräver ska ändras samma
+// dag: prislistan i index.html, avsnitt 4 i villkor.html och `TIERS` här.
+// Glider de isär ser kunden ett pris, villkoren ett annat, och kassan tar ett
+// tredje — och det upptäcks av den som betalar.
+//
+// HTML-kommentarerna räknas bort. De innehåller med flit de STRUKNA beloppen
+// ("190, 490 och engångsköpet på 4 990 UTGÅR — skriv inte tillbaka dem"), och
+// utan strippning hade testet fällt på sin egen varningstext.
+const utanKommentarer = (fil) => readFileSync(fil, "utf8").replace(/<!--[\s\S]*?-->/g, " ");
+
+const GÄLLANDE = [/\b90 kr/, /\b290 kr/];
+// Ordgränsen är inte pynt: "290 kr".includes("90 kr") är sant, så en naiv
+// substrängsökning hade sett 90-nivån i varje omnämnande av 290.
+const STRUKNA = [/\b190 kr/, /\b490 kr/, /\b4\s?990/];
+
+for (const fil of ["index.html", "villkor.html"]) {
+  test(`${fil} visar de gällande beloppen och inga strukna`, () => {
+    const text = utanKommentarer(fil);
+    for (const r of GÄLLANDE) assert.match(text, r, `${fil} saknar ${r}`);
+    for (const r of STRUKNA) {
+      assert.doesNotMatch(text, r, `${fil} visar en struken prisnivå (${r}) för kunden`);
+    }
+  });
+}
+
+test("builderns avslutsruta erbjuder exakt de nivåer kassan känner", () => {
+  // PLANS i builder.js är det kunden klickar på; TIERS är det kassan
+  // accepterar. En nivå i den ena men inte den andra ger antingen en knapp som
+  // ger 400, eller en säljbar nivå ingen ser.
+  const src = readFileSync("builder/builder.js", "utf8");
+  const block = src.slice(src.indexOf("const PLANS = ["));
+  const tiers = [...block.slice(0, block.indexOf("];")).matchAll(/tier:\s*"([^"]+)"/g)].map((m) => m[1]);
+  const priser = [...block.slice(0, block.indexOf("];")).matchAll(/price:\s*"([^"]+)"/g)].map((m) => m[1]);
+
+  assert.deepEqual(tiers.sort(), Object.keys(TIERS).sort(), "PLANS och TIERS har glidit isär");
+  assert.deepEqual(priser, ["90 kr", "290 kr/mån"], "beloppen i builderns prisruta har ändrats");
+});
+
+test("provmånaden är ett engångsköp och standard ett abonnemang", () => {
+  // Kvittosidan (portal/aktivera.html) säger olika saker till kunden beroende
+  // på det här, och sa fel åt båda innan 2026-08-16. Byts läget måste texten
+  // där följa med.
+  assert.equal(TIERS.trial.mode, "payment");
+  assert.equal(TIERS.standard.mode, "subscription");
 });
 
 test("bara nivåer som går att leverera är köpbara", () => {

@@ -20,11 +20,8 @@ Från genomgången 2026-08-15 · sex parallella linser + egen verifiering.
 
 - [ ] **C2** Personläget i `research.md` går inte att nå från `/build-team` · `prompts/team-builder/intake-interview.md:91-117` · `läst i koden` · ~15 min
 - [ ] **C3** `proposal.md` tillåter uttryckligen generisk VD-output, mot `research.md` · `prompts/shared/proposal.md:44-47` · `läst i koden` · ~15 min
-- [ ] **D4** Drift-skripten kör `npx --yes wrangler` utan pinnad version · `package.json:8-15` · `mätt` · ~20 min
 - [ ] **R8** Builderns nedladdning använder inte den lagade `downloadFile()` · `builder/builder.js:1649` · `läst i koden` · ~20 min
 - [ ] **C5** `templates/shared/portal-team.md` har glidit isär från `builder.js` — `language`/`defaultModel` rättade 2026-08-16, raderna 7-8 och 74-85 kvarstår · `läst i koden` · ~20 min
-- [ ] **D6** Testet kollar prisnivåernas namn, aldrig beloppen · `test/stripe.mjs:108-113` · `läst i koden` · ~45 min
-- [ ] **BL1** Interna arbetsanteckningar följer med i skarp `dist/` · `build-dist.mjs` (saknar comment-strip) · `mätt` · ~45 min
 - [ ] **K5** `allowAttempt` gör SELECT→UPDATE utan atomicitet · `functions/api/auth/_lib.js:105-121` · `läst i koden` · ~1–2 h
 - [ ] **BL2** Ångerrätten saknar knapp — kodens egen TODO, vars villkor nu inträffat · `villkor.html:508-514` · `läst i koden` · ~1–2 h
 - [ ] **C6** Inget golv på systemprompternas innehåll; två teamfiler saknar `DITT PERSPEKTIV` helt · `builder/builder.js:980` · `mätt` · ~2 h
@@ -33,7 +30,6 @@ Från genomgången 2026-08-15 · sex parallella linser + egen verifiering.
 
 ## Framåt — utveckling
 
-- [ ] **D1** Ingen CI: 69 gröna tester körs bara när någon minns dem · `.github/` saknas · `mätt` · ~30 min
 - [ ] **P1** Ingen mätning av var köpresan läcker · `index.html` (inga taggar) · `mätt` · ~1 h
 - [ ] **D3** Ingen felövervakning; "krediten är slut" skrivs till en logg ingen läser · `functions/api/ai.js:637` · `mätt` · ~2 h
 - [ ] **P6** Auto-körda rutiners "ligger klar"-bevis överlever inte en omladdning · `portal/app.js:2242` · `läst i koden` · ~2 h
@@ -67,6 +63,50 @@ Rättade direkt i filerna (rent git-träd). Raderna står i terminalsvaret.
   en vän. Den var känd och uppmätt sedan 15 aug, uppskattad till fem minuter,
   och blev ändå liggande under sex punkter med lägre insats. Ett fel som gör
   produkten stum lagas samma pass som det hittas — det köar inte.
+
+- [x] **D1** Ingen CI — löst 2026-08-16. `.github/workflows/test.yml` kör
+  testsviten och bygget vid push och pull request. Bygget är inte pynt: det
+  fäller om `index.html` länkar till juridiksidor som inte publiceras, och om
+  SHELL-/CACHE-raden i `portal/sw.js` skrivits om i en form versionsstämplingen
+  inte känner igen. Deployar inte — det vore ett större beslut än att köra
+  tester. **Börjar gälla när repot pushas: origin ligger 63 commits efter.**
+
+- [x] **Ny kontroll: `scripts/check-dist.mjs`** (2026-08-16) — verifierar att
+  varje stämplad URL pekar på en fil som finns, att hashen stämmer med
+  innehållet, att ingen lokal js/css-referens är ostämplad, och att service
+  workerns SHELL begär samma URL:er som sidorna. Körs av CI **och** av
+  `npm run deploy`, så en trasig stämpling aldrig når produktion. Provad mot
+  båda felmoderna: den fäller på fel hash och på en avstämplad referens.
+
+- [x] **D4** `npx --yes wrangler` opinnat — löst 2026-08-16. Pinnat till
+  4.123.0, versionen alla deployer hittills är gjorda med. Verktyget rör
+  produktionen (deploy, D1-migrationer, emulatorn), och att hämta "vilken
+  version som råkade vara ute i dag" är en förändring i driften som inte syns
+  i något commit.
+
+- [x] **D6** Prislistetestet kollade namn, aldrig belopp — löst 2026-08-16.
+  Nya tester läser de **kundsynliga** beloppen i `index.html` och
+  `villkor.html` (HTML-kommentarerna borträknade, eftersom de med flit
+  innehåller de strukna nivåerna som varning) och kräver att 90 och 290 finns
+  och att 190, 490 och 4 990 inte gör det. Dessutom att builderns `PLANS` och
+  kassans `TIERS` inte glidit isär, och att provmånaden är `payment` medan
+  standard är `subscription` — det senare styr vad kvittosidan säger till
+  kunden. Ordgränser i regexen, för `"290 kr".includes("90 kr")` är sant.
+
+- [x] **BL1** Arbetsanteckningar publicerades — löst 2026-08-16. 21,2 kB
+  HTML-kommentarer strippas nu ur `dist/`: strukna prisnivåer med belopp, vad
+  vi inte kan leverera och varför, vad ett bygge kostar oss i ören, och
+  anteckningar om konkurrenter — allt läsbart med "visa källkod" på
+  mittaiteam.se. Källfilerna behåller allt; bara den publicerade kopian städas.
+  Bygget kontrollerar först att ingen `<script>`/`<style>` innehåller `<!--`
+  eller `-->`, så strippningen inte kan kapa mitt i kod.
+
+  **JS-kommentarerna (97 kB) lämnas kvar, medvetet.** Att ta bort dem kräver
+  en riktig tokeniserare — en regex bryter på `https://` och på `//` inuti
+  strängar — och en minifierare gör den driftsatta koden oläsbar. Det priset
+  är för högt här: felsökningen av B1 byggde på att hämta den skarpa filen och
+  läsa den. Konsekvensen att leva med är att klientkoden är offentlig läsning,
+  vilket den är i vilket fall.
 
 - [x] **K3** Byggtrafik kunde stänga ute betalande kunder — löst 2026-08-16.
   Det globala dygnstaket (4 000) delades av allt, och bygget är gratis,

@@ -116,10 +116,45 @@ function allaFiler(dir) {
 const distFiler = allaFiler("dist");
 let stämplade = 0;
 
+// HTML-kommentarerna städas bort ur dist/ (BL1). De är arbetsanteckningar
+// skrivna till oss själva, och de står i klartext för var och en som väljer
+// "visa källkod" på mittaiteam.se: strukna prisnivåer med belopp, vad vi INTE
+// kan leverera och varför, vad ett bygge kostar oss i ören, och anteckningar om
+// konkurrenter. Källfilerna behåller allt — det är bara den publicerade kopian
+// som städas, så ingen läsbarhet går förlorad där den behövs.
+//
+// Uppmätt före strippning: 21,2 kB av 258 kB HTML.
+//
+// Säkert med en ren regex just här, och kontrollerat: ingen `<script>` eller
+// `<style>` i projektet innehåller `<!--` eller `-->`, så det finns inget
+// tillfälle att kapa mitt i kod. Bygget kontrollerar det varje gång i stället
+// för att lita på att det förblir sant.
+//
+// JS-kommentarerna (97 kB) lämnas MED FLIT kvar. Att ta bort dem kräver en
+// riktig tokeniserare — en regex bryter på `https://` och på `//` inuti
+// strängar och regexliteraler — och en minifierare gör den driftsatta koden
+// oläsbar. Det priset är för högt i just det här projektet: felsökningen av
+// `openrouter is not defined` byggde på att hämta den skarpa filen och läsa
+// den. Konsekvensen att leva med är att klientkoden är offentlig läsning, och
+// den regeln gäller ändå: ingenting hemligt får ligga i den.
+let strippade = 0;
+function striptHtml(fil, src) {
+  for (const m of src.matchAll(/<(script|style)\b[^>]*>([\s\S]*?)<\/\1>/gi)) {
+    if (m[2].includes("<!--") || m[2].includes("-->")) {
+      console.error(`\n  ✖  BYGGET STOPPAT — ${fil} har "<!--" eller "-->" inuti <${m[1]}>.` +
+        "\n     Kommentarsstrippningen skulle kapa mitt i kod. Ta bort sekvensen" +
+        "\n     ur skriptet, eller gör strippningen medveten om script-taggar.\n");
+      process.exit(1);
+    }
+  }
+  return src.replace(/<!--[\s\S]*?-->/g, (m) => { strippade += m.length; return ""; });
+}
+
 for (const fil of distFiler.filter((f) => f.endsWith(".html"))) {
   const dir = dirname(fil);
   const före = readFileSync(fil, "utf8");
-  const efter = före.replace(/(\b(?:src|href)=")([^"]+)(")/g, (hel, pre, url, post) => {
+  const utanKommentarer = striptHtml(fil, före);
+  const efter = utanKommentarer.replace(/(\b(?:src|href)=")([^"]+)(")/g, (hel, pre, url, post) => {
     const ny = stämpla(url, dir);
     if (ny !== url) stämplade++;
     return pre + ny + post;
@@ -165,6 +200,7 @@ if (existsSync(swPath)) {
 }
 
 console.log(`versionsstämplade ${stämplade} tillgångsreferenser i HTML`);
+console.log(`strippade ${(strippade / 1024).toFixed(1)} kB HTML-kommentarer (arbetsanteckningar publiceras inte)`);
 console.log("dist/ byggd med:", ITEMS.join(", "), "+ " + PROMPT_FILES.length + " prompt-filer");
 if (legalBlocked.length) {
   console.warn(
