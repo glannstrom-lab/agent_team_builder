@@ -19,7 +19,6 @@ Från genomgången 2026-08-15 · sex parallella linser + egen verifiering.
 ## Sedan — skav som märks
 
 - [ ] **BL2** Ångerrätten saknar knapp — kodens egen TODO, vars villkor nu inträffat · `villkor.html:508-514` · `läst i koden` · ~1–2 h
-- [ ] **C6** Inget golv på systemprompternas innehåll; två teamfiler saknar `DITT PERSPEKTIV` helt · `builder/builder.js:980` · `mätt` · ~2 h
 - [ ] **C4** `examples/` är facit men saknar Perspektiv, Leverans och "Klart när" · `examples/**/test-output.md` · `mätt` · ~2 h
 - [ ] **K4** Bygg-rutten är en oautentiserad LLM-proxy och en väg tillbaka för uppsagda · `functions/api/ai.js:252-293` · `läst i koden` · ~4–6 h
 
@@ -58,6 +57,29 @@ Rättade direkt i filerna (rent git-träd). Raderna står i terminalsvaret.
   en vän. Den var känd och uppmätt sedan 15 aug, uppskattad till fem minuter,
   och blev ändå liggande under sex punkter med lägre insats. Ett fel som gör
   produkten stum lagas samma pass som det hittas — det köar inte.
+
+- [x] **C6** Inget golv på systemprompternas innehåll — löst 2026-08-16.
+  `TEAM_SCHEMA` garanterade att fältet `system` fanns och var en sträng, men
+  inte vad som stod i den. Uppmätt: två av fjorton teamfiler saknade
+  `DITT PERSPEKTIV` i **samtliga** agenter, och ingenting sa ifrån.
+
+  Golvet ligger nu på två ställen. `kontrolleraSystemprompter()` i
+  `builder/builder.js` fäller sammanställningen med ett läsbart fel och samma
+  retry-väg som redan fanns; ett test i `test/teams.mjs` håller det som redan
+  ligger i repot till samma ribba, så handskrivet och nygenererat bedöms lika.
+
+  Golvet kräver `DITT PERSPEKTIV` och `LEVERANS`, inte alla tio sektionerna i
+  `PORTAL_RULES`. Perspektivet är det som gör att två agenter med närliggande
+  uppgifter svarar olika — utan det går kvalitetschecklistans "två agenter i
+  samma team delar inte perspektiv" inte att uppfylla ens i teorin. Leveransen
+  bär "Klart när"-punkterna. De övriga gör svaret bättre; de två gör det till
+  ett team. Ett golv som kräver allt hade gjort bygget ostabilt av kosmetiska
+  skäl, och ett golv som aldrig fäller är ingen kontroll utan en förhoppning.
+
+  `accountant.js` (3 agenter) och `coachonline.js` (4) är kompletterade för
+  hand — med **olika** perspektiv per agent, eftersom sju likalydande stycken
+  hade varit samma fel i ny förpackning. Testet skrevs först och fällde på
+  exakt de två filerna innan de lagades. 112 tester gröna.
 
 - [x] **K5** `allowAttempt` hade en kapplöpning — löst 2026-08-16. SELECT följt
   av UPDATE lämnade ett fönster där två samtidiga anrop båda läste samma värde,

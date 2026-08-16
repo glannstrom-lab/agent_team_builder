@@ -80,6 +80,38 @@ for (const file of files.filter((f) => !STRUCTURE_ONLY.has(f))) {
   });
 }
 
+// Golvet på systemprompternas INNEHÅLL (C6). Schemat garanterar att `system`
+// finns och är en sträng; det säger ingenting om vad som står i den. Uppmätt
+// 2026-08-15: två av fjorton teamfiler saknade DITT PERSPEKTIV i samtliga
+// agenter, och ingenting sa ifrån.
+//
+// De två sektionerna nedan är inte godtyckligt valda ur PORTAL_RULES tio:
+//
+//   DITT PERSPEKTIV är det som gör att två agenter med närliggande uppgifter
+//   svarar olika. Utan den går kvalitetschecklistans "två agenter i samma team
+//   delar inte perspektiv" inte att uppfylla ens i teorin.
+//
+//   LEVERANS bär "Klart när"-punkterna, alltså det kunden bedömer ett färdigt
+//   svar mot.
+//
+// Samma golv kontrolleras i builder/builder.js (`kontrolleraSystemprompter`)
+// vid generering. Här kontrolleras det som redan ligger i repot — nygenererat
+// och handskrivet ska hålla samma ribba.
+const SEKTIONSGOLV = ["DITT PERSPEKTIV", "LEVERANS"];
+
+for (const file of files) {
+  test(`${file} har perspektiv och leverans i varje systemprompt`, () => {
+    const team = loadTeam(file);
+    for (const agent of team.agents) {
+      const sys = String(agent.system || "").toUpperCase();
+      for (const sektion of SEKTIONSGOLV) {
+        assert.ok(sys.includes(sektion),
+          `agent ${agent.id} saknar ${sektion} i systemprompten`);
+      }
+    }
+  });
+}
+
 // Produktens farligaste felläge: en agent som hittar på kunddata och lägger
 // fram den som avläst fakta (namngivna personer, möten, "jag har gått igenom
 // kalendern"). Orsaken var promptdesign — LEVERANS krävde en ifylld artefakt

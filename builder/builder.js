@@ -950,6 +950,7 @@ ${schema}`;
     err.stage = "structure";
     throw err;
   }
+  kontrolleraSystemprompter(team);
   team.slug = slugify(team.slug || intake.company);
   // Inget `language`-fält. Det stod hårdkodat till "sv" och lästes inte av en
   // enda rad kod någonstans — ett påstått val som varken var ett val eller
@@ -966,6 +967,57 @@ ${schema}`;
   return team;
 }
 
+
+// ── golv på systemprompternas INNEHÅLL ────────────────────────────────────
+//
+// `TEAM_SCHEMA` garanterar att fältet `system` finns och är en sträng. Det
+// säger ingenting om vad som står i den. Uppmätt 2026-08-15: två av fjorton
+// teamfiler i `portal/teams/` saknade `DITT PERSPEKTIV` i samtliga agenter —
+// alltså genererades de utan att någon märkte det, och ingenting sa ifrån.
+//
+// Varför just de här två sektionerna, och inte alla tio i PORTAL_RULES:
+//
+//   DITT PERSPEKTIV är det som gör att två agenter med närliggande uppgifter
+//   svarar OLIKA. Utan den är en agent utbytbar mot vilken annan som helst i
+//   samma team, och kvalitetschecklistans "två agenter i samma team delar
+//   inte perspektiv" går inte att uppfylla ens i teorin.
+//
+//   LEVERANS bär "Klart när"-punkterna. Utan dem resonerar agenten fritt i
+//   stället för att leverera mot något, och kunden kan inte avgöra om ett
+//   svar är färdigt.
+//
+// De övriga sektionerna gör svaret bättre; de här två gör det till ett team.
+// Därför fäller bara de två — ett golv som kräver allt hade gjort bygget
+// ostabilt av kosmetiska skäl, och ett golv som inte fäller alls är ingen
+// kontroll utan en förhoppning.
+const OBLIGATORISKA_SEKTIONER = [
+  { namn: "DITT PERSPEKTIV", varför: "utan den blir agenten utbytbar mot de andra" },
+  { namn: "LEVERANS", varför: "utan den finns inga \"Klart när\"-punkter att leverera mot" },
+];
+
+function kontrolleraSystemprompter(team) {
+  const brister = [];
+  for (const a of team.agents) {
+    const sys = String((a && a.system) || "");
+    for (const s of OBLIGATORISKA_SEKTIONER) {
+      // Skiftlägesokänsligt: modellen skriver ibland "Ditt perspektiv".
+      // Rubriken måste finnas, men får se ut hur som helst runtomkring.
+      if (!sys.toUpperCase().includes(s.namn)) {
+        brister.push(`${a.name || a.id || "en agent"}: saknar ${s.namn} — ${s.varför}`);
+      }
+    }
+  }
+  if (!brister.length) return;
+
+  console.warn("[builder] systemprompter under golvet:", brister);
+  const err = new Error(
+    "Agenternas systemprompter blev ofullständiga:\n\n" + brister.map((b) => "• " + b).join("\n") +
+    "\n\nResearch och förslag finns kvar — försök sammanställa igen. " +
+    "Det brukar gå på andra försöket."
+  );
+  err.stage = "structure";
+  throw err;
+}
 
 // Schemat som modellen MÅSTE följa. Strict-läget kräver att varje objekt har
 // additionalProperties: false och att alla fält står i required — det är just
