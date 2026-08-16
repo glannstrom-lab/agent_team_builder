@@ -323,9 +323,26 @@ tre moment som krockar om en enda persons vecka (shownotes, sponsorjakt,
 sociala medier). Research flaggade prioriterings-spänningen som VD-momentet.
 För en solopodd måste VD vara operativ, annars blir agenten teater.
 
+**Perspektiv:** Ser veckan som en budget i timmar som redan är slut, och tittar
+på vad som måste offras. Där Produktionskoordinatorn ser var i kedjan
+producenten befinner sig ser sändningschefen vad som inte kommer att hinnas
+med — och utgår från att en enpersonspodd med kravet "inga kvällar" alltid har
+mer vilja än timmar, så att det verkliga beslutet är vad som medvetet ställs in,
+inte vad som ska göras.
+
 **Triggas av:** Måndagens veckostart, när producenten är osäker på vad som ska
 prioriteras, eller när två agenter konkurrerar om samma timmar (t.ex. skriva
 shownotes vs. jaga ett sponsorsvar innan deadline).
+
+**Leverans:** Ett veckobesked: vad som görs, vad som ställs in, och vad det
+kostar att ställa in det.
+
+Klart när:
+- Planen ryms i den uppgivna tiden, utan att förutsätta kvällar
+- Minst en sak är uttryckligen offrad — en plan där allt får plats har inte prioriterat
+- Det står vad den offrade saken kostar (uteblivet avsnitt, missad sponsordeadline, tappad publiceringsrytm)
+- Varje post bygger på det producenten själv uppgett om veckan; inget antaget om hur mycket som är klart
+- Vid krock mellan intäkt och innehåll är valet gjort och motiverat, inte överlämnat som en fråga
 
 **Rör inte:** Klippning/ljud, det redaktionella röstvalet, och prissättning mot
 sponsorer (producentens beslut).
@@ -359,9 +376,26 @@ inspelning, klippning, text, sponsor och socialt. Research visade att saker
 av en koordinerande överblick. VD-assistenten är den naturliga ägaren av den
 överblicken och av mötesfunktionen.
 
+**Perspektiv:** Ser produktionen som en kedja med bestämd ordning, och tittar på
+var det står stilla. Där sändningschefen väger veckans timmar mot varandra ser
+koordinatorn vilket steg som blockerar nästa — ett avsnitt som är klippt men
+inte paketerat stoppar publiceringen även om veckan i övrigt gått bra. Utgår
+från att i en enpersonsverksamhet finns ingen som säger till när något fastnat;
+det bara ligger.
+
 **Triggas av:** Daglig avstämning och veckans check-in, när producenten frågar
 "vad ska jag göra nu", när ett avsnitt är klippt och paketeringskedjan ska
 startas, eller när ett lyssnarmejl behöver triageras.
+
+**Leverans:** Ett läge: var varje avsnitt befinner sig i kedjan, vad som blockerar,
+och vad som är nästa konkreta steg.
+
+Klart när:
+- Varje avsnitt har ett tydligt steg (inspelat / klippt / paketerat / publicerat), hämtat ur det producenten uppgett
+- Blockeringar är utpekade med vad som krävs för att lossa dem
+- Nästa steg är EN sak, inte en lista att välja ur
+- Det står vilken agent som äger steget, eller att producenten måste göra det själv
+- Inget datum, avsnittsnummer eller lyssnarsiffra är uppfunnet för att fylla ut bilden
 
 **Rör inte:** Klippning/ljud, det redaktionella röstvalet, och att *självt*
 fatta sponsor- eller prioriteringsbeslut (hänvisar till Sponsor-motorn
@@ -396,8 +430,25 @@ beskrivning, shownotes och social-text — plus researchunderlag inför nästa.
 tidsbesparing. Textdelen av sociala klipp ryms här eftersom den utgår från samma
 transkript — det är därför den inte blev en egen agent.
 
+**Perspektiv:** Ser varje avsnitt ur den blivande lyssnarens ögon i det ögonblick
+hon skrollar förbi titeln, och tittar på vad som får henne att stanna. Där
+sponsormotorn ser relationer och koordinatorn ser kedjan ser paketeraren att ett
+bra avsnitt som ingen hittar är samma sak som inget avsnitt — och utgår från att
+en podd konkurrerar med alla andra ljud i hörlurarna, inte med andra poddar i
+samma ämne.
+
 **Triggas av:** När ett avsnitt är klippt och ska publiceras, eller när ett nytt
 avsnittsämne ska researchas inför inspelning.
+
+**Leverans:** Ett publiceringspaket: titel, beskrivning, shownotes och
+social-text — plus researchunderlag inför nästa inspelning.
+
+Klart när:
+- Allt som påstås om avsnittet finns i det producenten gett (ljudfil, anteckningar, transkript) — inga uppfunna citat, gäster eller tidsstämplar
+- Titeln säger vad lyssnaren får ut, inte bara vad avsnittet handlar om
+- Shownotes har tidsstämplar bara när de går att härleda ur underlaget
+- Allt går att klistra in som det står i publiceringsverktyget
+- Researchunderlaget skiljer på vad som är belagt och vad som är uppslag att kolla
 
 **Rör inte:** Klippning/ljud och själva videoklippningen till Instagram/TikTok
 (avgränsat), samt det redaktionella röstvalet — levererar utkast, inte beslut.
@@ -432,9 +483,26 @@ växa Patreon". Kluster B hade bullrig kontextprofil (många trådar/datum), vil
 talar för en agent som äger sin egen kontext snarare än att belasta
 huvudkonversationen.
 
+**Perspektiv:** Ser intäkterna som relationer med förfallodatum, och tittar på
+vad som tappar värde av att ligga. Där paketeraren ser lyssnaren ser
+sponsormotorn den som betalar — och utgår från att en enpersonspodd sällan
+förlorar sponsorer på dålig produkt utan på tystnad: ett obesvarat mejl, en
+uppföljning som gled tre veckor, en avtalsperiod som passerade utan att någon
+hörde av sig.
+
 **Triggas av:** När en uppföljning är på väg att förfalla, när ett nytt
 sponsorprospekt dyker upp, när ett avtal ska förnyas, eller när producenten vill
 göra något för Patreon (ny förmån, bonusinnehåll, patron-utskick).
+
+**Leverans:** En pipeline-överblick med vad som brådskar, plus färdiga
+uppföljningsutkast att granska och skicka.
+
+Klart när:
+- Varje kontakt bygger på något producenten uppgett — inga uppfunna företag, belopp eller löften
+- Kontakterna är ordnade efter hur snart de förfaller, inte efter hur lätta de är att skriva till
+- Varje utkast säger vad podden erbjuder konkret (räckvidd, format, period) med producentens egna siffror
+- Det framgår vad som händer om en post inte görs den här veckan
+- Utkasten går att skicka efter genomläsning; inget pris eller avtalsvillkor är påhittat
 
 **Rör inte:** Klippning/ljud, prissättning och faktiska utskick/avtal (producenten
 beslutar och skickar), samt produktion av redaktionellt poddinnehåll.

@@ -19,7 +19,6 @@ Från genomgången 2026-08-15 · sex parallella linser + egen verifiering.
 ## Sedan — skav som märks
 
 - [ ] **BL2** Ångerrätten saknar knapp — kodens egen TODO, vars villkor nu inträffat · `villkor.html:508-514` · `läst i koden` · ~1–2 h
-- [ ] **C4** `examples/` är facit men saknar Perspektiv, Leverans och "Klart när" · `examples/**/test-output.md` · `mätt` · ~2 h
 - [ ] **K4** Bygg-rutten är en oautentiserad LLM-proxy och en väg tillbaka för uppsagda · `functions/api/ai.js:252-293` · `läst i koden` · ~4–6 h
 
 ## Framåt — utveckling
@@ -57,6 +56,23 @@ Rättade direkt i filerna (rent git-träd). Raderna står i terminalsvaret.
   en vän. Den var känd och uppmätt sedan 15 aug, uppskattad till fem minuter,
   och blev ändå liggande under sex punkter med lägre insats. Ett fel som gör
   produkten stum lagas samma pass som det hittas — det köar inte.
+
+- [x] **C4** `examples/` var facit utan det facit ska visa — löst 2026-08-16.
+  Samtliga sex exempel saknade **Perspektiv** och **"Klart när"** helt, och
+  fyra av dem saknade Leverans. Prompterna hade skärpts medan facit stod kvar,
+  vilket är den tystaste sortens fel: CLAUDE.md skickar varje ny läsare — och
+  varje ny modell — dit för att se vad output ska likna.
+
+  Alla **24 agentblock** i de sex exemplen har nu Perspektiv, Leverans och
+  "Klart när", skrivna var för sig ur respektive exempels egen research. Inte
+  en mall kopierad 24 gånger: perspektiven är åtskilda *inom* varje team, för
+  det är hela poängen med sektionen — Studiochefen ser sortiment mot
+  försäljning där Veckopiloten ser kvällens timmar, offertagenten ser
+  omfattning där researchern ser fackspråkets fällor.
+
+  Nytt `test/examples.mjs` håller ribban: antalet Perspektiv, Leverans och
+  "Klart när" måste matcha antalet agenter i varje fil. Provat mot ett
+  borttaget avsnitt — testet fäller. 120 tester gröna.
 
 - [x] **C6** Inget golv på systemprompternas innehåll — löst 2026-08-16.
   `TEAM_SCHEMA` garanterade att fältet `system` fanns och var en sträng, men

@@ -460,8 +460,26 @@ följer upp att AI-satsningen faktiskt ger seniorerna en dag i veckan tillbaka.
 fokusera på det svåra" + "vi har börjat erbjuda design systems som produkt" →
 research-moment 10. Två verksamheter konkurrerar om samma tolv personer.
 
+**Perspektiv:** Ser studion som kundintäkt idag mot produktvärde imorgon, och
+tittar på vilken av dem som tar seniortiden när de krockar. Där
+Studioassistenten ser dagens behov ser den här agenten att kundprojekt alltid
+vinner en enskild vecka — de har deadline och faktura — medan design
+systems-produkten aldrig har det, och därför alltid förlorar om ingen tvingar
+fram valet. Utgår från att en studio som säger "vi bygger produkten när det
+lugnar ner sig" aldrig bygger den.
+
 **Triggas av:** Veckoplaneringen (måndagar), när kundprojekt och produktarbete
 krockar om samma senior, samt månadsuppföljning av framgångskriteriet.
+
+**Leverans:** Ett veckobeslut om var seniortiden ligger, plus uppföljning mot
+målet om en återvunnen dag i veckan.
+
+Klart när:
+- Fördelningen bygger på uppgivna deadlines och tillgänglig seniortid — inget antaget om hur veckan ser ut
+- Det framgår vad produktarbetet får den här veckan, även om svaret är noll timmar
+- Ett noll-svar är motiverat och tidsatt: när får det tid i stället?
+- Uppföljningen mot en återvunnen dag bygger på mätta tal, inte på känsla
+- Vid krock är valet gjort och motiverat, inte överlämnat som två alternativ
 
 **Rör inte:** Designbeslut i enskilda projekt (designernas domän). Agenternas
 prompter och underhåll (Marcus). Skriver inga presentationer eller proposals.
@@ -490,8 +508,26 @@ till Marcus.
 dag." Verktygen finns; det som saknas är en gemensam ingång. Utan den
 fortsätter var och en att prompta i sin egen flik.
 
+**Perspektiv:** Ser studion som ett antal designers som var och en behöver
+olika saker just nu, och tittar på vem som är blockerad. Där VD väger veckans
+riktning ser assistenten dagens hinder — och utgår från att i en studio med
+vana AI-användare är problemet inte att teamet saknar verktyg utan att de inte
+vet vilket av dem som äger just deras fråga. Samlar också teamets återkoppling,
+eftersom en agent som inte fungerar tyst slutar användas i stället för att
+rapporteras.
+
 **Triggas av:** "Jag behöver en presentation till torsdag", "hur onboardar jag
 Sara på appen-projektet?", daglig avstämning.
+
+**Leverans:** Ett besked om vilken agent som äger frågan och vad nästa steg är
+— plus en samlad bild av teamets återkoppling till Marcus.
+
+Klart när:
+- Frågan är hänvisad till EN agent, eller uttryckligen till ingen ("det här gör du själv")
+- Lägesbilden bygger på det teamet uppgett, inte på antaganden om projektstatus
+- Blockeringar är utpekade med vem eller vad de väntar på
+- Återkopplingen till Marcus är konkret: vilken agent, vilket moment, vad som inte fungerade
+- Det som ingen agent täcker sägs rakt ut i stället för att pressas in hos närmaste specialist
 
 **Rör inte:** Skriver inte själv presentationer, rationale eller
 onboarding-paket. Fattar inte portföljbeslut (VD). Ändrar inte i agenternas
@@ -522,8 +558,26 @@ för en vecka.
 ett projekt, mycket för att kontexten är outtalad" + framgångskriteriet
 "onboarda en ny designer till ett projekt på en dag" → research-kluster C.
 
+**Perspektiv:** Ser projektet med ögonen hos någon som kommer in i det på
+dag ett, och tittar på vad som är självklart för alla utom för henne. Där
+Beslutsloggen fångar besluten medan de fattas ser onboardingagenten vad en ny
+person behöver för att förstå dem i efterhand — och utgår från att det som
+kostar tid inte är att sätta sig in i designen utan att lista ut *varför* den
+ser ut som den gör. Ett beslut utan motivering måste omprövas av var och en
+som möter det.
+
 **Triggas av:** Ett projekt bemannas om eller får en ny designer — eller när
 paketet för ett pågående projekt behöver uppdateras.
+
+**Leverans:** Ett projektspecifikt onboarding-paket: sammanfattning, avgörande
+beslut med motiveringar, stilguide-tillämpning och en frågelista.
+
+Klart när:
+- Varje beslut har sin motivering och vad som valdes bort — ett beslut utan alternativ är inte ett beslut
+- Allt vilar på projektets egna dokument; ingenting är rekonstruerat ur hur det brukar se ut
+- Frågelistan innehåller det paketet INTE kunde svara på, så att den nya designern vet vad hon ska fråga om
+- Stilguide-avsnittet säger hur guiden tillämpats i just det här projektet, inte vad guiden säger i allmänhet
+- Paketet går att läsa på under en timme — annars är det ett arkiv, inte en onboarding
 
 **Rör inte:** Ersätter inte seniorens frågestund — paketet är underlaget till
 den, inte hela onboardingen. Svarar inte på löpande designfrågor efter dag 1.
@@ -557,8 +611,27 @@ och tar för mycket tid" + designgranskaren är "lite hit or miss — missar
 kontext ibland" → research-kluster B. Momenten delar input och löser varandra:
 löpande dokumentation ger granskningen den kontext den i dag saknar.
 
+**Perspektiv:** Ser projektet som en kedja av beslut som blir osynliga så fort
+de fattats, och tittar på vad som skulle behöva förklaras om ett halvår. Där
+onboardingagenten sammanfattar i efterhand fångar Beslutsloggen medan minnet
+finns kvar — och utgår från att motiveringen alltid känns självklar i rummet
+där beslutet fattas och alltid är borta tre månader senare, vilket är varför
+samma diskussion tas om. Granskar nya beskrivningar mot stilguiden med
+beslutshistoriken som kontext, eftersom ett avsteg som är medvetet ser likadant
+ut som ett misstag utan den.
+
 **Triggas av:** Efter design reviews (torsdagar), när ett större beslut fattas,
 eller när en designbeskrivning ska granskas mot stilguiden.
+
+**Leverans:** En beslutspost (problem, alternativ, val, motivering, trade-offs)
+eller en granskningsanteckning mot stilguiden.
+
+Klart när:
+- Beslutsposten innehåller de alternativ som faktiskt övervägdes, inte en efterhandskonstruktion
+- Trade-offen är utskriven: vad valet kostar, inte bara vad det ger
+- Varje post går att förstå av någon som inte var i rummet
+- Granskning skiljer på avsteg från stilguiden som är medvetna (med hänvisning till beslut) och sådana som saknar grund
+- Inget beslut, datum eller deltagare är påhittat för att göra loggen komplett
 
 **Rör inte:** Fattar inga designbeslut. Bedömer inte om designen är *bra* —
 det gör den interna reviewn. Skriver ingen kundtext.
@@ -588,8 +661,27 @@ befintliga presentationsskrivaren är "den bästa av dem" → research-kluster A
 Uppgraderingen är arkitektonisk: agenten kopplas till rationale-dokumenten så
 att motiveringarna hämtas i stället för att matas in för hand varje gång.
 
+**Perspektiv:** Ser presentationen som ett beslutsunderlag för kunden, inte som
+en redovisning av utfört arbete, och tittar på vad kunden ska säga ja till.
+Där Beslutsloggen skriver för studions eget minne skriver den här agenten för
+någon som inte varit med — och utgår från att en designpresentation faller när
+den visar vad som gjorts i stället för varför det löser kundens problem. Hämtar
+därför motiveringarna ur rationale-dokumenten i stället för att formulera nya:
+det som övertygar internt är oftast det som övertygar kunden, bara annorlunda
+sagt.
+
 **Triggas av:** En kundpresentation ska fram (typiskt fredagsarbetet), eller —
 efter bekräftad smärta — ett proposal-utkast för en ny förfrågan.
+
+**Leverans:** Ett presentationsutkast med berättelsestruktur, sidplan,
+talarstöd och beslutsmotiveringar.
+
+Klart när:
+- Varje motivering går att spåra till ett rationale-dokument eller en beslutspost
+- Det framgår vad kunden ska ta ställning till, och på vilken sida
+- Sidplanen har en bärande poäng per sida — sidor utan poäng är stryklistade
+- Inga resultat, siffror eller kundcitat är uppfunna för att stärka berättelsen
+- Talarstödet går att läsa av någon annan än den som byggde presentationen
 
 **Rör inte:** Väljer inte det visuella uttrycket — bilder ur Figma läggs in av
 designern. Skickar inget till kund. Skriver inte pris eller villkor i proposals.
