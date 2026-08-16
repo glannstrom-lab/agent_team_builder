@@ -10,14 +10,14 @@
   // Klienten kanner inte langre nagon leverantors-URL. Allt gar till /api/ai;
   // vart eget lager ager valet av leverantor och modell.
 
-  // ── EN MODELL, INGA ALTERNATIV (beslutat 2026-08-05) ──────────────────
-  // Hela produkten kör DeepSeek V4 Flash via OpenRouter. Det är ~1/30 av
-  // Opus pris ($0,14/$0,28 per miljon tokens mot $5/$25) och det som gör
-  // både provmånaden och den nyckelfria nivån möjliga att prissätta.
+  // ── EN MODELL, INGA ALTERNATIV (beslutat 2026-08-05, bytt 2026-08-06) ──
+  // Hela produkten kör GPT-OSS 120B via OpenRouter ($0,037/$0,170 per miljon
+  // tokens). Bytet från DeepSeek V4 Flash gjordes efter mätning över hela
+  // pipelinen: 9,1 s mot 241 s och 0,025 kr mot 0,076 kr per bygge — och
+  // DeepSeek klarade inte sammanställningsstegets stora JSON alls.
   //
   // Konsekvenser att inte glömma:
-  //  - Anthropic-nycklar (sk-ant-) fungerar INTE längre. Enda giltiga
-  //    nyckel är sk-or- från OpenRouter.
+  //  - Kunden har ingen egen nyckel. Allt går via /api/ai på vår.
   //  - Modellvalet är borta ur gränssnittet. Lägg inte tillbaka en
   //    dropdown utan att först ändra prisantagandena i index.html och
   //    villkor.html — de bygger på den här kostnadsnivån.
@@ -90,8 +90,9 @@
   const RETRY_DELAYS = [2000, 5000];
 
   // Strömmar ett svar och anropar onDelta(text) för varje textbit.
-  // Väljer Anthropic- eller OpenRouter-format utifrån nyckelns prefix.
-  // opts: { apiKey, model, system, messages, maxTokens?, signal?, onDelta }
+  // En väg (/api/ai), ett format (OpenAI-SSE). opts.model och opts.apiKey
+  // ignoreras med flit — anropsställena får fortsätta skicka dem.
+  // opts: { system, messages, maxTokens?, json?, schema?, team?, signal?, onDelta, onUsage? }
   async function stream(opts) {
     const { system, messages, maxTokens, signal, onDelta, json } = opts;
     // opts.model och opts.apiKey ignoreras med flit. Anropsställena får
@@ -144,18 +145,22 @@
       if (!data || data === "[DONE]") return;
       try {
         const evt = JSON.parse(data);
-        if (openrouter) {
-          // OpenAI-format: {choices:[{delta:{content}}]} — vissa rader är tomma keep-alives.
-          const delta = evt.choices && evt.choices[0] && evt.choices[0].delta;
-          if (delta && typeof delta.content === "string" && delta.content) onDelta(delta.content);
-          else if (evt.error) throw new Error(evt.error.message || "Strömningsfel");
-          if (evt.usage) { used.input = evt.usage.prompt_tokens || 0; used.output = evt.usage.completion_tokens || 0; }
-        } else {
-          if (evt.type === "content_block_delta" && evt.delta && evt.delta.type === "text_delta") onDelta(evt.delta.text);
-          else if (evt.type === "error") throw new Error((evt.error && evt.error.message) || "Strömningsfel");
-          else if (evt.type === "message_start" && evt.message && evt.message.usage) used.input = evt.message.usage.input_tokens || 0;
-          else if (evt.type === "message_delta" && evt.usage) used.output = evt.usage.output_tokens || used.output;
-        }
+        // ETT format. /api/ai skickar uppströmsbytena vidare orörda
+        // (functions/api/ai.js:599), och uppströms är OpenRouter — alltså
+        // OpenAI-format: {choices:[{delta:{content}}]}, där vissa rader är
+        // tomma keep-alives. Proxyns egna felramar har formen
+        // {error:{message}} och fångas av samma gren.
+        //
+        // Den gamla if/else-förgreningen mot Anthropic-format läste en
+        // variabel `openrouter` som togs bort när nyckelvägen städades
+        // (916166e). Kvar blev ett ReferenceError på FÖRSTA strömmade
+        // raden: varje svar dog innan ett tecken nådde skärmen, i både
+        // builder och portal. Lägg inte tillbaka en förgrening här utan
+        // att först ge den något att förgrena på.
+        const delta = evt.choices && evt.choices[0] && evt.choices[0].delta;
+        if (delta && typeof delta.content === "string" && delta.content) onDelta(delta.content);
+        else if (evt.error) throw new Error(evt.error.message || "Strömningsfel");
+        if (evt.usage) { used.input = evt.usage.prompt_tokens || 0; used.output = evt.usage.completion_tokens || 0; }
       } catch (e) {
         if (e instanceof SyntaxError) return; // ofullständig rad — vänta på nästa chunk
         throw e;

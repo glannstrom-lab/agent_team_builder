@@ -218,10 +218,13 @@ betalande ett eget, högre tak.
 
 ### 3.2 Taket räknar anrop, inte pengar
 
-4 000 anrop × (50 000 tecken in + 16 384 tokens ut) ≈ **180 kr/dygn, ~5 500 kr
+4 000 anrop × (200 000 tecken in + 16 384 tokens ut) ≈ **195 kr/dygn, ~5 900 kr
 i månaden**. I JSON-läge dubbelt, eftersom `jsonSvar()` gör två uppströmsanrop
 som räknas som ett (`ai.js:398–418`). Det finns inget månadstak och ingen
 larmning. Per IP hjälper inte: IPv6-rotation gör den hinken verkningslös.
+
+*(Rättat 2026-08-15: här stod 50 000 tecken. `MAX_INPUT_CHARS` har varit
+200 000 i hela filens historik — siffran var fel redan när den skrevs.)*
 
 Att göra: sätt det globala taket på tokens/kostnad i stället för antal anrop —
 `ai_budget` lagrar redan `input_tok` och `output_tok`
@@ -351,25 +354,29 @@ De fem mest värdefulla testerna att skriva, med buggen var och en hade fångat:
 |---|---|
 | Betalväggens avgörande (bryt ut logiken ur `ai.js:240–300`) | Att en klient som utelämnar slugen faller till bygge, och att betald plan aldrig möter spärren |
 | Schema mot prompt (`TEAM_SCHEMA` ⟷ promptsträngen) | `firstProject`/`seasons`/`triggers`-fyndet ovan, och `starters`-fyndet som redan hänt |
-| SHELL ⟷ `CACHE` i `portal/sw.js` | Fyra commits ändrade SHELL-filer utan att röra `sw.js`: `b25c973`, `660de77`, `022811b`, `406c6ca` |
+| SHELL ⟷ `CACHE` i `portal/sw.js` | **18 av 37** SHELL-ändrande commits rörde inte `sw.js` (omräknat 2026-08-15; här stod tidigare "fyra"). Värst: v7 stod still i 18 dagar genom hela designsystembytet |
 | Byggartefakt (kör `build-dist.mjs` till temp) | Tappad prompt-fil (Buildern dör tyst mitt i ett kundbygge) — och motsatsen: `functions/` publicerad statiskt |
 | Prisbelopp på tre ställen | Driften mellan `index.html`, `villkor.html` och `TIERS`. Dagens test kollar bara nivå*namn*, inte belopp |
 
 `.github/workflows/ci.yml` med `npm ci && npm test && npm run build` är den
 enskilt största vinsten — den gör alla fem verksamma i stället för frivilliga.
 
-**Ingen felövervakning finns.** `functions/` innehåller 20 `console.error`, bland
-dem `ai.js:610`: *"KREDITEN ÄR SLUT hos OpenRouter — fyll på, tjänsten står
-stilla"*. Den raden når ingen. `ai_usage`/`ai_budget` bokför bara lyckade anrop,
-så ett 502-regn ser ut som en lugn dag. Tar krediten slut kl. 02 en lördag
-upptäcks det när en kund mejlar.
+**Ingen felövervakning finns.** `functions/` innehåller 25 `console`-anrop, bland
+dem `ai.js:637`: *"KREDITEN ÄR SLUT hos OpenRouter — fyll på, tjänsten står
+stilla"*. Den raden når ingen. Tar krediten slut kl. 02 en lördag upptäcks det
+när en kund mejlar.
+
+*(Rättat 2026-08-15: här stod att `ai_usage`/`ai_budget` bara bokför lyckade
+anrop. Fel — `bokför(null)` räknar upp `calls` även vid nätverksfel
+(`ai.js:510`) och HTTP-fel från uppströms (`ai.js:522`). Ett 502-regn syns
+alltså i antalen, men utan tokens och utan larm.)*
 
 Billigaste larmet: en `ai_errors`-tabell (`day`, `code`, `count`) med upsert i
 felvägarna kring `ai.js:436`, `489`, `603`, plus en `/api/health` som en extern
 pinger hämtar — och mejl via samma Resend-uppsättning som redan finns i
 `auth/_lib.js:251–271`. Återanvänder befintlig infrastruktur, kostar ingenting.
 
-**Sw-bumpen är korrekt i dag** (`portal/sw.js` står på v22, bumpad i samma commit
+**Sw-bumpen är korrekt i dag** (`portal/sw.js` står på v26, bumpad i samma commit
 som senaste `app.js`-ändringen) men rutinen är manuell och har redan kostat
 felsökningsrundor. En rad i `build-dist.mjs` som hashar SHELL-filerna in i
 `CACHE` tar bort risken permanent.
@@ -386,11 +393,10 @@ felsökningsrundor. En rad i `build-dist.mjs` som hashar SHELL-filerna in i
   samma anda: `/api/ai` kan fortfarande svara 402 mitt i en session om planen
   ändras medan fliken står öppen — då vore det rätt att byta till den låsta
   vyn i stället för att visa en felbubbla.
-- **Fair use-taket förklaras bort.** `atb-claude.js:69` skriver över *alla*
-  429-svar med "Vänta en minut och försök igen" — inklusive serverns korrekta
-  *"Ni har nått månadens tak på 1 000 svar"* (`ai.js:292`). Kunden får rådet att
-  vänta en minut på en spärr som sitter till nästa månad. Behåll serverns text
-  när anropet går via proxyn, precis som redan görs för 401.
+- ~~**Fair use-taket förklaras bort.**~~ **Åtgärdat** (konstaterat 2026-08-15).
+  Overriden i `atb-claude.js:56–63` triggar numera bara när proxyn inte svarat
+  med någon text alls (`msg === "Fel 429"`); annars vinner serverns egen
+  formulering. Månadstakets text når alltså fram.
 - **Arbetsytan är överlastad vid första besöket** — kodens egen kommentar säger
   det (`app.js:1745–1747`). `wsCollapsed()` döljer fyra paneler, men
   veckorutinerna döljs inte (`app.js:1263–1278`) och sidfotens sex knappar,
@@ -442,10 +448,12 @@ felsökningsrundor. En rad i `build-dist.mjs` som hashar SHELL-filerna in i
 
 ### Texter som säger fel saker
 
-- **Nyckeltext kvar på nio ställen** utöver 1.1–1.3: `portal/index.html:7`
+- **Nyckeltext kvar** utöver 1.1–1.3: `portal/index.html:7`
   (meta description *"Din nyckel, din data, din webbläsare"* — syns i
-  länkförhandsvisningar), `app.js:1397`, `1689`, `2656`, `3552`,
-  `site/en-vecka.html:200`, och **varje branschsida** via `verticals/app.js:89`
+  länkförhandsvisningar), `app.js:1516` (punktlistan i "Töm allt" lovar radera
+  API-nyckeln) och `app.js:2754` (delningsrutan säger *"Mottagaren använder sin
+  egen nyckel"*), `site/en-vecka.html:200`, och **varje branschsida** via
+  `verticals/app.js:89`
   (*"Teamet kör på er egen AI-nyckel — normalt 2–4 kr i månaden"* — både kravet
   och beloppet överspelat).
 - **Tidsangivelserna spretar över fem värden**: "femton minuter"

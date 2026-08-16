@@ -192,8 +192,19 @@ OpenRouter-nyckel (`OPENROUTER_KEY` som Pages-secret). **Fyra tak**
 och dygn för bygget (200), per **team** och månad (1 000 = villkorens fair use)
 och ett globalt dygnstak (4 000). Förbrukningen bokförs i `ai_budget` och
 `ai_usage` (`migrations/0004_ai_proxy.sql`) — antal och tokens, aldrig innehåll.
-Nyckelvägen finns kvar i `atb-claude.js` **och i portalens `renderKeySetup()`**;
-se varningsrutan ovan.
+Nyckelvägen är borta: `renderKeySetup()` finns inte längre i portalen, och
+`atb-claude.js` har bara `/api/ai`.
+
+**Ett svarsformat, ingen förgrening (lagat 2026-08-16).** `/api/ai` skickar
+uppströmsbytena vidare orörda (`functions/api/ai.js:599`) och uppströms är
+OpenRouter — alltså är OpenAI-SSE (`choices[0].delta.content`) det enda format
+klienten kan möta, och proxyns egna felramar (`{error:{message}}`) läses av
+samma gren. Lägg inte tillbaka en förgrening här utan att först ge den något
+att förgrena på: städningen 6 augusti (`916166e`) tog bort variabeln
+`openrouter` men lämnade raden som läste den, och i tio dagar kastade **varje
+strömmat svar** ett `ReferenceError` innan första tecknet nådde skärmen — i
+både builder och portal. Ingen märkte det, för inget test rör klienten och
+ingen felövervakning finns (`ROADMAP.md`, D3).
 
 **Betalväggen (2026-08-06):** rutten har två trafikslag och skillnaden mellan
 dem är hela affären. *Bygget* är gratis, obegränsat och anonymt — säljargumentet.
