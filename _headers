@@ -5,68 +5,29 @@
   X-Content-Type-Options: nosniff
   X-Frame-Options: DENY
 
-# Applagren måste alltid revalideras.
+# ── Här låg en lista med `Cache-Control: no-cache` per fil. Den är borta,
+# ── för den gjorde ingenting. Uppmätt 2026-08-16, i produktion:
 #
-# Cloudflare Pages sätter annars max-age=14400 på statiska filer, och
-# filnamnen är inte innehållshashade. En kund kan därför köra fyra timmar
-# gammal kod efter en deploy — ovanpå service workerns egen cache, som
-# redan gjort flera felsökningsrundor längre än de behövde vara.
+#   Cloudflare Pages ÄGER Cache-Control på statiska tillgångar och skriver
+#   över vad vi än sätter. Varje .js och .css levereras med max-age=14400.
 #
-# no-cache betyder inte "hämta alltid om", utan "fråga alltid först". Svaret
-# blir 304 utan kropp när inget ändrats, alltså några hundra byte. Det är
-# billigare än en enda felsökning av något som redan är rättat.
-# Sälj- och juridiktexten måste också revalideras. Cloudflare Pages cachar
-# HTML i fyra timmar som standard, och 2026-08-06 gjorde det att villkoren och
-# integritetspolicyn visade en modell vi slutat använda medan prislistan redan
-# var uppdaterad. Prislistan och avsnitt 4 i villkoren ska ändras samma dag —
-# det löftet är värdelöst om ena sidan når kunden fyra timmar efter den andra.
-/index.html
-  Cache-Control: no-cache
-
-/villkor.html
-  Cache-Control: no-cache
-
-/integritet.html
-  Cache-Control: no-cache
-
-/portal/app.js
-  Cache-Control: no-cache
-
-/portal/sw.js
-  Cache-Control: no-cache
-
-/portal/teams/*
-  Cache-Control: no-cache
-
-/builder/builder.js
-  Cache-Control: no-cache
-
-/atb-claude.js
-  Cache-Control: no-cache
-
-/avatars.js
-  Cache-Control: no-cache
-
-/verticals/app.js
-  Cache-Control: no-cache
-
-/site/gallery.js
-  Cache-Control: no-cache
-
-# CSS måste revalideras av samma skäl som JS, och glömdes bort när listan
-# skrevs. Designsystemet delar tokennamn mellan tre filer (showcase.css,
-# portal.css, builder.css) — hämtas två av dem färska och den tredje ur en
-# fyra timmar gammal cache blir resultatet inte "gammal design" utan en
-# blandning: halva sidan i nya färger, halva i gamla. Det ser ut som en bugg
-# i designen i stället för som en cache.
-/site/showcase.css
-  Cache-Control: no-cache
-
-/portal/portal.css
-  Cache-Control: no-cache
-
-/builder/builder.css
-  Cache-Control: no-cache
-
-/fonts/fonts.css
-  Cache-Control: no-cache
+# Reglerna i sig träffade — det testades genom att lägga en egen header
+# (X-Regeltest) på samma sökväg, och den kom fram. Det är alltså inte
+# `_headers` som är trasig, och inte sökvägsmönstren: det är just den här
+# headern som inte går att sätta. Allt annat här nedan fungerar.
+#
+# Följden var att en deploy kunde ta fyra timmar på sig att nå en
+# återvändande besökare, samtidigt som kommentaren på den här platsen sa
+# motsatsen. Det är värre än att sakna skyddet — koden ljög om sig själv,
+# och `openrouter is not defined` var svår att lita på som lagad av precis
+# det skälet.
+#
+# Skyddet finns nu där det fungerar oavsett headers: build-dist.mjs sätter
+# `?v=<innehållshash>` på varje js/css-referens i HTML och i service
+# workerns SHELL. Ändras filen ändras URL:en. HTML:en levereras av Pages
+# med max-age=0 och must-revalidate (också uppmätt), så den nya URL:en når
+# besökaren direkt.
+#
+# Lägg alltså inte tillbaka `Cache-Control` här. Ska cachningen ändras är
+# det versionsstämplingen i build-dist.mjs som gäller — eller en Cache Rule
+# i Cloudflares kontrollpanel, som ligger utanför repot.

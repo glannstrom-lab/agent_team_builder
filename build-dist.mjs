@@ -6,8 +6,9 @@
 // i dist/ publicerar API-källkoden som statiska filer.
 // Lämnar templates/, examples/, docs/, migrations/, .claude/, testoutput/ och
 // design/ (designskisser) utanför — utelämnandena är avsiktliga, inte glömska.
-import { rmSync, mkdirSync, cpSync, readFileSync } from "node:fs";
-import { dirname } from "node:path";
+import { rmSync, mkdirSync, cpSync, readFileSync, writeFileSync, readdirSync, statSync, existsSync } from "node:fs";
+import { dirname, join, posix } from "node:path";
+import { createHash } from "node:crypto";
 
 const ITEMS = ["index.html", "avatars.js", "atb-claude.js", "builder", "site", "verticals", "portal", "fonts", "og.png", "sitemap.xml", "robots.txt", "_headers"];
 
@@ -60,6 +61,110 @@ for (const f of PROMPT_FILES) {
   mkdirSync(dirname(`dist/${f}`), { recursive: true });
   cpSync(f, `dist/${f}`);
 }
+// ── versionsstämpling av tillgångar ───────────────────────────────────────
+//
+// Uppmätt 2026-08-16: Cloudflare Pages ÄGER `Cache-Control` på statiska
+// tillgångar och skriver över den. Sökvägsreglerna i `_headers` träffar (mätt
+// med en egen testheader, som kom fram), men just den headern går inte att
+// sätta — varje .js och .css levereras med `max-age=14400` oavsett vad filen
+// säger. Hela `no-cache`-sektionen i `_headers` hade alltså aldrig gjort
+// någonting, och kommentaren där lovade ett skydd som inte fanns.
+//
+// Följden var att en deploy kunde ta fyra timmar på sig att nå en återvändande
+// besökare. Det är samma fyra timmar som gjorde `openrouter is not defined`
+// så svårt att lita på: filen var lagad, men webbläsaren körte den gamla.
+//
+// Fixen är den som fungerar oavsett headers: `?v=<innehållshash>` på varje
+// referens. Ändras filen ändras URL:en, och en URL som aldrig setts förut kan
+// inte ligga i en cache. Ändras filen inte behålls hashen, så cachen används
+// som den ska — det här är inte samma sak som att stänga av caching.
+const HASH_EXT = /\.(js|css)$/;
+const hashCache = new Map();
+function assetHash(distPath) {
+  if (!hashCache.has(distPath)) {
+    hashCache.set(distPath, createHash("sha1").update(readFileSync(distPath)).digest("hex").slice(0, 8));
+  }
+  return hashCache.get(distPath);
+}
+
+// Löser en referens ur en fil till en sökväg i dist/. Root-absoluta URL:er
+// (/fonts/fonts.css) räknas från dist-roten, relativa från filens egen mapp.
+function resolveAsset(fromDir, url) {
+  const rent = url.split(/[?#]/)[0];
+  if (!rent || /^[a-z]+:/i.test(rent) || rent.startsWith("//")) return null; // extern
+  if (!HASH_EXT.test(rent)) return null;
+  const p = rent.startsWith("/") ? join("dist", rent) : join(fromDir, rent);
+  return existsSync(p) && statSync(p).isFile() ? p : null;
+}
+
+function stämpla(url, fromDir) {
+  if (url.includes("?")) return url; // redan versionerad — rör den inte
+  const p = resolveAsset(fromDir, url);
+  return p ? url + "?v=" + assetHash(p) : url;
+}
+
+function allaFiler(dir) {
+  const ut = [];
+  for (const e of readdirSync(dir, { withFileTypes: true })) {
+    const p = join(dir, e.name);
+    if (e.isDirectory()) ut.push(...allaFiler(p));
+    else ut.push(p);
+  }
+  return ut;
+}
+
+const distFiler = allaFiler("dist");
+let stämplade = 0;
+
+for (const fil of distFiler.filter((f) => f.endsWith(".html"))) {
+  const dir = dirname(fil);
+  const före = readFileSync(fil, "utf8");
+  const efter = före.replace(/(\b(?:src|href)=")([^"]+)(")/g, (hel, pre, url, post) => {
+    const ny = stämpla(url, dir);
+    if (ny !== url) stämplade++;
+    return pre + ny + post;
+  });
+  if (efter !== före) writeFileSync(fil, efter);
+}
+
+// Service workern måste stämplas med SAMMA URL:er som sidorna begär, annars
+// precachar den ./app.js medan sidan hämtar ./app.js?v=abc123 — två poster,
+// och den offline-öppnade PWA:n hittar ingen av dem.
+//
+// Cachenamnet får en hash av hela SHELL. Det gör CACHE-bumpen automatisk:
+// tidigare var den ett minneskrav som stod i tre olika filer som en varning,
+// och som ändå glömdes bort. Ändras en SHELL-fil ändras namnet, activate
+// slänger den gamla cachen, och install hämtar om skalet. Själva sw.js
+// versionsstämplas ALDRIG — webbläsaren revaliderar service worker-skriptet
+// utanför HTTP-cachen, och en versionerad URL hade i stället registrerat en ny
+// service worker vid varje bygge.
+const swPath = join("dist", "portal", "sw.js");
+if (existsSync(swPath)) {
+  let sw = readFileSync(swPath, "utf8");
+  const swDir = dirname(swPath);
+  const shellRad = sw.match(/^const SHELL = \[(.*)\];$/m);
+  if (!shellRad) {
+    console.error("\n  ✖  BYGGET STOPPAT — hittade ingen SHELL-rad i portal/sw.js.\n" +
+      "     Versionsstämplingen kan inte hållas i synk med sidorna.\n" +
+      "     Skrivs SHELL om måste mönstret i build-dist.mjs följa med.\n");
+    process.exit(1);
+  }
+  const urls = [...shellRad[1].matchAll(/"([^"]+)"/g)].map((m) => m[1]);
+  const nya = urls.map((u) => stämpla(u, swDir));
+  sw = sw.replace(shellRad[0], "const SHELL = [" + nya.map((u) => JSON.stringify(u)).join(", ") + "];");
+
+  const skalHash = createHash("sha1").update(nya.join("|")).digest("hex").slice(0, 8);
+  const cacheRad = sw.match(/^const CACHE = "([^"]+)";/m);
+  if (!cacheRad) {
+    console.error("\n  ✖  BYGGET STOPPAT — hittade ingen CACHE-rad i portal/sw.js.\n");
+    process.exit(1);
+  }
+  sw = sw.replace(cacheRad[0], `const CACHE = "${cacheRad[1]}-${skalHash}";`);
+  writeFileSync(swPath, sw);
+  console.log(`sw.js: SHELL versionsstämplad, cache = ${cacheRad[1]}-${skalHash}`);
+}
+
+console.log(`versionsstämplade ${stämplade} tillgångsreferenser i HTML`);
 console.log("dist/ byggd med:", ITEMS.join(", "), "+ " + PROMPT_FILES.length + " prompt-filer");
 if (legalBlocked.length) {
   console.warn(

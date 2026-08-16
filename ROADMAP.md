@@ -25,7 +25,6 @@ Från genomgången 2026-08-15 · sex parallella linser + egen verifiering.
 - [ ] **D4** Drift-skripten kör `npx --yes wrangler` utan pinnad version · `package.json:8-15` · `mätt` · ~20 min
 - [ ] **R8** Builderns nedladdning använder inte den lagade `downloadFile()` · `builder/builder.js:1649` · `läst i koden` · ~20 min
 - [ ] **C5** `templates/shared/portal-team.md` har glidit isär från `builder.js` — `language`/`defaultModel` rättade 2026-08-16, raderna 7-8 och 74-85 kvarstår · `läst i koden` · ~20 min
-- [ ] **D2** SHELL-bumpen i `portal/sw.js` är fortfarande ett minneskrav · `build-dist.mjs`, `portal/sw.js:9` · `mätt` · ~45 min
 - [ ] **D6** Testet kollar prisnivåernas namn, aldrig beloppen · `test/stripe.mjs:108-113` · `läst i koden` · ~45 min
 - [ ] **BL1** Interna arbetsanteckningar följer med i skarp `dist/` · `build-dist.mjs` (saknar comment-strip) · `mätt` · ~45 min
 - [ ] **K5** `allowAttempt` gör SELECT→UPDATE utan atomicitet · `functions/api/auth/_lib.js:105-121` · `läst i koden` · ~1–2 h
@@ -107,11 +106,39 @@ Rättade direkt i filerna (rent git-träd). Raderna står i terminalsvaret.
   omskrivet, med mallen uppdaterad — samma sortis dödfält som `defaultModel`,
   som låg kvar i mallen och pekade ut en Claude-modell.
 
-- [x] **D5** CSS saknade no-cache — löst 2026-08-16. Lades till för
-  designsystemets tre filer plus `fonts.css`, `verticals/app.js` och
-  `site/gallery.js`. Följden av att missa dem var värre än gammal design: tre
-  filer som delar tokennamn, hämtade ur olika gamla cachar, ger en halv sida i
-  nya färger och en halv i gamla.
+- [x] **D5 + D2** Cachningen — löst 2026-08-16, **men diagnosen i D5 var fel**.
+  Punkten sa "no-cache åt JS men inte åt CSS". Sanningen, uppmätt i
+  produktion: **Cloudflare Pages äger `Cache-Control` på statiska tillgångar
+  och skriver över den.** Varken CSS *eller* JS fick no-cache — hela listan i
+  `_headers` hade aldrig gjort någonting, inte heller raderna som lades in
+  långt tidigare för `atb-claude.js` och `portal/app.js`.
+
+  Att reglerna träffade bevisades genom att lägga en egen header
+  (`X-Regeltest`) på samma sökväg och deploya: den kom fram, `Cache-Control`
+  gjorde det inte. Det är alltså inte `_headers` som är trasig och inte
+  mönstren — det är just den headern som Pages inte släpper fram.
+
+  Det gjorde saken värre än att bara sakna skyddet: kommentaren i `_headers`
+  lovade att applagret alltid revalideras, så en deploy såg ut att nå kunden
+  direkt medan den i själva verket kunde ta fyra timmar. Det är samma fyra
+  timmar som gjorde B1 svår att lita på som lagad.
+
+  Fixen ligger nu där den fungerar oavsett headers: `build-dist.mjs` sätter
+  `?v=<innehållshash>` på varje js/css-referens i HTML **och** i service
+  workerns SHELL, med samma URL:er på båda ställena. HTML levereras av Pages
+  med `max-age=0, must-revalidate` (också uppmätt), så den nya URL:en når
+  besökaren direkt. 58 referenser verifierade mot filernas faktiska innehåll,
+  bygget är deterministiskt över två körningar, och alla sju portal-URL:er
+  svarar 200 skarpt.
+
+  **Det löste D2 på köpet:** cachenamnet i `portal/sw.js` får en hash av hela
+  SHELL vid bygget (`atb-portal-v28-ff211dc2`), så bumpen är inte längre ett
+  minneskrav. Bygget avbryter om SHELL- eller CACHE-raden skrivs om i en form
+  det inte känner igen, i stället för att gissa.
+
+  **Inte åtgärdat:** `portal/teams/<slug>.js` laddas dynamiskt från JS och
+  versionsstämplas inte — en uppdaterad teamkonfig kan nå kunden upp till fyra
+  timmar sent. Sällsynt, men det är kvar.
 
 - [x] **Tester för `/api/ai`** (2026-08-16) — rutten hade noll, trots att den
   är den enda filen där en manipulerad klient kan kosta oss pengar. 12 tester

@@ -4,9 +4,20 @@
    till cache offline. API-anrop (POST till Claude) rörs aldrig.
    ============================================================ */
 
-// Bumpa versionen vid varje ändring i SHELL-filerna nedan — annars precachar
-// inte service workern om skalet och offline-användare fastnar på gammal kod.
-const CACHE = "atb-portal-v28"; // Bumpa vid VARJE ändring i en SHELL-fil nedan — även atb-claude.js, annars serveras gammal modell-id ur cachen hur mycket som än deployas
+// Bumpen är INTE längre ett minneskrav (2026-08-16). build-dist.mjs lägger på
+// en hash av hela SHELL vid bygget — namnet nedan blir t.ex.
+// "atb-portal-v28-ff211dc2" i dist/, och hashen ändras så fort någon
+// SHELL-fil ändras. Ändras cachenamnet slänger activate den gamla cachen och
+// install hämtar om skalet, utan att någon behövt komma ihåg något.
+//
+// Samma bygge versionsstämplar SHELL-posterna (./app.js?v=…) med exakt de
+// URL:er sidorna begär, så att precache och körning inte hamnar på varsin
+// post. Det är därför mönstren nedan inte får skrivas om utan att
+// build-dist.mjs följer med — bygget avbryter hellre än gissar.
+//
+// Talet nedan är kvar som läsbar generation för människor, och det är det som
+// gäller vid lokal körning (python -m http.server serverar källan, inte dist/).
+const CACHE = "atb-portal-v28";
 // De delade rot-skripten (avatars/atb-claude) MÅSTE precachas — utan dem
 // kraschar en offline-öppnad PWA med "ATBClaude is undefined".
 // Typsnitten är självhostade sedan 2026-08-05 — utan dem i skalet renderar en
