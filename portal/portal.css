@@ -723,7 +723,14 @@ a.link-btn { text-decoration: none; }
 }
 .ovl-close:hover { background: var(--surface-3); }
 .ovl-lead { color: var(--text-dim); font-size: 14.5px; line-height: 1.6; margin: 4px 0 10px; }
-.ovl-label { font-size: 11.5px; margin: 16px 0 6px; }
+/* display: block är inte kosmetik. Etiketterna var <div> tills de gjordes
+   kopplingsbara med `for` (TG4) — och <label> är inline, så etiketten, fältet
+   och nästa etikett hamnade alla på samma rad. Syntes först när rutan
+   renderades och tittades på; ingen mätning av `for`-attribut hade fångat det. */
+.ovl-label { font-size: 11.5px; margin: 16px 0 6px; display: block; }
+/* Fält som följer en etikett ska ta hela bredden även när de är inline-element
+   (select och input är det). */
+.ovl-box > select.ovl-input, .ovl-box > input.ovl-input { display: block; }
 .ovl-ta, .ovl-input { width: 100%; background: var(--surface-2); border: 1px solid var(--border); border-radius: 10px; color: var(--text); font: inherit; font-size: 14.5px; padding: 11px 12px; min-height: 44px; }
 .ovl-ta { resize: vertical; }
 .ovl-input { margin-bottom: 8px; }
@@ -745,6 +752,17 @@ a.link-btn { text-decoration: none; }
 .meet-type.sel { border-color: var(--accent); background: var(--accent-soft); }
 .meet-type-label { font-size: 14.5px; font-weight: 600; }
 .meet-type-desc { font-size: 13px; color: var(--text-dim); margin-top: 2px; line-height: 1.5; }
+/* Granska mitt utkast. Samma korttyp som mötestyperna — det är samma sorts val
+   (vad ska det här bli?) och ska kännas som samma produkt, inte som en ny
+   uppfinning. Egna klassnamn ändå, så en ändring i mötesrutan inte flyttar
+   granskningsrutan av misstag. */
+.rev-kinds { display: flex; flex-direction: column; gap: 7px; margin: 10px 0 2px; }
+.rev-kind { text-align: left; background: var(--surface-2); border: 1px solid var(--border); border-radius: 10px; padding: 11px 13px; cursor: pointer; color: var(--text); font-family: inherit; }
+.rev-kind:hover { border-color: var(--accent-glow); }
+.rev-kind.sel { border-color: var(--accent); background: var(--accent-soft); }
+.rev-kind-t { font-size: 14.5px; font-weight: 600; }
+.rev-kind-h { font-size: 13px; color: var(--text-dim); margin-top: 2px; line-height: 1.5; }
+
 .meet-parts { display: flex; flex-wrap: wrap; gap: 8px; }
 .meet-part { display: inline-flex; align-items: center; gap: 7px; min-height: 44px; border: 1px solid var(--border); border-radius: 100px; padding: 6px 14px; font-size: 13.5px; cursor: pointer; }
 .meet-part:hover { border-color: var(--accent-glow); }

@@ -1382,6 +1382,10 @@ function renderSidebar() {
   wsBtn("⭐", "Veckostart", startWeek, `${entryName} föreslår veckans fokus utifrån teamet och era rutiner`);
   wsBtn("🤝", "Håll ett möte", openMeeting, "Samla flera agenters perspektiv och landa i ett beslut");
   wsBtn("🧠", "Minne & underlag", openMemory, "Delade instruktioner och material som alla agenter ser");
+  // Ligger i huvudraden och inte bland extras: för den som redan skriver sina
+  // egna mejl är det här den snabbaste vägen till ett första riktigt värde —
+  // hon behöver inte lita på att agenten kan hennes jobb, bara att den kan läsa.
+  wsBtn("🔎", "Granska mitt utkast", openReview, "Klistra in ett mejl, en offert eller ett inlägg — teamet säger vad som saknas innan du skickar");
   if (!tourLeft) introBtn();
   if (whyAvailable()) wsBtn("✨", "Därför detta team", openWhyTeam, "Varje agents koppling till er verksamhet — och det vi medvetet sa nej till");
   if (team.firstProject) wsBtn("🎯", "Första projektet", openFirstProject, "Ert första AI-projekt — planen och första steget");
@@ -3410,6 +3414,154 @@ function startWeek() {
   introMark("week");
   touchStreak();
   submitMessage(text, `⭐ Veckostart — ${days[now.getDay()]} ${now.toLocaleDateString("sv-SE")}`);
+}
+
+// ---------- granska mitt utkast ----------
+//
+// Hela portalen är byggd på att agenten SKRIVER. Det omvända — kunden skriver,
+// teamet läser — är ofta mer värt för någon som redan formulerar sina egna
+// mejl: hon behöver ingen textrobot, hon behöver någon som säger "du har inte
+// nämnt leveranstiden". Det är också den billigaste vägen till ett första
+// riktigt värde, eftersom kunden inte behöver lita på att agenten kan hennes
+// jobb — bara att den kan läsa.
+//
+// Två saker som formar prompten nedan:
+//
+//   1. Den ska INTE skriva om texten. Kunden äger sin röst; en omskrivning
+//      besvarar en fråga hon inte ställde och gör granskningen oanvändbar som
+//      granskning. Omskrivning erbjuds som nästa steg i stället.
+//   2. Den ska vara konkret nog att gå att agera på. "Överväg att vara
+//      tydligare" är värdelöst. Kravet är att varje invändning pekar på en
+//      formulering i texten och föreslår vad som ska stå.
+const REVIEW_KINDS = [
+  ["mejl", "Mejl till kund eller leverantör", "Vad kommer mottagaren att undra över, och vad binder dig?"],
+  ["offert", "Offert eller prisbesked", "Vad är otydligt om omfattning, pris och tid?"],
+  ["inlagg", "Inlägg, nyhetsbrev eller webbtext", "Går budskapet fram för någon som inte känner er?"],
+  ["annat", "Något annat", "Läs som en kritisk men vänlig kollega."],
+];
+
+function reviewPrompt(kind, text, extra) {
+  const k = REVIEW_KINDS.find((x) => x[0] === kind) || REVIEW_KINDS[3];
+  return [
+    `Jag har skrivit ett utkast och vill att du läser igenom det INNAN jag skickar det. Det är: ${k[1].toLowerCase()}.`,
+    extra ? `Sammanhang från mig: ${extra}` : "",
+    "",
+    "Så vill jag ha din genomläsning:",
+    "1. **Det som saknas** — vad kommer mottagaren att fråga om, som inte står här? Det är den vanligaste orsaken till en extra mejlrunda.",
+    "2. **Det som kan missförstås eller binder mig** — formuleringar om pris, tid, omfattning eller löften som går att läsa som mer än jag menar.",
+    "3. **Tonen** — stämmer den med hur vi brukar skriva? Säg det rakt om något låter stelt eller för säljigt.",
+    "4. **Det som är bra** — kort, och bara om det är sant. Jag behöver veta vad jag ska behålla.",
+    "",
+    "Regler för genomläsningen:",
+    "- Skriv INTE om texten. Peka på formuleringar och föreslå vad som ska stå i stället, så att jag kan ändra själv.",
+    "- Citera den rad du menar, så jag hittar den.",
+    "- Hittar du inget att invända mot, säg det. Hitta inte på invändningar för att verka noggrann.",
+    "- Gissa inte fakta som inte står i utkastet — om något saknas är det ett fynd under punkt 1, inte något du fyller i.",
+    "",
+    "MITT UTKAST:",
+    "---",
+    text,
+    "---",
+  ].filter((r) => r !== "").join("\n");
+}
+
+function openReview() {
+  const entryName = (agentById(team.entryAgent) || {}).name || "VD-assistenten";
+  if (state.demo) {
+    // Samma hållning som möten: visa VAD det är och sälj, i stället för att
+    // gömma funktionen. En funktion som inte syns i demon säljer ingenting.
+    const box = openOverlay("🔎 Granska mitt utkast");
+    box.appendChild(el("p", "ovl-lead",
+      "Klistra in ett mejl, en offert eller ett inlägg som du skrivit själv — teamet läser igenom och säger vad som saknas, "
+      + "vad som kan missförstås och vad som binder dig, innan du skickar. Det skriver inte om texten: du behåller din röst. "
+      + "Genomläsningen körs mot riktiga modellen och finns i det köpta teamet."));
+    const c = el("button", "btn-primary ovl-save", "Bygg ditt eget team →"); c.type = "button";
+    c.onclick = () => { closeOverlay(); connectKey(); };
+    box.appendChild(c);
+    return;
+  }
+  if (state.streaming) return;
+
+  const box = openOverlay("🔎 Granska mitt utkast");
+  box.appendChild(el("p", "ovl-lead",
+    `Klistra in något du skrivit själv. ${entryName} — eller den agent du väljer — läser igenom och säger vad som saknas `
+    + "och vad som kan missförstås. Texten skrivs inte om; du behåller din röst."));
+
+  // Vad det är. Styr vad granskningen letar efter — ett prisbesked och ett
+  // nyhetsbrev går fel på helt olika sätt.
+  let kind = REVIEW_KINDS[0][0];
+  box.appendChild(el("div", "ovl-label", "Vad är det du skrivit?"));
+  const kindWrap = el("div", "rev-kinds");
+  REVIEW_KINDS.forEach(([id, label, hint], i) => {
+    const b = el("button", "rev-kind" + (i === 0 ? " sel" : "")); b.type = "button";
+    b.appendChild(el("div", "rev-kind-t", label));
+    b.appendChild(el("div", "rev-kind-h", hint));
+    b.onclick = () => {
+      kind = id;
+      kindWrap.querySelectorAll(".rev-kind").forEach((x) => x.classList.remove("sel"));
+      b.classList.add("sel");
+    };
+    kindWrap.appendChild(b);
+  });
+  box.appendChild(kindWrap);
+
+  // Vem som läser. Förvalt: ingångsagenten, som känner hela teamet. Men den som
+  // vet vad ett prisbesked ska innehålla är oftast en specialist.
+  const agents = (team.agents || []);
+  let readerId = team.entryAgent;
+  if (agents.length > 1) {
+    const lab = el("label", "ovl-label", "Vem ska läsa?");
+    const sel = el("select", "ovl-input");
+    sel.id = "rev-reader";
+    lab.setAttribute("for", sel.id);
+    agents.forEach((a) => {
+      const o = el("option", null, `${a.name} — ${a.role || a.tagline || ""}`.trim().replace(/—\s*$/, ""));
+      o.value = a.id;
+      if (a.id === team.entryAgent) o.selected = true;
+      sel.appendChild(o);
+    });
+    sel.onchange = () => { readerId = sel.value; };
+    box.append(lab, sel);
+  }
+
+  const taLab = el("label", "ovl-label", "Ditt utkast");
+  const ta = el("textarea", "ovl-ta"); ta.rows = 9; ta.id = "rev-draft";
+  ta.placeholder = "Klistra in mejlet, offerten eller inlägget här.";
+  taLab.setAttribute("for", ta.id);
+  box.append(taLab, ta);
+  // INGEN diktering här, med flit: den som ska få något granskat har redan
+  // texten skriven någon annanstans och klistrar in den. Dikteringen hör dit
+  // där texten SKAPAS — builderns intag och portalens composer.
+
+  const ctxLab = el("label", "ovl-label", "Något teamet behöver veta? (valfritt)");
+  const ctx = el("input", "ovl-input"); ctx.id = "rev-ctx";
+  ctx.placeholder = "T.ex: kunden har redan fått ett pris muntligt, eller: det här är tredje påminnelsen.";
+  ctxLab.setAttribute("for", ctx.id);
+  box.append(ctxLab, ctx);
+
+  const err = el("div", "setup-err"); err.setAttribute("role", "alert"); err.style.display = "none";
+  box.appendChild(err);
+
+  const go = el("button", "btn-primary ovl-save", "Läs igenom"); go.type = "button";
+  go.onclick = () => {
+    const text = ta.value.trim();
+    // 40 tecken: en rad räcker inte för att det ska finnas något att granska,
+    // och ett tomt anrop kostar ändå pengar.
+    if (text.length < 40) {
+      err.textContent = "⚠️ Klistra in lite mer text — det behövs några rader för att det ska finnas något att läsa.";
+      err.style.display = "block";
+      ta.focus();
+      return;
+    }
+    const reader = agentById(readerId) || agentById(team.entryAgent);
+    closeOverlay();
+    selectAgent(reader.id);
+    const label = (REVIEW_KINDS.find((x) => x[0] === kind) || REVIEW_KINDS[3])[1];
+    // Visningstexten är kort; hela utkastet ligger i det som skickas.
+    submitMessage(reviewPrompt(kind, text, ctx.value.trim()), `🔎 Genomläsning — ${label.toLowerCase()} (${text.length} tecken)`);
+  };
+  box.appendChild(go);
+  setTimeout(() => ta.focus(), 0);
 }
 
 // ---------- overlay ----------
