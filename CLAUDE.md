@@ -217,6 +217,7 @@ bindning). Den fanns tidigare bara utspridd i källkoden, vilket gjorde en
 | `MAIL_PROVIDER` | `api/auth/_lib.js` | ingen inloggningskod skickas |
 | `MAIL_API_KEY` | `api/auth/_lib.js` | kastar explicit |
 | `MAIL_FROM` | `api/auth/_lib.js` | kastar explicit |
+| `DIGEST_SECRET` | `api/digest/run.js` + cron-workern | veckobrevet skickas inte (rutten svarar 503) |
 
 Prisnycklarna läses **dynamiskt** via `TIERS[...].env`, så de syns inte om man
 greppar efter `env.STRIPE_PRICE`. Inget av värdena havererar tyst — men listan
@@ -369,6 +370,46 @@ testsviten först** (sedan 2026-08-17) — CI triggar på push, deploy kräver i
 push, och utan den raden var de två skyddsnäten helt frånkopplade från det enda
 stället som betyder något.
 
+**Veckobrev (byggt 2026-08-17):** teamets veckostart som mejl på den dag kunden
+väljer. Skälet är retention: portalen förutsätter att kunden kommer ihåg att
+logga in, och vecka tre gör hon inte det. Ett brev dyker upp oavsett — och
+enligt halvårssimuleringen bevisas värdet hos utföraren medan beslutet fattas av
+köparen, så ett mejl syns för båda.
+
+**Opt-in, alltid.** Ingen rad i `weekly_digest` (`migrations/0007`) betyder inget
+utskick. Kunden slår på det i portalen (`✉️ Veckobrev` i arbetsytan →
+`/api/digest/prefs`), och varje brev bär en avslagslänk som fungerar **utan
+inloggning** — att kräva inloggning för att slippa ett mejl är att inte låta
+kunden slippa det.
+
+Delarna, och varför de ligger där de ligger:
+
+- **`functions/api/digest/run.js`** gör allt arbete: väljer mottagare, kollar
+  planen (ett veckobrev till en spärrad kund är att sälja på fel sätt), kollar
+  taken, genererar, mejlar, och märker dygnet som avklarat först när brevet
+  gått. `last_sent_day` gör körningen idempotent — samma grepp som
+  `stripe_session` ger i `teams`.
+- **`worker-veckobrev/`** är bara en klocka. Pages Functions kan inte
+  schemaläggas; Cron Triggers finns bara på Workers. Workern har **ingen
+  D1-bindning** med flit: den enda rättighet den har är att knacka på rutten med
+  `DIGEST_SECRET`. Den kör **varje timme**, och rutten har ett **timgolv på 06
+  UTC** — så en misslyckad körning tas igen nästa timme i stället för nästa
+  vecka, utan att någon väcks klockan ett på natten.
+- **`functions/avregistrera.js`** ligger **inte** under `/api/`, och det är
+  ingen slarv: `_middleware.js` byter ett HTML-svar under `/api/` mot 404
+  (riktigt för ett JSON-API). Upptäckt i emulatorn — rutten uppdaterade raden
+  medan svaret ersattes med 404. `mittaiteam.se/avregistrera` läser dessutom
+  bättre i ett mejl.
+
+Kostnaden bokförs som allt annat: `ai_budget`, teamets månadsrad (samma fair use
+som chatten) och en egen dygnsrad `digest:global` med eget tak på 200 — samma
+resonemang som byggets tak i K3, så att breven inte kan svälta betalande kunders
+chatt.
+
+**Ännu inte gjort:** `integritet.html` säger inget om veckobrevet. Adressen
+lagras redan för inloggningen, men "vi skickar ett återkommande mejl om du ber
+om det" är en egen behandling och bör stå där. Det är din text, inte min.
+
 **Felövervakning (D3, byggd 2026-08-17):** `GET /api/health` svarar **200 när
 tjänsten kan svara kunder och 503 när den inte kan**. Den kontrollerar tre
 saker — att `OPENROUTER_KEY` finns, att D1 svarar, och om det kommit ett
@@ -453,10 +494,14 @@ ny kund dyker upp i både galleri och portal automatiskt.
 │                                   #   Deployas inte — saknas medvetet i ITEMS
 ├── functions/                      # Cloudflare Pages Functions (/api/* — moln-team)
 │                                   #   OBS: deployas från repo-roten, aldrig via dist/
+│                                   #   avregistrera.js ligger UTANFÖR /api/ (HTML-svar)
+├── worker-veckobrev/               # Klockan för veckobrevet (egen Worker, cron)
+│                                   #   Deployas separat: se index.js
 ├── migrations/                     # D1-schema (SQL): init, auth, commerce, ai_proxy,
-│                                   #   plan_lifecycle
+│                                   #   plan_lifecycle, ai_errors, weekly_digest
 ├── test/                           # node --test: teams, stripe, plan, ai, throttle,
-│                                   #   examples (120 tester)
+│                                   #   examples, klient, intake, health, skalning,
+│                                   #   digest (166 tester)
 ├── scripts/                        # provision.mjs — lägg upp en kund för hand
 │                                   #   check-dist.mjs — kontrollerar versionsstämplingen
 ├── testoutput/                     # Råa pipeline-körningar (källmaterial, ej deployat)

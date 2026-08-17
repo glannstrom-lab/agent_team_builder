@@ -1,0 +1,29 @@
+name = "mittaiteam-veckobrev"
+main = "index.js"
+compatibility_date = "2024-09-01"
+
+# Klockan för veckobrevet. Egen worker eftersom Pages Functions inte kan
+# schemaläggas — se kommentaren i index.js.
+#
+# INGEN D1-bindning här med flit. Workern ska inte kunna röra kundernas data;
+# den enda rättighet den har är att knacka på en rutt med en delad hemlighet.
+# Går workern förlorad eller kapas kommer man inte åt databasen genom den.
+
+# Varje timme, hel timme. Tre saker samverkar och alla tre behövs:
+#
+#   - rutten filtrerar på VECKODAG, så bara den valda dagens mottagare får brev
+#   - rutten har ett TIMGOLV (06 UTC), så den första knacken efter midnatt inte
+#     väcker någon klockan ett på natten
+#   - `last_sent_day` gör att ingen får två brev samma dygn
+#
+# Nettot: brevet går ut på morgonen den valda dagen, och en körning som
+# misslyckas tas igen nästa timme i stället för nästa vecka. Hade cron stått på
+# en enda timme hade ett tillfälligt fel kostat en hel vecka.
+#
+# Cron körs i UTC. 06 UTC är 07:00 svensk vintertid och 08:00 sommartid — morgon
+# året om, vilket är nog så exakt för ett veckobrev.
+[triggers]
+crons = ["0 * * * *"]
+
+[observability]
+enabled = true

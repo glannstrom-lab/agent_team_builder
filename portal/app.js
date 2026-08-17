@@ -1398,6 +1398,10 @@ function renderSidebar() {
   if (!state.demo && quarterEndsSoon()) extras.push(["🏆", "Kvartalet med teamet", openQuarter, "Kvartalets siffror — delbara med en kollega"]);
   if (!state.demo) extras.push(["🔄", "Utveckla teamet", openGrow, "Lägg till en agent när verksamheten förändras — avvisade moment står först i kön"]);
   if (!state.demo) extras.push(["🔍", "Sök i historiken", openSearch, "Sök i alla samtal och arkivet"]);
+  // Veckobrevet ligger bland extras och inte i huvudraden: det är en
+  // inställning man gör en gång, inte något man gör varje dag. Men det visas i
+  // demoläget också — en funktion som inte syns i demon säljer ingenting.
+  extras.push(["✉️", "Veckobrev", openDigest, "Teamets veckostart som mejl på den dag du väljer"]);
   const hideExtras = wsCollapsed();
   if (!hideExtras) extras.forEach((e) => wsBtn(e[0], e[1], e[2], e[3]));
 
@@ -3414,6 +3418,116 @@ function startWeek() {
   introMark("week");
   touchStreak();
   submitMessage(text, `⭐ Veckostart — ${days[now.getDay()]} ${now.toLocaleDateString("sv-SE")}`);
+}
+
+// ---------- veckobrev ----------
+//
+// Portalens retentionsmodell förutsätter att kunden kommer ihåg att logga in.
+// Vecka tre gör hon inte det, och ett verktyg med veckorytm som bara finns när
+// man aktivt söker upp det tappar vanan först och abonnemanget sedan. Ett brev
+// på måndag morgon dyker upp oavsett.
+//
+// OPT-IN. Ingen inställning betyder inget utskick. Serversidan (api/digest/*)
+// gör verket; här finns bara reglaget och en ärlig beskrivning av vad som
+// händer.
+const DIGEST_DAYS = [[1, "måndag"], [2, "tisdag"], [3, "onsdag"], [4, "torsdag"], [5, "fredag"], [6, "lördag"], [7, "söndag"]];
+
+function openDigest() {
+  if (state.demo) {
+    const box = openOverlay("✉️ Veckobrev");
+    box.appendChild(el("p", "ovl-lead",
+      "Teamets veckostart som mejl, på den dag du väljer. Det är samma veckostart du kan trycka fram här i portalen — "
+      + "skillnaden är att brevet kommer även de veckor du inte hinner logga in. Finns i det köpta teamet."));
+    const c = el("button", "btn-primary ovl-save", "Bygg ditt eget team →"); c.type = "button";
+    c.onclick = () => { closeOverlay(); connectKey(); };
+    box.appendChild(c);
+    return;
+  }
+
+  const box = openOverlay("✉️ Veckobrev");
+  box.appendChild(el("p", "ovl-lead",
+    "Teamets veckostart som mejl, på den dag du väljer. Samma sak du kan trycka fram här — men brevet kommer "
+    + "även de veckor du inte hinner logga in."));
+
+  const status = el("p", "ovl-note", "Hämtar din inställning…");
+  box.appendChild(status);
+
+  const rad = el("div", "dig-row"); rad.style.display = "none";
+  const kryss = el("input"); kryss.type = "checkbox"; kryss.id = "dig-on";
+  const kryssLab = el("label", "dig-check", "Skicka veckobrev till mig");
+  kryssLab.setAttribute("for", kryss.id);
+  rad.append(kryss, kryssLab);
+  box.appendChild(rad);
+
+  const dagLab = el("label", "ovl-label", "Vilken dag?"); dagLab.style.display = "none";
+  const dagSel = el("select", "ovl-input"); dagSel.id = "dig-day"; dagSel.style.display = "none";
+  dagLab.setAttribute("for", dagSel.id);
+  DIGEST_DAYS.forEach(([n, namn]) => {
+    const o = el("option", null, namn.charAt(0).toUpperCase() + namn.slice(1));
+    o.value = String(n);
+    dagSel.appendChild(o);
+  });
+  box.append(dagLab, dagSel);
+
+  const fine = el("p", "ovl-note"); fine.style.display = "none";
+  box.appendChild(fine);
+
+  const err = el("div", "setup-err"); err.setAttribute("role", "alert"); err.style.display = "none";
+  box.appendChild(err);
+
+  const spara = el("button", "btn-primary ovl-save", "Spara"); spara.type = "button";
+  spara.style.display = "none";
+  box.appendChild(spara);
+
+  const visa = (data) => {
+    status.style.display = "none";
+    rad.style.display = "";
+    dagLab.style.display = ""; dagSel.style.display = "";
+    fine.style.display = ""; spara.style.display = "";
+    kryss.checked = !!data.active;
+    dagSel.value = String(data.weekday || 1);
+    fine.textContent = `Brevet går till ${data.email}. Varje brev har en avslagslänk som fungerar utan inloggning, `
+      + "och du kan ändra här när du vill."
+      + (data.lastSent ? ` Senaste brevet skickades ${data.lastSent}.` : "");
+  };
+
+  const url = `/api/digest/prefs?slug=${encodeURIComponent(state.slug || "")}`;
+  window.ATBClaude.fetchWithTimeout(url, { credentials: "same-origin" }, 8000)
+    .then(async (res) => {
+      if (!res.ok) throw new Error(res.status === 401 ? "Du behöver vara inloggad." : "Kunde inte hämta inställningen.");
+      visa(await res.json());
+    })
+    .catch((e) => {
+      status.textContent = e.message || "Kunde inte hämta inställningen just nu.";
+    });
+
+  spara.onclick = async () => {
+    err.style.display = "none";
+    spara.disabled = true; spara.textContent = "Sparar…";
+    try {
+      const res = await window.ATBClaude.fetchWithTimeout("/api/digest/prefs", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ slug: state.slug, active: kryss.checked, weekday: Number(dagSel.value) }),
+      }, 8000);
+      if (!res.ok) throw new Error("Det gick inte att spara.");
+      const d = await res.json();
+      // Bekräftelsen står kvar i rutan i stället för att blinka förbi. Portalen
+      // har ingen toast-primitiv, och en inställning är just den sak man vill se
+      // bekräftad med egna ögon innan man stänger.
+      fine.textContent = d.active
+        ? `✓ Påslaget. Nästa brev går ut på ${DIGEST_DAYS.find((x) => x[0] === d.weekday)[1]} morgon till ${d.email}.`
+        : "✓ Avslaget. Inga fler veckobrev skickas.";
+      spara.textContent = "Klart";
+      spara.disabled = false;
+      spara.onclick = closeOverlay;
+    } catch (e) {
+      err.textContent = "⚠️ " + (e.message || "Det gick inte att spara just nu.");
+      err.style.display = "block";
+      spara.disabled = false; spara.textContent = "Spara";
+    }
+  };
 }
 
 // ---------- granska mitt utkast ----------

@@ -752,6 +752,12 @@ a.link-btn { text-decoration: none; }
 .meet-type.sel { border-color: var(--accent); background: var(--accent-soft); }
 .meet-type-label { font-size: 14.5px; font-weight: 600; }
 .meet-type-desc { font-size: 13px; color: var(--text-dim); margin-top: 2px; line-height: 1.5; }
+/* Veckobrevets av/på. Kryssrutan och etiketten på samma rad, med 44 px höjd så
+   den går att träffa på en telefon — resten av portalen håller samma mått. */
+.dig-row { display: flex; align-items: center; gap: 10px; margin-top: 14px; min-height: 44px; }
+.dig-row input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--accent); flex: none; cursor: pointer; }
+.dig-check { font-size: 15px; cursor: pointer; }
+
 /* Granska mitt utkast. Samma korttyp som mötestyperna — det är samma sorts val
    (vad ska det här bli?) och ska kännas som samma produkt, inte som en ny
    uppfinning. Egna klassnamn ändå, så en ändring i mötesrutan inte flyttar

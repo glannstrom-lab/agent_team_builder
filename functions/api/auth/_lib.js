@@ -348,3 +348,31 @@ export async function sendTeamInvite(env, email, { company, invitedBy }) {
     consoleLine: `[team] inbjudan till ${email} för "${name}" (av ${invitedBy})`,
   });
 }
+
+// Veckobrevet. Ren text, ingen HTML: en text/plain-mall kan inte gå sönder i
+// någon klient, den hamnar mer sällan i skräpposten, och innehållet är ändå
+// prosa som teamet skrivit. Det är inte ett nyhetsbrev — det är kundens eget
+// team som säger vad veckan borde handla om.
+//
+// `unsubUrl` MÅSTE med i varje brev. Ett återkommande utskick utan en
+// fungerande väg ut är inte något kunden gick med på, hur nyttigt det än är.
+export async function sendWeeklyDigest(env, email, { company, body, unsubUrl }) {
+  const name = String(company || "ert team").replace(/[\r\n]+/g, " ").trim().slice(0, 80) || "ert team";
+  // Modellens text går rakt in. Den är redan prosa och ska inte formateras om
+  // här — men den klipps, så att ett rundgånget svar inte blir ett mejl på en
+  // megabyte.
+  const text = String(body || "").trim().slice(0, 8000);
+
+  return sendMail(env, {
+    to: email,
+    subject: `Veckostart — ${name}`,
+    text:
+      `${text}\n\n` +
+      `— — —\n\n` +
+      `Det här är veckostarten från ${name}, ditt AI-team på Mitt AI-team.\n` +
+      `Fortsätt i portalen: ${PORTAL_URL}\n\n` +
+      `Vill du inte ha brevet? Slå av det här, direkt och utan inloggning:\n${unsubUrl}\n` +
+      `Du kan också slå på och av det i portalen när du vill.\n\n— Mitt AI-team\nmittaiteam.se`,
+    consoleLine: `[veckobrev] till ${email} för "${name}" (${text.length} tecken)`,
+  });
+}
