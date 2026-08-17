@@ -70,6 +70,29 @@ body { min-height: 100vh; }
 select.fin { cursor: pointer; }
 .intake-text { width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; color: var(--text); font-size: 15px; font-family: inherit; line-height: 1.55; resize: vertical; outline: none; min-height: 150px; }
 .intake-text:focus { border-color: var(--accent); }
+
+/* Diktering i intaget. Knappen läggs INNE i fältets nedre högra hörn i stället
+   för bredvid: fälten är breda och ett extra element i raden hade krympt dem,
+   och den som ska tala vill hitta mikrofonen där texten börjar. Positionerad
+   och inte flexad, så textrutan behåller exakt sin bredd. */
+.intake-dikt { position: relative; display: block; }
+.intake-mic {
+  position: absolute; right: 10px; bottom: 10px;
+  width: 34px; height: 34px; min-height: 34px; display: grid; place-items: center;
+  background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px;
+  color: var(--text-dim); font-size: 15px; font-family: inherit; cursor: pointer;
+  line-height: 1;
+}
+.intake-mic:hover { border-color: var(--accent); color: var(--text); }
+.intake-mic:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+/* Inspelning: samma rost som portalens mikrofon, och samma puls. */
+.intake-mic.rec { border-color: #8F3F22; color: #8F3F22; animation: intakeMicPulse 1.2s infinite; }
+/* Eget namn: portal.css har en micPulse med box-shadow. De möts aldrig (buildern
+   laddar inte portal.css) men två olika djur med samma namn är förvirrande. */
+@keyframes intakeMicPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
+@media (prefers-reduced-motion: reduce) { .intake-mic.rec { animation: none; } }
+/* Textrutans egen text ska inte hamna under knappen på sista raden. */
+.intake-dikt .intake-text { padding-bottom: 52px; }
 .build-btn { margin-top: 8px; align-self: flex-start; font-size: 16px; padding: 15px 30px; }
 .form-foot { margin-top: 28px; }
 /* Hjälptext under en etikett — för de fält där frågan behöver en rad till

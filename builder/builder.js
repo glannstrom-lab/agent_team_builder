@@ -324,22 +324,46 @@ function renderForm() {
   // Strukturerat frågeformulär istället för en tom textruta — kunden vet vad
   // den ska svara på, och research-steget får jämnt råmaterial i exakt det
   // format intake-kontraktet (prompts/shared/research.md) kräver.
-  const taEl = (name, rows, ph) => { const t = el("textarea", "intake-text"); t.name = name; t.id = "f-" + name; t.rows = rows; t.placeholder = ph || ""; return t; };
+  // Varje fritextfält får en mikrofon. Den som har svårt att SKRIVA om sin
+  // verksamhet kan oftast BERÄTTA om den — och det är exakt den kunden
+  // förvalsenkäten byggdes för. Enkäten kan bara ge fasta listval, alltså
+  // ingenting som skiljer den här verksamheten från nästa i samma bransch
+  // (se enkatBaradIntake); två minuters tal om förra veckan ger research
+  // något att arbeta med.
+  //
+  // Knappen skapas bara i webbläsare som kan diktera. Saknas API:et returnerar
+  // hjälparen null och fältet ser ut som förut — en knapp som inte gör något
+  // vore värre än ingen knapp.
+  const taEl = (name, rows, ph) => {
+    const t = el("textarea", "intake-text"); t.name = name; t.id = "f-" + name; t.rows = rows; t.placeholder = ph || "";
+    return t;
+  };
+  // Sveper fältet och mikrofonen i en rad, så knappen hamnar vid rätt fält.
+  const taMedMic = (name, rows, ph) => {
+    const t = taEl(name, rows, ph);
+    const mic = window.ATBClaude && window.ATBClaude.dictationButton
+      ? window.ATBClaude.dictationButton(t, { klass: "intake-mic" })
+      : null;
+    if (!mic) return t;
+    const wrap = el("div", "intake-dikt");
+    wrap.append(t, mic);
+    return wrap;
+  };
 
   if (person) {
-    form.appendChild(fieldRow("Vad går din vecka åt till?", taEl("moments", 4, "De 2–4 saker som återkommer varje vecka, gärna med ungefärlig tid.\nT.ex: 1) Registrera och kontera leverantörsfakturor, 6–8 h. 2) Svara på säljarnas frågor om vad som är betalt."),
+    form.appendChild(fieldRow("Vad går din vecka åt till?", taMedMic("moments", 4, "De 2–4 saker som återkommer varje vecka, gärna med ungefärlig tid.\nT.ex: 1) Registrera och kontera leverantörsfakturor, 6–8 h. 2) Svara på säljarnas frågor om vad som är betalt."),
       "Det här är det viktigaste fältet — teamet byggs runt de här momenten."));
-    form.appendChild(fieldRow("Vad förväntas av dig?", taEl("expectations", 2, "Det chefen, kollegorna eller kunderna bedömer dig på. T.ex: att månadsskiftet är klart den femte, att ingen faktura blir liggande."),
+    form.appendChild(fieldRow("Vad förväntas av dig?", taMedMic("expectations", 2, "Det chefen, kollegorna eller kunderna bedömer dig på. T.ex: att månadsskiftet är klart den femte, att ingen faktura blir liggande."),
       "Det du mäts på men inte hinner med är oftast där ett team gör störst nytta."));
-    form.appendChild(fieldRow("Vad stjäl tid utan att synas?", taEl("pains", 2, "Det som inte står i någon arbetsbeskrivning men ändå äter timmar. Avbrott, letande, dubbelregistrering.")));
+    form.appendChild(fieldRow("Vad stjäl tid utan att synas?", taMedMic("pains", 2, "Det som inte står i någon arbetsbeskrivning men ändå äter timmar. Avbrott, letande, dubbelregistrering.")));
     form.appendChild(fieldRow("System du sitter i dagligen", inputEl("tools", "tools", "T.ex. Outlook, Excel, Business Central, Teams")));
     form.appendChild(fieldRow("Vad vill du att teamet ska ge dig?", inputEl("goals", "goals", "T.ex. sluta ta med jobbet hem på torsdagar")));
     form.appendChild(fieldRow("Något teamet inte ska röra?", inputEl("nogo", "nogo", "T.ex. personuppgifter, löner, ärenden med sekretess."),
       "Ta med det arbetsgivaren har bestämt, inte bara det du själv tycker."));
   } else {
-    form.appendChild(fieldRow("Vad gör företaget?", taEl("what", 2, "1–2 meningar. T.ex: Livs- och karriärcoach som säljer 1-on-1-sessioner online. Har ni fyllt i enkäten räcker det att komplettera med det den inte fångar.")));
-    form.appendChild(fieldRow("Veckans återkommande moment — vad tar mest tid?", taEl("moments", 4, "De 2–4 moment som återkommer varje vecka, gärna med ungefärlig tid.\nT.ex: 1) Nyhetsbrev och blogg, 5–7 h. 2) Svara på inkommande leads (mail, DM).")));
-    form.appendChild(fieldRow("Var klämmer skon?", taEl("pains", 2, "Det som är frustrerande eller blir liggande. Valfritt men gör analysen skarpare.")));
+    form.appendChild(fieldRow("Vad gör företaget?", taMedMic("what", 2, "1–2 meningar. T.ex: Livs- och karriärcoach som säljer 1-on-1-sessioner online. Har ni fyllt i enkäten räcker det att komplettera med det den inte fångar.")));
+    form.appendChild(fieldRow("Veckans återkommande moment — vad tar mest tid?", taMedMic("moments", 4, "De 2–4 moment som återkommer varje vecka, gärna med ungefärlig tid.\nT.ex: 1) Nyhetsbrev och blogg, 5–7 h. 2) Svara på inkommande leads (mail, DM).")));
+    form.appendChild(fieldRow("Var klämmer skon?", taMedMic("pains", 2, "Det som är frustrerande eller blir liggande. Valfritt men gör analysen skarpare.")));
     form.appendChild(fieldRow("Program & system ni använder dagligen", inputEl("tools", "tools", "T.ex. Fortnox, Outlook, Shopify, Google Kalender")));
     form.appendChild(fieldRow("Vad ska AI-teamet uppnå?", inputEl("goals", "goals", "T.ex. frigöra 5 h/vecka från admin till betalt arbete")));
     form.appendChild(fieldRow("Något AI inte ska röra?", inputEl("nogo", "nogo", "T.ex. kundsamtalen, prissättningen. Lämna tomt om inget.")));
@@ -426,7 +450,12 @@ function prefillDemo() {
 function fieldRow(label, control, hint) {
   const r = el("div", "frow");
   const lab = el("label", "flabel", label);
-  if (control.id) lab.setAttribute("for", control.id);
+  // Kontrollen kan vara inslagen (t.ex. textarea + mikrofonknapp i en rad), och
+  // då sitter id:t på fältet inuti — inte på omslaget. Utan det här steget
+  // tappade etiketten sitt `for` så fort dikteringen lades till, alltså precis
+  // den koppling TG4 handlade om.
+  const fält = control.id ? control : control.querySelector("input, textarea, select");
+  if (fält && fält.id) lab.setAttribute("for", fält.id);
   r.appendChild(lab);
   if (hint) r.appendChild(el("div", "fhint", hint));
   r.appendChild(control); return r;

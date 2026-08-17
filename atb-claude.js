@@ -269,6 +269,71 @@
     setTimeout(() => URL.revokeObjectURL(url), 5000);
   }
 
+  // ── Diktering (Web Speech API) ───────────────────────────────────────────
+  //
+  // Låg tidigare bara i portalens composer. Flyttad hit av samma skäl som
+  // downloadFile (R8): två kopior blir en att laga och en att glömma — och den
+  // som behöver diktering mest är inte portalkunden utan den som ska fylla i
+  // BUILDERNS intag. Hela poängen med förvalsenkäten var kunden som har svårt
+  // att formulera sin verksamhet i skrift; två minuters tal om förra veckan
+  // slår varje kryssruta, och det är den enda vägen som ger research något
+  // särskiljande att arbeta med (se enkatBaradIntake i builder.js).
+  //
+  // Taligenkänningen sker hos WEBBLÄSARLEVERANTÖREN, inte hos oss. Det står i
+  // knappens title, och ingenting skickas vidare utan att användaren aktivt
+  // trycker skicka/bygg. Chrome och Edge har API:et; Firefox och Safari saknar
+  // det, och då skapas ingen knapp alls — en knapp som inte gör något är värre
+  // än ingen knapp.
+  const SR_FINNS = typeof window !== "undefined" && !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+
+  // Returnerar en färdig mikrofonknapp kopplad till `ta`, eller null om
+  // webbläsaren inte kan diktera. Anroparen bestämmer var knappen hamnar.
+  //
+  // `opts.klass` sätter CSS-klassen (portalen och buildern har olika utseende).
+  // `opts.onInput` anropas efter varje uppdatering, så att anroparen kan växa
+  // textrutan eller spara utkast.
+  function dictationButton(ta, opts) {
+    if (!SR_FINNS || !ta) return null;
+    const o = opts || {};
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = o.klass || "atb-mic";
+    btn.textContent = "🎙";
+    btn.title = "Diktera (svenska). Rösten tolkas av webbläsarens taltjänst; texten hamnar i fältet för redigering innan du skickar.";
+    btn.setAttribute("aria-label", "Diktera");
+    let rec = null;
+    btn.onclick = () => {
+      // Andra klicket stoppar. onend städar klassen, så knappen kan inte
+      // fastna i "spelar in" om taltjänsten dör av sig själv.
+      if (rec) { try { rec.stop(); } catch (_) {} return; }
+      try {
+        rec = new SR();
+        rec.lang = o.lang || "sv-SE";
+        rec.continuous = true;
+        rec.interimResults = true;
+        // Det som redan står kvar: dikteringen lägger till, skriver inte över.
+        const bas = ta.value ? ta.value.replace(/\s+$/, "") + " " : "";
+        let färdigt = "";
+        rec.onresult = (e) => {
+          let preliminärt = "";
+          for (let i = e.resultIndex; i < e.results.length; i++) {
+            const r = e.results[i];
+            if (r.isFinal) färdigt += r[0].transcript + " ";
+            else preliminärt += r[0].transcript;
+          }
+          ta.value = bas + färdigt + preliminärt;
+          if (o.onInput) { try { o.onInput(ta); } catch (_) { /* växande ruta får aldrig fälla dikteringen */ } }
+        };
+        rec.onend = () => { rec = null; btn.classList.remove("rec"); };
+        rec.onerror = () => { rec = null; btn.classList.remove("rec"); };
+        btn.classList.add("rec");
+        rec.start();
+      } catch (_) { rec = null; btn.classList.remove("rec"); }
+    };
+    return btn;
+  }
+
   // fetch med hård timeout — så en seg/hängande request inte låser UI:t
   // (t.ex. portalens moln-team-hämtning). Kastar AbortError vid timeout.
   async function fetchWithTimeout(url, options, ms) {
@@ -281,5 +346,5 @@
     }
   }
 
-  window.ATBClaude = { stream, collect, setTeam, fetchWithTimeout, downloadFile, encodeTeamLink, decodeTeamLink, MODEL_ID, MODEL_LABEL };
+  window.ATBClaude = { stream, collect, setTeam, fetchWithTimeout, downloadFile, dictationButton, SR_FINNS, encodeTeamLink, decodeTeamLink, MODEL_ID, MODEL_LABEL };
 })();

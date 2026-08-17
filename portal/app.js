@@ -1600,40 +1600,20 @@ function renderMain() {
   // största friktion är att skriva långt. Texten hamnar i composern för
   // redigering innan den skickas. OBS: taligenkänningen sker via webbläsar-
   // leverantören — därför märkt i title, och inget skickas utan aktivt val.
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (SR && !state.demo) {
-    const mic = el("button", "composer-mic", "🎙"); mic.type = "button";
-    mic.title = "Diktera (svenska). Rösten tolkas av webbläsarens taltjänst; texten hamnar här för redigering innan du skickar.";
-    mic.setAttribute("aria-label", "Diktera");
-    let rec = null;
-    mic.onclick = () => {
-      if (rec) { try { rec.stop(); } catch (_) {} return; }
-      try {
-        rec = new SR();
-        rec.lang = "sv-SE"; rec.continuous = true; rec.interimResults = true;
-        const base = ta.value ? ta.value.replace(/\s+$/, "") + " " : "";
-        let finalTxt = "";
-        rec.onresult = (e) => {
-          let interim = "";
-          for (let i = e.resultIndex; i < e.results.length; i++) {
-            const r = e.results[i];
-            if (r.isFinal) finalTxt += r[0].transcript + " ";
-            else interim += r[0].transcript;
-          }
-          ta.value = base + finalTxt + interim;
-          ta.style.height = "auto"; ta.style.height = Math.min(ta.scrollHeight, 200) + "px";
-        };
-        rec.onend = () => { rec = null; mic.classList.remove("rec"); };
-        rec.onerror = () => { rec = null; mic.classList.remove("rec"); };
-        mic.classList.add("rec");
-        rec.start();
-      } catch (_) { rec = null; mic.classList.remove("rec"); }
-    };
-    composer.appendChild(mic);
+  // Implementationen bor i atb-claude.js sedan 2026-08-17, så att Buildern kan
+  // använda samma — där behövs den mest (se kommentaren där).
+  if (!state.demo) {
+    const mic = window.ATBClaude.dictationButton(ta, {
+      klass: "composer-mic",
+      onInput: (t) => { t.style.height = "auto"; t.style.height = Math.min(t.scrollHeight, 200) + "px"; },
+    });
+    if (mic) composer.appendChild(mic);
   }
   composer.appendChild(send);
-  // Under strömning blir skicka-knappen en stoppknapp — med BYO-nyckel
-  // betalar kunden för varje token, så ett långt svar måste gå att avbryta.
+  // Under strömning blir skicka-knappen en stoppknapp. Ett långt svar måste gå
+  // att avbryta — inte längre för att kunden betalar per token (AI:n ingår
+  // sedan 2026-08-06), utan för att ett svar som gick fel inte ska behöva
+  // läsas färdigt, och för att stoppa kostar oss mindre än att generera klart.
   composer.onsubmit = (e) => {
     e.preventDefault();
     if (state.streaming) { try { state.chatAbort?.abort(); } catch (_) {} return; }
