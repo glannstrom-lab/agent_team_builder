@@ -70,6 +70,14 @@
     Ändras det till skrivning måste punkt 4 nedan skrivas om.
   - index.html länkar hit på #portalen och villkor.html på #proxy. Båda
     ankarna måste finnas kvar.
+  - VECKOBREVET (punkt 5) är OPT-IN och styrs av tabellen weekly_digest
+    (migrations/0007). Rutten är functions/api/digest/run.js, avregistreringen
+    functions/avregistrera.js. Tre påståenden i punkt 5 måste hålla mot koden:
+    att inget skickas utan att kunden själv slagit på det (ingen rad = inget
+    utskick), att avregistreringslänken fungerar UTAN inloggning, och att
+    brevets innehåll inte sparas. Ändras något av det ska punkt 5 skrivas om
+    samma dag. Rättslig grund är SAMTYCKE, inte berättigat intresse — den
+    skillnaden är hela skälet till att funktionen är avstängd som förval.
   - Typsnitten självhostas (/fonts/fonts.css). Skriv aldrig in Google Fonts här.
 -->
 
@@ -108,10 +116,10 @@
 <section>
   <div class="wrap narrow legal">
 
-    <div class="lead-meta">Integritetspolicy · Senast ändrad 2026-08-06</div>
+    <div class="lead-meta">Integritetspolicy · Senast ändrad 2026-08-17</div>
     <h1 class="section-title" style="font-size:clamp(30px,4vw,44px)">Så behandlas personuppgifter</h1>
     <p class="section-lead" style="margin-bottom:10px">Det du skriver i portalen skickas via våra servrar till den AI-leverantör som
-    producerar svaret. Den här sidan beskriver de fem behandlingar som finns, en i taget, med vad som samlas in, varför,
+    producerar svaret. Den här sidan beskriver de sex behandlingar som finns, en i taget, med vad som samlas in, varför,
     hur länge och vad du kan kräva. Är något oklart går det bra att fråga.</p>
 
     <!-- ============ 1. VEM ANSVARAR ============ -->
@@ -398,8 +406,29 @@
     aldrig oss. Går du till kassan men fullföljer inte betalningen raderas det
     påbörjade utkastet hos oss, normalt inom ett dygn.</p>
 
-    <!-- ============ BEHANDLING 5 ============ -->
-    <h3 id="statistik">5. Besöksstatistik</h3>
+    <!-- ============ 7. BEHANDLING 5 ============ -->
+    <h3 id="veckobrev">5. Om du slår på veckobrevet</h3>
+    <p>I portalen kan du välja att få teamets veckostart som mejl på en dag du
+    bestämmer. <b>Det är avstängt tills du slår på det själv</b>, och varje brev
+    innehåller en länk som stänger av det igen — den fungerar utan inloggning.</p>
+    <ul class="fakta">
+      <li><b>Uppgifter</b>Din e-postadress (samma som du loggar in med), vilket
+      team brevet gäller, vilken veckodag du valt och vilket datum det senaste
+      brevet skickades. Själva brevets innehåll sparar vi inte.</li>
+      <li><b>Ändamål</b>Att skicka det veckobrev du har bett om.</li>
+      <li><b>Rättslig grund</b>Ditt samtycke (artikel 6.1 a). Du tar tillbaka det
+      när du vill, i portalen eller via länken i brevet, och då upphör
+      utskicken.</li>
+      <li><b>Mottagare</b>Cloudflare, som lagrar inställningen, avsändartjänsten
+      som levererar mejlet, och AI-leverantören som skriver texten — se punkt 3
+      för vad som gäller där.</li>
+      <li><b>Lagringstid</b>Så länge du har veckobrevet påslaget. Stänger du av
+      det sparas inställningen i avstängt läge så att vi vet att du inte vill ha
+      brevet, och den raderas med kontot.</li>
+    </ul>
+
+    <!-- ============ 8. BEHANDLING 6 ============ -->
+    <h3 id="statistik">6. Besöksstatistik</h3>
     <p><b>I dag mäter webbplatsen ingenting.</b> Det finns inget analysverktyg, inga
     spårningsskript och inga kakor för statistik.</p>
     <p>När besöksstatistik införs blir den kakfri och räknar inte enskilda besökare
