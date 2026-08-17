@@ -20,3 +20,8 @@ npm-debug.log*
 # Provisionering: innehåller kunddata, hör hemma i databasen och inte i git
 scripts/.provision.sql
 scratch-*.json
+
+# D1-exporter (npm run db:backup). Innehåller kunddata — konton, betald åtkomst,
+# planstatus — och ska aldrig hamna i git. OBS: kopiorna skyddar därmed mot en
+# trasig migration men INTE mot en trasig disk. Flytta dem någon annanstans.
+/backup/

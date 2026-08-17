@@ -369,6 +369,36 @@ testsviten först** (sedan 2026-08-17) — CI triggar på push, deploy kräver i
 push, och utan den raden var de två skyddsnäten helt frånkopplade från det enda
 stället som betyder något.
 
+**Felövervakning (D3, byggd 2026-08-17):** `GET /api/health` svarar **200 när
+tjänsten kan svara kunder och 503 när den inte kan**. Den kontrollerar tre
+saker — att `OPENROUTER_KEY` finns, att D1 svarar, och om det kommit ett
+kreditfel (402 från OpenRouter) den senaste tjugo minuterna. Den gör **inget
+AI-anrop**: en vakt som pollar var femte minut hade kostat pengar dygnet runt.
+Svaret innehåller bara booleaner — rutten är öppen, eftersom en hälsokontroll
+bakom inloggning är en hälsokontroll ingen vakt kan använda, och antal anrop per
+dygn är affärsinformation.
+
+Underlaget kommer från nya tabellen `ai_errors` (`migrations/0006_ai_errors.sql`):
+dygn, felkod, antal och när det senast hände. Inget innehåll, ingen fråga, inget
+kund-ID — samma linje som `ai_usage`. `/api/ai` skriver dit vid uppströmsfel,
+nätfel och tömd kredit. Utan den skrivningen hade hälsokontrollen bara
+kontrollerat att nyckeln finns.
+
+**Två steg återstår och de är dina:** kör `npm run db:migrate` så tabellen finns
+skarpt, och peka en gratis uptime-vakt (UptimeRobot, Cloudflare Health Check,
+Better Stack) mot `https://mittaiteam.se/api/health` med larm till mejlen. Tills
+det andra är gjort finns spåret men ingen som tittar — vilket var exakt läget när
+B1 låg stum i tio dagar.
+
+**Backup av D1:** `npm run db:backup` (lägg till `-- --local` för emulatorns
+kopia) exporterar databasen till `backup/`, som är git-ignorerad. Skriptet
+avbryter om exporten saknar `users`, `teams` eller `team_access` — en export som
+"lyckades" men är tom är värre än ingen, för den ser ut som ett skyddsnät. D1 är
+den **enda** datakällan i systemet som inte går att återskapa: koden,
+prompterna och besluten ligger i git, men konton, betald åtkomst och planstatus
+finns bara där. **Kopiorna ligger på samma disk som repot** — de skyddar mot en
+trasig migration, inte mot en trasig disk. Flytta dem någon annanstans.
+
 **Rulla tillbaka kod och schema tillsammans.** Pages har rollback i sin
 dashboard, men migrationerna (`migrations/0001`–`0005`) är enkelriktade: det
 finns inga down-skript, och `ALTER TABLE ADD COLUMN` i 0003 och 0005 är inte

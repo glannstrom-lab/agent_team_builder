@@ -286,3 +286,36 @@ test("trasig JSON-kropp ger 400", async () => {
   const res = await onRequestPost({ request, env: env(), waitUntil: () => {} });
   assert.equal(res.status, 400);
 });
+
+// ── fel lämnar ett spår i ai_errors (D3) ──────────────────────────────────
+//
+// Varför: `console.error` i en Pages Function syns bara i
+// `wrangler pages deployment tail` medan någon aktivt tittar. Det var precis
+// därför B1 kunde ligga stum i tio dagar. Utan den här skrivningen har
+// /api/health ingenting att läsa, och då är hälsokontrollen bara en kontroll
+// av att nyckeln finns.
+test("402 uppströms bokförs som service_down i ai_errors", async () => {
+  const satser = [];
+  const db = {
+    prepare: (sql) => {
+      satser.push(sql);
+      return { bind: () => ({ first: async () => throttleRad(sql), run: async () => ({}) }) };
+    },
+    batch: async () => [],
+  };
+  const original = globalThis.fetch;
+  globalThis.fetch = async () => new Response("insufficient credits", { status: 402 });
+  try {
+    const res = await onRequestPost({
+      request: req({ system: "s", messages: [{ role: "user", content: "hej" }] }),
+      env: { DB: db, OPENROUTER_KEY: "sk-or-test" },
+      waitUntil: (p) => p,
+    });
+    assert.equal(res.status, 503, "tömd kredit är inte 'försök igen om en stund'");
+    const felSats = satser.find((s) => /INSERT INTO ai_errors/.test(s));
+    assert.ok(felSats, "inget fel bokfört — /api/health har då inget att läsa");
+    assert.match(felSats, /ON CONFLICT\(day, code\) DO UPDATE/, "ska räkna upp, inte skapa en rad per fel");
+  } finally {
+    globalThis.fetch = original;
+  }
+});

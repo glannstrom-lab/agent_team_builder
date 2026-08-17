@@ -469,9 +469,20 @@ export async function onRequestPost(context) {
     return db.batch(satser).catch((e) => console.error("[ai] kunde inte bokföra förbrukning", String(e)));
   };
 
+  // Fel bokförs som antal per dygn och kod — aldrig innehåll. Det är det enda
+  // spår som finns kvar efter att svaret gått: `console.error` i en Pages
+  // Function syns bara i `wrangler pages deployment tail` medan någon tittar,
+  // vilket är exakt varför B1 kunde ligga stum i tio dagar. `/api/health` läser
+  // den här tabellen, så en uptime-vakt kan larma i stället för en kund.
+  const bokförFel = (code) => db.prepare(
+    "INSERT INTO ai_errors (day, code, count, last_at) VALUES (?, ?, 1, ?) " +
+    "ON CONFLICT(day, code) DO UPDATE SET count = count + 1, last_at = excluded.last_at"
+  ).bind(utcDay(t), String(code || "okänd"), t).run()
+    .catch((e) => console.error("[ai] kunde inte bokföra fel", String(e)));
+
   return wantsJson
-    ? jsonSvar({ headers, payloadText, bokför, waitUntil })
-    : strömSvar({ headers, payloadText, bokför, waitUntil });
+    ? jsonSvar({ headers, payloadText, bokför, bokförFel, waitUntil })
+    : strömSvar({ headers, payloadText, bokför, bokförFel, waitUntil });
 }
 
 // ── JSON-läget: buffrat, med ETT omförsök ─────────────────────────────────
@@ -488,7 +499,7 @@ export async function onRequestPost(context) {
 // försök oftast lyckat (annan leverantör i ordningen, ny sampling), men två
 // misslyckanden i rad betyder något annat än otur — och en kund som väntar
 // tre gånger 60 sekunder har lämnat sidan.
-async function jsonSvar({ headers, payloadText, bokför, waitUntil }) {
+async function jsonSvar({ headers, payloadText, bokför, bokförFel, waitUntil }) {
   const deadline = nowMs() + JSON_DEADLINE_MS;
   const summa = { input: 0, output: 0 };
   let sista = null;
@@ -518,7 +529,7 @@ async function jsonSvar({ headers, payloadText, bokför, waitUntil }) {
   waitUntil(bokför(summa));
 
   if (!sista) return json({ error: FEL.timeout, code: "timeout" }, 408);
-  if (sista.kind === "http") return httpFel(sista.status, sista.detail);
+  if (sista.kind === "http") return httpFel(sista.status, sista.detail, bokförFel, waitUntil);
   if (sista.kind === "timeout") {
     console.error("[ai] tidsgräns i JSON-läget");
     // 408 och inte 504 med flit: atb-claude.js gör automatiska omförsök på
@@ -560,7 +571,7 @@ async function jsonFörsök(headers, payloadText, budgetMs) {
 }
 
 // ── prosaläget: strömmas vidare, med vakthund ─────────────────────────────
-async function strömSvar({ headers, payloadText, bokför, waitUntil }) {
+async function strömSvar({ headers, payloadText, bokför, bokförFel, waitUntil }) {
   const ctrl = new AbortController();
   let löpteUt = false;
   let stallTimer = null;
@@ -584,6 +595,7 @@ async function strömSvar({ headers, payloadText, bokför, waitUntil }) {
       return json({ error: FEL.timeout, code: "timeout" }, 408);
     }
     console.error("[ai] nätfel mot uppströms", String(e).slice(0, 400));
+    waitUntil(bokförFel("network"));
     return json({ error: FEL.uppström, code: "upstream" }, 502);
   }
 
@@ -591,7 +603,7 @@ async function strömSvar({ headers, payloadText, bokför, waitUntil }) {
     släck();
     const detalj = await upstream.text().catch(() => "");
     waitUntil(bokför(null));
-    return httpFel(upstream.status, detalj);
+    return httpFel(upstream.status, detalj, bokförFel, waitUntil);
   }
 
   // Räkna medan strömmen passerar. Alternativet — att låta klienten rapportera
@@ -697,8 +709,15 @@ async function strömSvar({ headers, payloadText, bokför, waitUntil }) {
 // Ett HTTP-fel uppströms översatt till något kunden kan göra något åt.
 // Detaljen loggas, inte returneras: den kan innehålla vår nyckels status och
 // leverantörsnamn som kunden inte har med att göra.
-function httpFel(status, detalj) {
+// `bokförFel` och `waitUntil` är valfria: httpFel anropas från två ställen som
+// båda har dem, men funktionen ska inte falla isär om ett tredje anropsställe
+// tillkommer utan. Bokföringen är det som gör felet läsbart i efterhand — se
+// /api/health, som är beroende av att just service_down hamnar i ai_errors.
+function httpFel(status, detalj, bokförFel, waitUntil) {
   console.error("[ai] uppströmsfel", status, String(detalj || "").slice(0, 400));
+  const spara = (code) => {
+    if (bokförFel && waitUntil) waitUntil(bokförFel(code));
+  };
 
   // Slut på pengar är inte samma sak som "försök igen om en stund" — det
   // löser sig aldrig av sig självt, och ett svar som ber kunden vänta gör
@@ -706,8 +725,10 @@ function httpFel(status, detalj) {
   // kod för tömd kredit; texten kan också nämna det vid andra statusar.
   if (status === 402 || /insufficient|credit|quota/i.test(String(detalj || ""))) {
     console.error("[ai] KREDITEN ÄR SLUT hos OpenRouter — fyll på, tjänsten står stilla");
+    spara("service_down");
     return json({ error: FEL.kredit, code: "service_down" }, 503);
   }
+  spara("upstream");
   return json({ error: FEL.uppström, code: "upstream" }, 502);
 }
 
