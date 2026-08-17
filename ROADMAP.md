@@ -19,11 +19,9 @@ Från genomgången 2026-08-17 · sju parallella linser + egen verifiering.
 ## Nu — riktiga fel
 
 - [ ] **P5** "Kopiera delningslänk" ger mottagaren en låst vy — texten är rättad, men vägen in för en kollega saknas fortfarande gränssnitt (`functions/api/team/invite.js` finns, oanropad) · `portal/app.js:2756` · `läst i koden` · ~1–2 h
-- [ ] **K2** Takkontrollen sker före uppströmsanropet, bokföringen efter — fönstret är hela genereringstiden. Kontrollerat igen 2026-08-17: `allowAttempt` på rad 340, `bokför` först vid 507/518/648 · `functions/api/ai.js:340`, `440-473` · `läst i koden` · ~3–4 h
 
 ## Sedan — skav som märks
 
-- [ ] **SE1** Tolv branscher delar ett dokument, en titel och en beskrivning. `verticals/index.html` har `<div id="root"></div>` som hela sin body och renderar allt ur `verticals.js` på `?v=<slug>`; metataggarna i head är statiska oavsett bransch, och `sitemap.xml` listar dem inte. "AI för tandläkare" har alltså ingen egen sida att ranka — och det är projektets bästa long-tail-yta · `verticals/index.html:34-38`, `sitemap.xml:1-5` · `läst i koden` · ~4–6 h
 - [ ] **BF2** Gratisbygget delar ut hela den betalda leveransen. `downloadConfig()` skriver `stripTeam(team)` till fil — inklusive varje agents fullständiga systemprompt — utan konto och utan betalning. Prompterna går att klistra in i gratis ChatGPT och köra löpande, vilket underminerar beslutet "noll provsvar" vars motivering är att det är teamet som säljs. Behöver ett medvetet beslut, inte en bieffekt · `builder/builder.js:1765-1772`, `index.html:604` · `läst i koden` · ~2–4 h
 - [ ] **BF3** Fyra prompter ligger öppet på webben, inklusive den filen projektet självt kallar nyckelsteget. Uppmätt: `curl …/prompts/shared/research.md` ger 200 och 17 807 byte klartext. Buildern måste kunna hämta dem klientsidan, så exponeringen har ett skäl — men `build-dist.mjs` säger att resten av `prompts/` är "konsult-IP", och den gränsen går inte att hålla samtidigt · `build-dist.mjs:45-53` · `mätt` · ~30 min (acceptera) / ~1 dag (serverside)
 - [ ] **BL2** Ångerrätten saknar knapp — kodens egen TODO, vars villkor nu inträffat · `villkor.html:508-514` · `läst i koden` · ~1–2 h
@@ -32,7 +30,6 @@ Från genomgången 2026-08-17 · sju parallella linser + egen verifiering.
 ## Framåt — utveckling
 
 - [ ] **KA4** "Två agenter delar inte perspektiv" kontrolleras bara som närvaro. Både `kontrolleraSystemprompter()` och golvet i `test/teams.mjs` kollar att rubriken `DITT PERSPEKTIV` finns — aldrig att innehållet under den skiljer sig mellan agenterna. Kravet är formulerat som mätbart men mäts inte · `builder/builder.js:993-1020`, `test/teams.mjs:100-113`, `test/examples.mjs:52-61` · `mätt` · ~3–4 h
-- [ ] **KA5** Skalningsstegets "räkna tyst, visa inte mellanstegen" har ingen kodkontroll, trots att `scale.md` själv skriver att en läckande tankekedja blir ett kundproblem eftersom steget visas live. `panel.textContent = acc` visar vad modellen än skickar · `builder/builder.js:850-858`, `prompts/shared/scale.md:63-65` · `läst i koden` · ~2–3 h
 - [ ] **KR2** "Beviset" är den enda ytan utan en riktig körning bakom sig. Hero säger "Ingen av dem är påhittad" och personalliggaren visar fyra anställda med status "I tjänst"; namnen Vera/Ester/Sixten/Malte finns bara i `design/`-skisserna och i `index.html`, och innehållet är lerverk-exemplets form med andra namn. Sex riktiga körningar ligger i `examples/` — anspråket går att göra sant billigt · `index.html:145`, `:163`, `:216-218` · `läst i koden` · ~15 min–1 h
 - [ ] **P1** Ingen mätning av var köpresan läcker. Kontrollerat igen 2026-08-17: de enda träffarna på `gtag`/`analytics` i repot är en **CSS-klass** som heter `.gtag`. Cloudflare Web Analytics är gratis, cookiefri och kräver ingen CSP-ändring · `index.html` (inga taggar) · `mätt` · ~20 min–1 h
 - [ ] **P6** Auto-körda rutiners "ligger klar"-bevis överlever inte en omladdning · `portal/app.js:2242` · `läst i koden` · ~2 h
@@ -63,6 +60,57 @@ Rättade direkt i filerna (rent git-träd). Raderna står i terminalsvaret.
 - `docs/roadmap.md` pass 6 — 429-fyndet är redan åtgärdat, och radnumren för nyckeltexten i `portal/app.js` pekar på annan kod i dag.
 
 ## Klart
+
+- [x] **SE1** Tolv branscher har tolv riktiga sidor — löst 2026-08-17. Uppmätt
+  före och efter i webbläsare **med JavaScript avstängt** (det en sökmotor utan
+  rendering ser): **0 tecken innehåll före, 1 640 efter.** Med JS på: samma h1,
+  samma agentkort, inga konsolfel, och sidan ritas *inte* om till galleriet.
+
+  Sidorna renderas med **klientens egen `renderSingle()`**, körd i Node med ett
+  stubbat `window`/`document`. Det är hela poängen: ett andra, handskrivet
+  HTML-bygge hade blivit ett andra ställe där layouten kan glida, och den fällan
+  har projektet redan gått i (`PORTAL_RULES` mot `portal-team.md`). Ändras
+  branschsidan i `app.js` följer de tolv statiska sidorna med automatiskt.
+
+  Filnamnet är `verticals/<slug>.html`, alltså samma katalognivå som
+  `index.html` — då gäller varje relativ länk oförändrat. `<base href>` hade
+  varit alternativet men CSP:n sätter `base-uri 'none'`. `getV()` känner nu igen
+  branschen ur **sökvägen** också, annars hade `boot()` ritat om den statiska
+  sidan till galleriet. Sitemapen skrivs vid bygget på en markör (13 → 25 URL:er)
+  och gallerikorten pekar på de nya adresserna. Grind i `check-dist.mjs`: varje
+  bransch måste ha både en sida och en sitemap-rad — provad genom att ta bort en.
+
+  Att lägga till en bransch är därmed fortfarande **en** ändring: ett objekt i
+  `verticals.js`.
+
+- [x] **K2** Anropet räknas innan pengarna spenderas — löst 2026-08-17.
+  Bokföringen är delad i två steg: `räkna(1, null)` **före** uppströms och
+  väntad på, tokens efteråt med `räkna(0, used)` så anropet inte räknas
+  dubbelt. Reservationen är **fail-closed** — går den inte att skriva svarar
+  rutten 503 och inget anrop går uppströms.
+
+  **Fönstret är krympt, inte borta,** och det står i koden: kvar är glappet
+  mellan sista takläsningen och skrivningen, alltså två DB-anrop i stället för
+  hela genereringstiden. Att stänga det helt kräver `allowAttempt`-greppet
+  (`RETURNING calls` per tak i stället för att läsa först) — fyra rader i två
+  tabeller, och de befintliga taktesterna stubbar SELECT-vägen, så det är en
+  ombyggnad. Att det får vänta beror på att `allowAttempt` redan är atomär och
+  bara släpper 24 anrop per kvart och IP på den fria rutten; överskridandet
+  begränsas därmed till dem som råkar ligga i millisekundglappet, och kostnaden
+  för det är ören.
+
+  Två tester mäter **garantin, inte implementationen**: att räkningen är skriven
+  när `fetch` körs (stubben ögonblicksbildar skrivningarna just då), och att
+  inga pengar spenderas när räkningen inte går att skriva.
+
+- [x] **KA5** Skalningssteget kan inte längre läcka tankekedja — löst
+  2026-08-17. `scale.md` skrev "räkna tyst" och motiverade det med att Buildern
+  visar steget live för kunden, men koden visade vad som än kom.
+  `rensaSkalning()` plockar ut de två beställda raderna och är **strikt mot brus,
+  förlåtande mot format**: hittas inget `Skalningsbeslut:` visas råtexten, för
+  ett beslut som inte når kunden är värre än ett beslut med brus omkring. Den
+  rensade texten går också vidare till proposal-steget — nästa steg ska läsa vad
+  som beslutats, inte tvekan. Sju tester, valda efter vad en modell faktiskt gör.
 
 - [x] **BL4** Backup av D1 — löst 2026-08-17. `npm run db:backup` exporterar till
   `backup/` (git-ignorerad; `-- --local` för emulatorns kopia). Skriptet avbryter
