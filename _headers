@@ -1,9 +1,19 @@
 /*
-  Content-Security-Policy: default-src 'self'; connect-src 'self' https://openrouter.ai; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'self' https://checkout.stripe.com; frame-ancestors 'none'
+  Content-Security-Policy: default-src 'self'; connect-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'self' https://checkout.stripe.com; frame-ancestors 'none'
   Strict-Transport-Security: max-age=31536000; includeSubDomains
   Referrer-Policy: no-referrer
   X-Content-Type-Options: nosniff
   X-Frame-Options: DENY
+
+# ── connect-src är 'self' och inget mer (snävt 2026-08-17) ──────────────────
+# Här stod tidigare `'self' https://openrouter.ai`, en kvarleva från tiden när
+# kundens webbläsare pratade direkt med leverantören på kundens egen nyckel.
+# Den vägen är borta sedan 2026-08-06: atb-claude.js känner ingen
+# leverantörs-URL, allt går till /api/ai, och serverns anrop uppströms lyder
+# inte under sidans CSP. Undantaget var alltså dött — men det stod kvar som en
+# godkänd destination att skicka data till, vilket är precis vad connect-src
+# finns för att stänga. Lägg inte tillbaka det utan att först ha en klient som
+# behöver det.
 
 # ── Här låg en lista med `Cache-Control: no-cache` per fil. Den är borta,
 # ── för den gjorde ingenting. Uppmätt 2026-08-16, i produktion:

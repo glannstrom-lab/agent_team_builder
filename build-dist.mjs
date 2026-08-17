@@ -142,6 +142,9 @@ let stämplade = 0;
 // `openrouter is not defined` byggde på att hämta den skarpa filen och läsa
 // den. Konsekvensen att leva med är att klientkoden är offentlig läsning, och
 // den regeln gäller ändå: ingenting hemligt får ligga i den.
+// Markören som byts mot genererat FAQPage-schema. Står i index.html.
+const FAQ_MARKÖR = '<script type="application/ld+json" data-faq-schema></script>';
+
 let strippade = 0;
 function striptHtml(fil, src) {
   for (const m of src.matchAll(/<(script|style)\b[^>]*>([\s\S]*?)<\/\1>/gi)) {
@@ -155,10 +158,49 @@ function striptHtml(fil, src) {
   return src.replace(/<!--[\s\S]*?-->/g, (m) => { strippade += m.length; return ""; });
 }
 
+// ── FAQPage-schema, genererat ur den synliga FAQ:n ─────────────────────────
+//
+// Google kräver att FAQ-markup matchar det besökaren faktiskt ser. Skrevs
+// frågorna och svaren av HAND i ett JSON-LD-block hade de duplicerat 1,5 kB
+// prosa i samma fil som originalet — alltså glidit isär vid första
+// omformuleringen, och en FAQ-markup som inte stämmer är sämre än ingen.
+// Därför läses de ur `<details>`-blocken vid bygget. Källfilen bär bara en tom
+// markör, så det finns ingenting att hålla synkroniserat.
+let faqAntal = 0;
+function fyllFaqSchema(fil, src) {
+  if (!src.includes(FAQ_MARKÖR)) return src;
+  const par = [];
+  for (const m of src.matchAll(/<summary>([\s\S]*?)<\/summary>\s*<div class="fa">([\s\S]*?)<\/div>/g)) {
+    const text = (s) => s.replace(/<[^>]+>/g, "")
+      .replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").replace(/&quot;/g, '"')
+      .replace(/&#39;/g, "'").replace(/&lt;/g, "<").replace(/&gt;/g, ">")
+      .replace(/\s+/g, " ").trim();
+    par.push({ q: text(m[1]), a: text(m[2]) });
+  }
+  if (!par.length) {
+    console.error(`\n  ✖  BYGGET STOPPAT — ${fil} har FAQ-markören men inga <details>-par att bygga av.` +
+      "\n     Antingen togs FAQ:n bort (ta då bort markören) eller ändrade den form.\n");
+    process.exit(1);
+  }
+  faqAntal = par.length;
+  const schema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: par.map(({ q, a }) => ({
+      "@type": "Question", name: q,
+      acceptedAnswer: { "@type": "Answer", text: a },
+    })),
+  };
+  // </script> inuti en JSON-sträng skulle stänga taggen för tidigt.
+  const json = JSON.stringify(schema).replace(/<\//g, "<\\/");
+  return src.replace(FAQ_MARKÖR, `<script type="application/ld+json">${json}</script>`);
+}
+
 for (const fil of distFiler.filter((f) => f.endsWith(".html"))) {
   const dir = dirname(fil);
   const före = readFileSync(fil, "utf8");
-  const utanKommentarer = striptHtml(fil, före);
+  const medFaq = fyllFaqSchema(fil, före);
+  const utanKommentarer = striptHtml(fil, medFaq);
   const efter = utanKommentarer.replace(/(\b(?:src|href)=")([^"]+)(")/g, (hel, pre, url, post) => {
     const ny = stämpla(url, dir);
     if (ny !== url) stämplade++;
@@ -204,6 +246,7 @@ if (existsSync(swPath)) {
   console.log(`sw.js: SHELL versionsstämplad, cache = ${cacheRad[1]}-${skalHash}`);
 }
 
+console.log(`FAQPage-schema genererat ur ${faqAntal} synliga frågor`);
 console.log(`versionsstämplade ${stämplade} tillgångsreferenser i HTML`);
 console.log(`strippade ${(strippade / 1024).toFixed(1)} kB HTML-kommentarer (arbetsanteckningar publiceras inte)`);
 console.log("dist/ byggd med:", ITEMS.join(", "), "+ " + PROMPT_FILES.length + " prompt-filer");

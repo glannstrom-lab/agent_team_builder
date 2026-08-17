@@ -96,10 +96,57 @@ if (existsSync(swPath)) {
   }
 }
 
+// ── Strukturerad data ──────────────────────────────────────────────────────
+//
+// FAQPage-schemat genereras vid bygget ur de synliga <details>-blocken
+// (fyllFaqSchema i build-dist.mjs). Två saker kan ändå gå fel: JSON:en kan bli
+// syntaktiskt trasig av ett citattecken i ett svar, och markören kan bli kvar
+// tom om FAQ:n bytt form — då publiceras en tom script-tagg, och Google får en
+// FAQ-markup utan innehåll. Google straffar dessutom markup som inte matchar
+// det besökaren ser, så varje fråga och svar kontrolleras mot sidans text.
+const jsonLdFel = [];
+const startsida = join("dist", "index.html");
+if (existsSync(startsida)) {
+  const html = readFileSync(startsida, "utf8");
+  if (html.includes("data-faq-schema")) {
+    jsonLdFel.push("index.html: FAQ-markören är kvar ofylld — schemat genererades inte");
+  }
+  const LD = /<script type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/g;
+  const block = [...html.matchAll(LD)].map((m) => m[1].trim()).filter(Boolean);
+  // Sök frågorna i sidan UTAN schemablocken. Annars hittar kontrollen texten
+  // inne i sitt eget JSON-LD och godkänner sig själv — den första versionen av
+  // den här kontrollen gjorde precis det, och upptäcktes bara genom att ett
+  // synligt svar ändrades med flit och grinden ändå var grön.
+  const synligt = html.replace(LD, "");
+  if (!block.length) jsonLdFel.push("index.html: inget JSON-LD alls");
+  let frågor = 0;
+  for (const [i, b] of block.entries()) {
+    let data;
+    try {
+      data = JSON.parse(b.split("<\\/").join("</"));
+    } catch (e) {
+      jsonLdFel.push(`index.html: JSON-LD-block ${i + 1} går inte att tolka (${e.message})`);
+      continue;
+    }
+    if (data["@type"] !== "FAQPage") continue;
+    for (const q of data.mainEntity || []) {
+      frågor++;
+      if (!synligt.includes(q.name)) jsonLdFel.push(`FAQ-frågan finns inte som synlig text: "${q.name}"`);
+      const bit = (q.acceptedAnswer && q.acceptedAnswer.text || "").slice(0, 40);
+      if (bit && !synligt.includes(bit)) jsonLdFel.push(`FAQ-svaret finns inte som synlig text: "${bit}…"`);
+    }
+  }
+  if (!frågor) jsonLdFel.push("index.html: FAQPage saknar frågor");
+  if (!jsonLdFel.length) {
+    console.log(`✓  JSON-LD tolkar rent, och FAQPage:s ${frågor} frågor och svar finns som synlig text`);
+  }
+}
+fel.push(...jsonLdFel);
+
 if (fel.length) {
-  console.error(`\n✖  ${fel.length} problem med versionsstämplingen i dist/:\n`);
+  console.error(`\n✖  ${fel.length} problem i dist/:\n`);
   fel.forEach((f) => console.error("   " + f));
-  console.error("\n   Stämplingen sätts i build-dist.mjs.\n");
+  console.error("\n   Stämplingen och JSON-LD-genereringen sätts båda i build-dist.mjs.\n");
   process.exit(1);
 }
 

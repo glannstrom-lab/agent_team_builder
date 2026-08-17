@@ -27,6 +27,43 @@ if (location.hostname === 'agent-team-builder-2xy.pages.dev') location.replace('
 <link rel="preload" href="/fonts/archivo-var-latin.woff2" as="font" type="font/woff2" crossorigin />
 <link rel="stylesheet" href="/fonts/fonts.css" />
 <link rel="stylesheet" href="site/showcase.css" />
+
+<!-- Strukturerad data. Organisationen och prisnivåerna står här för hand
+     eftersom de är korta och stabila; beloppen är LÅSTA och måste följa
+     prislistan nedan, avsnitt 4 i villkor.html och TIERS i _stripe.js — ett
+     test i test/stripe.mjs fäller bygget om de glider isär.
+
+     FAQ:n står INTE här. Den genereras vid bygget ur de synliga
+     <details>-blocken (se fyllFaqSchema i build-dist.mjs), eftersom Google
+     kräver att markupen matchar det besökaren ser — och sex handkopierade svar
+     i samma fil som originalet hade glidit isär vid första omformuleringen.
+     Markören nedan är tom med flit; den fylls i dist/. -->
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Organization",
+ "name":"Mitt AI-team",
+ "url":"https://mittaiteam.se/",
+ "logo":"https://mittaiteam.se/og.png",
+ "description":"Skräddarsydda team av AI-agenter för små och medelstora företag. Verksamhetens faktiska vecka kartläggs, och en agent anställs per moment som är värt en agent.",
+ "areaServed":"SE",
+ "knowsLanguage":"sv"}
+</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Product",
+ "name":"Mitt AI-team",
+ "description":"Ett team av AI-agenter byggt för hur just er verksamhet jobbar i veckan. Bygget är gratis; portalen där teamet används är abonnemang.",
+ "brand":{"@type":"Brand","name":"Mitt AI-team"},
+ "url":"https://mittaiteam.se/#priser",
+ "offers":[
+  {"@type":"Offer","name":"Bygg teamet","price":"0","priceCurrency":"SEK","availability":"https://schema.org/InStock",
+   "description":"Bygg ett komplett teamförslag. Inget konto, inget kort, obegränsat antal körningar.","url":"https://mittaiteam.se/builder/"},
+  {"@type":"Offer","name":"Provmånad","price":"90","priceCurrency":"SEK","availability":"https://schema.org/InStock",
+   "description":"Engångsbetalning för 30 dagar i portalen med ert eget team.","url":"https://mittaiteam.se/#priser"},
+  {"@type":"Offer","name":"Standard","price":"290","priceCurrency":"SEK","availability":"https://schema.org/InStock",
+   "description":"Löpande abonnemang per månad. Uppsägningsbart när som helst.","url":"https://mittaiteam.se/#priser"}
+ ]}
+</script>
+<script type="application/ld+json" data-faq-schema></script>
+
 <style>
   /* ---- sidspecifikt: hero-sidokort, problem, flöde, priser, upplägg, FAQ ---- */
   .hero-grid { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,.8fr); gap: 52px; align-items: end; }
