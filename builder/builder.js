@@ -739,8 +739,47 @@ Bedöm om research-steget kan arbeta med det: konkreta veckomoment (helst med ti
 Svara EXAKT "OK" om underlaget räcker.
 Annars: ställ 1–2 korta följdfrågor som skulle göra störst skillnad — en per rad, varje rad börjar med "- ". Fråga bara om sådant som inte redan står i underlaget. Inga andra ord, ingen inledning.`;
 
+// ── ENKÄT UTAN FRITEXT ÄR INTE ETT UNDERLAG (KA1) ──────────────────────────
+//
+// Uppmätt 2026-08-17: två salonger som kryssar samma bransch, samma kunder och
+// samma moment får ett intake-block som är IDENTISKT byte för byte utom raden
+// `företagsnamn:` — 798 tecken, en rad skiljer. Research kan inte hitta något
+// särskiljande i det, för det finns ingenting där: alla värden kommer ur fasta
+// listor. Följden vore två kunder med samma team och olika namn på fasaden,
+// alltså precis det projektet finns för att undvika.
+//
+// Enkäten ska finnas kvar — den som har svårt att formulera sin verksamhet ska
+// kunna bygga. Men då måste minst en fråga besvaras med egna ord, och den
+// frågan är inte längre valfri. Det är också den kunden som minst kan upptäcka
+// att resultatet blivit generiskt, så ribban kan inte ligga hos henne.
+function enkatBaradIntake(intake) {
+  const fält = intake.audience === "person"
+    ? [intake.role, intake.workplace, intake.moments, intake.pains, intake.expectations]
+    : [intake.what, intake.moments, intake.pains, intake.goals, intake.nogo];
+  // 15 tecken: "nej", "vet ej" och "-" är inte beskrivningar.
+  return !fält.some((s) => (s || "").trim().length >= 15);
+}
+
+// Reservfrågor när intaget bara är kryss. Används om AI-anropet fallerar ELLER
+// svarar "OK" — för ett rent enkätintag är "OK" alltid fel svar, och den gamla
+// koden startade då pipelinen direkt. Frågorna är valda för att bara kunna
+// besvaras av just den här verksamheten: en bransch-, kund- eller verktygslista
+// kan inte innehålla svaret.
+const ENKAT_RESERVFRAGOR = {
+  verksamhet: [
+    "Beskriv förra veckan med egna ord: vad tog mest tid, och vad blev inte gjort?",
+    "Vad skulle en kund säga skiljer er från någon annan i samma bransch?",
+  ],
+  person: [
+    "Beskriv förra veckan med egna ord: vad tog mest tid, och vad blev inte gjort?",
+    "Vilken uppgift skulle du helst slippa i morgon — och vad är det som gör den jobbig?",
+  ],
+};
+
 async function clarifyThenBuild(intake, form, btn) {
   if (state.busy) return;
+  const person = intake.audience === "person";
+  const baraKryss = enkatBaradIntake(intake);
   const orig = btn.textContent;
   btn.disabled = true; btn.textContent = "Läser dina svar…";
   let out = "OK";
@@ -749,23 +788,43 @@ async function clarifyThenBuild(intake, form, btn) {
       apiKey: state.apiKey, model: state.model,
       // Följdfrågorna måste fråga om rätt sak. Utan tillägget nedan frågar
       // modellen gärna en ekonomiassistent hur många anställda hon har.
-      system: CLARIFY_PROMPT + (intake.audience === "person"
-        ? "\nUNDERLAGET GÄLLER EN ENSKILD PERSON i sitt jobb. Fråga om personens vecka, roll, system och förväntningar — aldrig om företagets storlek, kunder, omsättning eller marknadsföring."
-        : ""),
+      system: CLARIFY_PROMPT
+        + (person
+          ? "\nUNDERLAGET GÄLLER EN ENSKILD PERSON i sitt jobb. Fråga om personens vecka, roll, system och förväntningar — aldrig om företagets storlek, kunder, omsättning eller marknadsföring."
+          : "")
+        + (baraKryss
+          ? "\nUNDERLAGET KOMMER HELT FRÅN KRYSSVAL i en enkät med fasta listor. Det innehåller därför ingenting som skiljer den här verksamheten från vilken annan som helst i samma bransch. Svara ALDRIG \"OK\". Ställ två frågor som bara just den här verksamheten kan besvara — om förra veckan konkret, om vad som blev ogjort, om vad som gör den svår. Fråga inte om något som en lista kunde ha innehållit (bransch, verktyg, kundtyp)."
+          : ""),
       messages: [{ role: "user", content: buildIntakeBlock(intake) }],
       maxTokens: 300,
     })).trim();
-  } catch (_) { /* följdfrågor är nice-to-have — fortsätt utan */ }
+  } catch (_) { /* följdfrågor är nice-to-have — utom vid rent enkätintag, se nedan */ }
   btn.disabled = false; btn.textContent = orig;
-  const qs = /^ok\b/i.test(out) ? [] : out.split("\n").map((s) => s.replace(/^[-•\d.)\s]+/, "").trim()).filter(Boolean).slice(0, 2);
+  let qs = /^ok\b/i.test(out) ? [] : out.split("\n").map((s) => s.replace(/^[-•\d.)\s]+/, "").trim()).filter(Boolean).slice(0, 2);
+  // Vid rent enkätintag får vägen förbi frågorna inte finnas. Det gäller även
+  // när AI-anropet fallerade eller svarade "OK": utan egna ord någonstans i
+  // underlaget blir teamet en branschmall, och då är det bättre att fråga med
+  // fasta frågor än att bygga på ingenting.
+  if (baraKryss && !qs.length) qs = ENKAT_RESERVFRAGOR[person ? "person" : "verksamhet"];
   if (!qs.length) { runBuild(intake); return; }
-  renderClarify(form, intake, qs);
+  renderClarify(form, intake, qs, baraKryss);
 }
 
-function renderClarify(form, intake, qs) {
+function renderClarify(form, intake, qs, tvingande) {
   form.querySelector(".clarify-box")?.remove();
   const box = el("div", "clarify-box");
-  box.appendChild(el("div", "clarify-title", "Snabba följdfrågor — svaren gör analysen skarpare"));
+  box.appendChild(el("div", "clarify-title", tvingande
+    ? "Ett svar med egna ord behövs — kryssen räcker inte hela vägen"
+    : "Snabba följdfrågor — svaren gör analysen skarpare"));
+  if (tvingande) {
+    // Säg varför, i klartext. Kunden som valt enkäten gjorde det för att det är
+    // svårt att formulera verksamheten; att då bara spärra knappen utan
+    // förklaring läser som att formuläret krånglar.
+    box.appendChild(el("p", "clarify-note",
+      "Enkätens val säger vilken bransch ni är i, men inte vad som gör just er vecka till er. "
+      + "Utan en mening med egna ord blir teamet en branschmall — och det är inte vad vi bygger. "
+      + "Ett par rader räcker."));
+  }
   const inputs = qs.map((q, i) => {
     const r = el("div", "frow");
     const lab = el("label", "flabel", q);
@@ -781,14 +840,29 @@ function renderClarify(form, intake, qs) {
     return { q, t };
   });
   const row = el("div", "clarify-actions");
+  const fel = el("div", "setup-err"); fel.setAttribute("role", "alert"); fel.style.display = "none";
   const go = el("button", "btn-primary", "Fortsätt — bygg teamet"); go.type = "button";
   go.onclick = () => {
+    const svarade = inputs.map(({ t }) => t.value.trim()).filter((v) => v.length >= 15);
+    if (tvingande && !svarade.length) {
+      fel.textContent = "⚠️ Skriv ett svar på minst en av frågorna — en mening räcker.";
+      fel.style.display = "block";
+      inputs[0]?.t.focus();
+      return;
+    }
+    fel.style.display = "none";
     const extra = inputs.map(({ q, t }) => `**${q}**\n${t.value.trim() || "(inget svar)"}`).join("\n\n");
     runBuild(Object.assign({}, intake, { extra }));
   };
-  const skip = el("button", "link-btn", "Hoppa över och bygg direkt"); skip.type = "button";
-  skip.onclick = () => runBuild(intake);
-  row.append(go, skip); box.appendChild(row);
+  row.appendChild(go);
+  // "Hoppa över" finns bara när underlaget redan bär egna ord. Vid ett rent
+  // enkätintag vore den vägen tillbaka till det fyndet fixen handlar om.
+  if (!tvingande) {
+    const skip = el("button", "link-btn", "Hoppa över och bygg direkt"); skip.type = "button";
+    skip.onclick = () => runBuild(intake);
+    row.appendChild(skip);
+  }
+  box.appendChild(row); box.appendChild(fel);
   form.appendChild(box);
   box.scrollIntoView({ behavior: "smooth", block: "center" });
   inputs[0]?.t.focus();

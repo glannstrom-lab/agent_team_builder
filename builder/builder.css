@@ -249,6 +249,10 @@ select.fin { cursor: pointer; }
 }
 @keyframes clarifyIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 .clarify-title { font-weight: 700; font-size: 14px; color: var(--accent-2); }
+/* Förklaringen vid tvingande följdfråga (rent enkätintag). Brödtext, inte
+   varningsröd: det är inget fel kunden gjort, det är ett underlag som saknar
+   det enda enkäten inte kan ge. */
+.clarify-note { font-size: 14.5px; color: var(--text-dim); line-height: 1.6; margin: 8px 0 0; max-width: 62ch; }
 .clarify-actions { display: flex; align-items: center; gap: 16px; }
 
 /* ---------- återuppta sparad körning ---------- */
