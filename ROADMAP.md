@@ -24,12 +24,8 @@ Från genomgången 2026-08-17 · sju parallella linser + egen verifiering.
 ## Sedan — skav som märks
 
 - [ ] **SE1** Tolv branscher delar ett dokument, en titel och en beskrivning. `verticals/index.html` har `<div id="root"></div>` som hela sin body och renderar allt ur `verticals.js` på `?v=<slug>`; metataggarna i head är statiska oavsett bransch, och `sitemap.xml` listar dem inte. "AI för tandläkare" har alltså ingen egen sida att ranka — och det är projektets bästa long-tail-yta · `verticals/index.html:34-38`, `sitemap.xml:1-5` · `läst i koden` · ~4–6 h
-- [ ] **KR1** Branschsidorna länkar aldrig till Buildern. Noll träffar på `builder` i hela `verticals/`; nav-CTA:t är "Priser" och knapparna är demo, priser och "boka samtal". `index.html:123-125` har en uttalad princip om att nav-CTA:t **är** Buildern. Den bransch-specifika besökaren — den mest köpbenägna — har därmed längst väg till att bygga sitt eget team · `verticals/app.js:25`, `:88`, `:116` · `mätt` · ~30–45 min
-- [ ] **KA2** `triggers` genereras och betalas i varje bygge men når aldrig kunden. `TEAM_SCHEMA` kräver fältet och prompten fyller det, men `stripTeam()` utelämnar det ur allt som lämnar Buildern (utkast, delningslänk, checkout-konfig, export), `portal/app.js` läser det aldrig, och `templates/shared/portal-team.md` nämner det inte — så 0 av 14 teamfiler har det. Antingen visa det i portalen eller ta bort det ur schemat · `builder/builder.js:1063`, `:928`, `:1657-1658`, `templates/shared/portal-team.md:84-108` · `mätt` · ~20–45 min
 - [ ] **BF2** Gratisbygget delar ut hela den betalda leveransen. `downloadConfig()` skriver `stripTeam(team)` till fil — inklusive varje agents fullständiga systemprompt — utan konto och utan betalning. Prompterna går att klistra in i gratis ChatGPT och köra löpande, vilket underminerar beslutet "noll provsvar" vars motivering är att det är teamet som säljs. Behöver ett medvetet beslut, inte en bieffekt · `builder/builder.js:1765-1772`, `index.html:604` · `läst i koden` · ~2–4 h
 - [ ] **BF3** Fyra prompter ligger öppet på webben, inklusive den filen projektet självt kallar nyckelsteget. Uppmätt: `curl …/prompts/shared/research.md` ger 200 och 17 807 byte klartext. Buildern måste kunna hämta dem klientsidan, så exponeringen har ett skäl — men `build-dist.mjs` säger att resten av `prompts/` är "konsult-IP", och den gränsen går inte att hålla samtidigt · `build-dist.mjs:45-53` · `mätt` · ~30 min (acceptera) / ~1 dag (serverside)
-- [ ] **DR3** Mejl-secrets är odokumenterade. Tjänsten behöver minst åtta Pages-secrets; `MAIL_API_KEY`, `MAIL_FROM` och `MAIL_PROVIDER` nämns bara i `functions/api/auth/_lib.js`, inte i `docs/` eller `CLAUDE.md`. Vid en återuppsättning finns ingen lista att gå efter. (Felhanteringen är däremot bra: alla tre kastar explicit.) · `functions/api/auth/_lib.js:267,277`, `docs/lansering.md:115-116` · `mätt` · ~20 min
-- [ ] **DR4** 3,3 MB tredjepartskod i `portal/vendor/` utan versionsspår — pdf.js, mammoth och xlsx ligger inklistrade utan lockfile, källa eller datum, och pdf.js parsar kundens uppladdade filer. Ingen `npm audit`, inget Dependabot, ingen väg att veta vilken version som körs när en CVE dyker upp · `portal/vendor/*` · `mätt` · ~30 min + ~15 min/kvartal
 - [ ] **BL2** Ångerrätten saknar knapp — kodens egen TODO, vars villkor nu inträffat · `villkor.html:508-514` · `läst i koden` · ~1–2 h
 - [ ] **K4** Bygg-rutten är en oautentiserad LLM-proxy och en väg tillbaka för uppsagda · `functions/api/ai.js:252-293` · `läst i koden` · ~4–6 h
 
@@ -38,9 +34,6 @@ Från genomgången 2026-08-17 · sju parallella linser + egen verifiering.
 - [ ] **KA4** "Två agenter delar inte perspektiv" kontrolleras bara som närvaro. Både `kontrolleraSystemprompter()` och golvet i `test/teams.mjs` kollar att rubriken `DITT PERSPEKTIV` finns — aldrig att innehållet under den skiljer sig mellan agenterna. Kravet är formulerat som mätbart men mäts inte · `builder/builder.js:993-1020`, `test/teams.mjs:100-113`, `test/examples.mjs:52-61` · `mätt` · ~3–4 h
 - [ ] **KA5** Skalningsstegets "räkna tyst, visa inte mellanstegen" har ingen kodkontroll, trots att `scale.md` själv skriver att en läckande tankekedja blir ett kundproblem eftersom steget visas live. `panel.textContent = acc` visar vad modellen än skickar · `builder/builder.js:850-858`, `prompts/shared/scale.md:63-65` · `läst i koden` · ~2–3 h
 - [ ] **KR2** "Beviset" är den enda ytan utan en riktig körning bakom sig. Hero säger "Ingen av dem är påhittad" och personalliggaren visar fyra anställda med status "I tjänst"; namnen Vera/Ester/Sixten/Malte finns bara i `design/`-skisserna och i `index.html`, och innehållet är lerverk-exemplets form med andra namn. Sex riktiga körningar ligger i `examples/` — anspråket går att göra sant billigt · `index.html:145`, `:163`, `:216-218` · `läst i koden` · ~15 min–1 h
-- [ ] **TG5** "Får plats i minnet"-pricken (●/◐/○) förklaras bara i ett `title`-attribut på en icke-fokuserbar `<span>` — den som inte kan hovra får aldrig veta att ett underlag kapades och att agenten alltså inte läst dokumentet · `portal/app.js:3493-3503` · `läst i koden` · ~30 min
-- [ ] **DR5** Migrationer är enkelriktade: koden går att rulla tillbaka i Pages-dashboarden, schemat inte. Behöver en rad om att kod och schema rullas tillbaka ihop, inte var för sig · `migrations/0001-0005` · `läst i koden` · ~15 min
-- [ ] **SE5** Ingen strukturerad data någonstans (0 träffar på `application/ld+json` i hela repot), trots att sidan redan har en FAQ med sex frågor och en prislista. `FAQPage`, `Organization` och `Product`/`Offer` kostar bara markup och är det enda konkurrensmedlet i sökresultatet för en sajt utan varumärke · `index.html:587-608`, `:381` · `mätt` · ~1,5–2 h
 - [ ] **P1** Ingen mätning av var köpresan läcker. Kontrollerat igen 2026-08-17: de enda träffarna på `gtag`/`analytics` i repot är en **CSS-klass** som heter `.gtag`. Cloudflare Web Analytics är gratis, cookiefri och kräver ingen CSP-ändring · `index.html` (inga taggar) · `mätt` · ~20 min–1 h
 - [ ] **D3** Ingen felövervakning; "krediten är slut" skrivs till en logg ingen läser. `console.error` i Pages Functions syns bara i `wrangler pages deployment tail` medan någon tittar. Krediten kan ta slut kl 03 och portalen svara 503 till morgonen · `functions/api/ai.js:700-711` · `mätt` · ~2 h
 - [ ] **P6** Auto-körda rutiners "ligger klar"-bevis överlever inte en omladdning · `portal/app.js:2242` · `läst i koden` · ~2 h
@@ -72,6 +65,69 @@ Rättade direkt i filerna (rent git-träd). Raderna står i terminalsvaret.
 - `docs/roadmap.md` pass 6 — 429-fyndet är redan åtgärdat, och radnumren för nyckeltexten i `portal/app.js` pekar på annan kod i dag.
 
 ## Klart
+
+- [x] **SE5** Strukturerad data finns — löst 2026-08-17. Tre block på startsidan:
+  `Organization`, `Product` med tre `Offer` (0/90/290 SEK) och `FAQPage`.
+  **FAQ:n är genererad vid bygget** ur de synliga `<details>`-blocken
+  (`fyllFaqSchema` i `build-dist.mjs`), inte handskriven: Google kräver att
+  markupen matchar det besökaren ser, och sex handkopierade svar i samma fil som
+  originalet hade glidit isär vid första omformuleringen. Källfilen bär en tom
+  markör, så det finns ingenting att hålla synkroniserat.
+
+  Grinden i `scripts/check-dist.mjs` (CI + bygge + deploy) fångar båda
+  felmoderna: JSON som inte tolkar, och markup som inte matchar sidans text.
+  **Den första versionen av grinden godkände sig själv** — den sökte frågorna i
+  hela dokumentet, alltså även inne i sitt eget JSON-LD, och var grön oavsett
+  vad den synliga texten sa. Upptäcktes bara genom att ett svar ändrades med
+  flit. Nu klipps schemablocken bort ur höstacken först. Mutationstestad i båda
+  riktningarna.
+
+  **Dessutom, hittat i samma svep:** `connect-src` i `_headers` släppte
+  fortfarande igenom `https://openrouter.ai` — en kvarleva från nyckelvägen.
+  Klienten känner ingen leverantörs-URL sedan 6 augusti och serverns anrop lyder
+  inte under sidans CSP, så undantaget var dött men stod kvar som en godkänd
+  destination att skicka data till. Nu `'self'` och inget mer.
+
+- [x] **KR1** Branschsidorna leder till bygget — löst 2026-08-17. Noll träffar
+  på `builder` i hela `verticals/` tidigare: nav-CTA:t var "Priser", knapparna
+  var demo, priser och "boka samtal", och sidfoten hade inga länkar alls. Nu
+  fyra vägar per branschsida — nav, hero (primärknapp, med demon som
+  andrahandsval, samma ordning som på startsidan), avslutet och sidfoten.
+  Etiketten är utan branschnamn med flit: namnen är "Bokföringsbyrå" och
+  "Coach / soloföretagare", så interpolation gav obegriplig svenska. Verifierat
+  i webbläsare på både galleri- och branschvyn.
+
+- [x] **KA2** `triggers` når kunden — löst 2026-08-17. `stripTeam()` bär fältet,
+  portalen visar det som **"Vänd dig hit när"** på agentkortet, och
+  `portal-team.md` beskriver det. Kapaciteterna säger vad agenten *kan*;
+  triggers säger *när* — den svårare frågan för en kund med sex agenter. De 14
+  incheckade teamfilerna saknar fältet och visar då inget alls; nya byggen får
+  det. Två tester mäter från båda sidor: att `stripTeam` bär vidare varje fält
+  portalen läser, och att portalen faktiskt **visar** triggers (etikett, chips
+  och stil) — en läsning utan utskrift är samma dödfält ett steg längre fram.
+
+- [x] **DR3** Alla åtta Pages-secrets plus D1-bindningen står i `CLAUDE.md`,
+  med vad som händer om var och en uteblir — 2026-08-17. Prisnycklarna läses
+  **dynamiskt** via `TIERS[...].env` och syns därför inte om man greppar efter
+  `env.STRIPE_PRICE`; det är utskrivet. Ingen `.dev.vars.example`:
+  `.gitignore` täcker `.dev.vars.*`, så filen hade blivit osynlig för git.
+
+- [x] **DR4** `docs/vendor-versioner.md` — 2026-08-17. pdf.js **6.2.108** och
+  SheetJS **0.20.3**, båda ur filernas egna versionsströmmar. mammoth är
+  **inte** fastställd (bundlens versionssträngar hör till dess beroenden) och
+  det står utskrivet i stället för gissat. Filen ligger i `docs/`, inte i
+  `portal/vendor/`, eftersom allt under `portal/` publiceras — BL1:s poäng var
+  att sluta publicera arbetsanteckningar.
+
+- [x] **DR5** Noten om att kod och schema rullas tillbaka **ihop** står i
+  `CLAUDE.md` — 2026-08-17. Så länge migrationerna bara lägger till kolumner är
+  en ren kodrollback ofarlig; den dag en migration tar bort något koden läser
+  blir den en tyst krasch i drift.
+
+- [x] **TG5** "Får plats i minnet"-pricken har `role="img"` + `aria-label` —
+  2026-08-17. Förklaringen låg bara i ett `title` på en icke-fokuserbar `span`,
+  som varken nås med tangentbord eller på touch. Pricken avgör om agenten
+  faktiskt *vet* vad som står i dokumentet.
 
 - [x] **KA1 + KA3** Enkätvägen kan inte längre bygga på enbart kryssval — löst
   2026-08-17. Enkäten står kvar; det är fritexten som blivit obligatorisk när
