@@ -18,24 +18,16 @@ Från genomgången 2026-08-17 · sju parallella linser + egen verifiering.
 
 ## Nu — riktiga fel
 
-- [ ] **KA1** Enkätvägen kan ge två olika kunder identiska team — kärnregeln bryts strukturellt. Två salonger med samma kryss och tom fritext ger **byte-identiskt intake, 798 tecken, där bara raden `företagsnamn:` skiljer**. Enkäten finns för den som har svårt att formulera sin verksamhet — alltså de kunder som minst kan upptäcka att resultatet är generiskt · `builder/builder.js:600-682`, `builder/survey-data.js:22-33` · `mätt (reproducerad)` · ~1 dag
-- [ ] **DR2** 52 commits arbete sedan 5 augusti finns bara på en dator. `origin/main` står på `657c29b` från 2026-07-15, 68 commits efter. Inga taggar alls, så ingen produktionsversion går att peka ut i efterhand. Följden är att CI:t som byggdes 16 aug **aldrig har kört** · repo-nivå · `mätt` · ~2 min (push) + 5 min (taggvana)
-- [ ] **TG1** Inloggningen går inte att använda med skärmläsare. Fältet har bara `placeholder` — ingen `<label>`, ingen `aria-label` — och felraden är en vanlig `<div>` utan `role="alert"`, så "Koden gick inte att verifiera" händer tyst. Den som klarar demot kommer ändå inte in i sitt eget team · `portal/app.js:1084-1097` · `läst i koden` · ~1–2 h
 - [ ] **P5** "Kopiera delningslänk" ger mottagaren en låst vy — texten är rättad, men vägen in för en kollega saknas fortfarande gränssnitt (`functions/api/team/invite.js` finns, oanropad) · `portal/app.js:2756` · `läst i koden` · ~1–2 h
 - [ ] **K2** Takkontrollen sker före uppströmsanropet, bokföringen efter — fönstret är hela genereringstiden. Kontrollerat igen 2026-08-17: `allowAttempt` på rad 340, `bokför` först vid 507/518/648 · `functions/api/ai.js:340`, `440-473` · `läst i koden` · ~3–4 h
 
 ## Sedan — skav som märks
 
-- [ ] **TG2** Modaler saknar dialog-semantik, fokusfälla och fokusåterställning. `openOverlay()` sätter varken `role="dialog"`, `aria-modal` eller `aria-labelledby`, flyttar inte fokus in, fångar inte Tab, och återställer inte fokus vid stängning — så Minne, Möten, Sök, Säg upp och ett dussin andra funktioner lämnar en tangentbordsanvändare vid sidans topp · `portal/app.js:3400-3423` (~15 anropsställen) · `läst i koden` · ~3–4 h
 - [ ] **SE1** Tolv branscher delar ett dokument, en titel och en beskrivning. `verticals/index.html` har `<div id="root"></div>` som hela sin body och renderar allt ur `verticals.js` på `?v=<slug>`; metataggarna i head är statiska oavsett bransch, och `sitemap.xml` listar dem inte. "AI för tandläkare" har alltså ingen egen sida att ranka — och det är projektets bästa long-tail-yta · `verticals/index.html:34-38`, `sitemap.xml:1-5` · `läst i koden` · ~4–6 h
-- [ ] **SE3** Nio av fjorton publicerade sidor saknar Open Graph, sju saknar metabeskrivning. De fem case-sidorna (`accountant`, `agency`, `coachonline`, `ikea`, `studio`) och `builder/index.html` har bara `<title>`. Klistrad i LinkedIn visar en sådan länk ingen bild, ingen rubrik och ingen text — i den kanal som är gratis · `site/*.html:1-14`, `builder/index.html:1-16` · `mätt` · ~45 min
-- [ ] **SE4** Canonical pekar på en URL som redirectar bort. `site/en-vecka.html` deklarerar `…/site/en-vecka.html`, men uppmätt i produktion: den formen svarar **308** till `/site/en-vecka`, som `sitemap.xml` också listar. Sidan talar alltså om för Google att dess riktiga adress är den som inte finns · `site/en-vecka.html:15`, `sitemap.xml:27-61` · `mätt` · ~30 min
 - [ ] **KR1** Branschsidorna länkar aldrig till Buildern. Noll träffar på `builder` i hela `verticals/`; nav-CTA:t är "Priser" och knapparna är demo, priser och "boka samtal". `index.html:123-125` har en uttalad princip om att nav-CTA:t **är** Buildern. Den bransch-specifika besökaren — den mest köpbenägna — har därmed längst väg till att bygga sitt eget team · `verticals/app.js:25`, `:88`, `:116` · `mätt` · ~30–45 min
 - [ ] **KA2** `triggers` genereras och betalas i varje bygge men når aldrig kunden. `TEAM_SCHEMA` kräver fältet och prompten fyller det, men `stripTeam()` utelämnar det ur allt som lämnar Buildern (utkast, delningslänk, checkout-konfig, export), `portal/app.js` läser det aldrig, och `templates/shared/portal-team.md` nämner det inte — så 0 av 14 teamfiler har det. Antingen visa det i portalen eller ta bort det ur schemat · `builder/builder.js:1063`, `:928`, `:1657-1658`, `templates/shared/portal-team.md:84-108` · `mätt` · ~20–45 min
-- [ ] **KL3** Avkapade svar syns inte för kunden. `finish_reason` läses **ingenstans** i klientkoden (0 träffar), så ett svar som slår i tokentaket renderas och sparas som färdigt. För ett utkast eller nyhetsbrev läses den avklippta sista meningen som avsiktlig · `atb-claude.js:160-163` · `mätt` · ~45 min
 - [ ] **BF2** Gratisbygget delar ut hela den betalda leveransen. `downloadConfig()` skriver `stripTeam(team)` till fil — inklusive varje agents fullständiga systemprompt — utan konto och utan betalning. Prompterna går att klistra in i gratis ChatGPT och köra löpande, vilket underminerar beslutet "noll provsvar" vars motivering är att det är teamet som säljs. Behöver ett medvetet beslut, inte en bieffekt · `builder/builder.js:1765-1772`, `index.html:604` · `läst i koden` · ~2–4 h
 - [ ] **BF3** Fyra prompter ligger öppet på webben, inklusive den filen projektet självt kallar nyckelsteget. Uppmätt: `curl …/prompts/shared/research.md` ger 200 och 17 807 byte klartext. Buildern måste kunna hämta dem klientsidan, så exponeringen har ett skäl — men `build-dist.mjs` säger att resten av `prompts/` är "konsult-IP", och den gränsen går inte att hålla samtidigt · `build-dist.mjs:45-53` · `mätt` · ~30 min (acceptera) / ~1 dag (serverside)
-- [ ] **TG4** Synliga etiketter är inte kopplade till sina fält i builderns följdfrågor och portalens "Utveckla teamet" — ett klick flyttar inte fokus, och en skärmläsares fältlista säger bara "flerradigt textfält, tomt". `fieldRow()` gör det redan rätt på intag-formuläret · `builder/builder.js:770-772`, `portal/app.js:2645-2647` · `läst i koden` · ~30–45 min
 - [ ] **DR3** Mejl-secrets är odokumenterade. Tjänsten behöver minst åtta Pages-secrets; `MAIL_API_KEY`, `MAIL_FROM` och `MAIL_PROVIDER` nämns bara i `functions/api/auth/_lib.js`, inte i `docs/` eller `CLAUDE.md`. Vid en återuppsättning finns ingen lista att gå efter. (Felhanteringen är däremot bra: alla tre kastar explicit.) · `functions/api/auth/_lib.js:267,277`, `docs/lansering.md:115-116` · `mätt` · ~20 min
 - [ ] **DR4** 3,3 MB tredjepartskod i `portal/vendor/` utan versionsspår — pdf.js, mammoth och xlsx ligger inklistrade utan lockfile, källa eller datum, och pdf.js parsar kundens uppladdade filer. Ingen `npm audit`, inget Dependabot, ingen väg att veta vilken version som körs när en CVE dyker upp · `portal/vendor/*` · `mätt` · ~30 min + ~15 min/kvartal
 - [ ] **BL2** Ångerrätten saknar knapp — kodens egen TODO, vars villkor nu inträffat · `villkor.html:508-514` · `läst i koden` · ~1–2 h
@@ -43,7 +35,6 @@ Från genomgången 2026-08-17 · sju parallella linser + egen verifiering.
 
 ## Framåt — utveckling
 
-- [ ] **KA3** Enkätvägen — den mest riskfyllda vägen — är den enda utan test. Noll träffar på `buildIntakeBlock` eller `survey` i `test/`. Ett test som kör två olika företag med identiska kryss och kräver att outputen skiljer sig i något mer än namnet skulle ha fångat KA1 · `test/` (saknas) · `mätt` · ~2–3 h
 - [ ] **KA4** "Två agenter delar inte perspektiv" kontrolleras bara som närvaro. Både `kontrolleraSystemprompter()` och golvet i `test/teams.mjs` kollar att rubriken `DITT PERSPEKTIV` finns — aldrig att innehållet under den skiljer sig mellan agenterna. Kravet är formulerat som mätbart men mäts inte · `builder/builder.js:993-1020`, `test/teams.mjs:100-113`, `test/examples.mjs:52-61` · `mätt` · ~3–4 h
 - [ ] **KA5** Skalningsstegets "räkna tyst, visa inte mellanstegen" har ingen kodkontroll, trots att `scale.md` själv skriver att en läckande tankekedja blir ett kundproblem eftersom steget visas live. `panel.textContent = acc` visar vad modellen än skickar · `builder/builder.js:850-858`, `prompts/shared/scale.md:63-65` · `läst i koden` · ~2–3 h
 - [ ] **KR2** "Beviset" är den enda ytan utan en riktig körning bakom sig. Hero säger "Ingen av dem är påhittad" och personalliggaren visar fyra anställda med status "I tjänst"; namnen Vera/Ester/Sixten/Malte finns bara i `design/`-skisserna och i `index.html`, och innehållet är lerverk-exemplets form med andra namn. Sex riktiga körningar ligger i `examples/` — anspråket går att göra sant billigt · `index.html:145`, `:163`, `:216-218` · `läst i koden` · ~15 min–1 h
@@ -81,6 +72,73 @@ Rättade direkt i filerna (rent git-träd). Raderna står i terminalsvaret.
 - `docs/roadmap.md` pass 6 — 429-fyndet är redan åtgärdat, och radnumren för nyckeltexten i `portal/app.js` pekar på annan kod i dag.
 
 ## Klart
+
+- [x] **KA1 + KA3** Enkätvägen kan inte längre bygga på enbart kryssval — löst
+  2026-08-17. Enkäten står kvar; det är fritexten som blivit obligatorisk när
+  den är det enda som saknas. `enkatBaradIntake()` är sant när inget fritextfält
+  bär minst 15 tecken ("nej" och "vet ej" är inte beskrivningar), och i
+  personläget mäts `role`/`workplace`/`expectations` i stället för
+  verksamhetens fält — annars hade en ifylld roll inte räknats.
+
+  Är intaget bara kryss får `CLARIFY_PROMPT` veta det, med instruktionen att
+  **aldrig** svara "OK". Faller anropet, eller svarar det "OK" ändå, tar
+  `ENKAT_RESERVFRAGOR` över. **Det är den viktigaste raden i ändringen:** den
+  gamla koden startade pipelinen direkt i båda fallen, alltså exakt på det
+  underlag som inte gick att bygga på. I tvingande läge finns ingen "Hoppa
+  över", och rutan säger varför i klartext — kunden valde enkäten för att det
+  är svårt att formulera verksamheten, och att bara spärra knappen hade lästs
+  som att formuläret krånglar.
+
+  `test/intake.mjs` (6 tester) mäter **två** saker, och skillnaden är poängen:
+  att rent enkätintag fortfarande är oskiljbart (en egenskap hos fasta listval,
+  inte en bugg att koda bort) och att koden **vet** det, så att grinden slår
+  till. Mutationstestat i båda riktningarna: sänks tröskeln till 1 tecken
+  faller ett test, tas grinden bort helt faller tre. Verifierat i webbläsare:
+  ingen "Hoppa över", blockering med `role="alert"`, pipelinen startar inte.
+
+- [x] **TG1 + TG2 + TG4** Portalen går att använda med tangentbord och
+  skärmläsare — löst 2026-08-17. Inloggningens båda steg har kopplade,
+  visuellt dolda etiketter (ny `.vh`; formgivningen har ingen plats för synliga,
+  och ledtexten säger redan vad som ska skrivas) och felraden har `role="alert"`
+  — "Koden gick inte att verifiera" hände tidigare helt tyst. `openOverlay()`
+  sätter nu `role="dialog"`, `aria-modal` och `aria-labelledby`, flyttar fokus
+  in, fångar Tab och återställer fokus vid stängning; det gäller alla ~15 rutor
+  på en gång. Etiketterna i builderns följdfrågor och portalens "Utveckla
+  teamet" är kopplade till sina fält.
+
+  Verifierat i webbläsare mot två rutor: rollerna sitter, titeln nås via
+  `aria-labelledby`, **25 Tab-tryck lämnar aldrig rutan**, Escape stänger, och
+  fokus kommer tillbaka till exakt den knapp som öppnade. Kontrastfärgen mätt
+  live: `rgb(143, 63, 34)`.
+
+- [x] **KL3** Avkapade svar syns för kunden — löst 2026-08-17. `finish_reason`
+  lästes ingenstans, så ett svar som slog i tokentaket renderades och sparades
+  som färdigt. Parsern läser det nu och anropar `opts.onTruncated`; portalen
+  lägger en tydlig rad i själva svaret, så varningen följer med i historik,
+  kopiering och nedladdning.
+
+- [x] **Klientkodens första tester** (`test/klient.mjs`, 7 st) — 2026-08-17.
+  6 540 rader webbläsarkod hade noll, och det var precis där B1 låg i tio dagar.
+  Filen laddas med stubbad `window` och stubbad `fetch`. Täckningen är vald
+  efter vad som faktiskt gått sönder: strömning + förbrukning, avkapat svar,
+  **motprovet** att ett normalt avslut inte varnar, en chunk delad mitt i en
+  JSON-rad, felram mitt i strömmen, och att anropet går till `/api/ai` med
+  sessionen — aldrig direkt till en leverantör, vilket var vad nyckelvägen
+  gjorde. Mutationstestat: tas `finish_reason`-raden bort faller två av dem.
+
+- [x] **SE3 + SE4** Delade länkar ser ut som något — löst 2026-08-17. De fem
+  case-sidorna och `builder/index.html` hade bara `<title>`; nu har de
+  metabeskrivning, canonical och Open Graph, med egen text per sida (Lindgren är
+  nya på AI, Ordrum hade spridd ChatGPT, IKEA är läge B utan intervju, Advanced
+  Studio hade redan byggt själv). `villkor.html` och `integritet.html` har fått
+  canonical, och `portal/aktivera.html` `noindex` — den nås bara med ett
+  `session_id`. Alla canonicals står nu i den form produktionen faktiskt
+  serverar: `en-vecka.html` pekade ut sin egen `.html`-adress, som svarar 308.
+
+- [x] **DR2** Arbetet finns utanför datorn — löst 2026-08-17. `git push origin
+  main`: `657c29b..a3e1950`, alltså 69 commits, varav 52 från de senaste elva
+  dagarna. CI:t från 16 augusti har därmed fått sin första körning. Taggvanan
+  är inte påbörjad — den hör till nästa deploy.
 
 - [x] **DR1** Facit komplett i alla sex exempel — löst 2026-08-17. Lerverks fyra
   agenter har nu Perspektiv, Leverans och "Klart när", skrivna ur det exemplets
