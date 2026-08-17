@@ -147,9 +147,16 @@ Rättade direkt i filerna (rent git-träd). Raderna står i terminalsvaret.
   svarat 503 utan att lämna ett spår. SQL:en är provad mot den riktiga tabellen
   i lokala D1, inte bara mot stubben.
 
-  **Två steg återstår och de är dina:** `npm run db:migrate` så tabellen finns
-  skarpt, och peka en gratis uptime-vakt mot `/api/health` med larm till mejlen.
-  Tills det andra är gjort finns spåret men ingen som tittar — vilket var exakt
+  **Driftsatt och migrerat 2026-08-17.** Deploy `c98ecac7`; migration 0006 körd
+  skarpt efter en säkerhetskopia med `npm run db:backup` (20,5 kB, med
+  `users`/`teams`/`team_access` verifierade). `ai_errors` finns med både
+  primärnyckelindex och `idx_ai_errors_last_at`, och `/api/health` gick från
+  `ai_kredit: null` till `ai_kredit: true` — alltså från "okänt" till en riktig
+  kontroll. Alla tre kontrollerna är nu skarpa.
+
+  **Ett steg återstår, och det är ditt:** peka en uptime-vakt mot
+  `https://mittaiteam.se/api/health` med larm till mejlen. Rutten svarar rätt —
+  men tills någon lyssnar finns spåret utan att någon tittar, vilket var exakt
   läget när B1 låg stum i tio dagar.
 
 - [x] **SE5** Strukturerad data finns — löst 2026-08-17. Tre block på startsidan:

@@ -384,11 +384,17 @@ kund-ID — samma linje som `ai_usage`. `/api/ai` skriver dit vid uppströmsfel,
 nätfel och tömd kredit. Utan den skrivningen hade hälsokontrollen bara
 kontrollerat att nyckeln finns.
 
-**Två steg återstår och de är dina:** kör `npm run db:migrate` så tabellen finns
-skarpt, och peka en gratis uptime-vakt (UptimeRobot, Cloudflare Health Check,
-Better Stack) mot `https://mittaiteam.se/api/health` med larm till mejlen. Tills
-det andra är gjort finns spåret men ingen som tittar — vilket var exakt läget när
-B1 låg stum i tio dagar.
+**Migrationen är körd skarpt 2026-08-17** och verifierad: `ai_errors` finns med
+sitt index, och `/api/health` svarar `{"ok":true,"checks":{"ai_nyckel":true,
+"databas":true,"ai_kredit":true}}` — `ai_kredit` gick från `null` (tabellen
+saknades) till `true`. En säkerhetskopia togs före migrationen med
+`npm run db:backup` (20,5 kB).
+
+**Ett steg återstår, och det är ditt:** peka en gratis uptime-vakt
+(UptimeRobot, Cloudflare Health Check, Better Stack) mot
+`https://mittaiteam.se/api/health` med larm till mejlen. Rutten svarar redan
+rätt — men tills någon lyssnar finns spåret utan att någon tittar, vilket var
+exakt läget när B1 låg stum i tio dagar.
 
 **Backup av D1:** `npm run db:backup` (lägg till `-- --local` för emulatorns
 kopia) exporterar databasen till `backup/`, som är git-ignorerad. Skriptet
