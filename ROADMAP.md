@@ -35,9 +35,7 @@ Från genomgången 2026-08-17 · sju parallella linser + egen verifiering.
 - [ ] **KA5** Skalningsstegets "räkna tyst, visa inte mellanstegen" har ingen kodkontroll, trots att `scale.md` själv skriver att en läckande tankekedja blir ett kundproblem eftersom steget visas live. `panel.textContent = acc` visar vad modellen än skickar · `builder/builder.js:850-858`, `prompts/shared/scale.md:63-65` · `läst i koden` · ~2–3 h
 - [ ] **KR2** "Beviset" är den enda ytan utan en riktig körning bakom sig. Hero säger "Ingen av dem är påhittad" och personalliggaren visar fyra anställda med status "I tjänst"; namnen Vera/Ester/Sixten/Malte finns bara i `design/`-skisserna och i `index.html`, och innehållet är lerverk-exemplets form med andra namn. Sex riktiga körningar ligger i `examples/` — anspråket går att göra sant billigt · `index.html:145`, `:163`, `:216-218` · `läst i koden` · ~15 min–1 h
 - [ ] **P1** Ingen mätning av var köpresan läcker. Kontrollerat igen 2026-08-17: de enda träffarna på `gtag`/`analytics` i repot är en **CSS-klass** som heter `.gtag`. Cloudflare Web Analytics är gratis, cookiefri och kräver ingen CSP-ändring · `index.html` (inga taggar) · `mätt` · ~20 min–1 h
-- [ ] **D3** Ingen felövervakning; "krediten är slut" skrivs till en logg ingen läser. `console.error` i Pages Functions syns bara i `wrangler pages deployment tail` medan någon tittar. Krediten kan ta slut kl 03 och portalen svara 503 till morgonen · `functions/api/ai.js:700-711` · `mätt` · ~2 h
 - [ ] **P6** Auto-körda rutiners "ligger klar"-bevis överlever inte en omladdning · `portal/app.js:2242` · `läst i koden` · ~2 h
-- [ ] **BL4** Ingen backup av D1 och ingen plan för längre frånvaro. Bekräftat 2026-08-17: `scripts/` har inget exportskript, och D1 är den enda datakällan som inte går att återskapa ur git — den bär konton, `team_access`, `teams.plan` och all bokföring · `scripts/` (saknas), `wrangler.toml` · `mätt` · ~1–2 h
 - [ ] **BL3** Konkurrensbilden är förbigången: aikollegorna.se leder med EU-drift · `docs/omvarldsresearch-2026-07-17.md` · `mätt` · ~2 h
 - [ ] **P2** Gratisbygget fångar ingen e-post — övergiven körning är borta för alltid · `builder/builder.js:1432-1493` · `läst i koden` · ~4 h
 - [ ] **P4** Grundteamets agenter går att lägga till, aldrig redigera eller avsluta · `portal/app.js:2617-2691` · `läst i koden` · ~5 h
@@ -65,6 +63,46 @@ Rättade direkt i filerna (rent git-träd). Raderna står i terminalsvaret.
 - `docs/roadmap.md` pass 6 — 429-fyndet är redan åtgärdat, och radnumren för nyckeltexten i `portal/app.js` pekar på annan kod i dag.
 
 ## Klart
+
+- [x] **BL4** Backup av D1 — löst 2026-08-17. `npm run db:backup` exporterar till
+  `backup/` (git-ignorerad; `-- --local` för emulatorns kopia). Skriptet avbryter
+  om exporten saknar `users`, `teams` eller `team_access` — en export som
+  "lyckades" men är tom är värre än ingen, för den ser ut som ett skyddsnät.
+  Provat mot lokala D1 (4,3 kB, alla tre tabellerna), och grinden provad genom
+  att kräva en tabell som inte finns.
+
+  **Två fel på vägen, båda värda att minnas:** `spawnSync` startade aldrig
+  wrangler på Windows utan `shell: true`, och felmeddelandet blev därför "inte
+  inloggad" trots att samma kommando kört för hand fungerade — ett meddelande som
+  pekade helt fel håll. Och kommandot byggs nu som *en* sträng för att slippa
+  nodes DEP0190-varning vid varje körning; en backup-rutin ska inte se orolig ut.
+
+  **Kopiorna ligger på samma disk som repot.** De skyddar mot en trasig
+  migration, inte mot en trasig disk. Skriptet säger det, men flytta dem.
+
+- [x] **D3** Något som kan larma — löst 2026-08-17. `GET /api/health` svarar
+  **200 när tjänsten kan svara kunder, 503 när den inte kan**: nyckeln finns,
+  D1 svarar, och inget kreditfel de senaste tjugo minuterna. **Inget AI-anrop** —
+  en vakt som pollar var femte minut hade kostat pengar dygnet runt. Bara
+  booleaner i svaret: rutten är öppen (en vakt kan inte logga in) och antal anrop
+  per dygn är affärsinformation.
+
+  Underlaget är nya `ai_errors` (migration 0006): dygn, felkod, antal, senaste
+  tidpunkt. Inget innehåll, ingen fråga, inget kund-ID — samma linje som
+  `ai_usage`. `/api/ai` skriver dit vid uppströmsfel, nätfel och tömd kredit.
+
+  Åtta tester prövar varje felläge **och motproven**: att ett *gammalt*
+  kreditfel ger 200 (en rutt som stannar röd när felet är löst gör att larmet
+  ignoreras nästa gång), att saknad tabell ger `null` och inte "friskt", och att
+  svaret inte läcker nycklar eller siffror. Ett test i `test/ai.mjs` fångade att
+  jag skickade `bokförFel` in i `httpFel` men aldrig använde den — rutten hade
+  svarat 503 utan att lämna ett spår. SQL:en är provad mot den riktiga tabellen
+  i lokala D1, inte bara mot stubben.
+
+  **Två steg återstår och de är dina:** `npm run db:migrate` så tabellen finns
+  skarpt, och peka en gratis uptime-vakt mot `/api/health` med larm till mejlen.
+  Tills det andra är gjort finns spåret men ingen som tittar — vilket var exakt
+  läget när B1 låg stum i tio dagar.
 
 - [x] **SE5** Strukturerad data finns — löst 2026-08-17. Tre block på startsidan:
   `Organization`, `Product` med tre `Offer` (0/90/290 SEK) och `FAQPage`.
