@@ -118,6 +118,44 @@ function allaFiler(dir) {
   return ut;
 }
 
+// Branschsidorna skrivs FÖRE filträdet läses in, så att de kommer med i
+// versionsstämplingen och kommentarsstrippningen som varje annan HTML-fil.
+const branschsidor = renderaBranschsidor();
+for (const { v, html } of branschsidor) {
+  writeFileSync(
+    `dist/verticals/${v.slug}.html`,
+    branschHuvud(v) + "\n" + `<div id="root">${html}</div>` + "\n" +
+    // Samma tre skript som index.html, i samma ordning. Sidan är fullt läsbar
+    // utan dem — det är hela poängen med att rendera i förväg — men app.js
+    // hydrerar demo-knappen och reveal-animationerna, och känner igen branschen
+    // ur sökvägen (se getV i verticals/app.js).
+    `<script src="../avatars.js"></script>\n<script src="verticals.js"></script>\n<script src="app.js"></script>\n` +
+    "</body>\n</html>\n",
+  );
+}
+// Sitemapen får branschsidorna skrivna in på markören. En handskriven lista
+// hade glömts bort första gången en trettonde bransch lades till, och en
+// bransch som inte står i sitemapen är en bransch som inte finns.
+{
+  const MARKÖR = "<!--BRANSCHSIDOR-->";
+  const väg = "dist/sitemap.xml";
+  const src = readFileSync(väg, "utf8");
+  if (!src.includes(MARKÖR)) {
+    console.error(`\n  ✖  BYGGET STOPPAT — ${MARKÖR} saknas i sitemap.xml.` +
+      "\n     Utan den hamnar branschsidorna inte i sitemapen, och det syns inte.\n");
+    process.exit(1);
+  }
+  const poster = branschsidor.map(({ v }) =>
+    "  <url>\n" +
+    `    <loc>https://mittaiteam.se/verticals/${v.slug}</loc>\n` +
+    "    <changefreq>monthly</changefreq>\n" +
+    "    <priority>0.8</priority>\n" +
+    "  </url>",
+  ).join("\n");
+  writeFileSync(väg, src.replace(MARKÖR, poster.trimStart()));
+}
+console.log(`branschsidor: ${branschsidor.length} statiska sidor genererade ur verticals.js, och lagda i sitemap.xml`);
+
 const distFiler = allaFiler("dist");
 let stämplade = 0;
 
@@ -142,6 +180,110 @@ let stämplade = 0;
 // `openrouter is not defined` byggde på att hämta den skarpa filen och läsa
 // den. Konsekvensen att leva med är att klientkoden är offentlig läsning, och
 // den regeln gäller ändå: ingenting hemligt får ligga i den.
+// ── En riktig sida per bransch (SE1) ──────────────────────────────────────
+//
+// Tolv branscher låg på EN URL med olika query-parameter (`?v=<slug>`), med
+// `<div id="root"></div>` som hela sidans body och samma titel och beskrivning
+// för allihop. En sökmotor kan inte indexera det som tolv sidor: det finns
+// ingen egen adress att ranka, ingen egen rubrik och inget eget utdrag. Det är
+// projektets bästa long-tail-yta — tolv nischer med färdig text och en demo var
+// — och den var osynlig.
+//
+// Sidorna renderas med KLIENTENS EGEN renderSingle(), körd här i Node med ett
+// stubbat window/document. Det är hela poängen: ett andra, handskrivet
+// HTML-bygge hade blivit ett andra ställe där layouten kan glida, och den
+// fällan har projektet redan gått i (PORTAL_RULES mot portal-team.md). Ändras
+// branschsidan i app.js följer de statiska sidorna med automatiskt.
+//
+// Filnamnet är `verticals/<slug>.html`, alltså SAMMA katalognivå som
+// index.html. Då gäller varje relativ länk i den renderade HTML:en (../builder/,
+// ../portal/, ../site/) oförändrat. `<base href>` hade varit alternativet men
+// CSP:n sätter `base-uri 'none'`.
+function renderaBranschsidor() {
+  const källa = (f) => readFileSync(f, "utf8");
+  const rot = { innerHTML: "" };
+  const win = {};
+  const doc = {
+    documentElement: { classList: { add() {} } },
+    getElementById: (id) => (id === "root" ? rot : null),
+    querySelectorAll: () => [],
+    addEventListener() {},
+  };
+  const sandbox = {
+    window: win,
+    document: doc,
+    location: { search: "", pathname: "/verticals/" },
+    IntersectionObserver: class { observe() {} unobserve() {} },
+    URLSearchParams,
+    setTimeout,
+  };
+  const nycklar = Object.keys(sandbox);
+  const värden = nycklar.map((k) => sandbox[k]);
+  // Ordningen är sidans egen: avatars → data → app.
+  for (const f of ["avatars.js", "verticals/verticals.js"]) {
+    new Function(...nycklar, källa(f))(...värden);
+  }
+  // app.js anropar boot() sist. Med location.search tom renderar den griden,
+  // vilket är harmlöst — vi anropar renderSingle själva per bransch efteråt.
+  const app = new Function(...nycklar, källa("verticals/app.js") + "\nreturn { renderSingle, VERTS };")(...värden);
+
+  const sidor = [];
+  for (const v of app.VERTS) {
+    rot.innerHTML = "";
+    app.renderSingle(v);
+    if (!rot.innerHTML.trim()) {
+      console.error(`\n  ✖  BYGGET STOPPAT — renderSingle gav ingen HTML för branschen "${v.slug}".` +
+        "\n     Antingen har renderSingle bytt form, eller saknar posten fält.\n");
+      process.exit(1);
+    }
+    sidor.push({ v, html: rot.innerHTML });
+  }
+  return sidor;
+}
+
+// Head:en per bransch — det som gör sidan indexerbar som just den branschen.
+function branschHuvud(v) {
+  const esc = (s) => String(s == null ? "" : s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const url = `https://mittaiteam.se/verticals/${v.slug}`;
+  // Titeln sätter branschen först: det är ordet någon sökt på, och det som
+  // syns i en smal flik och i sökresultatets rubrik.
+  const titel = `AI-team för ${v.name} · Mitt AI-team`;
+  // Beskrivningen är branschens egen intro, kortad till det Google visar.
+  const beskrivning = String(v.intro || v.tagline).replace(/\s+/g, " ").slice(0, 300);
+  return `<!DOCTYPE html>
+<html lang="sv">
+<head>
+<script>document.documentElement.classList.add('js');
+if (location.hostname === 'agent-team-builder-2xy.pages.dev') location.replace('https://mittaiteam.se' + location.pathname + location.search + location.hash);</script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>${esc(titel)}</title>
+<link rel="icon" type="image/svg+xml" href="../portal/icon.svg" />
+<meta name="description" content="${esc(beskrivning)}" />
+<meta name="theme-color" content="#F1ECE3" />
+<link rel="canonical" href="${url}" />
+<meta property="og:site_name" content="Mitt AI-team" />
+<meta property="og:title" content="${esc(v.tagline || titel)}" />
+<meta property="og:description" content="${esc(beskrivning)}" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="${url}" />
+<meta property="og:locale" content="sv_SE" />
+<meta property="og:image" content="https://mittaiteam.se/og.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content="Mitt AI-team: fyra föreslagna agenter i en personalliggare, och en femte som fick nej." />
+<meta name="twitter:card" content="summary_large_image" />
+<link rel="preload" href="/fonts/karla-var-latin.woff2" as="font" type="font/woff2" crossorigin />
+<link rel="preload" href="/fonts/archivo-var-latin.woff2" as="font" type="font/woff2" crossorigin />
+<link rel="stylesheet" href="/fonts/fonts.css" />
+<link rel="stylesheet" href="../site/showcase.css" />
+<style>
+  .cta-row { display: flex; flex-wrap: wrap; gap: 13px; margin-top: 30px; }
+</style>
+</head>
+<body>`;
+}
+
 // Markören som byts mot genererat FAQPage-schema. Står i index.html.
 const FAQ_MARKÖR = '<script type="application/ld+json" data-faq-schema></script>';
 

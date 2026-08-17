@@ -1,8 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  Publika sidor på mittaiteam.se. Branschsidorna (/verticals/?v=<slug>) är
-  samma dokument med olika query-parameter och listas därför inte var för sig —
-  lägg in dem här den dag de blir egna URL:er.
+  Publika sidor på mittaiteam.se.
+
+  Branschsidorna listas INTE här för hand. De genereras vid bygget — en fil per
+  post i verticals/verticals.js — och `build-dist.mjs` skriver in dem i den här
+  filen i dist/ på markören nedan. Skälet är enkelt: en handskriven lista hade
+  glömts bort första gången en trettonde bransch lades till, och en bransch som
+  inte står i sitemapen är en bransch som inte finns för en sökmotor.
+
+  Lägg till en bransch = lägg till ett objekt i verticals.js. Inget annat.
 -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
@@ -23,6 +29,8 @@
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
+  <!--BRANSCHSIDOR-->
+
   <url>
     <loc>https://mittaiteam.se/site/en-vecka</loc>
     <lastmod>2026-08-05</lastmod>

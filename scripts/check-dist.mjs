@@ -143,6 +143,34 @@ if (existsSync(startsida)) {
 }
 fel.push(...jsonLdFel);
 
+// ── En sida och en sitemap-rad per bransch (SE1) ───────────────────────────
+//
+// Branschsidorna genereras ur verticals/verticals.js. Kontrollen finns för att
+// tillägget av en trettonde bransch ska vara en enda ändring: lägg till ett
+// objekt i verticals.js. Glöms genereringen, eller glider filnamnet från
+// slugen, ska bygget säga ifrån — en bransch utan sida är en bransch som inte
+// finns för en sökmotor, och det syns inte på något annat sätt.
+const verticalsKälla = "verticals/verticals.js";
+if (existsSync(verticalsKälla) && existsSync(join("dist", "sitemap.xml"))) {
+  const win = {};
+  new Function("window", readFileSync(verticalsKälla, "utf8"))(win);
+  const slugs = (win.VERTICALS || []).map((v) => v.slug);
+  const sitemap = readFileSync(join("dist", "sitemap.xml"), "utf8");
+  const saknarSida = [];
+  const saknarSitemap = [];
+  for (const s of slugs) {
+    if (!existsSync(join("dist", "verticals", `${s}.html`))) saknarSida.push(s);
+    if (!sitemap.includes(`/verticals/${s}<`)) saknarSitemap.push(s);
+  }
+  if (!slugs.length) fel.push("verticals.js gav inga branscher — kunde filen inte läsas?");
+  if (saknarSida.length) fel.push(`branscher utan genererad sida: ${saknarSida.join(", ")}`);
+  if (saknarSitemap.length) fel.push(`branscher som inte står i sitemap.xml: ${saknarSitemap.join(", ")}`);
+  if (sitemap.includes("BRANSCHSIDOR")) fel.push("sitemap.xml i dist/ har markören kvar — branschsidorna skrevs aldrig in");
+  if (!saknarSida.length && !saknarSitemap.length && slugs.length) {
+    console.log(`✓  ${slugs.length} branscher har både en egen sida och en rad i sitemap.xml`);
+  }
+}
+
 if (fel.length) {
   console.error(`\n✖  ${fel.length} problem i dist/:\n`);
   fel.forEach((f) => console.error("   " + f));

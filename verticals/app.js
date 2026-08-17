@@ -5,7 +5,27 @@
    ============================================================ */
 
 const esc = (s) => (s == null ? "" : String(s)).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
-const getV = () => new URLSearchParams(location.search).get("v");
+// Branschen kan komma på TVÅ sätt, och båda måste fungera:
+//
+//   ?v=tandvard          — den ursprungliga, och den som demo-länkar bär
+//   /verticals/tandvard  — den statiska sidan bygget genererar (SE1)
+//
+// Den andra finns för att en sökmotor inte kan indexera tolv branscher som
+// ligger på samma URL med olika query-parameter: samma titel, samma
+// beskrivning, ingen egen sida att ranka. Nu genererar `build-dist.mjs` en
+// riktig fil per bransch, och då måste klienten känna igen sig i sökvägen
+// också — annars ritar boot() om den statiska sidan till branschgalleriet.
+//
+// Filnamnet ligger på SAMMA katalognivå som index.html (verticals/tandvard.html,
+// inte verticals/tandvard/index.html) med flit: alla relativa länkar i den
+// renderade HTML:en (../builder/, ../portal/, ../site/) gäller då oförändrat.
+// Ett `<base href>` hade varit alternativet, men CSP:n sätter `base-uri 'none'`.
+function getV() {
+  const fråga = new URLSearchParams(location.search).get("v");
+  if (fråga) return fråga;
+  const sista = location.pathname.replace(/\/+$/, "").split("/").pop().replace(/\.html$/, "");
+  return sista && sista !== "verticals" ? sista : null;
+}
 
 // PNG:erna ligger i portal/avatars/ — refereras härifrån med detta prefix.
 const AVATAR_BASE = "../portal/avatars/";
@@ -36,7 +56,13 @@ function nav() {
 // ---------- grid (alla branscher) ----------
 function renderGrid() {
   const cards = VERTS.map((v, i) => `
-    <a class="gcard reveal${i % 3 === 1 ? " d1" : i % 3 === 2 ? " d2" : ""}" href="?v=${esc(v.slug)}">
+    <!-- Länken går till den statiska sidan, inte till ?v=: det är den adressen
+         som är kanonisk och den som ska ärva länkvärdet. Ändelsen .html står
+         kvar för att länken ska fungera även på en vanlig lokal filserver
+         (npm run dev); i produktion skickar Pages vidare till den rena
+         adressen med 308. OBS: inga backticks i kommentarer här — hela
+         funktionen är en template literal. -->
+    <a class="gcard reveal${i % 3 === 1 ? " d1" : i % 3 === 2 ? " d2" : ""}" href="${esc(v.slug)}.html">
       <div class="gtop"><div class="gicon">${esc(v.icon)}</div><div><h3>${esc(v.name)}</h3><div class="gsub">${esc(v.tagline)}</div></div></div>
       <div class="gdesc">${esc(v.intro)}</div>
       <div class="gmeta"><span class="gtag mode">Live-demo</span><span class="gtag">${v.agents.length} agenter</span></div>
