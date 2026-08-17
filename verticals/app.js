@@ -16,13 +16,20 @@ const avatarSrcN = (n) => (window.ATBAvatars ? window.ATBAvatars.src(n, AVATAR_B
 const VERTS = window.VERTICALS || [];
 const bySlug = (slug) => VERTS.find((v) => v.slug === slug);
 
+// Nav-CTA:t ÄR Buildern, samma produktbeslut som styr index.html (se
+// kommentaren vid hero-knapparna där). Här stod tidigare "Priser", och hela
+// branschsidan saknade varje länk till bygget: en besökare som sökt på just sin
+// bransch — den mest köpbenägna trafiken vi kan få — kunde bara titta på en demo
+// eller läsa prislistan, och fick leta sig tillbaka till startsidan för att
+// bygga sitt eget team. Längst väg för den som stod närmast ett köp.
 function nav() {
   return `<div class="hubnav"><div class="inner">
     <a class="home" href="../"><span class="dot"></span> Mitt AI-team</a>
     <a class="np" href="./">Branscher</a>
     <a class="np" href="../site/">Exempel</a>
+    <a class="np" href="../index.html#priser">Priser</a>
     <a class="np" href="../portal/">Logga in</a>
-    <a class="nav-cta" href="../index.html#priser">Priser</a>
+    <a class="nav-cta" href="../builder/">Bygg ert team</a>
   </div></div>`;
 }
 
@@ -47,7 +54,8 @@ function renderGrid() {
     </section>
     <section style="padding-top:0;">
       <div class="wrap"><div class="gallery">${cards}</div>
-      <p style="color:var(--text-dim);font-size:14px;margin-top:36px;text-align:center;">Hittar ni inte er bransch? Det gör inget — metoden utgår alltid från er specifika vecka. <a href="../index.html#kontakt" style="color:var(--accent-2);">Hör av er</a> så tittar vi tillsammans.</p>
+      <div class="cta-row" style="margin-top:40px;justify-content:center;"><a class="btn-lg btn-primary-lg" href="../builder/">Bygg ert team →</a></div>
+      <p style="color:var(--text-dim);font-size:14px;margin-top:20px;text-align:center;">Hittar ni inte er bransch? Det gör inget — bygget utgår alltid från er specifika vecka, inte från en branschmall. <a href="../index.html#kontakt" style="color:var(--accent-2);">Hör av er</a> om ni vill titta tillsammans.</p>
       </div>
     </section>
     ${footer()}`;
@@ -73,9 +81,17 @@ function renderSingle(v) {
       <p class="job">${esc(a.role)}</p>
     </div>`).join("");
 
-  const primary = v.demoTeam
-    ? `<a class="btn-lg btn-primary-lg" href="../portal/?team=${esc(v.demoTeam)}&demo=1">Prova teamet live →</a>`
-    : `<a class="btn-lg btn-primary-lg js-demo" href="#" role="button">Prova teamet live →</a>`;
+  // Primärknappen är bygget, demon andrahandsvalet — samma ordning som på
+  // startsidan, och av samma skäl: besökaren ska ledas till att bygga SITT team,
+  // inte till att titta på någon annans. Demon finns kvar för den som vill se
+  // produkten först.
+  // Etiketten är medvetet utan branschnamn: namnen är "Bokföringsbyrå",
+  // "Coach / soloföretagare" och liknande, så "Bygg ert coach / soloföretagare-team"
+  // blir obegriplig svenska. Sidan handlar redan om deras bransch.
+  const bygg = `<a class="btn-lg btn-primary-lg" href="../builder/">Bygg ert eget team →</a>`;
+  const demo = v.demoTeam
+    ? `<a class="btn-lg btn-ghost" href="../portal/?team=${esc(v.demoTeam)}&demo=1">Prova teamet live först</a>`
+    : `<a class="btn-lg btn-ghost js-demo" href="#" role="button">Prova teamet live först</a>`;
 
   document.getElementById("root").innerHTML = `
     ${nav()}
@@ -85,8 +101,8 @@ function renderSingle(v) {
         <div class="badge"><span class="dot"></span> ${esc(v.icon)} ${esc(v.name)}</div>
         <h1><span class="grad">${esc(v.tagline)}</span></h1>
         <p class="sub">${esc(v.intro)}</p>
-        <div class="cta-row">${primary}<a class="btn-lg btn-ghost" href="../index.html#priser">Se priser</a></div>
-        <p class="sub" style="margin-top:12px;font-size:14px;">AI:n ingår — ingen egen nyckel, inget konto hos någon AI-leverantör. <a href="../index.html#priser" style="color:var(--accent-2)">Bygg teamet gratis, betala först när ni vill använda det</a>.</p>
+        <div class="cta-row">${bygg}${demo}</div>
+        <p class="sub" style="margin-top:12px;font-size:14px;">Bygget är gratis och tar en kvart — inget konto, inget kort. AI:n ingår, ni behöver ingen egen nyckel. <a href="../index.html#priser" style="color:var(--accent-2)">Se vad det kostar att sedan använda teamet</a>.</p>
       </div>
     </section>
 
@@ -113,7 +129,7 @@ function renderSingle(v) {
         <div class="decision reveal">
           <div class="meta-label">Ett konkret första steg</div>
           <div class="big">${esc(v.firstTask)}</div>
-          <div class="cta-row" style="margin-top:24px;">${primary}<a class="btn-lg btn-ghost" href="../index.html#kontakt">Boka ett samtal →</a></div>
+          <div class="cta-row" style="margin-top:24px;">${bygg}<a class="btn-lg btn-ghost" href="../index.html#kontakt">Boka ett samtal →</a></div>
         </div>
       </div>
     </section>
@@ -181,9 +197,18 @@ function agentSystem(v, a, i) {
 }
 
 function footer() {
+  // Sidfoten hade inga länkar alls — en återvändsgränd längst ner på den sida
+  // sökmotorstrafiken landar på.
   return `<footer><div class="wrap">
     <div class="built"><span class="dot"></span> Mitt AI-team</div>
-    <div class="fstats">Skräddarsydda AI-team för små och medelstora företag.</div>
+    <div class="fstats">Skräddarsydda AI-team för små och medelstora företag.
+      <a href="../builder/" style="color:var(--accent-2)">Bygg ert team</a> ·
+      <a href="../site/" style="color:var(--accent-2)">Exempel</a> ·
+      <a href="../index.html#priser" style="color:var(--accent-2)">Priser</a>
+    </div>
+    <!-- Inga länkar till juridiksidorna härifrån: de publiceras bara när de är
+         ifyllda, och bygget kan bara upptäcka döda juridiklänkar i index.html
+         (den greppar HTML, inte JS). Sidfoten på hubben har dem. -->
   </div></footer>`;
 }
 

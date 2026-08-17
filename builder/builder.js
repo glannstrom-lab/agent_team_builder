@@ -1736,7 +1736,14 @@ function stripTeam(team) {
     rejected: Array.isArray(team.rejected) ? team.rejected : [],
     workstyle: team.workstyle || null,
     agents: team.agents.map((a) => ({ id: a.id, name: a.name, icon: a.icon, avatarN: a.avatarN, role: a.role, tagline: a.tagline, always: !!a.always,
-      job: a.job, why: a.why || null, capabilities: a.capabilities, starters: a.starters, system: a.system })) };
+      job: a.job, why: a.why || null, capabilities: a.capabilities, starters: a.starters,
+      // triggers följer med hit sedan 2026-08-17. Fältet krävs av TEAM_SCHEMA
+      // och fylls av prompten, men utelämnades här — alltså kastades det ur
+      // ALLT som lämnar Buildern (utkast, delningslänk, checkout-konfig,
+      // export), och kunden betalade för tokens som aldrig nådde henne.
+      // Portalen visar dem som "Vänd dig hit när" på agentkortet.
+      triggers: Array.isArray(a.triggers) ? a.triggers : [],
+      system: a.system })) };
 }
 // ---------- köp ("Spara i molnet") ----------
 //

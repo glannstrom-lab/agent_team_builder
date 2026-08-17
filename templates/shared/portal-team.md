@@ -103,6 +103,14 @@ oombett anrop.
     "<en färdig uppgift kunden kan trycka på direkt>",
   ],
 
+  // 0–3 situationer där just den här agenten är rätt att vända sig till.
+  // Visas som "Vänd dig hit när" på agentkortet. Kapaciteterna säger vad
+  // agenten KAN; triggers säger NÄR — den svårare frågan för en kund med sex
+  // agenter. Hitta inte på: utelämna hellre fältet än att gissa situationer.
+  triggers: [
+    "<en konkret situation ur researchen, t.ex. 'en ny pjäs ska upp i butiken'>",
+  ],
+
   system: `...systemprompt...`
 }
 ```

@@ -202,6 +202,28 @@ klient kan kosta oss pengar.
 Nyckelvägen är borta: `renderKeySetup()` finns inte längre i portalen, och
 `atb-claude.js` har bara `/api/ai`.
 
+**Hela listan över vad som måste vara satt i drift** (åtta Pages-secrets plus en
+bindning). Den fanns tidigare bara utspridd i källkoden, vilket gjorde en
+återuppsättning till en läsövning i `functions/`:
+
+| Namn | Läses av | Uteblir den |
+|---|---|---|
+| `DB` (bindning, `wrangler.toml`) | allt under `/api/` | inget svarar |
+| `OPENROUTER_KEY` | `api/ai.js` | tydligt 503 till kunden |
+| `STRIPE_SECRET_KEY` | `api/_stripe.js` | kastar explicit |
+| `STRIPE_WEBHOOK_SECRET` | `api/stripe-webhook.js` | webhooken avvisar allt |
+| `STRIPE_PRICE_TRIAL` | `TIERS` i `_stripe.js` | provmånaden går inte att köpa |
+| `STRIPE_PRICE_STANDARD` | `TIERS` i `_stripe.js` | standard går inte att köpa |
+| `MAIL_PROVIDER` | `api/auth/_lib.js` | ingen inloggningskod skickas |
+| `MAIL_API_KEY` | `api/auth/_lib.js` | kastar explicit |
+| `MAIL_FROM` | `api/auth/_lib.js` | kastar explicit |
+
+Prisnycklarna läses **dynamiskt** via `TIERS[...].env`, så de syns inte om man
+greppar efter `env.STRIPE_PRICE`. Inget av värdena havererar tyst — men listan
+finns inte någon annanstans, så den här tabellen är återställningsplanen.
+Lägg inte en `.dev.vars.example` i roten: `.gitignore` täcker `.dev.vars.*`, så
+filen hade blivit osynlig för git.
+
 **Ett svarsformat, ingen förgrening (lagat 2026-08-16).** `/api/ai` skickar
 uppströmsbytena vidare orörda (`functions/api/ai.js:599`) och uppströms är
 OpenRouter — alltså är OpenAI-SSE (`choices[0].delta.content`) det enda format
@@ -342,7 +364,19 @@ Säkerhetsheaders/CSP sätts via `_headers` (kopieras till `dist/` vid bygge).
 och Buildern kräver att `prompts/` serveras. För att testa backend-lagret
 (`/api/*` + D1) lokalt: `npm run db:migrate:local` och sedan `npm run dev:cf`
 (Cloudflares emulator — den vanliga python-servern serverar inte `/api`).
-Bygg/deploy: `npm run build` / `npm run deploy`.
+Bygg/deploy: `npm run build` / `npm run deploy`. **`npm run deploy` kör
+testsviten först** (sedan 2026-08-17) — CI triggar på push, deploy kräver ingen
+push, och utan den raden var de två skyddsnäten helt frånkopplade från det enda
+stället som betyder något.
+
+**Rulla tillbaka kod och schema tillsammans.** Pages har rollback i sin
+dashboard, men migrationerna (`migrations/0001`–`0005`) är enkelriktade: det
+finns inga down-skript, och `ALTER TABLE ADD COLUMN` i 0003 och 0005 är inte
+idempotenta om de körs om för hand. Att rulla tillbaka *bara* koden går bra så
+länge migrationerna bara lägger till kolumner — extra kolumner ignoreras. Den
+dag en migration *tar bort* något koden fortfarande läser blir en ren
+kodrollback en tyst krasch i drift. Rör aldrig det ena utan att veta var det
+andra står.
 
 **Stage 2-krok:** `prompts/shared/generate.md` (steg 7–8) genererar — när man
 kör inifrån detta repo — även en portal-konfig (`templates/shared/portal-team.md`)
@@ -374,6 +408,8 @@ ny kund dyker upp i både galleri och portal automatiskt.
 │   ├── aktivera.html               # Kvittosida efter Stripe-betalningen
 │   ├── avatars/                    # 25 agentporträtt (PNG)
 │   ├── vendor/                     # pdf.js, mammoth, xlsx (filimport — räknas mot CSP)
+│   │                               #   Versioner + CVE-rutin: docs/vendor-versioner.md
+│   │                               #   (i docs/ för att inte publiceras med dist/)
 │   ├── deadlines-se.js             # Svenska myndighetsdatum till årshjulet
 │   └── teams/                      # En <slug>.js per kund + index.js (register)
 ├── verticals/                      # Branschlandningssidor (datadrivet, ?v=<slug>)

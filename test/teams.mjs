@@ -126,3 +126,49 @@ for (const file of files) {
     }
   });
 }
+
+// ── stripTeam måste bära vidare varje fält portalen läser (KA2) ────────────
+//
+// `stripTeam()` i builder/builder.js formar ALLT som lämnar Buildern: utkastet,
+// delningslänken, konfigen som går till /api/checkout och nedladdningen. Ett
+// fält som saknas i dess objektliteral kastas i tysthet, hur väl det än
+// genererats — och prompten plus TEAM_SCHEMA fyller fältet, så kunden betalar
+// för tokens som aldrig når henne. Så tappades `triggers` bort: krävt i
+// schemat, renderat i builderns förhandsvisning, men borta i portalen.
+//
+// Testet läser fältlistan ur källan i stället för att köra funktionen, eftersom
+// builder.js är ett webbläsarskript med DOM-beroenden i topp.
+test("stripTeam bär vidare varje agentfält portalen läser", () => {
+  const src = readFileSync("builder/builder.js", "utf8");
+  const i = src.indexOf("function stripTeam");
+  assert.ok(i >= 0, "hittade inte stripTeam i builder/builder.js");
+  const kropp = src.slice(i, src.indexOf("\n}", i));
+
+  // Fält som portalens agentkort och arbetsyta faktiskt läser. Läggs ett nytt
+  // fält till i TEAM_SCHEMA och prompten måste det stå här också — annars är
+  // det ett dödfält, precis som `language` och `defaultModel` blev.
+  // Enkel nyckel-närvaro i stället för regex: fältnamnen är kända och
+  // objektliteralen skriver dem alltid som `namn:`.
+  const bär = (fält) => kropp.includes(fält + ":");
+  for (const fält of ["id", "name", "icon", "role", "tagline", "always", "job", "capabilities", "starters", "triggers", "system"]) {
+    assert.ok(bär(fält), `stripTeam utelämnar agents[].${fält} — fältet kastas ur allt som lämnar Buildern`);
+  }
+  // Teamnivån: fälten arbetsytan bygger sina paneler av.
+  for (const fält of ["routines", "seasons", "firstProject", "rejected", "workstyle", "entryAgent"]) {
+    assert.ok(bär(fält), `stripTeam utelämnar team.${fält}`);
+  }
+});
+
+// Motprovet: fältet ska också LÄSAS någonstans i portalen. Ett fält som bärs
+// vidare men aldrig visas är samma dödfält, bara ett steg längre fram.
+test("triggers läses av portalen, inte bara av builderns förhandsvisning", () => {
+  const portal = readFileSync("portal/app.js", "utf8");
+  assert.ok(portal.includes("agent.triggers"), "portal/app.js läser inte agent.triggers");
+  // Kräv också det KUNDSYNLIGA: en läsning utan utskrift är samma dödfält, ett
+  // steg längre fram. Etiketten är beviset på att fältet når skärmen.
+  assert.ok(portal.includes("Vänd dig hit när"),
+    "portalen läser triggers men visar dem aldrig — ingen etikett på agentkortet");
+  assert.ok(portal.includes("trigger-chip"), "chipsen renderas inte");
+  const css = readFileSync("portal/portal.css", "utf8");
+  assert.ok(css.includes(".trigger-chip"), "trigger-chip saknar stil — osynlig i praktiken");
+});

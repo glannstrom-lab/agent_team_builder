@@ -1710,6 +1710,19 @@ function renderLog() {
       caps.slice(0, 5).forEach((c) => ul.appendChild(el("li", null, c)));
       empty.appendChild(ul);
     }
+    // "Triggas av" — situationerna där den här agenten är rätt att vända sig
+    // till. Fältet genererades och betalades i varje bygge men kastades i
+    // stripTeam(), lästes av ingen rad i portalen och stod inte i mallen, så
+    // 0 av 14 teamfiler har det. Kapaciteterna säger vad agenten KAN; det här
+    // säger NÄR — vilket är den svårare frågan för en kund med sex agenter.
+    // Äldre teamfiler saknar fältet, och då visas inget alls.
+    const triggers = Array.isArray(agent.triggers) ? agent.triggers.filter((t) => typeof t === "string" && t.trim()) : [];
+    if (triggers.length) {
+      empty.appendChild(el("div", "empty-label", "Vänd dig hit när"));
+      const tw = el("div", "trigger-chips");
+      triggers.slice(0, 3).forEach((t) => tw.appendChild(el("span", "trigger-chip", t)));
+      empty.appendChild(tw);
+    }
     // Exempeluppgifter: förifyller composern (skickar inte — användaren
     // behåller kontrollen och kan anpassa innan den skickar).
     const starters = (Array.isArray(agent.starters) && agent.starters.length)
@@ -3576,6 +3589,14 @@ function openMemory() {
       };
       const [cls, ch, tip] = map[fit];
       const s = el("span", "doc-fit " + cls, ch); s.title = tip;
+      // Pricken avgör om agenten faktiskt VET vad som står i dokumentet, så
+      // förklaringen får inte bara ligga i `title`: den nås varken med
+      // tangentbord eller på touch, och läses inte pålitligt upp. `role="img"`
+      // + aria-label gör tecknet till en bild med alternativtext, så en
+      // skärmläsare säger "Ryms delvis — slutet kapas" i stället för att läsa
+      // upp tecknet ◐ eller hoppa över det.
+      s.setAttribute("role", "img");
+      s.setAttribute("aria-label", tip);
       return s;
     };
     // Stora underlag kan destilleras: ett AI-koncentrat ersätter originalet i
