@@ -319,3 +319,67 @@ test("402 uppströms bokförs som service_down i ai_errors", async () => {
     globalThis.fetch = original;
   }
 });
+
+// ── anropet räknas FÖRE pengarna spenderas (K2) ───────────────────────────
+//
+// Taken läser `calls` ur ai_budget och ai_usage. Skrevs raden först EFTER
+// uppströmsanropet läste varje samtidigt anrop samma siffra, alla bedömde sig
+// som tillåtna, och taket kunde överskridas med lika många som kom samtidigt —
+// med hela genereringstiden som fönster. Nu reserveras platsen innan.
+test("räkningen är skriven innan uppströms anropas", async () => {
+  const skrivna = [];
+  let skrivnaVidUppström = null;
+  const db = {
+    prepare: (sql) => ({
+      bind: (...args) => ({
+        first: async () => throttleRad(sql),
+        run: async () => ({}),
+        _sql: sql, _args: args,
+      }),
+    }),
+    batch: async (satser) => { skrivna.push(...satser.map((s) => s._sql)); return []; },
+  };
+  const original = globalThis.fetch;
+  globalThis.fetch = async () => {
+    skrivnaVidUppström = skrivna.slice();
+    return new Response("data: [DONE]\n\n", { status: 200, headers: { "content-type": "text/event-stream" } });
+  };
+  try {
+    const res = await onRequestPost({
+      request: req({ system: "s", messages: [{ role: "user", content: "hej" }] }),
+      env: { DB: db, OPENROUTER_KEY: "sk-or-test" },
+      waitUntil: (p) => p,
+    });
+    await res.text();
+    assert.ok(skrivnaVidUppström, "uppströms anropades aldrig");
+    assert.ok(skrivnaVidUppström.some((s) => /INSERT INTO ai_budget/.test(s)),
+      "det globala dygnstaket var inte uppräknat när anropet gick uppströms — fönstret är öppet igen");
+    assert.ok(skrivnaVidUppström.some((s) => /build:global/.test(s) || /INSERT INTO ai_usage/.test(s)),
+      "ai_usage var inte uppräknad när anropet gick uppströms");
+  } finally {
+    globalThis.fetch = original;
+  }
+});
+
+test("reservationen är fail-closed — kan vi inte räkna, spenderar vi inte", async () => {
+  // Samma hållning som allowAttempt: det är kassan som skyddas.
+  let uppströmsAnrop = 0;
+  const db = {
+    prepare: (sql) => ({ bind: () => ({ first: async () => throttleRad(sql), run: async () => ({}) }) }),
+    batch: async () => { throw new Error("D1 nere"); },
+  };
+  const original = globalThis.fetch;
+  globalThis.fetch = async () => { uppströmsAnrop++; return new Response("data: [DONE]\n\n", { status: 200 }); };
+  try {
+    const res = await onRequestPost({
+      request: req({ system: "s", messages: [{ role: "user", content: "hej" }] }),
+      env: { DB: db, OPENROUTER_KEY: "sk-or-test" },
+      waitUntil: (p) => p,
+    });
+    assert.equal(res.status, 503);
+    assert.equal((await res.json()).code, "service_busy");
+    assert.equal(uppströmsAnrop, 0, "inga pengar fick spenderas när räkningen inte gick att skriva");
+  } finally {
+    globalThis.fetch = original;
+  }
+});

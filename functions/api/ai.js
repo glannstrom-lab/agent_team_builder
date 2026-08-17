@@ -437,37 +437,90 @@ export async function onRequestPost(context) {
   //
   // Anropet räknas oavsett hur det gick — annars blir ett trasigt anrop
   // gratis, och då är taket kringgåbart genom att avbryta strömmen.
-  const bokför = (used) => {
+  // ── RESERVERA FÖRST, BOKFÖR TOKENS EFTERÅT (K2) ───────────────────────────
+  //
+  // Taken ovan läser `calls` ur ai_budget och ai_usage. Skrevs raden först
+  // EFTER uppströmsanropet — som den gjorde till 2026-08-17 — läste varje
+  // samtidigt anrop samma siffra, alla bedömde sig som tillåtna, och taket
+  // kunde överskridas med lika många som kom samtidigt. Fönstret var hela
+  // genereringstiden, alltså sekunder, och taken finns just för trafik som
+  // kommer många samtidigt (ett bygge skickar sina steg efter varandra, men ett
+  // skript gör det inte).
+  //
+  // `allowAttempt` hade redan lösts på det sättet: en enda sats som räknar och
+  // beslutar. Här går det inte att slå ihop check och skrivning i en sats — de
+  // rör fyra olika rader i två tabeller — så i stället görs skrivningen först.
+  // Det stämmer med regeln som redan gällde: anropet räknas oavsett hur det
+  // gick, annars blir ett trasigt anrop gratis och taket kringgåbart genom att
+  // avbryta strömmen.
+  //
+  // `callsDelta` skiljer de två stegen: 1 vid reservationen, 0 när tokens
+  // fylls i efteråt. Utan den hade varje anrop räknats två gånger.
+  //
+  // VAD DET HÄR INTE GÖR, utskrivet så att nästa granskning inte tror mer om
+  // det än det förtjänar: fönstret är inte borta, det är krympt. Kvar är
+  // glappet mellan sista takläsningen ovan och skrivningen här — två
+  // DB-anrop, alltså millisekunder i stället för hela genereringstiden.
+  //
+  // Att stänga det helt kräver samma grepp som `allowAttempt`: räkna upp och
+  // läsa tillbaka i EN sats per tak (`... RETURNING calls`) och jämföra mot
+  // gränsen efteråt, i stället för att läsa först. Det är fyra rader i två
+  // tabeller, alltså fyra sådana satser, och de befintliga taktesterna stubbar
+  // SELECT-vägen — så det är en riktig ombyggnad, inte en rad.
+  //
+  // Skälet att det får vänta: `allowAttempt` är redan atomär och släpper bara
+  // 24 anrop per kvart och IP på den fria rutten (90 för portalen). En enskild
+  // källa kan alltså inte ha hundratals anrop i luften samtidigt, och
+  // överskridandet begränsas av hur många som råkar ligga i millisekundglappet.
+  // Kostnaden för det är ören. Före den här ändringen var fönstret sekunder
+  // brett och ett parallellt skript kunde utnyttja det med flit.
+  const räkna = (callsDelta, used) => {
     const inTok = (used && used.input) || 0;
     const outTok = (used && used.output) || 0;
     const satser = [
       db.prepare(
-        "INSERT INTO ai_budget (day, calls, input_tok, output_tok) VALUES (?, 1, ?, ?) " +
-        "ON CONFLICT(day) DO UPDATE SET calls = calls + 1, input_tok = input_tok + excluded.input_tok, output_tok = output_tok + excluded.output_tok"
-      ).bind(utcDay(t), inTok, outTok),
+        "INSERT INTO ai_budget (day, calls, input_tok, output_tok) VALUES (?, ?, ?, ?) " +
+        "ON CONFLICT(day) DO UPDATE SET calls = calls + excluded.calls, input_tok = input_tok + excluded.input_tok, output_tok = output_tok + excluded.output_tok"
+      ).bind(utcDay(t), callsDelta, inTok, outTok),
       db.prepare(
-        "INSERT INTO ai_usage (subject, period, calls, input_tok, output_tok) VALUES (?, ?, 1, ?, ?) " +
-        "ON CONFLICT(subject, period) DO UPDATE SET calls = calls + 1, input_tok = input_tok + excluded.input_tok, output_tok = output_tok + excluded.output_tok"
-      ).bind(subject, utcMonth(t), inTok, outTok),
+        "INSERT INTO ai_usage (subject, period, calls, input_tok, output_tok) VALUES (?, ?, ?, ?, ?) " +
+        "ON CONFLICT(subject, period) DO UPDATE SET calls = calls + excluded.calls, input_tok = input_tok + excluded.input_tok, output_tok = output_tok + excluded.output_tok"
+      ).bind(subject, utcMonth(t), callsDelta, inTok, outTok),
     ];
     if (!portal) {
       // Dygnsraden för den fria rutten. Egen rad, eget subject — annars går
       // det inte att skilja "den här IP-adressen i dag" från månadssiffran.
       satser.push(db.prepare(
-        "INSERT INTO ai_usage (subject, period, calls, input_tok, output_tok) VALUES (?, ?, 1, ?, ?) " +
-        "ON CONFLICT(subject, period) DO UPDATE SET calls = calls + 1, input_tok = input_tok + excluded.input_tok, output_tok = output_tok + excluded.output_tok"
-      ).bind("ip:" + ip, utcDay(t), inTok, outTok));
+        "INSERT INTO ai_usage (subject, period, calls, input_tok, output_tok) VALUES (?, ?, ?, ?, ?) " +
+        "ON CONFLICT(subject, period) DO UPDATE SET calls = calls + excluded.calls, input_tok = input_tok + excluded.input_tok, output_tok = output_tok + excluded.output_tok"
+      ).bind("ip:" + ip, utcDay(t), callsDelta, inTok, outTok));
       // Byggets globala dygnsrad — den som MAX_BUILD_CALLS_PER_DAY läser.
       // Utan den här skrivningen är taket ovan en kontroll mot en siffra som
       // aldrig växer, alltså inget tak alls. Samma fälla som planens livscykel
       // var före 2026-08-07: en spärrlista som ingen kod fyllde på.
       satser.push(db.prepare(
-        "INSERT INTO ai_usage (subject, period, calls, input_tok, output_tok) VALUES (?, ?, 1, ?, ?) " +
-        "ON CONFLICT(subject, period) DO UPDATE SET calls = calls + 1, input_tok = input_tok + excluded.input_tok, output_tok = output_tok + excluded.output_tok"
-      ).bind("build:global", utcDay(t), inTok, outTok));
+        "INSERT INTO ai_usage (subject, period, calls, input_tok, output_tok) VALUES (?, ?, ?, ?, ?) " +
+        "ON CONFLICT(subject, period) DO UPDATE SET calls = calls + excluded.calls, input_tok = input_tok + excluded.input_tok, output_tok = output_tok + excluded.output_tok"
+      ).bind("build:global", utcDay(t), callsDelta, inTok, outTok));
     }
-    return db.batch(satser).catch((e) => console.error("[ai] kunde inte bokföra förbrukning", String(e)));
+    return db.batch(satser);
   };
+
+  // Reservationen VÄNTAS på och är fail-closed: kan vi inte räkna anropet ska
+  // vi inte spendera det. Samma resonemang som i allowAttempt — det är kassan
+  // som skyddas, och en oväntad räkning går inte att ta tillbaka.
+  try {
+    await räkna(1, null);
+  } catch (e) {
+    console.error("[ai] kunde inte reservera anropet — stänger hellre än öppnar", String(e));
+    return json({ error: "Tjänsten är hårt belastad just nu. Försök igen senare.", code: "service_busy" }, 503);
+  }
+
+  // Tokens fylls i efteråt, utan att räkna upp anropet igen (callsDelta = 0).
+  // Fel här loggas i stället för att kastas: svaret har redan lämnat oss, och
+  // det viktiga — att anropet är räknat — är redan gjort.
+  const bokför = (used) => räkna(0, used)
+    .catch((e) => console.error("[ai] kunde inte bokföra tokens", String(e)));
 
   // Fel bokförs som antal per dygn och kod — aldrig innehåll. Det är det enda
   // spår som finns kvar efter att svaret gått: `console.error` i en Pages
