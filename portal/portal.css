@@ -48,7 +48,18 @@ a { color: inherit; }
 .brand { text-decoration: none; }
 .grad { color: var(--accent); }
 
-/* ---------- KEY SETUP ---------- */
+/* Visuellt dold, men läses av skärmläsare och nås av `for`/`aria`. Används där
+   formgivningen inte har plats för en synlig etikett men fältet ändå måste ha
+   en — inloggningen är det viktigaste fallet: utan etikett hör en blind kund
+   bara "redigera text, tomt" och kommer aldrig in i sitt eget team.
+   Inte `display:none` eller `visibility:hidden` — de tar bort elementet ur
+   tillgänglighetsträdet också, vilket är precis vad vi vill undvika. */
+.vh {
+  position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+  overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0;
+}
+
+/* ---------- INLOGGNING ---------- */
 .setup {
   max-width: 520px; margin: 0 auto; min-height: 100%;
   display: flex; flex-direction: column; justify-content: center;

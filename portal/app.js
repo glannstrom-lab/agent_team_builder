@@ -1090,13 +1090,24 @@ function renderLogin(opts) {
     wrap.appendChild(note);
   }
 
-  const err = el("div", "setup-err"); err.style.display = "none";
+  // role="alert" gör att felet LÄSES UPP när det dyker upp. Utan den hände
+  // "Koden gick inte att verifiera" helt tyst för en skärmläsaranvändare, som
+  // alltså inte fick veta varför inloggningen inte gick igenom.
+  const err = el("div", "setup-err"); err.setAttribute("role", "alert"); err.style.display = "none";
   wrap.appendChild(err);
   const fail = (msg) => { err.textContent = "⚠️ " + msg; err.style.display = "block"; };
 
   const input = el("input");
+  input.id = o.email ? "login-code" : "login-email";
   input.type = o.email ? "text" : "email";
   input.autocomplete = o.email ? "one-time-code" : "email";
+  // Etiketten är visuellt dold — inloggningens formgivning har ingen plats för
+  // en synlig, och ledtexten ovan säger redan vad som ska skrivas. Men fältet
+  // måste ha en etikett: med bara placeholder säger skärmläsaren "redigera
+  // text, tomt" utan att avslöja om det är en adress eller en kod.
+  const lab = el("label", "vh", o.email ? "Sexsiffrig engångskod från mejlet" : "E-postadress");
+  lab.setAttribute("for", input.id);
+  wrap.appendChild(lab);
   if (o.email) {
     input.inputMode = "numeric"; input.maxLength = 6; input.placeholder = "123456";
     if (o.devCode) input.value = o.devCode; // konsolläge: förifylld, tryck bara Logga in
@@ -2657,9 +2668,16 @@ function openGrow() {
     });
   }
 
-  box.appendChild(el("div", "ovl-label", "Vad har ändrats / vad behöver ni?"));
+  // Riktig <label for> i stället för en fristående div: ett klick på texten ska
+  // flytta fokus till fältet, och en skärmläsare ska höra vad fältet gäller.
+  ta.id = "grow-need";
+  const growLab = el("label", "ovl-label", "Vad har ändrats / vad behöver ni?");
+  growLab.setAttribute("for", ta.id);
+  box.appendChild(growLab);
   box.appendChild(ta);
-  const errEl = el("div", "setup-err"); errEl.style.display = "none"; box.appendChild(errEl);
+  // role="alert" så att valideringsfelet läses upp när det dyker upp, inte
+  // bara syns för den som råkar titta på rätt ställe.
+  const errEl = el("div", "setup-err"); errEl.setAttribute("role", "alert"); errEl.style.display = "none"; box.appendChild(errEl);
   const preview = el("div", "grow-preview");
   box.appendChild(preview);
 
@@ -3412,27 +3430,71 @@ let ovlEsc = null;
 // (✕, bakgrundsklick, Escape eller att en annan ruta öppnas ovanpå).
 // Introduktionen använder den för att måla om arbetsytan — se openIntro.
 let ovlOnClose = null;
+// Vad som hade fokus innan rutan öppnades. Utan den hamnade fokus på <body>
+// vid stängning, och en tangentbordsanvändare fick börja om från sidans topp
+// för att hitta tillbaka till knappen hon just tryckte på.
+let ovlReturnFocus = null;
+
+// Fokuserbara element inne i rutan, i dokumentordning. Används både för att
+// flytta fokus in och för att hålla Tab kvar innanför.
+function ovlFocusable(box) {
+  return Array.from(box.querySelectorAll(
+    'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+  )).filter((e) => e.offsetParent !== null || e === document.activeElement);
+}
+
 function openOverlay(title) {
   closeOverlay();
   document.body.classList.remove("drawer-open"); // overlay ska inte hamna bakom mobil-drawern
+  ovlReturnFocus = document.activeElement;
   const ovl = el("div", "ovl"); ovl.id = "ovl";
   ovl.onclick = (e) => { if (e.target === ovl) closeOverlay(); };
   const box = el("div", "ovl-box");
+  // Dialog-semantik: utan role/aria-modal får en skärmläsare aldrig veta att en
+  // ruta öppnats, och läser vidare i sidan bakom som om ingenting hänt.
+  // aria-labelledby ger dialogen sitt namn ur rubriken som redan finns.
+  const titleId = "ovl-title";
+  box.setAttribute("role", "dialog");
+  box.setAttribute("aria-modal", "true");
+  box.setAttribute("aria-labelledby", titleId);
+  box.tabIndex = -1; // så att fokus kan flyttas till själva rutan
   const head = el("div", "ovl-head");
-  head.appendChild(el("div", "ovl-title", title));
+  const t = el("div", "ovl-title", title); t.id = titleId;
+  head.appendChild(t);
   const x = el("button", "ovl-close", "✕"); x.type = "button"; x.setAttribute("aria-label", "Stäng");
   x.onclick = closeOverlay;
   head.appendChild(x);
   box.appendChild(head);
   ovl.appendChild(box);
   document.body.appendChild(ovl);
-  ovlEsc = (e) => { if (e.key === "Escape") closeOverlay(); };
+  ovlEsc = (e) => {
+    if (e.key === "Escape") { closeOverlay(); return; }
+    if (e.key !== "Tab") return;
+    // Fokusfälla. Utan den kunde Tab vandra ut i innehållet bakom den
+    // halvgenomskinliga bakgrunden — synligt dolt, men fullt tabbningsbart.
+    const f = ovlFocusable(box);
+    if (!f.length) { e.preventDefault(); box.focus(); return; }
+    const först = f[0], sist = f[f.length - 1];
+    if (!box.contains(document.activeElement)) { e.preventDefault(); först.focus(); return; }
+    if (e.shiftKey && document.activeElement === först) { e.preventDefault(); sist.focus(); }
+    else if (!e.shiftKey && document.activeElement === sist) { e.preventDefault(); först.focus(); }
+  };
   document.addEventListener("keydown", ovlEsc);
+  // Flytta fokus in. Rutan själv, inte första knappen: anropsställen som vill
+  // ha markören i ett textfält gör det redan själva efteråt, och att landa på
+  // ✕ hade gjort "stäng" till förstahandsvalet i varje ruta.
+  setTimeout(() => { if (box.isConnected && !box.contains(document.activeElement)) box.focus(); }, 0);
   return box;
 }
 function closeOverlay() {
   if (ovlEsc) { document.removeEventListener("keydown", ovlEsc); ovlEsc = null; }
   const o = $("#ovl"); if (o) o.remove();
+  // Tillbaka dit användaren var. Kontrollen att elementet fortfarande sitter i
+  // DOM:en behövs eftersom en ruta kan ha ritat om vyn bakom sig.
+  const åter = ovlReturnFocus; ovlReturnFocus = null;
+  if (åter && åter.isConnected && typeof åter.focus === "function") {
+    try { åter.focus(); } catch (_) { /* fokus får aldrig hindra stängning */ }
+  }
   const fn = ovlOnClose; ovlOnClose = null;
   if (fn) { try { fn(); } catch (_) { /* städning får aldrig hindra stängning */ } }
 }
@@ -3989,8 +4051,13 @@ async function submitMessage(text, display) {
     // ett ev. tillståndsprompt är tillåtet här). Måste ligga före systemFor(),
     // som bakar in underlagen i systemprompten.
     if (state.folder) { await refreshFolder(state.folder.needsPermission ? { ask: true } : undefined); updateFolderBanner(); }
+    // Slog svaret i tokentaket? Då är sista meningen kapad mitt i, och det ska
+    // stå i svaret — inte lämnas åt kunden att gissa. Läggs till i texten så
+    // att den följer med i historiken, kopieringen och nedladdningen.
+    let truncated = false;
     if (state.demo) await streamDemo(agent, state.history[agentId], onDelta);
-    else await streamClaude(systemFor(agent), state.history[agentId], onDelta);
+    else await streamClaude(systemFor(agent), state.history[agentId], onDelta, undefined, () => { truncated = true; });
+    if (truncated) onDelta("\n\n> ⚠️ **Svaret klipptes av** när det nådde sin längdgräns. Skriv \"fortsätt\" för resten.");
     pushHistory(agentId, { role: "assistant", content: acc, at: Date.now() });
     saveHistory();
     // Första riktiga svaret: fäll ut hela arbetsytan, permanent. Kunden har
@@ -4097,7 +4164,7 @@ async function streamDemo(agent, messages, onDelta) {
 
 // Anropar Claude Messages API direkt från webbläsaren och strömmar svaret.
 // Själva strömningen + felhanteringen ligger i den delade klienten.
-async function streamClaude(system, messages, onDelta, onUsage) {
+async function streamClaude(system, messages, onDelta, onUsage, onTruncated) {
   await window.ATBClaude.stream({
     apiKey: state.apiKey,
     model: state.model,
@@ -4106,6 +4173,7 @@ async function streamClaude(system, messages, onDelta, onUsage) {
     maxTokens: 4096,
     onDelta,
     onUsage,
+    onTruncated,
     signal: state.chatAbort ? state.chatAbort.signal : undefined,
   });
 }

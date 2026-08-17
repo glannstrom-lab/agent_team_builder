@@ -8,7 +8,7 @@
   "//deploy": "`npm test` körs FÖRST, före bygget. Skälet: CI kör testsviten vid push, men deploy sker för hand och kräver ingen push — de två var alltså helt frånkopplade, och otestad kod kunde nå mittaiteam.se medan produktionen låg före allt som fanns någon annanstans. Det inträffade 2026-08-16: en commit påstod att facit var lagat i sex exempel, hade lagat fem, och testet som fällde låg i samma commit. Ta inte bort raden för att en körning är långsam — sviten tar under en sekund.",
   "scripts": {
     "build": "node build-dist.mjs",
-    "test": "node --test test/teams.mjs test/stripe.mjs test/plan.mjs test/ai.mjs test/throttle.mjs test/examples.mjs",
+    "test": "node --test test/teams.mjs test/stripe.mjs test/plan.mjs test/ai.mjs test/throttle.mjs test/examples.mjs test/klient.mjs",
     "check:dist": "node build-dist.mjs && node scripts/check-dist.mjs",
     "serve": "node build-dist.mjs && npx --yes http-server dist -p 8420 -c-1",
     "dev": "npx --yes http-server . -p 8420 -c-1",

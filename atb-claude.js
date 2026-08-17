@@ -138,6 +138,13 @@
     let buffer = "";
     // Tokenförbrukning ur strömmen — driver kostnadsvisningen i portalen.
     const used = { input: 0, output: 0 };
+    // Varför svaret slutade. "length" betyder att modellen slog i maxTokens och
+    // klipptes mitt i — strömmen avslutas då helt normalt, så utan den här
+    // raden renderas och sparas ett halvt svar som om det vore färdigt. För ett
+    // nyhetsbrev eller ett avtalsutkast läses den avklippta sista meningen som
+    // avsiktlig, eller missas. Samma familj av tyst fel som B1: inget kraschar,
+    // men det som visas är inte det som borde visas.
+    let finishReason = null;
     const handleLine = (line) => {
       const trimmed = line.trim();
       if (!trimmed.startsWith("data:")) return;
@@ -157,9 +164,11 @@
         // raden: varje svar dog innan ett tecken nådde skärmen, i både
         // builder och portal. Lägg inte tillbaka en förgrening här utan
         // att först ge den något att förgrena på.
-        const delta = evt.choices && evt.choices[0] && evt.choices[0].delta;
+        const val = evt.choices && evt.choices[0];
+        const delta = val && val.delta;
         if (delta && typeof delta.content === "string" && delta.content) onDelta(delta.content);
         else if (evt.error) throw new Error(evt.error.message || "Strömningsfel");
+        if (val && val.finish_reason) finishReason = val.finish_reason;
         if (evt.usage) { used.input = evt.usage.prompt_tokens || 0; used.output = evt.usage.completion_tokens || 0; }
       } catch (e) {
         if (e instanceof SyntaxError) return; // ofullständig rad — vänta på nästa chunk
@@ -178,6 +187,12 @@
     if (opts.onUsage && (used.input || used.output)) {
       try { opts.onUsage(used); } catch (_) { /* kostnadsvisning får aldrig fälla ett lyckat svar */ }
     }
+    // Avkapat svar: säg det, i stället för att låta kunden tro att den sista
+    // halva meningen var meningen. Anroparen bestämmer hur det visas.
+    if (finishReason === "length" && opts.onTruncated) {
+      try { opts.onTruncated(); } catch (_) { /* en varning får aldrig fälla ett levererat svar */ }
+    }
+    return { used, finishReason };
   }
 
   // validateKey är borttagen 2026-08-06. Ingen kund har en egen nyckel, så
@@ -190,6 +205,9 @@
   // priser plus en aldrig anropad hämtare mot OpenRouters katalog.
 
   // Icke-strömmande bekvämlighet: samlar hela svaret till en sträng.
+  // Returnerar strängen som förut. Den som behöver veta om svaret klipptes av
+  // skickar med onTruncated — collect kan inte lämna tillbaka två värden utan
+  // att varje anropsställe skulle behöva skrivas om.
   async function collect(opts) {
     let out = "";
     await stream(Object.assign({}, opts, { onDelta: (d) => { out += d; } }));

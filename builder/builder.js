@@ -766,10 +766,17 @@ function renderClarify(form, intake, qs) {
   form.querySelector(".clarify-box")?.remove();
   const box = el("div", "clarify-box");
   box.appendChild(el("div", "clarify-title", "Snabba följdfrågor — svaren gör analysen skarpare"));
-  const inputs = qs.map((q) => {
+  const inputs = qs.map((q, i) => {
     const r = el("div", "frow");
-    r.appendChild(el("label", "flabel", q));
+    const lab = el("label", "flabel", q);
     const t = el("textarea", "intake-text"); t.rows = 2;
+    // Koppla etiketten till fältet, som fieldRow() redan gör i intag-formuläret.
+    // Utan for/id flyttar ett klick på frågan inte fokus, och en skärmläsares
+    // fältlista säger bara "flerradigt textfält, tomt" — utan att avslöja
+    // vilken av följdfrågorna det gäller.
+    t.id = "clarify-" + i;
+    lab.setAttribute("for", t.id);
+    r.appendChild(lab);
     r.appendChild(t); box.appendChild(r);
     return { q, t };
   });
