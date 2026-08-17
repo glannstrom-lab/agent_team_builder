@@ -10,7 +10,12 @@ import { rmSync, mkdirSync, cpSync, readFileSync, writeFileSync, readdirSync, st
 import { dirname, join, posix } from "node:path";
 import { createHash } from "node:crypto";
 
-const ITEMS = ["index.html", "avatars.js", "atb-claude.js", "builder", "site", "verticals", "portal", "fonts", "og.png", "sitemap.xml", "robots.txt", "_headers"];
+// 404.html: Cloudflare Pages serverar den för omatchade sökvägar OCH sätter rätt
+// statuskod. Utan filen faller Pages tillbaka på index.html med status 200, så
+// varje felstavad adress blev en till kopia av säljsidan i sökmotorns ögon
+// (mjuk 404) — uppmätt 2026-08-17: /helt/pahittad/sida gav 200 och 44 kB
+// startsida. Den lurade dessutom en granskning att tro att en fil låg exponerad.
+const ITEMS = ["index.html", "404.html", "avatars.js", "atb-claude.js", "builder", "site", "verticals", "portal", "fonts", "og.png", "sitemap.xml", "robots.txt", "_headers"];
 
 // Juridiksidorna publiceras bara när de är ifyllda. Org.nr, momsreg.nr och
 // adress är lagkrav (8 § e-handelslagen) och står som [FYLL I] tills Mikael

@@ -1,7 +1,8 @@
 # Roadmap
 
-Från genomgången 2026-08-15 · sex parallella linser + egen verifiering.
+Från genomgången 2026-08-17 · sju parallella linser + egen verifiering.
 Översikt: <https://claude.ai/code/artifact/2b4f7c0a-db8d-4387-9f4f-c5dbb73dd77b>
+(Förra rundan: 2026-08-15, samma dokument.)
 
 > Den här filen är arbetslistan. `docs/roadmap.md` (passindelningen) och
 > `docs/lansering.md` (hålen) står kvar och gäller fortfarande — det som är
@@ -10,27 +11,64 @@ Från genomgången 2026-08-15 · sex parallella linser + egen verifiering.
 >
 > **Verifieringsgrad:** `mätt` = kört eller räknat. `läst i koden` = öppnad
 > och kontrollerad rad, men inte exekverad.
+>
+> Nya ID:n från 2026-08-17 har tvåbokstavsprefix efter lins (`KA` kärnan,
+> `KR` köpresan, `SE` synlighet, `TG` tillgänglighet, `DR` drift, `KL`
+> klientkod, `BF` blindfläck) för att inte krocka med de gamla enbokstavs-ID:na.
 
 ## Nu — riktiga fel
 
+- [ ] **KA1** Enkätvägen kan ge två olika kunder identiska team — kärnregeln bryts strukturellt. Två salonger med samma kryss och tom fritext ger **byte-identiskt intake, 798 tecken, där bara raden `företagsnamn:` skiljer**. Enkäten finns för den som har svårt att formulera sin verksamhet — alltså de kunder som minst kan upptäcka att resultatet är generiskt · `builder/builder.js:600-682`, `builder/survey-data.js:22-33` · `mätt (reproducerad)` · ~1 dag
+- [ ] **DR2** 52 commits arbete sedan 5 augusti finns bara på en dator. `origin/main` står på `657c29b` från 2026-07-15, 68 commits efter. Inga taggar alls, så ingen produktionsversion går att peka ut i efterhand. Följden är att CI:t som byggdes 16 aug **aldrig har kört** · repo-nivå · `mätt` · ~2 min (push) + 5 min (taggvana)
+- [ ] **TG1** Inloggningen går inte att använda med skärmläsare. Fältet har bara `placeholder` — ingen `<label>`, ingen `aria-label` — och felraden är en vanlig `<div>` utan `role="alert"`, så "Koden gick inte att verifiera" händer tyst. Den som klarar demot kommer ändå inte in i sitt eget team · `portal/app.js:1084-1097` · `läst i koden` · ~1–2 h
 - [ ] **P5** "Kopiera delningslänk" ger mottagaren en låst vy — texten är rättad, men vägen in för en kollega saknas fortfarande gränssnitt (`functions/api/team/invite.js` finns, oanropad) · `portal/app.js:2756` · `läst i koden` · ~1–2 h
-- [ ] **K2** Takkontrollen sker före uppströmsanropet, bokföringen efter — fönstret är hela genereringstiden · `functions/api/ai.js:303-329`, `377-398` · `läst i koden` · ~3–4 h
+- [ ] **K2** Takkontrollen sker före uppströmsanropet, bokföringen efter — fönstret är hela genereringstiden. Kontrollerat igen 2026-08-17: `allowAttempt` på rad 340, `bokför` först vid 507/518/648 · `functions/api/ai.js:340`, `440-473` · `läst i koden` · ~3–4 h
 
 ## Sedan — skav som märks
 
+- [ ] **TG2** Modaler saknar dialog-semantik, fokusfälla och fokusåterställning. `openOverlay()` sätter varken `role="dialog"`, `aria-modal` eller `aria-labelledby`, flyttar inte fokus in, fångar inte Tab, och återställer inte fokus vid stängning — så Minne, Möten, Sök, Säg upp och ett dussin andra funktioner lämnar en tangentbordsanvändare vid sidans topp · `portal/app.js:3400-3423` (~15 anropsställen) · `läst i koden` · ~3–4 h
+- [ ] **SE1** Tolv branscher delar ett dokument, en titel och en beskrivning. `verticals/index.html` har `<div id="root"></div>` som hela sin body och renderar allt ur `verticals.js` på `?v=<slug>`; metataggarna i head är statiska oavsett bransch, och `sitemap.xml` listar dem inte. "AI för tandläkare" har alltså ingen egen sida att ranka — och det är projektets bästa long-tail-yta · `verticals/index.html:34-38`, `sitemap.xml:1-5` · `läst i koden` · ~4–6 h
+- [ ] **SE3** Nio av fjorton publicerade sidor saknar Open Graph, sju saknar metabeskrivning. De fem case-sidorna (`accountant`, `agency`, `coachonline`, `ikea`, `studio`) och `builder/index.html` har bara `<title>`. Klistrad i LinkedIn visar en sådan länk ingen bild, ingen rubrik och ingen text — i den kanal som är gratis · `site/*.html:1-14`, `builder/index.html:1-16` · `mätt` · ~45 min
+- [ ] **SE4** Canonical pekar på en URL som redirectar bort. `site/en-vecka.html` deklarerar `…/site/en-vecka.html`, men uppmätt i produktion: den formen svarar **308** till `/site/en-vecka`, som `sitemap.xml` också listar. Sidan talar alltså om för Google att dess riktiga adress är den som inte finns · `site/en-vecka.html:15`, `sitemap.xml:27-61` · `mätt` · ~30 min
+- [ ] **KR1** Branschsidorna länkar aldrig till Buildern. Noll träffar på `builder` i hela `verticals/`; nav-CTA:t är "Priser" och knapparna är demo, priser och "boka samtal". `index.html:123-125` har en uttalad princip om att nav-CTA:t **är** Buildern. Den bransch-specifika besökaren — den mest köpbenägna — har därmed längst väg till att bygga sitt eget team · `verticals/app.js:25`, `:88`, `:116` · `mätt` · ~30–45 min
+- [ ] **KA2** `triggers` genereras och betalas i varje bygge men når aldrig kunden. `TEAM_SCHEMA` kräver fältet och prompten fyller det, men `stripTeam()` utelämnar det ur allt som lämnar Buildern (utkast, delningslänk, checkout-konfig, export), `portal/app.js` läser det aldrig, och `templates/shared/portal-team.md` nämner det inte — så 0 av 14 teamfiler har det. Antingen visa det i portalen eller ta bort det ur schemat · `builder/builder.js:1063`, `:928`, `:1657-1658`, `templates/shared/portal-team.md:84-108` · `mätt` · ~20–45 min
+- [ ] **KL3** Avkapade svar syns inte för kunden. `finish_reason` läses **ingenstans** i klientkoden (0 träffar), så ett svar som slår i tokentaket renderas och sparas som färdigt. För ett utkast eller nyhetsbrev läses den avklippta sista meningen som avsiktlig · `atb-claude.js:160-163` · `mätt` · ~45 min
+- [ ] **BF2** Gratisbygget delar ut hela den betalda leveransen. `downloadConfig()` skriver `stripTeam(team)` till fil — inklusive varje agents fullständiga systemprompt — utan konto och utan betalning. Prompterna går att klistra in i gratis ChatGPT och köra löpande, vilket underminerar beslutet "noll provsvar" vars motivering är att det är teamet som säljs. Behöver ett medvetet beslut, inte en bieffekt · `builder/builder.js:1765-1772`, `index.html:604` · `läst i koden` · ~2–4 h
+- [ ] **BF3** Fyra prompter ligger öppet på webben, inklusive den filen projektet självt kallar nyckelsteget. Uppmätt: `curl …/prompts/shared/research.md` ger 200 och 17 807 byte klartext. Buildern måste kunna hämta dem klientsidan, så exponeringen har ett skäl — men `build-dist.mjs` säger att resten av `prompts/` är "konsult-IP", och den gränsen går inte att hålla samtidigt · `build-dist.mjs:45-53` · `mätt` · ~30 min (acceptera) / ~1 dag (serverside)
+- [ ] **TG4** Synliga etiketter är inte kopplade till sina fält i builderns följdfrågor och portalens "Utveckla teamet" — ett klick flyttar inte fokus, och en skärmläsares fältlista säger bara "flerradigt textfält, tomt". `fieldRow()` gör det redan rätt på intag-formuläret · `builder/builder.js:770-772`, `portal/app.js:2645-2647` · `läst i koden` · ~30–45 min
+- [ ] **DR3** Mejl-secrets är odokumenterade. Tjänsten behöver minst åtta Pages-secrets; `MAIL_API_KEY`, `MAIL_FROM` och `MAIL_PROVIDER` nämns bara i `functions/api/auth/_lib.js`, inte i `docs/` eller `CLAUDE.md`. Vid en återuppsättning finns ingen lista att gå efter. (Felhanteringen är däremot bra: alla tre kastar explicit.) · `functions/api/auth/_lib.js:267,277`, `docs/lansering.md:115-116` · `mätt` · ~20 min
+- [ ] **DR4** 3,3 MB tredjepartskod i `portal/vendor/` utan versionsspår — pdf.js, mammoth och xlsx ligger inklistrade utan lockfile, källa eller datum, och pdf.js parsar kundens uppladdade filer. Ingen `npm audit`, inget Dependabot, ingen väg att veta vilken version som körs när en CVE dyker upp · `portal/vendor/*` · `mätt` · ~30 min + ~15 min/kvartal
 - [ ] **BL2** Ångerrätten saknar knapp — kodens egen TODO, vars villkor nu inträffat · `villkor.html:508-514` · `läst i koden` · ~1–2 h
 - [ ] **K4** Bygg-rutten är en oautentiserad LLM-proxy och en väg tillbaka för uppsagda · `functions/api/ai.js:252-293` · `läst i koden` · ~4–6 h
 
 ## Framåt — utveckling
 
-- [ ] **P1** Ingen mätning av var köpresan läcker · `index.html` (inga taggar) · `mätt` · ~1 h
-- [ ] **D3** Ingen felövervakning; "krediten är slut" skrivs till en logg ingen läser · `functions/api/ai.js:637` · `mätt` · ~2 h
+- [ ] **KA3** Enkätvägen — den mest riskfyllda vägen — är den enda utan test. Noll träffar på `buildIntakeBlock` eller `survey` i `test/`. Ett test som kör två olika företag med identiska kryss och kräver att outputen skiljer sig i något mer än namnet skulle ha fångat KA1 · `test/` (saknas) · `mätt` · ~2–3 h
+- [ ] **KA4** "Två agenter delar inte perspektiv" kontrolleras bara som närvaro. Både `kontrolleraSystemprompter()` och golvet i `test/teams.mjs` kollar att rubriken `DITT PERSPEKTIV` finns — aldrig att innehållet under den skiljer sig mellan agenterna. Kravet är formulerat som mätbart men mäts inte · `builder/builder.js:993-1020`, `test/teams.mjs:100-113`, `test/examples.mjs:52-61` · `mätt` · ~3–4 h
+- [ ] **KA5** Skalningsstegets "räkna tyst, visa inte mellanstegen" har ingen kodkontroll, trots att `scale.md` själv skriver att en läckande tankekedja blir ett kundproblem eftersom steget visas live. `panel.textContent = acc` visar vad modellen än skickar · `builder/builder.js:850-858`, `prompts/shared/scale.md:63-65` · `läst i koden` · ~2–3 h
+- [ ] **KR2** "Beviset" är den enda ytan utan en riktig körning bakom sig. Hero säger "Ingen av dem är påhittad" och personalliggaren visar fyra anställda med status "I tjänst"; namnen Vera/Ester/Sixten/Malte finns bara i `design/`-skisserna och i `index.html`, och innehållet är lerverk-exemplets form med andra namn. Sex riktiga körningar ligger i `examples/` — anspråket går att göra sant billigt · `index.html:145`, `:163`, `:216-218` · `läst i koden` · ~15 min–1 h
+- [ ] **TG5** "Får plats i minnet"-pricken (●/◐/○) förklaras bara i ett `title`-attribut på en icke-fokuserbar `<span>` — den som inte kan hovra får aldrig veta att ett underlag kapades och att agenten alltså inte läst dokumentet · `portal/app.js:3493-3503` · `läst i koden` · ~30 min
+- [ ] **DR5** Migrationer är enkelriktade: koden går att rulla tillbaka i Pages-dashboarden, schemat inte. Behöver en rad om att kod och schema rullas tillbaka ihop, inte var för sig · `migrations/0001-0005` · `läst i koden` · ~15 min
+- [ ] **SE5** Ingen strukturerad data någonstans (0 träffar på `application/ld+json` i hela repot), trots att sidan redan har en FAQ med sex frågor och en prislista. `FAQPage`, `Organization` och `Product`/`Offer` kostar bara markup och är det enda konkurrensmedlet i sökresultatet för en sajt utan varumärke · `index.html:587-608`, `:381` · `mätt` · ~1,5–2 h
+- [ ] **P1** Ingen mätning av var köpresan läcker. Kontrollerat igen 2026-08-17: de enda träffarna på `gtag`/`analytics` i repot är en **CSS-klass** som heter `.gtag`. Cloudflare Web Analytics är gratis, cookiefri och kräver ingen CSP-ändring · `index.html` (inga taggar) · `mätt` · ~20 min–1 h
+- [ ] **D3** Ingen felövervakning; "krediten är slut" skrivs till en logg ingen läser. `console.error` i Pages Functions syns bara i `wrangler pages deployment tail` medan någon tittar. Krediten kan ta slut kl 03 och portalen svara 503 till morgonen · `functions/api/ai.js:700-711` · `mätt` · ~2 h
 - [ ] **P6** Auto-körda rutiners "ligger klar"-bevis överlever inte en omladdning · `portal/app.js:2242` · `läst i koden` · ~2 h
-- [ ] **BL4** Ingen backup av D1 och ingen plan för längre frånvaro · `scripts/` (saknas), `wrangler.toml` · `mätt` · ~2 h
+- [ ] **BL4** Ingen backup av D1 och ingen plan för längre frånvaro. Bekräftat 2026-08-17: `scripts/` har inget exportskript, och D1 är den enda datakällan som inte går att återskapa ur git — den bär konton, `team_access`, `teams.plan` och all bokföring · `scripts/` (saknas), `wrangler.toml` · `mätt` · ~1–2 h
 - [ ] **BL3** Konkurrensbilden är förbigången: aikollegorna.se leder med EU-drift · `docs/omvarldsresearch-2026-07-17.md` · `mätt` · ~2 h
 - [ ] **P2** Gratisbygget fångar ingen e-post — övergiven körning är borta för alltid · `builder/builder.js:1432-1493` · `läst i koden` · ~4 h
 - [ ] **P4** Grundteamets agenter går att lägga till, aldrig redigera eller avsluta · `portal/app.js:2617-2691` · `läst i koden` · ~5 h
 - [ ] **P3** Provmånaden har ingen utgående livlina utanför portalen · `functions/api/_plan.js:65-86` · `mätt` · ~6 h
+
+## Dokumentationsfel — rättade 2026-08-17
+
+Rättade direkt i `CLAUDE.md` (rent git-träd). Raderna står i terminalsvaret.
+
+- Repo-trädet sa `test/ # node --test: teams.mjs + stripe.mjs + plan.mjs (69 tester)`. Det är sex filer och 120 tester; `scripts/` saknade `check-dist.mjs`; `ROADMAP.md` och `.github/workflows/test.yml` fanns inte i trädet alls.
+- Sprintrutan sa "Testsviten är 69 gröna". Uppmätt i dag: 120 tester, varav en röd (se **DR1**).
+- Sprintrutan sa "**Nästa pass:** pass 3.3 och 3.1" — båda gjorda 2026-08-16 som K1 och K3. Instruktionen skickade nästa session till arbete som redan var färdigt.
+
+**Väntar på ditt ok** (kodkommentar, inte prosa — därför inte ändrad):
+`builder/builder.js:1652-1656` säger att 190 kr och 490 kr/mån "kräver en proxy på vår nyckel med kvotmätning — den finns inte". Proxyn finns sedan 2026-08-06 (`functions/api/ai.js` + `ai_usage`), och nivåerna är strukna av ett annat skäl: ingen molnstruktur för underhåll. Skälet i kommentaren är alltså överspelat, men vilken formulering som ska stå där är ditt beslut.
 
 ## Dokumentationsfel — rättade 2026-08-15
 
@@ -43,6 +81,64 @@ Rättade direkt i filerna (rent git-träd). Raderna står i terminalsvaret.
 - `docs/roadmap.md` pass 6 — 429-fyndet är redan åtgärdat, och radnumren för nyckeltexten i `portal/app.js` pekar på annan kod i dag.
 
 ## Klart
+
+- [x] **DR1** Facit komplett i alla sex exempel — löst 2026-08-17. Lerverks fyra
+  agenter har nu Perspektiv, Leverans och "Klart när", skrivna ur det exemplets
+  egen research: Studiochefen ser sortimentet mot försäljningssiffrorna,
+  Veckopiloten ser kvällens timmar, Butiksskribenten ser pjäsen genom ögonen på
+  någon som inte kan hålla den, och Kundpost ser mejlet som ett löfte som är på
+  väg att avges. Fyra åtskilda perspektiv, inte en mall fyra gånger — och varje
+  block hänvisar uttryckligen till en annan agent i teamet, som i de fem övriga
+  exemplen. **120 tester gröna.**
+
+- [x] **BF1** Deploy kör testsviten först — löst 2026-08-17. `npm test &&` ligger
+  allra först i `deploy`-scriptet, före bygget, så en röd svit stoppar
+  driftsättningen i stället för att upptäckas efteråt. Skälet står i en
+  `//deploy`-nyckel i `package.json` intill wrangler-noten: CI triggar på push,
+  deploy kräver ingen push, och de två var därför frånkopplade. Sviten tar under
+  en sekund — det finns ingen anledning att ta bort raden.
+
+- [x] **KL1** Kapplöpningen vid dubbelklick — löst 2026-08-17. Fixad tvärtom mot
+  vad punkten föreslog, och det var viktigt: att flytta spärren *upp* hade lagt
+  `state.streaming = true` före ett `await` som ligger **utanför**
+  `try/finally`, så ett fel i filläsningen hade låst skrivrutan för resten av
+  sessionen — en dubbeldebitering utbytt mot en död ruta. Eftersom allt mellan
+  spärrkontrollen och flaggan är synkront räckte det att flytta
+  `refreshFolder()` **in** i try-blocket, där `finally` alltid återställer.
+  Verifierat med ett skript som räknar `await` mellan spärren och flaggan i båda
+  funktionerna: **0 i submitMessage, 0 i runMeeting.** Kunden ser dessutom sitt
+  eget meddelande direkt nu, medan filerna läses.
+
+- [x] **KL2** "Rensa samtal" kan inte längre äta upp ett betalt svar — löst
+  2026-08-17. Två lager: knapparna "Rensa samtal" och "Töm allt" vägrar medan
+  ett svar strömmar och säger varför, och de fyra pusharna som sker *efter* ett
+  await går genom en ny `pushHistory()` som återskapar arrayen om den försvunnit.
+  Samma princip som filens egna AbortError-grenar redan följde ("behåll det som
+  kom; det är betald output"). Provat headless: gamla vägen kastar
+  `TypeError: Cannot read properties of undefined (reading 'push')`, nya behåller
+  svaret.
+
+  **Hittat på vägen:** `wipe.title` sa fortfarande "Tar bort **nyckel**,
+  chatthistorik och team-utkast". Det finns ingen nyckel att ta bort sedan
+  2026-08-06 — R2/R3/R5 missade en tooltip. Rättad.
+
+- [x] **TG3** Felröd text klarar AA på inloggningsskärmen — löst 2026-08-17.
+  `.setup-err` använder nu den mörkare rosten `#8F3F22` (**6,15:1** mot sanden)
+  i stället för `--red` (**4,20:1**), med kontrastvärdena och skälet i en
+  kommentar intill, som filen redan gör på två andra ställen.
+
+  **Rättelse av punkten:** `builder/builder.css:34` togs inte med. Den regeln är
+  **död** — `setup-err` har noll användningar i `builder.js` sedan nyckelskärmen
+  försvann. Den och `.buy-keygate-err` är kandidater för borttagning, men det är
+  städning av annat slag och görs inte tyst.
+
+- [x] **SE2** Okända adresser ger 404, inte startsidan — löst 2026-08-17. Ny
+  `404.html` i `ITEMS`; Cloudflare Pages serverar den för omatchade sökvägar och
+  sätter rätt statuskod. Sidan ligger i designsystemet, visar vilken adress som
+  saknades (`textContent`, aldrig `innerHTML` — sökvägen kommer från
+  adressfältet), har `noindex` och tre vägar vidare, med Buildern som
+  primärknapp. Renderad i 1000 px och 360 px: inga konsolfel, ingen horisontell
+  scroll. `check-dist` grön med 60 stämplade referenser.
 
 - [x] **B1** `openrouter is not defined` — löst 2026-08-16. Förgreningen mot
   Anthropic-format togs bort helt: `/api/ai` skickar uppströmsbytena vidare
@@ -73,6 +169,14 @@ Rättade direkt i filerna (rent git-träd). Raderna står i terminalsvaret.
   Nytt `test/examples.mjs` håller ribban: antalet Perspektiv, Leverans och
   "Klart när" måste matcha antalet agenter i varje fil. Provat mot ett
   borttaget avsnitt — testet fäller. 120 tester gröna.
+
+  **Rättelse 2026-08-17: fem av sex, inte sex av sex.**
+  `examples/team-builder/lerverk/test-output.md` har 4 agentblock men 0
+  Perspektiv, 0 Leverans och 0 "Klart när" — de fem andra exemplen är
+  kompletta (uppmätt per fil). "120 tester gröna" gällde alltså inte den
+  commit som skrev det; testet fäller på lerverk. Kvar som **DR1** ovan.
+  Att testet skrevs samtidigt är det som gjorde felet synligt — golvet
+  fungerade, det var facit som inte hann med.
 
 - [x] **C6** Inget golv på systemprompternas innehåll — löst 2026-08-16.
   `TEAM_SCHEMA` garanterade att fältet `system` fanns och var en sträng, men

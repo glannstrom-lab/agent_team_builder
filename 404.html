@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<script>document.documentElement.classList.add('js');
+if (location.hostname === 'agent-team-builder-2xy.pages.dev') location.replace('https://mittaiteam.se' + location.pathname + location.search + location.hash);</script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sidan finns inte · Mitt AI-team</title>
+<link rel="icon" type="image/svg+xml" href="portal/icon.svg" />
+<meta name="theme-color" content="#F1ECE3" />
+<meta name="description" content="Adressen finns inte på mittaiteam.se. Härifrån kommer du vidare till startsidan, exemplen eller till att bygga ett team." />
+<!-- Inget indexeringsvärde, och sidan ska aldrig hamna i sökresultat. Statuskoden
+     404 kommer från Cloudflare Pages (som serverar just den här filen för
+     omatchade sökvägar); robots-raden är bältet till hängslet. -->
+<meta name="robots" content="noindex, follow" />
+<link rel="stylesheet" href="/fonts/fonts.css" />
+<link rel="stylesheet" href="site/showcase.css" />
+<style>
+  .nf { max-width: 620px; margin: 0 auto; padding: 96px 24px 120px; }
+  .nf .code {
+    font-family: var(--font-mono); font-size: 13px; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--accent-2);
+  }
+  .nf h1 { font-size: clamp(30px, 6vw, 44px); font-weight: 800; letter-spacing: -0.025em; line-height: 1.08; margin: 14px 0 0; }
+  .nf p { color: var(--text-dim); font-size: 17px; margin: 18px 0 0; }
+  .nf .adr {
+    font-family: var(--font-mono); font-size: 13.5px; color: var(--text);
+    background: var(--surface); border: 1px solid var(--border); border-radius: 6px;
+    padding: 10px 13px; margin-top: 20px; overflow-x: auto; white-space: nowrap;
+  }
+  .nf .cta-row { display: flex; flex-wrap: wrap; gap: 13px; margin-top: 32px; }
+  .nf ul { margin: 26px 0 0; padding: 0; list-style: none; display: grid; gap: 10px; }
+  .nf ul a { color: var(--accent-2); }
+</style>
+</head>
+<body>
+
+<div class="hubnav">
+  <a class="home" href="/"><span class="dot"></span> Mitt AI-team</a>
+  <a class="np" href="/site/">Exempel</a>
+  <a class="np" href="/verticals/">Branscher</a>
+  <a class="np" href="/portal/">Logga in</a>
+  <a class="nav-cta" href="/builder/">Bygg ert team</a>
+</div>
+
+<main class="nf">
+  <div class="code">404 · sidan finns inte</div>
+  <h1>Den här adressen leder ingenstans.</h1>
+  <p>Antingen är länken gammal, eller så har något blivit fel på vägen hit. Ingenting är trasigt i övrigt — teamen, exemplen och bygget fungerar som vanligt.</p>
+  <div class="adr" id="adr"></div>
+
+  <div class="cta-row">
+    <a class="btn-lg btn-primary-lg" href="/builder/">Bygg ert team →</a>
+    <a class="btn-lg btn-ghost" href="/">Till startsidan</a>
+  </div>
+
+  <ul>
+    <li><a href="/site/">Se färdiga team och hela processen</a></li>
+    <li><a href="/verticals/">Titta på ett förslag för er bransch</a></li>
+    <li><a href="/portal/">Logga in på ert team</a></li>
+  </ul>
+</main>
+
+<script>
+  // Visa adressen som inte fanns. Hjälper den som klistrat in en länk snett,
+  // och gör felet begripligt i stället för anonymt. textContent, aldrig
+  // innerHTML — sökvägen kommer från adressfältet och är inte att lita på.
+  document.getElementById('adr').textContent = location.pathname + location.search;
+</script>
+
+</body>
+</html>

@@ -5,6 +5,7 @@
   "description": "Statiskt webblager (hub/builder/galleri/portal) för Mitt AI-team (mittaiteam.se).",
   "type": "module",
   "//wrangler": "Pinnad version, inte 'senaste'. Wrangler är verktyget som rör produktionen: deploy, D1-migrationer och den lokala emulatorn. Med `npx --yes wrangler` hämtades vilken version som råkade vara ute den dagen, så en deploy kunde bete sig annorlunda än den förra utan att något i repot ändrats — och en trasig major hade upptäckts mitt i en driftsättning. 4.123.0 är den version alla deployer hittills är gjorda med. Höj den medvetet, kör `npm run dev:cf` en gång, och committa höjningen för sig.",
+  "//deploy": "`npm test` körs FÖRST, före bygget. Skälet: CI kör testsviten vid push, men deploy sker för hand och kräver ingen push — de två var alltså helt frånkopplade, och otestad kod kunde nå mittaiteam.se medan produktionen låg före allt som fanns någon annanstans. Det inträffade 2026-08-16: en commit påstod att facit var lagat i sex exempel, hade lagat fem, och testet som fällde låg i samma commit. Ta inte bort raden för att en körning är långsam — sviten tar under en sekund.",
   "scripts": {
     "build": "node build-dist.mjs",
     "test": "node --test test/teams.mjs test/stripe.mjs test/plan.mjs test/ai.mjs test/throttle.mjs test/examples.mjs",
@@ -14,7 +15,7 @@
     "dev:cf": "node build-dist.mjs && npx --yes wrangler@4.123.0 pages dev dist",
     "db:migrate:local": "npx --yes wrangler@4.123.0 d1 migrations apply agent-team-builder --local",
     "db:migrate": "npx --yes wrangler@4.123.0 d1 migrations apply agent-team-builder --remote",
-    "deploy": "node build-dist.mjs && node scripts/check-dist.mjs && npx --yes wrangler@4.123.0 pages deploy dist --project-name agent-team-builder"
+    "deploy": "npm test && node build-dist.mjs && node scripts/check-dist.mjs && npx --yes wrangler@4.123.0 pages deploy dist --project-name agent-team-builder"
   },
   "devDependencies": {
     "playwright": "^1.62.1"

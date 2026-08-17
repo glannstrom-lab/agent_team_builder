@@ -105,6 +105,15 @@ function loadHistory(slug) {
     return h && typeof h === "object" ? h : {};
   } catch (_) { return {}; }
 }
+// Lägg ett svar i historiken EFTER ett await. Skapar arrayen om den försvunnit
+// under strömningen: "Rensa samtal" gör `delete state.history[id]`, och en push
+// mot den nyckeln kastade då TypeError — som fångades och visades för kunden som
+// "⚠️ Något gick fel", medan texten modellen just levererat föll bort helt.
+// Samma princip som AbortError-grenarna nedan: betald output slängs inte.
+function pushHistory(agentId, msg) {
+  (state.history[agentId] = state.history[agentId] || []).push(msg);
+}
+
 function saveHistory() {
   if (!state.slug) return;
   try {
@@ -1498,7 +1507,7 @@ function renderSidebar() {
   // "Glöm allt": nyckel + all chatthistorik + utkast. Det riktiga svaret på
   // "hur tömmer jag den här datorn?" — t.ex. efter en demo på kundens maskin.
   const wipe = el("button", "link-btn wipe-btn", "Töm allt härifrån");
-  wipe.title = "Tar bort nyckel, chatthistorik och team-utkast från den här webbläsaren";
+  wipe.title = "Tar bort chatthistorik, minne och team-utkast från den här webbläsaren";
   wipe.onclick = wipeAll;
   foot.appendChild(wipe);
   ws.appendChild(foot);
@@ -1508,6 +1517,8 @@ function renderSidebar() {
 }
 
 function wipeAll() {
+  // Samma skäl som i "Rensa samtal": ett strömmande svar är betald output.
+  if (state.streaming) { alert("Ett svar strömmar just nu. Stoppa det först."); return; }
   if (!confirm("Ta bort ALLT sparat från den här webbläsaren?\n\n• All chatthistorik (alla team)\n• Företagsminne och underlag\n• Mappkopplingen (filerna i mappen rörs INTE)\n• Team-utkast från Builder och branschsidorna\n\nInloggningen och själva teamet ligger hos oss och påverkas inte.")) return;
   const doomed = [];
   for (let i = 0; i < localStorage.length; i++) {
@@ -1645,6 +1656,10 @@ function selectAgent(id) {
   clear.onclick = () => {
     const msgs = state.history[agent.id] || [];
     if (!msgs.length) return;
+    // Ett svar är på väg in i just den här historiken. Att rensa nu skulle
+    // slänga output som redan är betald, och kunden hade fått ett tekniskt
+    // felmeddelande i stället för texten. Stoppknappen är vägen ut.
+    if (state.streaming) { alert("Ett svar strömmar just nu. Stoppa det först, sedan går samtalet att tömma."); return; }
     if (!confirm(`Töm samtalet med ${agent.name}? Historiken går inte att få tillbaka.`)) return;
     delete state.history[agent.id];
     saveHistory();
@@ -3790,7 +3805,8 @@ function openMeeting() {
 async function runMeeting(type, focus, ids) {
   if (state.streaming) return;
   stopAutoRoutines(); // mötet är dyrt nog utan en bakgrundsrutin bredvid
-  if (state.folder) { await refreshFolder(state.folder.needsPermission ? { ask: true } : undefined); updateFolderBanner(); }
+  // Mappuppdateringen låg här före spärren och gav samma kapplöpning som i
+  // submitMessage — flyttad in i try-blocket nedan.
   selectAgent(team.entryAgent);
   const entry = agentById(team.entryAgent);
   const agentId = team.entryAgent;
@@ -3818,6 +3834,8 @@ async function runMeeting(type, focus, ids) {
   let acc = "";
   const perspectives = []; // { name, tagline, text } — sparas med anteckningen
   try {
+    // Färska underlag inför mötet, före första systemFor()-anropet.
+    if (state.folder) { await refreshFolder(state.folder.needsPermission ? { ask: true } : undefined); updateFolderBanner(); }
     // 1) Oberoende perspektiv, ett anrop per deltagare. Ett delfel kastar
     // ALDRIG redan hämtade (betalda) perspektiv — mötet fortsätter med de
     // som kom in, och sammanställningen nämner vilka som saknades.
@@ -3861,7 +3879,7 @@ async function runMeeting(type, focus, ids) {
       },
     });
     const msg = { role: "assistant", content: acc, perspectives, at: Date.now() };
-    state.history[agentId].push(msg);
+    pushHistory(agentId, msg);
     saveHistory();
     introMark("meeting");
     touchStreak();
@@ -3871,7 +3889,7 @@ async function runMeeting(type, focus, ids) {
   } catch (err) {
     if (err && err.name === "AbortError" && acc) {
       // Stoppad mitt i sammanställningen — behåll det som kom; det är betald output.
-      state.history[agentId].push({ role: "assistant", content: acc, perspectives, at: Date.now() });
+      pushHistory(agentId, { role: "assistant", content: acc, perspectives, at: Date.now() });
       saveHistory();
       if (bub.isConnected) { renderMarkdown(bub, acc); addActions(row, () => acc); if (perspectives.length) row.appendChild(perspToggle(perspectives)); }
     } else {
@@ -3917,9 +3935,14 @@ async function submitMessage(text, display) {
   // Användaren går före: en auto-rutin i bakgrunden avbryts här, så att det
   // aldrig finns två betalda anrop i luften samtidigt.
   stopAutoRoutines();
-  // Färska underlag från mappen inför varje anrop (vi är i en användargest,
-  // så ett ev. tillståndsprompt är tillåtet här).
-  if (state.folder) { await refreshFolder(state.folder.needsPermission ? { ask: true } : undefined); updateFolderBanner(); }
+  // OBS: mappuppdateringen låg tidigare HÄR, före spärren nedan. Den läser
+  // filer och kan visa en behörighetsdialog, så under väntan var
+  // state.streaming fortfarande falskt och ett andra klick eller Enter hann
+  // igenom: två parallella betalda anrop, och det andra skrev över
+  // state.chatAbort så att stoppknappen bara nådde det senaste medan det
+  // första strömmade vidare osynligt. Allt härifrån och ner är synkront, så
+  // anropet är flyttat in i try-blocket i stället — där finally alltid
+  // återställer spärren, vilket en tidig flagga här inte hade garanterat.
   const agentId = state.activeAgentId;
   const agent = agentById(agentId);
   // Läses FÖRE meddelandet läggs in: wsCollapsed() svarar på om det fanns
@@ -3962,9 +3985,13 @@ async function submitMessage(text, display) {
     if (atBottom) log.scrollTop = log.scrollHeight;
   };
   try {
+    // Färska underlag från mappen inför anropet (vi är i en användargest, så
+    // ett ev. tillståndsprompt är tillåtet här). Måste ligga före systemFor(),
+    // som bakar in underlagen i systemprompten.
+    if (state.folder) { await refreshFolder(state.folder.needsPermission ? { ask: true } : undefined); updateFolderBanner(); }
     if (state.demo) await streamDemo(agent, state.history[agentId], onDelta);
     else await streamClaude(systemFor(agent), state.history[agentId], onDelta);
-    state.history[agentId].push({ role: "assistant", content: acc, at: Date.now() });
+    pushHistory(agentId, { role: "assistant", content: acc, at: Date.now() });
     saveHistory();
     // Första riktiga svaret: fäll ut hela arbetsytan, permanent. Kunden har
     // sett hur portalen fungerar och ska aldrig behöva leta efter en knapp
@@ -3985,7 +4012,7 @@ async function submitMessage(text, display) {
   } catch (err) {
     if (err && err.name === "AbortError" && acc) {
       // Stoppad mitt i — behåll det som hann komma; det är betald output.
-      state.history[agentId].push({ role: "assistant", content: acc, at: Date.now() });
+      pushHistory(agentId, { role: "assistant", content: acc, at: Date.now() });
       saveHistory();
       if (assistantBubble.isConnected) renderMarkdown(assistantBubble, acc);
     } else {

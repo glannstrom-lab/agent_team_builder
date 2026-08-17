@@ -69,7 +69,12 @@ a { color: inherit; }
   font-family: ui-monospace, "SF Mono", Menlo, monospace; outline: none; transition: border-color 0.2s;
 }
 .setup-field input:focus { border-color: var(--accent); }
-.setup-err { color: var(--red); font-size: 14px; margin-top: 10px; }
+/* --red mot sanden ger 4.20:1 vid 14 px — under AA-kravet 4.5. `.setup` sätter
+   ingen egen bakgrund, så body:s --bg gäller här, inte papper. Den mörkare
+   rosten (samma som felbubblan och stoppknappen) ger 6.15. Det här är enda
+   stället där ett felmeddelande kan hindra någon från att komma in alls, så
+   marginalen ska finnas: läsaren är småföretagare 40+ på kontorsskärm. */
+.setup-err { color: #8F3F22; font-size: 14px; margin-top: 10px; }
 .btn-primary {
   margin-top: 18px; width: 100%; background: var(--text);
   color: var(--surface); border: 1px solid var(--text); border-radius: 4px; padding: 15px;

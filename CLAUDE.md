@@ -355,7 +355,9 @@ ny kund dyker upp i både galleri och portal automatiskt.
 .
 ├── CLAUDE.md                       # Den här filen (paraply)
 ├── README.md                       # Kort intro för nya användare
+├── ROADMAP.md                      # Arbetslistan med ID:n (från genomgångarna)
 ├── skills-catalog.md               # Kurerad lista över kända Claude Skills
+├── .github/workflows/test.yml      # CI: kör testsviten och bygget vid push/PR
 │
 ├── index.html                      # Säljsida + nav till apparna
 ├── villkor.html                    # Allmänna villkor (prislista i avsnitt 4)
@@ -381,8 +383,10 @@ ny kund dyker upp i både galleri och portal automatiskt.
 │                                   #   OBS: deployas från repo-roten, aldrig via dist/
 ├── migrations/                     # D1-schema (SQL): init, auth, commerce, ai_proxy,
 │                                   #   plan_lifecycle
-├── test/                           # node --test: teams.mjs + stripe.mjs + plan.mjs (69 tester)
+├── test/                           # node --test: teams, stripe, plan, ai, throttle,
+│                                   #   examples (120 tester)
 ├── scripts/                        # provision.mjs — lägg upp en kund för hand
+│                                   #   check-dist.mjs — kontrollerar versionsstämplingen
 ├── testoutput/                     # Råa pipeline-körningar (källmaterial, ej deployat)
 │
 ├── build-dist.mjs                  # Bygger dist/ för Cloudflare Pages (dist/ är ignorerad)
@@ -490,7 +494,7 @@ ny kund dyker upp i både galleri och portal automatiskt.
 >
 > Kärnan (fas 1–3 nedan) är klar och bevisat divergerande — se `examples/`.
 > Kassan, kontona, AI-proxyn och förbrukningsmätningen finns sedan 2026-08-06
-> och är verifierade skarpt. Testsviten är 69 gröna. Det som saknas är en
+> och är verifierade skarpt. Testsviten är 120 tester. Det som saknas är en
 > betalande kund — och en fungerande väg fram till första svaret.
 >
 > **Sammanfattning av sjuagentsgranskningen 2026-08-06:** kedjan gick sönder
@@ -541,11 +545,10 @@ ny kund dyker upp i både galleri och portal automatiskt.
 > kan stänga det: aktivera Stripe-kontot, skapa priserna i live-läge, byta fyra
 > Pages-secrets och ge live-endpointen samma fem händelsetyper.
 >
-> **Nästa pass:** pass 3.3 och 3.1 i `docs/roadmap.md` — täpp till teckentaket
-> som går att kringgå (`content` som array mäts som 15 tecken och släpper igenom
-> ett megabyte), och skilj det globala dygnstaket åt så att anonym byggtrafik
-> inte kan stänga ute betalande kunder resten av dygnet. Kassan är den
-> oskyddade flanken nu när intäktssidan håller.
+> **Pass 3.3 och 3.1 är gjorda 2026-08-16** — teckentaket som gick att kringgå
+> (K1) och byggets eget dygnstak (K3). Kassan är alltså inte längre den
+> oskyddade flanken. Arbetslistan med ID:n bor i `ROADMAP.md` i roten;
+> vad som tas härnäst avgörs pass för pass av Mikael.
 >
 > **Det går parallellt med Mikaels enda uppgift**, som ingen kod kan göra åt
 > honom: aktivera Stripe-kontot och byta till live-nycklar (hål 0 i
