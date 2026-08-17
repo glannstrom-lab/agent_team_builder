@@ -936,6 +936,13 @@ async function runBuild(intake, prevR) {
         panel.textContent = (stg.key === "scale" ? "Väger underlaget mot skalningsreglerna." : "Arbetar med steget.")
           + "\n\nDet här steget strömmar inte — svaret kommer i ett stycke när det är klart.";
         acc = await callClaude(sys, [{ role: "user", content: stg.user() }], stg.max);
+        if (stg.key === "scale") {
+          // Visa och spara bara beslutet, inte vägen dit. Nästa steg
+          // (proposal) ska se vad som beslutats — inte modellens tvekan.
+          const rent = rensaSkalning(acc);
+          if (rent) acc = rent;
+          else console.warn("[builder] skalningssvaret saknade 'Skalningsbeslut:' — visar råtexten");
+        }
         panel.textContent = acc;
       }
       r[stg.store] = acc;
@@ -952,6 +959,38 @@ async function runBuild(intake, prevR) {
     state.busy = false;
     clockStop(); // fel, avbrott eller klart — räknaren ska aldrig ticka vidare i bakgrunden
   }
+}
+
+// ── Skalningsstegets utdata får inte läcka tankekedja (KA5) ───────────────
+//
+// `scale.md` beställer exakt två rader — "Skalningsbeslut:" och "Motivering:" —
+// och skriver uttryckligen "Räkna tyst. Visa inte mellansteg eller resonemang i
+// outputen", med skälet att Buildern visar steget LIVE för kunden. Men kravet
+// vilade bara på att modellen lyder: koden satte `panel.textContent = acc` och
+// visade vad som än kom. En modell som räknar högt ("Storlek solo ger 2–4. Men
+// vänta, research hittade fyra kluster, så kanske…") gör det mitt i en säljtratt.
+//
+// Extraktionen är medvetet FÖRLÅTANDE i ena riktningen och strikt i den andra:
+// hittas inget "Skalningsbeslut:" returneras null och råtexten visas som förut.
+// Ett beslut som inte når kunden är värre än ett beslut med brus omkring, och
+// skalningen är det som styr hela resten av bygget.
+function rensaSkalning(text) {
+  const rader = String(text || "").split("\n");
+  const start = rader.findIndex((r) => /^\s*\**\s*Skalningsbeslut\s*:/i.test(r));
+  if (start < 0) return null;
+  const ut = [];
+  let settMotivering = false;
+  for (let i = start; i < rader.length; i++) {
+    const rad = rader[i];
+    // Kodstängsel hör till promptens exempel, inte till svaret.
+    if (/^\s*```/.test(rad)) { if (ut.length) break; else continue; }
+    // Formatet är två stycken. Första tomma raden EFTER motiveringen avslutar
+    // dem; en tom rad före motiveringen är bara luft mellan de två raderna.
+    if (!rad.trim()) { if (settMotivering) break; else continue; }
+    if (/^\s*\**\s*Motivering\s*:/i.test(rad)) settMotivering = true;
+    ut.push(rad.trim());
+  }
+  return ut.length ? ut.join("\n") : null;
 }
 
 // Sammanställningssteget är långt (upp till 16k tokens, icke-strömmat) och
