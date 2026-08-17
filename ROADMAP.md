@@ -59,6 +59,23 @@ Rättade direkt i filerna (rent git-träd). Raderna står i terminalsvaret.
 - `docs/roadmap.md` pass 5 — "sw.js står på v22" (den står på v26) och "fyra commits" (uppmätt: 18 av 37).
 - `docs/roadmap.md` pass 6 — 429-fyndet är redan åtgärdat, och radnumren för nyckeltexten i `portal/app.js` pekar på annan kod i dag.
 
+## Driftsatt 2026-08-17
+
+Pages `0ce02f55`, worker `mittaiteam-veckobrev`, taggen `deploy-2026-08-17`.
+Migration 0006 och 0007 körda skarpt, med säkerhetskopia före varje.
+
+Verifierat i drift, inte antaget: okänd adress ger **404** (gav förut 200 +
+startsidan), tolv branschsidor med egna titlar, sitemap 25 URL:er, tre
+JSON-LD-block, `/api/health` **200 friskt** med alla tre kontrollerna sanna,
+tre mikrofoner i builderns intag, `Granska mitt utkast` och `Veckobrev` i
+portalens arbetsyta, veckobrevsrutten 401 utan hemlighet och 200 med, workerns
+kedja hela vägen fram, `/avregistrera` 400 på trasig token och 200 på okänd,
+`/api/digest/prefs` 401 utan session, och integritetspolicyns punkt 5 på plats.
+
+**Ett steg återstår, och det är ditt:** en uptime-vakt mot
+`https://mittaiteam.se/api/health` med larm till mejlen. Allt annat som byggdes
+i dag är påslaget.
+
 ## Klart
 
 - [x] **SE1** Tolv branscher har tolv riktiga sidor — löst 2026-08-17. Uppmätt
