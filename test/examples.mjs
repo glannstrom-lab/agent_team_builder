@@ -71,3 +71,33 @@ test("varje agent har en avvisad motpart någonstans i teamet", () => {
       `${fil} saknar avsnitt om avvisade förslag`);
   }
 });
+
+// Startsidans "Beviset" måste ha en körning bakom sig (ROADMAP KR2).
+//
+// Fram till 2026-08-18 stod fyra påhittade namn i personalliggaren under
+// rubriken "Ingen av dem är påhittad" — innehållet var lerverk-exemplets FORM
+// med andra namn, medan sex riktiga körningar låg oanvända i examples/. Det
+// var den enda ytan på sajten som inte hade täckning, och den hette "Beviset".
+//
+// Testet läser namnen ur sidan i stället för ur en lista här, så att en
+// framtida omskrivning av avsnittet omfattas utan att någon minns testet.
+test("namnen i startsidans personalliggare kommer ur en riktig körning", () => {
+  const sida = readFileSync("index.html", "utf8");
+
+  // Passerkorten: <h3>Namn</h3> inuti .rack.
+  const rack = /<div class="rack">([\s\S]*?)<\/section>/.exec(sida);
+  assert.ok(rack, "hittade inte passerkorten på startsidan");
+  const namn = [...rack[1].matchAll(/<h3>([^<]+)<\/h3>/g)].map((m) => m[1].trim());
+  assert.ok(namn.length >= 3, `bara ${namn.length} passerkort — förväntade minst tre`);
+
+  const körningar = filer.map((f) => readFileSync(f, "utf8")).join("\n");
+  for (const n of namn) {
+    assert.ok(körningar.includes(n),
+      `"${n}" står på startsidan men finns inte i någon körning under examples/ — `
+      + `rubriken "Ingen av dem är påhittad" gäller då inte sidan själv`);
+  }
+
+  // Och avslagen: minst ett, eftersom det är det enda konkurrenterna inte gör.
+  assert.ok(/class="st off">Avslag/.test(sida),
+    "personalliggaren visar inga avslag — regeln om att en agent ska få nej syns då inte");
+});
