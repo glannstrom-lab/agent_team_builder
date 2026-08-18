@@ -690,13 +690,13 @@ ny kund dyker upp i både galleri och portal automatiskt.
 > `docs/lansering.md`). Börja inte ett pass med att föreslå det — det är
 > noterat, det är hans, och det står inte i vägen för något som byggs härnäst.
 >
-> **Passet 2026-08-18 — byggt, testat, INTE committat och INTE driftsatt.**
-> Arbetsträdet är smutsigt när du läser det här; börja med `git status`. Tre
-> punkter avbetade (**P5** platser för kollegor, **BL2** ångerknappen, **KR2**
-> startsidans bevis) plus omvärldsresearchen (**BL3**, ny fil i `docs/`, drag
-> som **OM1–OM5**). Testsviten är **175 gröna**, `npm run check:dist` ren.
-> Migrationer: inga nya. Nya secrets: inga. Ny rutt:
-> `functions/api/subscription/withdraw.js`.
+> **Passet 2026-08-18 är driftsatt** (Pages `85463c90`, taggen
+> `deploy-2026-08-18`). Tre punkter avbetade — **P5** platser för kollegor,
+> **BL2** ångerknappen, **KR2** startsidans bevis — plus omvärldsresearchen
+> (**BL3**, ny fil i `docs/`, drag som **OM1–OM5**). Testsviten är **175
+> gröna**. Inga nya migrationer, inga nya secrets. Ny rutt:
+> `functions/api/subscription/withdraw.js`. Verifieringen i drift står i
+> `ROADMAP.md` under *Driftsatt 2026-08-18*.
 >
 > **Nästa pass enda uppgift:** ta **K4** — bygg-rutten är en oautentiserad
 > LLM-proxy och en väg tillbaka för uppsagda (`functions/api/ai.js:252-293`,

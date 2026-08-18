@@ -63,24 +63,29 @@ Rättade direkt i filerna (rent git-träd). Raderna står i terminalsvaret.
 - `docs/roadmap.md` pass 5 — "sw.js står på v22" (den står på v26) och "fyra commits" (uppmätt: 18 av 37).
 - `docs/roadmap.md` pass 6 — 429-fyndet är redan åtgärdat, och radnumren för nyckeltexten i `portal/app.js` pekar på annan kod i dag.
 
-## Byggt 2026-08-18 — inte committat, inte driftsatt
+## Driftsatt 2026-08-18
 
-Läs det här före allt annat om arbetsträdet är smutsigt: **P5**, **BL2** och
-**KR2** är färdiga och verifierade men ligger som ändringar i arbetsträdet.
-Testsviten är **175 gröna** och `npm run check:dist` ren.
+Pages `85463c90`, taggen `deploy-2026-08-18`. Tre commits: `e3b6ff5` (KR2),
+`9fb3ff0` (P5 + BL2), `752aa96` (omvärldsresearch + dokumentation). Inga nya
+migrationer, inga nya secrets. Testsviten **175 gröna**, `check:dist` ren.
 
-| | |
-|---|---|
-| Nya filer | `functions/api/subscription/withdraw.js`, `docs/omvarldsresearch-2026-08-18.md` |
-| Ändrade | `portal/app.js`, `index.html`, `villkor.html`, `functions/_middleware.js`, `functions/api/_stripe.js`, `functions/api/auth/{_lib,me}.js`, `test/{teams,plan,examples}.mjs`, `CLAUDE.md`, `ROADMAP.md` |
-| Nya migrationer | inga |
-| Nya secrets | inga |
-| Ny rutt i drift | `POST /api/subscription/withdraw` (metodregel tillagd i `_middleware.js`) |
+Verifierat i drift, inte antaget: `/api/health` **200 friskt** med alla tre
+kontrollerna sanna · `/api/subscription/withdraw` ger **405 på GET** och
+`login_required` på POST utan session · `/api/team/members` ger 401 utan
+session · startsidan visar Studiochefen, Veckopiloten, Butiksskribenten och
+Kundpost (inga påhittade namn kvar) · `villkor.html` §15 pekar ut knappen och
+nämner portalens sidfot · portalens `app.js` bär etiketterna *Kollegor / dela
+team*, *Bjud in en kollega* och *Ångra köpet*.
 
-Att driftsätta kräver inget mer än `npm run deploy` (som kör testsviten först).
-Emulatorverifieringen är gjord mot lokal D1 — Stripe-grenen i `withdraw.js`
-sprang aldrig, eftersom testteamen saknade `stripe_subscription`. Den grenen är
-alltså `läst i koden`, inte `mätt`, och den är den enda delen av dagens arbete
+**Mätfälla att inte gå i igen:** `curl https://mittaiteam.se/villkor.html` ger
+**308 till `/villkor`** och en tom kropp. En kontroll utan `-L` ser då ut som en
+misslyckad deploy av en sida som i själva verket är korrekt. Samma gäller
+rimligen `integritet.html`.
+
+**Kvar som `läst i koden`, inte `mätt`:** Stripe-grenen i `withdraw.js`
+(`DELETE /subscriptions/:id`). Emulatorns testteam saknade
+`stripe_subscription`, så grenen sprang aldrig — och den kan inte provas skarpt
+utan ett riktigt abonnemang att avsluta. Det är den enda delen av dagens arbete
 som inte körts.
 
 **Öppen fråga till Mikael:** ångerknappen flyttar inga pengar — den stänger
