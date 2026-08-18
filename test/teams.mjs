@@ -172,3 +172,29 @@ test("triggers läses av portalen, inte bara av builderns förhandsvisning", () 
   const css = readFileSync("portal/portal.css", "utf8");
   assert.ok(css.includes(".trigger-chip"), "trigger-chip saknar stil — osynlig i praktiken");
 });
+
+// Samma fällatyp en nivå upp: platsrutterna (invite/members/remove) skrevs i M3
+// och stod därefter oanropade i månader. Backend fungerade, testerna var gröna,
+// och kundens fråga "hur får min kollega tillgång?" hade ändå bara ett mejl som
+// svar — medan den knapp som låg närmast till hands, delningslänken, gav en
+// låst vy. En rutt utan anropare är inte halvfärdig, den är osynlig.
+//
+// Testet är skrivet från katalogen och inte från en lista, så att NÄSTA rutt
+// någon lägger under functions/api/team/ omfattas utan att någon minns det.
+test("varje platsrutt har ett gränssnitt som anropar den", () => {
+  const portal = readFileSync("portal/app.js", "utf8");
+  const rutter = readdirSync("functions/api/team")
+    .filter((f) => f.endsWith(".js") && !f.startsWith("_"))
+    .map((f) => f.replace(/\.js$/, ""));
+
+  assert.ok(rutter.length >= 3, "platsrutterna saknas — invite/members/remove förväntas");
+  for (const r of rutter) {
+    assert.ok(portal.includes("/api/team/" + r),
+      `functions/api/team/${r}.js anropas inte av portalen — rutten finns men ingen kund kan nå den`);
+  }
+
+  // Och det kundsynliga: ett anrop utan knapp är samma osynlighet, ett steg
+  // längre fram.
+  assert.ok(portal.includes("Bjud in en kollega"), "ingen rubrik för att bjuda in — rutan syns inte");
+  assert.ok(portal.includes("Kollegor med tillgång"), "medlemslistan har ingen etikett");
+});

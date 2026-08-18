@@ -8,7 +8,7 @@
 // Formulärkodning med Stripes hakparentessyntax: {line_items: [{price: "x"}]}
 // blir line_items[0][price]=x. Skrivs ut för hand hos anroparen — en generisk
 // serialiserare hade varit fyra rader kod och en dålig felutskrift.
-export async function stripeCall(env, path, params, idempotencyKey) {
+export async function stripeCall(env, path, params, idempotencyKey, method) {
   if (!env.STRIPE_SECRET_KEY) throw new Error("STRIPE_SECRET_KEY saknas");
 
   const headers = {
@@ -19,8 +19,14 @@ export async function stripeCall(env, path, params, idempotencyKey) {
   // då en andra session vid omförsök, och kunden kan betala två gånger.
   if (idempotencyKey) headers["idempotency-key"] = idempotencyKey;
 
+  // Metoden härleds normalt ur anropet: kropp = POST, ingen kropp = GET. Den
+  // femte parametern finns för det enda undantaget — omedelbar avslutning av
+  // ett abonnemang är DELETE /v1/subscriptions/:id hos Stripe, och den behövs
+  // när en konsument utövar sin ångerrätt (functions/api/subscription/
+  // withdraw.js). `cancel_at_period_end` duger inte där: ett ångrat köp ska
+  // inte fortsätta löpa perioden ut.
   const res = await fetch("https://api.stripe.com/v1" + path, {
-    method: params ? "POST" : "GET",
+    method: method || (params ? "POST" : "GET"),
     headers,
     body: params ? new URLSearchParams(params).toString() : undefined,
   });

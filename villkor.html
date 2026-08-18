@@ -507,11 +507,16 @@
     och vända dig till Allmänna reklamationsnämnden — se avsnitt 15.</p>
 
     <!-- ============ 15 ============ -->
-    <!-- OBS FÖR UTVECKLING: när ett köpflöde med direktbetalning byggs på
-         webbplatsen måste en ångerknapp läggas i samma gränssnitt — tydlig,
-         lättåtkomlig och tillgänglig under hela ångerfristen (distansavtalslagen
-         sedan 2026-06-19). Så länge avtal ingås via mejl och faktura är
-         mejlvägen nedan den funktion lagen pekar på. Uppdatera stycket samtidigt.
+    <!-- OBS FÖR UTVECKLING: villkoret i den här anteckningen inträffade
+         2026-08-06, när kassan byggdes — och knappen kom först 2026-08-18
+         (ROADMAP BL2). Den bor nu i portalens sidfot ("Ångra köpet") och i
+         uppsägningsrutan, syns under hela fristen och räknas från det SENASTE
+         köpet, inte från den dag teamet byggdes. Backend:
+         functions/api/subscription/withdraw.js — den avslutar abonnemanget
+         direkt, sätter plan = 'refunded' och mejlar kvitto till både kunden och
+         info@. Återbetalningen görs för hand; ingen kod flyttar pengar.
+         Ändras texten nedan måste rutten och portalens WITHDRAWAL_DAYS följa
+         med — de tre säger samma sak på tre ställen.
          EU:s ODR-plattform är avvecklad och ska inte hänvisas till. -->
     <h3 id="konsument">15. Om du köper som privatperson</h3>
     <p>Det här avsnittet gäller bara dig som köper för privat bruk, alltså inte i
@@ -521,7 +526,10 @@
     <h4>Ångerrätt</h4>
     <p>Du har enligt distansavtalslagen rätt att ångra köpet inom 14 dagar från
     det att avtalet ingicks. Du behöver inte ange något skäl.</p>
-    <p>Ångerrätten utövas genom ett meddelande till
+    <p>Ångerrätten utövas enklast med knappen <strong>&rdquo;Ångra köpet&rdquo;</strong>, som
+    finns i portalens sidfot under hela fristen. Du får en bekräftelse på mejl direkt,
+    åtkomsten avslutas och ett eventuellt löpande abonnemang sägs upp samma stund.</p>
+    <p>Du kan lika gärna skicka ett meddelande till
     <a href="mailto:info@mittaiteam.se">info@mittaiteam.se</a> — det räcker med en
     mening om att du ångrar dig. Konsumentverkets standardblankett går också bra.
     Vi bekräftar att vi tagit emot den.</p>

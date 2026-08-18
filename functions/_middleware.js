@@ -51,6 +51,10 @@ const METHOD_RULES = [
   { match: /^\/api\/checkout\/?$/, allow: ["POST"] },
   { match: /^\/api\/checkout\/status\/?$/, allow: ["GET"] },
   { match: /^\/api\/stripe-webhook\/?$/, allow: ["POST"] },
+  // Vägen ut. Båda ändrar tillstånd och är POST — en GET som råkar nå dem vore
+  // en uppsägning eller ett ångrat köp utlöst av en länkförhandsvisning.
+  { match: /^\/api\/subscription\/cancel\/?$/, allow: ["POST"] },
+  { match: /^\/api\/subscription\/withdraw\/?$/, allow: ["POST"] },
 ];
 
 export async function onRequest(context) {

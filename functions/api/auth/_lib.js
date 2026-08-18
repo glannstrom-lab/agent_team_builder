@@ -376,3 +376,45 @@ export async function sendWeeklyDigest(env, email, { company, body, unsubUrl }) 
     consoleLine: `[veckobrev] till ${email} för "${name}" (${text.length} tecken)`,
   });
 }
+
+// Ångerrätten. Två mejl med samma innehåll — ett till kunden som kvitto, ett
+// till oss som arbetsorder — eftersom lagen kräver att vi *bekräftar* att
+// anmälan tagits emot, och pengarna behöver flyttas för hand.
+//
+// Kvittot är hela poängen med knappen. En ångeranmälan som bara ändrar en rad
+// i en databas ger kunden ingenting att hålla i, och det är i det läget hon
+// mejlar och frågar om det gick fram — alltså precis den väntan knappen fanns
+// för att ta bort.
+export async function sendWithdrawalNotice(env, email, { company, slug, plan, when }) {
+  const name = String(company || "teamet").replace(/[\r\n]+/g, " ").trim().slice(0, 80) || "teamet";
+  const stamp = new Date(when || Date.now()).toISOString().slice(0, 10);
+
+  const text =
+    `Vi har tagit emot din ångeranmälan för "${name}".\n\n` +
+    `Mottagen: ${stamp}\nTeam: ${slug}\nAvser: ${plan || "köpet"}\n\n` +
+    `Det här händer nu:\n\n` +
+    `  1. Åtkomsten till portalen är avslutad från och med nu. Något löpande ` +
+    `abonnemang finns inte kvar och ingenting dras igen.\n` +
+    `  2. Pengarna betalas tillbaka inom 14 dagar, till samma betalsätt du ` +
+    `använde.\n\n` +
+    `Det du lagt in — samtal, företagsminne och underlag — ligger i din egen ` +
+    `webbläsare och i mappen du eventuellt kopplat. Det påverkas inte, och vi ` +
+    `har det inte.\n\n` +
+    `Har du frågor, svara på det här mejlet.\n\n— Mitt AI-team\nmittaiteam.se`;
+
+  const till = async (to, subject) => sendMail(env, {
+    to, subject, text,
+    consoleLine: `[ångerrätt] ${subject} → ${to} (team ${slug})`,
+  });
+
+  // Kundens kvitto först: det är det enda av de två som hon märker om det
+  // uteblir. Vår kopia skickas sedan och får misslyckas tyst — anmälan står
+  // ändå i databasen som plan = 'refunded'.
+  await till(email, `Ångerrätt utövad — ${name}`);
+  try {
+    await till("info@mittaiteam.se", `ÅNGERANMÄLAN: ${name} (${slug}) — återbetala inom 14 dagar`);
+  } catch (_) {
+    console.error("[ångerrätt] kopian till info@ gick inte fram", slug);
+  }
+  return true;
+}

@@ -21,6 +21,11 @@ import {
   PLAN_REASON,
 } from "../functions/api/_plan.js";
 import { subscriptionOf } from "../functions/api/stripe-webhook.js";
+import {
+  purchasedAt,
+  withinWithdrawalWindow,
+  WITHDRAWAL_DAYS,
+} from "../functions/api/subscription/withdraw.js";
 
 const NU = 1786000000000;            // fast klocka: testerna får aldrig bero på när de körs
 const DAG = 86_400_000;
@@ -144,4 +149,63 @@ test("portalen och servern räknar provmånaden lika", async () => {
   const m = /const TRIAL_LENGTH_DAYS = (\d+)/.exec(src);
   assert.ok(m, "TRIAL_LENGTH_DAYS hittades inte i portal/app.js");
   assert.equal(Number(m[1]), TRIAL_DAYS, "portalen och _plan.js måste vara överens om provmånadens längd");
+});
+
+// ── ångerrätten (BL2) ─────────────────────────────────────────────────────
+//
+// Samma fällatyp som resten av filen: villkoren har lovat 14 dagars ångerrätt
+// hela tiden, men ingen kod räknade dagarna och ingen knapp fanns. Nu räknas
+// de på två ställen — i rutten och i portalen — och de måste räkna likadant.
+// Räknar portalen fel åt det generösa hållet visas en knapp som rutten
+// avvisar; räknar den fel åt andra hållet döljs en rättighet kunden har.
+
+test("fristen räknas från det senaste köpet, inte från när teamet byggdes", () => {
+  const dag = 86400000;
+  // Provmånad köpt för 40 dagar sedan, uppgraderad till standard i går.
+  const rad = { created_at: NU - 40 * dag, plan_changed_at: NU - 1 * dag };
+  assert.equal(purchasedAt(rad), NU - 1 * dag,
+    "uppgraderingen är ett nytt avtal — fristen ska löpa från den, inte från bygget");
+  assert.equal(withinWithdrawalWindow(rad, NU).open, true);
+});
+
+test("utan uppgradering gäller teamets egen startpunkt", () => {
+  const rad = { created_at: NU - 3 * 86400000, plan_changed_at: null };
+  assert.equal(withinWithdrawalWindow(rad, NU).open, true, "tre dagar in — fristen löper");
+});
+
+test("dag 15 är fristen ute", () => {
+  const rad = { created_at: NU - 15 * 86400000 };
+  assert.equal(withinWithdrawalWindow(rad, NU).open, false);
+});
+
+test("fristen är inkluderande ända fram till sista sekunden", () => {
+  const rad = { created_at: NU - WITHDRAWAL_DAYS * 86400000 + 1000 };
+  assert.equal(withinWithdrawalWindow(rad, NU).open, true, "en sekund kvar är fortfarande kvar");
+});
+
+test("utan startpunkt gissar vi inte", () => {
+  // Team upplagda för hand med scripts/provision.mjs saknar tidsstämplar.
+  // Att gissa "köpt i dag" hade gett evig ångerrätt; att gissa "köpt för länge
+  // sedan" hade tagit bort den. Vi svarar nej och låter en människa avgöra —
+  // rutten svarar i det läget med en väg till info@, inte med en stängd dörr.
+  assert.equal(withinWithdrawalWindow({}, NU).open, false);
+  assert.equal(purchasedAt(null), 0);
+});
+
+test("portalen och rutten räknar med samma antal dagar", async () => {
+  const { readFile } = await import("node:fs/promises");
+  const src = await readFile(new URL("../portal/app.js", import.meta.url), "utf8");
+  const m = /const WITHDRAWAL_DAYS = (\d+)/.exec(src);
+  assert.ok(m, "WITHDRAWAL_DAYS hittades inte i portal/app.js — ångerknappen saknar frist");
+  assert.equal(Number(m[1]), WITHDRAWAL_DAYS, "portalen och withdraw.js måste vara överens om fristen");
+});
+
+test("villkoren säger samma antal dagar som koden", async () => {
+  const { readFile } = await import("node:fs/promises");
+  const src = await readFile(new URL("../villkor.html", import.meta.url), "utf8");
+  assert.ok(src.includes(`ångra köpet inom ${WITHDRAWAL_DAYS} dagar`),
+    "villkor.html §15 och koden säger olika om ångerfristen");
+  // Och att knappen faktiskt är utpekad i villkoren: lagen vill ha den
+  // lättåtkomlig, inte bara existerande.
+  assert.ok(src.includes("Ångra köpet"), "villkoren nämner inte knappen");
 });

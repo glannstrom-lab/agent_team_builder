@@ -1491,7 +1491,10 @@ function renderSidebar() {
   // var så den dubblerade DeepSeek-raden i Builderns väljare uppstod.
   // Död kod som ändå har biverkningar är värre än död kod. Borttagen.
 
-  const share = el("button", "link-btn", "Dela / exportera team");
+  // Etiketten nämner kollegor med flit. Frågan "hur får min kollega tillgång?"
+  // ledde förut till en delningslänk som ger en låst vy — det var svaret som
+  // låg närmast till hands, och det var fel svar.
+  const share = el("button", "link-btn", "Kollegor / dela team");
   share.onclick = openShare;
   foot.appendChild(share);
 
@@ -1514,6 +1517,11 @@ function renderSidebar() {
       quit.title = "Avslutar abonnemanget från utgången av innevarande betalperiod. Teamet och era filer är era att behålla.";
       quit.onclick = openCancel;
       foot.appendChild(quit);
+
+      // Ångerrätten ska vara lättåtkomlig under HELA fristen, inte gömd i
+      // villkoren — därför en egen rad här bredvid uppsägningen, och därför i
+      // efterhand: fristen går inte att avgöra förrän /api/auth/me svarat.
+      addWithdrawLink(foot);
     }
   }
 
@@ -2777,17 +2785,160 @@ function renderGrowPreview(preview, a, routine) {
   preview.appendChild(add);
 }
 
+// ============================================================
+// PLATSER — kollegor som får arbeta i teamet
+//
+// Rutterna har funnits sedan M3 (functions/api/team/{invite,members,remove}.js)
+// utan att något gränssnitt anropade dem. Följden var att den enda knapp som
+// såg ut att dela teamet — delningslänken — ger mottagaren en LÅST vy, och att
+// det riktiga svaret ("mejla oss så lägger vi till platsen") krävde att vi är
+// vakna. En kund med tre anställda mötte alltså en väg som inte fungerar och
+// en som inte skalar.
+//
+// Rutan visas bara för ägaren av ett riktigt team. Vi frågar inte om det —
+// /api/team/members svarar 404 på allt annat, och ger samma svar på "teamet
+// finns inte" som på "du äger det inte" (functions/api/team/_lib.js). Går
+// anropet inte igenom faller vi tillbaka på mejltexten i stället för att visa
+// en tom ruta; en kund som inte är ägare ska inte läsa om en funktion hon inte
+// har.
+// ============================================================
+
+async function fetchMembers(slug) {
+  try {
+    const res = await window.ATBClaude.fetchWithTimeout(
+      "/api/team/members?slug=" + encodeURIComponent(slug),
+      { credentials: "same-origin" }, 10000);
+    if (!res.ok) return null;
+    return await res.json();
+  } catch (_) { return null; }
+}
+
+async function seatPost(path, body) {
+  const res = await window.ATBClaude.fetchWithTimeout(path, {
+    method: "POST",
+    credentials: "same-origin",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(body),
+  }, 15000);
+  let data = {};
+  try { data = await res.json(); } catch (_) { /* tomt svar */ }
+  if (!res.ok || data.error) throw new Error(data.error || "Något gick fel. Försök igen.");
+  return data;
+}
+
+// Mejlvägen, kvar som reserv. Samma resonemang som i uppsägningen: en kund som
+// vill ge sin kollega tillgång ska aldrig lämnas utan väg framåt bara för att
+// ett anrop inte gick igenom.
+function seatFallback(host) {
+  const p = el("p", "ovl-note", "Vill du ge en kollega tillgång att chatta med teamet — mejla ");
+  const a = el("a", null, "info@mittaiteam.se");
+  a.href = "mailto:info@mittaiteam.se?subject=" + encodeURIComponent("Lägg till en plats — " + ((team && team.company) || state.slug));
+  p.appendChild(a);
+  p.appendChild(document.createTextNode(" så lägger vi till platsen."));
+  host.appendChild(p);
+}
+
+async function loadSeats(host) {
+  // Demo, branschdemo, Builder-utkast och delade länkar har ingen beställning
+  // bakom sig och därmed inga platser att fördela.
+  if (state.demo || !state.slug || state.slug.startsWith("__")) return;
+
+  host.innerHTML = "";
+  host.appendChild(el("div", "ovl-label", "Kollegor med tillgång"));
+  const wait = el("p", "ovl-note", "Hämtar platser …");
+  host.appendChild(wait);
+
+  const data = await fetchMembers(state.slug);
+  host.innerHTML = "";
+  if (!data || !Array.isArray(data.members)) { seatFallback(host); return; }
+  renderSeats(host, data);
+}
+
+function renderSeats(host, data) {
+  host.appendChild(el("div", "ovl-label", "Kollegor med tillgång"));
+
+  const status = el("p", "ovl-note");
+  status.style.display = "none";
+  const say = (msg) => { status.textContent = msg; status.style.display = msg ? "block" : "none"; };
+
+  data.members.forEach((m) => {
+    const row = el("div", "doc-row");
+    const tag = m.role === "owner" ? " · ägare" : "";
+    row.appendChild(el("span", "doc-title", m.email + tag + (m.self ? " (du)" : "")));
+    // Ägarrader har ingen bort-knapp. Regeln bor i /api/team/remove — den här
+    // raden finns för att kunden inte ska klicka först och läsa nej sedan.
+    if (m.role !== "owner") {
+      const del = el("button", "doc-del", "✕"); del.type = "button";
+      del.title = "Ta bort åtkomsten för " + m.email;
+      del.onclick = async () => {
+        if (!confirm(`Ta bort ${m.email} från teamet? Hen loggas ut och når det inte längre.`)) return;
+        del.disabled = true;
+        try {
+          const r = await seatPost("/api/team/remove", { slug: state.slug, email: m.email });
+          await loadSeats(host);
+          // loadSeats har ritat om rutan — statusraden ovan är borta med den.
+          host.appendChild(el("p", "ovl-note", r.message || "Åtkomsten är borttagen."));
+        } catch (e) {
+          del.disabled = false;
+          say((e && e.message) || "Kunde inte ta bort platsen.");
+        }
+      };
+      row.appendChild(del);
+    }
+    host.appendChild(row);
+  });
+
+  host.appendChild(el("div", "ovl-label", "Bjud in en kollega"));
+  const input = el("input", "ovl-input");
+  input.type = "email";
+  input.placeholder = "kollega@företaget.se";
+  input.autocomplete = "email";
+  host.appendChild(input);
+
+  const add = el("button", "btn-primary ovl-save", "Ge tillgång"); add.type = "button";
+  const invite = async () => {
+    const email = input.value.trim();
+    if (!email) { say("Skriv adressen först."); return; }
+    add.disabled = true; add.textContent = "Lägger till …";
+    try {
+      const r = await seatPost("/api/team/invite", { slug: state.slug, email });
+      input.value = "";
+      await loadSeats(host);
+      host.appendChild(el("p", "ovl-note", r.message || "Platsen är tillagd."));
+    } catch (e) {
+      add.disabled = false; add.textContent = "Ge tillgång";
+      say((e && e.message) || "Kunde inte lägga till platsen.");
+    }
+  };
+  add.onclick = invite;
+  input.onkeydown = (ev) => { if (ev.key === "Enter") { ev.preventDefault(); invite(); } };
+  host.appendChild(add);
+  host.appendChild(status);
+
+  host.appendChild(el("p", "ovl-note",
+    "Kollegan loggar in med sin egen mejladress på mittaiteam.se/portal/ och når samma team — ingen extra kostnad, "
+    + "ingen ny beställning. Chatthistorik, minne och underlag ligger i varje webbläsare för sig; ska de delas är det "
+    + "mappen under Minne & underlag som gäller (lägg den i OneDrive eller Dropbox)."));
+}
+
 // ---------- dela & exportera team ----------
 function openShare() {
-  const box = openOverlay("🔗 Dela & exportera teamet");
+  const box = openOverlay("🔗 Dela teamet & bjud in kollegor");
+
+  // Platserna först, och det är inte en layoutfråga: det är den enda vägen som
+  // ger en kollega något att arbeta i. Länken och filen nedanför bär teamet
+  // som läsbart dokument — inget mer.
+  const seats = el("div", "seat-box");
+  box.appendChild(seats);
+  loadSeats(seats);
+
   // Var ärlig om vad länken faktiskt ger. Den bär hela teamet i sitt fragment
   // och når aldrig servern — men mottagaren kan LÄSA teamet, inte chatta med
   // det: portalsvar kräver inloggning och ett köpt team. Texten lovade förut
   // "mottagaren använder sin egen nyckel", vilket är dubbelt fel sedan
   // 2026-08-06: det finns inga kundnycklar, och länken öppnar en låst vy.
-  // Ska en kollega kunna arbeta i teamet är det platser som gäller, inte en
-  // länk (functions/api/team/invite.js — utan gränssnitt än, se ROADMAP P5).
-  box.appendChild(el("p", "ovl-lead", "Teamet kan flyttas som en länk eller en fil — ingen server inblandad, allt ligger i länken själv. Mottagaren kan då LÄSA teamet: rollerna, uppdragen och hur det är uppbyggt. För att chatta med teamet krävs inloggning och ett eget köp — vill du ge en kollega tillgång till just det här teamet, mejla info@mittaiteam.se så lägger vi till platsen. Chatthistorik, minne och underlag följer aldrig med en delning — dem hämtar du med \"Ladda ner allt\" längst ner i arbetsytan."));
+  box.appendChild(el("div", "ovl-label", "Skicka teamet som läsbart dokument"));
+  box.appendChild(el("p", "ovl-lead", "Teamet kan flyttas som en länk eller en fil — ingen server inblandad, allt ligger i länken själv. Mottagaren kan då LÄSA teamet: rollerna, uppdragen och hur det är uppbyggt, men inte chatta med det. Ska någon arbeta i teamet är det en plats ovanför som gäller. Chatthistorik, minne och underlag följer aldrig med en delning — dem hämtar du med \"Ladda ner allt\" längst ner i arbetsytan."));
   const linkBtn = el("button", "btn-primary ovl-save", "🔗 Kopiera delningslänk"); linkBtn.type = "button";
   linkBtn.onclick = async () => {
     try {
@@ -2965,6 +3116,136 @@ function openCancel() {
       // aldrig lämnas kvar i tjänsten bara för att ett anrop misslyckades.
       const mail = el("a", "link-btn", "Säg upp via mejl i stället");
       mail.href = quitMailto();
+      box.appendChild(mail);
+    }
+  };
+  box.appendChild(btn);
+  box.appendChild(status);
+
+  // En kund inom fristen som klickat "säg upp" har troligen inte läst §15 och
+  // vet inte att det finns ett bättre alternativ för just henne. Uppsägning
+  // ger teamet perioden ut och inga pengar tillbaka; ångerrätten ger pengarna
+  // tillbaka. Att inte nämna det vore att låta den som råkade klicka fel betala
+  // för det.
+  addWithdrawOffer(box);
+}
+
+// ---------- ångerrätt ----------
+//
+// Villkoren §15 har alltid gett 14 dagars ångerrätt åt den som köper som
+// privatperson, men vägen att utöva den var ett mejl — och villkorsfilen bar
+// sin egen anteckning om att en ångerknapp måste finnas i samma gränssnitt den
+// dag ett köpflöde med direktbetalning byggs. Kassan kom 2026-08-06; knappen
+// kom först nu (ROADMAP BL2).
+//
+// Skillnaden mot uppsägningen sägs rakt ut i rutan, för den är hela poängen:
+// uppsägning = sluta framåt, ångerrätt = köpet görs ogjort.
+const WITHDRAWAL_DAYS = 14; // villkor.html §15 — samma tal som functions/api/subscription/withdraw.js
+
+// Samma räkning som purchasedAt() i rutten: fristen löper från det SENASTE
+// köpet, inte från den dag teamet byggdes. Skulle de två räkna olika visar
+// portalen en knapp som rutten avvisar — eller döljer en knapp kunden har rätt
+// till, vilket är det allvarligare av de två.
+function withdrawalInfo(me, slug) {
+  if (!me || typeof me !== "object" || !Array.isArray(me.teams)) return null;
+  const t = me.teams.find((x) => x && x.slug === slug);
+  if (!t) return null;
+  // Ett redan avslutat team har inget köp att ångra.
+  if (["expired", "cancelled", "past_due", "refunded"].indexOf(String(t.plan || "")) !== -1) return null;
+  const köpt = Math.max(msFromStamp(t.createdAt), msFromStamp(t.planChangedAt));
+  if (!köpt) return null; // utan startpunkt gissar vi inte
+  const endsAt = köpt + WITHDRAWAL_DAYS * 86400000;
+  if (Date.now() >= endsAt) return null;
+  return { endsAt, daysLeft: Math.max(1, Math.ceil((endsAt - Date.now()) / 86400000)) };
+}
+
+async function withdrawalWindow() {
+  if (state.demo || !state.slug || state.slug.startsWith("__")) return null;
+  return withdrawalInfo(await meOnce(), state.slug);
+}
+
+// Knappen i sidfoten. Läggs till i efterhand eftersom fristen bara går att
+// avgöra med ett svar från /api/auth/me, och sidfoten ritas innan det kommit.
+async function addWithdrawLink(foot) {
+  const info = await withdrawalWindow();
+  if (!info || !foot || !foot.isConnected) return;
+  const b = el("button", "link-btn", "Ångra köpet");
+  b.title = `Ångerrätt enligt distansavtalslagen: ${info.daysLeft} ${info.daysLeft === 1 ? "dag" : "dagar"} kvar. `
+    + "Köpet görs ogjort och pengarna betalas tillbaka.";
+  b.onclick = () => openWithdraw(info);
+  foot.appendChild(b);
+}
+
+async function addWithdrawOffer(box) {
+  const info = await withdrawalWindow();
+  if (!info || !box || !box.isConnected) return;
+  const p = el("p", "ovl-note", `Köpte du för mindre än ${WITHDRAWAL_DAYS} dagar sedan har du ångerrätt — då får du pengarna tillbaka i stället för att bara sluta framåt. `);
+  const a = el("button", "link-btn", "Ångra köpet i stället →");
+  a.type = "button";
+  a.onclick = () => openWithdraw(info);
+  p.appendChild(a);
+  box.appendChild(p);
+}
+
+function openWithdraw(info) {
+  const box = openOverlay("Ångra köpet");
+  const slutar = new Date(info.endsAt).toLocaleDateString("sv-SE", { day: "numeric", month: "long" });
+
+  box.appendChild(el("p", "ovl-lead",
+    `Du har ${WITHDRAWAL_DAYS} dagars ångerrätt från köpet — fristen löper till och med ${slutar}. `
+    + "Du behöver inte ange något skäl."));
+
+  // Vad som faktiskt händer, före klicket och inte efter. Det här är den enda
+  // knappen i portalen som avslutar åtkomsten samma sekund.
+  const ul = el("ul", "week-list");
+  ["Åtkomsten till portalen avslutas direkt — inte vid periodens slut.",
+   "Ett eventuellt löpande abonnemang avslutas, och ingenting dras igen.",
+   "Pengarna betalas tillbaka inom 14 dagar, till samma betalsätt du använde.",
+   "Samtal, företagsminne och underlag ligger i din webbläsare och i mappen du kopplat. De påverkas inte — men ladda gärna ner allt först.",
+  ].forEach((t) => ul.appendChild(el("li", null, t)));
+  box.appendChild(ul);
+
+  box.appendChild(el("p", "ovl-note",
+    "Vill du i stället bara sluta framåt och behålla teamet perioden ut — stäng den här rutan och använd \"Säg upp\"."));
+
+  const status = el("p", "ovl-note");
+  const btn = el("button", "btn-primary ovl-save", "Ja, jag ångrar köpet");
+  btn.type = "button";
+  btn.onclick = async () => {
+    if (!confirm("Ångra köpet? Åtkomsten till teamet avslutas direkt.")) return;
+    btn.disabled = true;
+    btn.textContent = "Skickar anmälan …";
+    try {
+      const res = await window.ATBClaude.fetchWithTimeout("/api/subscription/withdraw", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ team: state.slug }),
+      }, 15000);
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Anmälan gick inte igenom.");
+
+      btn.remove();
+      status.textContent = data.message || "Anmälan är mottagen.";
+
+      // Fristen kan ha passerat (rutten räknar, inte klienten) — då är
+      // ingenting avslutat och sidan ska inte laddas om.
+      if (data.ok && data.state === "withdrawn") {
+        const done = el("button", "btn-primary ovl-save", "Stäng");
+        done.type = "button";
+        // Omladdning, inte closeOverlay(): teamet är spärrat i samma sekund,
+        // och en portal som ser levande ut efter en utövad ångerrätt är ett
+        // löfte vi just tagit tillbaka.
+        done.onclick = () => location.reload();
+        box.appendChild(done);
+      }
+    } catch (e) {
+      btn.disabled = false;
+      btn.textContent = "Ja, jag ångrar köpet";
+      status.textContent = (e && e.message) || "Något gick fel.";
+      const mail = el("a", "link-btn", "Anmäl via mejl i stället");
+      mail.href = "mailto:info@mittaiteam.se?subject=" + encodeURIComponent("Ångerrätt — " + ((team && team.company) || state.slug) + " (" + state.slug + ")")
+        + "&body=" + encodeURIComponent("Hej!\n\nJag ångrar mitt köp.\n\nTeam: " + state.slug + "\n\nVänliga hälsningar,\n");
       box.appendChild(mail);
     }
   };

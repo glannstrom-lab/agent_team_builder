@@ -19,7 +19,7 @@ export async function onRequestGet({ request, env }) {
   const rolled = await refreshSession(db, user).catch(() => null);
 
   const { results } = await db.prepare(
-    "SELECT a.team_slug, a.role, t.config, t.plan, t.created_at FROM team_access a " +
+    "SELECT a.team_slug, a.role, t.config, t.plan, t.created_at, t.plan_changed_at FROM team_access a " +
     "JOIN teams t ON t.slug = a.team_slug WHERE a.user_id = ? ORDER BY a.created_at"
   ).bind(user.id).all();
 
@@ -42,6 +42,14 @@ export async function onRequestGet({ request, env }) {
       role: r.role,
       plan: r.plan || null,
       createdAt: r.created_at || null,
+      // Tredje talet, och det finns av samma skäl som de två andra: ångerknappen
+      // ska visas under hela fristen och inte en dag längre, och fristen räknas
+      // från det SENASTE köpet. En kund som uppgraderat från provmånad till
+      // standard har ingått ett nytt avtal, och `created_at` känner inte till
+      // det. Se purchasedAt() i functions/api/subscription/withdraw.js —
+      // klienten och rutten måste räkna likadant, annars visar portalen en
+      // knapp som rutten avvisar.
+      planChangedAt: r.plan_changed_at || null,
     };
   });
 
