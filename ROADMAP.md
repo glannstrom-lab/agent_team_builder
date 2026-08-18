@@ -15,25 +15,29 @@ Från genomgången 2026-08-17 · sju parallella linser + egen verifiering.
 > Nya ID:n från 2026-08-17 har tvåbokstavsprefix efter lins (`KA` kärnan,
 > `KR` köpresan, `SE` synlighet, `TG` tillgänglighet, `DR` drift, `KL`
 > klientkod, `BF` blindfläck) för att inte krocka med de gamla enbokstavs-ID:na.
+> Prefixet `OM` (omvärld) tillkom 2026-08-18 med
+> `docs/omvarldsresearch-2026-08-18.md`.
 
 ## Nu — riktiga fel
 
-- [ ] **P5** "Kopiera delningslänk" ger mottagaren en låst vy — texten är rättad, men vägen in för en kollega saknas fortfarande gränssnitt (`functions/api/team/invite.js` finns, oanropad) · `portal/app.js:2756` · `läst i koden` · ~1–2 h
+*(tomt — P5 löst 2026-08-18, se Klart)*
 
 ## Sedan — skav som märks
 
 - [ ] **BF2** Gratisbygget delar ut hela den betalda leveransen. `downloadConfig()` skriver `stripTeam(team)` till fil — inklusive varje agents fullständiga systemprompt — utan konto och utan betalning. Prompterna går att klistra in i gratis ChatGPT och köra löpande, vilket underminerar beslutet "noll provsvar" vars motivering är att det är teamet som säljs. Behöver ett medvetet beslut, inte en bieffekt · `builder/builder.js:1765-1772`, `index.html:604` · `läst i koden` · ~2–4 h
 - [ ] **BF3** Fyra prompter ligger öppet på webben, inklusive den filen projektet självt kallar nyckelsteget. Uppmätt: `curl …/prompts/shared/research.md` ger 200 och 17 807 byte klartext. Buildern måste kunna hämta dem klientsidan, så exponeringen har ett skäl — men `build-dist.mjs` säger att resten av `prompts/` är "konsult-IP", och den gränsen går inte att hålla samtidigt · `build-dist.mjs:45-53` · `mätt` · ~30 min (acceptera) / ~1 dag (serverside)
-- [ ] **BL2** Ångerrätten saknar knapp — kodens egen TODO, vars villkor nu inträffat · `villkor.html:508-514` · `läst i koden` · ~1–2 h
 - [ ] **K4** Bygg-rutten är en oautentiserad LLM-proxy och en väg tillbaka för uppsagda · `functions/api/ai.js:252-293` · `läst i koden` · ~4–6 h
 
 ## Framåt — utveckling
 
 - [ ] **KA4** "Två agenter delar inte perspektiv" kontrolleras bara som närvaro. Både `kontrolleraSystemprompter()` och golvet i `test/teams.mjs` kollar att rubriken `DITT PERSPEKTIV` finns — aldrig att innehållet under den skiljer sig mellan agenterna. Kravet är formulerat som mätbart men mäts inte · `builder/builder.js:993-1020`, `test/teams.mjs:100-113`, `test/examples.mjs:52-61` · `mätt` · ~3–4 h
-- [ ] **KR2** "Beviset" är den enda ytan utan en riktig körning bakom sig. Hero säger "Ingen av dem är påhittad" och personalliggaren visar fyra anställda med status "I tjänst"; namnen Vera/Ester/Sixten/Malte finns bara i `design/`-skisserna och i `index.html`, och innehållet är lerverk-exemplets form med andra namn. Sex riktiga körningar ligger i `examples/` — anspråket går att göra sant billigt · `index.html:145`, `:163`, `:216-218` · `läst i koden` · ~15 min–1 h
 - [ ] **P1** Ingen mätning av var köpresan läcker. Kontrollerat igen 2026-08-17: de enda träffarna på `gtag`/`analytics` i repot är en **CSS-klass** som heter `.gtag`. Cloudflare Web Analytics är gratis, cookiefri och kräver ingen CSP-ändring · `index.html` (inga taggar) · `mätt` · ~20 min–1 h
 - [ ] **P6** Auto-körda rutiners "ligger klar"-bevis överlever inte en omladdning · `portal/app.js:2242` · `läst i koden` · ~2 h
-- [ ] **BL3** Konkurrensbilden är förbigången: aikollegorna.se leder med EU-drift · `docs/omvarldsresearch-2026-07-17.md` · `mätt` · ~2 h
+- [ ] **OM1** Hållningen till Claude Cowork och ChatGPT Agents är inte bestämd. Cowork (april 2026) ger filsystemsåtkomst, schemalagda uppgifter och bakgrundsarbete — vår mappfunktion plus våra rutiner — gratis på varje betald Claude-plan, och Small Business-bundlen (maj) lägger integrationer ovanpå. Antingen är svaret "vi bygger teamet, du kör det var du vill" — och då är **BF2** (gratisbygget delar ut systemprompterna) en *funktion* som ska säljas, inte en läcka — eller så ska läckan stängas. Det är ett och samma beslut, och Coworks existens gör att det ska fattas nu · `docs/omvarldsresearch-2026-08-18.md` · `mätt` · beslut, inte kod
+- [ ] **OM2** Ingen sida säger var modellen körs eller vad som lagras. AI Kollegorna säljer 4 900 kr/mån delvis på "ingen data lämnar era lokaler"; vi kör OpenRouter → `openai/gpt-oss-120b` med geografin osagd. Samma sida täcker EU AI Acts transparenskrav (i kraft 2 augusti 2026, vi ligger i limited risk: kunden ska veta att motparten är AI) och tar bort deras enda övertag mot oss · `integritet.html`, `index.html` · `mätt` · ~2–4 h
+- [ ] **OM3** De två sakerna ingen konkurrent har står längst ner respektive i en sidopanel. Att en agent får **nej** är motgiftet mot exakt den kritik Sintra och Marblism får ("starka utkast, inte utförande"), och **mötet** löser Sintras mest citerade brist (helpers kan inte dela kontext). Flytta båda till framsidan — och gör det med en riktig körning, alltså tillsammans med **KR2** · `index.html:145`, `:163`, `:216-218` · `mätt` · ~2–4 h ihop med KR2
+- [ ] **OM4** Integrationsspåret är varken valt eller bortvalt. Alla konkurrenter har verktygsåtkomst (Lindy 5 000+, Vorker Fortnox/Visma, Marblism Gmail/WordPress) — våra agenter kan tala, deras kan göra. Antingen **en** integration väl gjord (kalender eller Gmail; Fortnox är Vorkers hemmaplan), eller sälj bortvalet explicit: "vi kopplas inte in i era system." Att inte välja är det enda som är fel · `docs/omvarldsresearch-2026-08-18.md` · `mätt` · beslut först
+- [ ] **OM5** Konkurrenterna säljer på sparad tid; vi räknar aldrig. Underlaget finns redan lokalt (antal svar, körda rutiner, hållna möten) — en timsiffra i "Veckan som gick" och i veckobrevet är det som gör värdet synligt för **köparen**, inte bara för utföraren (churn-mekaniken i halvårssimuleringen) · `portal/app.js`, `functions/api/digest/run.js` · `läst i koden` · ~3–5 h
 - [ ] **P2** Gratisbygget fångar ingen e-post — övergiven körning är borta för alltid · `builder/builder.js:1432-1493` · `läst i koden` · ~4 h
 - [ ] **P4** Grundteamets agenter går att lägga till, aldrig redigera eller avsluta · `portal/app.js:2617-2691` · `läst i koden` · ~5 h
 - [ ] **P3** Provmånaden har ingen utgående livlina utanför portalen · `functions/api/_plan.js:65-86` · `mätt` · ~6 h
@@ -59,6 +63,30 @@ Rättade direkt i filerna (rent git-träd). Raderna står i terminalsvaret.
 - `docs/roadmap.md` pass 5 — "sw.js står på v22" (den står på v26) och "fyra commits" (uppmätt: 18 av 37).
 - `docs/roadmap.md` pass 6 — 429-fyndet är redan åtgärdat, och radnumren för nyckeltexten i `portal/app.js` pekar på annan kod i dag.
 
+## Byggt 2026-08-18 — inte committat, inte driftsatt
+
+Läs det här före allt annat om arbetsträdet är smutsigt: **P5**, **BL2** och
+**KR2** är färdiga och verifierade men ligger som ändringar i arbetsträdet.
+Testsviten är **175 gröna** och `npm run check:dist` ren.
+
+| | |
+|---|---|
+| Nya filer | `functions/api/subscription/withdraw.js`, `docs/omvarldsresearch-2026-08-18.md` |
+| Ändrade | `portal/app.js`, `index.html`, `villkor.html`, `functions/_middleware.js`, `functions/api/_stripe.js`, `functions/api/auth/{_lib,me}.js`, `test/{teams,plan,examples}.mjs`, `CLAUDE.md`, `ROADMAP.md` |
+| Nya migrationer | inga |
+| Nya secrets | inga |
+| Ny rutt i drift | `POST /api/subscription/withdraw` (metodregel tillagd i `_middleware.js`) |
+
+Att driftsätta kräver inget mer än `npm run deploy` (som kör testsviten först).
+Emulatorverifieringen är gjord mot lokal D1 — Stripe-grenen i `withdraw.js`
+sprang aldrig, eftersom testteamen saknade `stripe_subscription`. Den grenen är
+alltså `läst i koden`, inte `mätt`, och den är den enda delen av dagens arbete
+som inte körts.
+
+**Öppen fråga till Mikael:** ångerknappen flyttar inga pengar — den stänger
+åtkomsten och mejlar arbetsordern till `info@`. Ska återbetalningen automatiseras
+i Stripe är det ett eget beslut, inte en bugg.
+
 ## Driftsatt 2026-08-17
 
 Pages `0ce02f55`, worker `mittaiteam-veckobrev`, taggen `deploy-2026-08-17`.
@@ -77,6 +105,109 @@ kedja hela vägen fram, `/avregistrera` 400 på trasig token och 200 på okänd,
 i dag är påslaget.
 
 ## Klart
+
+- [x] **KR2** "Beviset" har en körning bakom sig — löst 2026-08-18. Under
+  rubriken *Ingen av dem är påhittad* stod fyra påhittade namn
+  (Vera/Ester/Sixten/Malte, hämtade ur `design/`-skisserna) med lerverk-exemplets
+  form och andra namn. Det var den enda ytan på sajten utan täckning, och den
+  hette "Beviset".
+
+  Nu står **Lerverk** där — en riktig körning ur
+  `examples/team-builder/lerverk/test-output.md`: Studiochefen, Veckopiloten,
+  Butiksskribenten och Kundpost, med "Klart när"-raderna hämtade ur körningen.
+  Avslagen växte från två påhittade till körningens **fyra riktiga**, och de är
+  vassare än de uppfunna: fotoassistenten föll för att en agent varken kan
+  ljussätta eller fota, lagerbevakningen för att "låtsas ha koll utan åtkomst
+  vore teater", och försäljningsanalytikern var en *stark* kandidat som föll på
+  solo-taket — hens jobb flyttades till VD:n i stället för att strykas, vilket
+  är precis fyndet som räddar VD-rollen från att bli teater.
+
+  En rad ovanför tabellen säger vem kunden är och vad körningen gjorde: sju
+  arbetsmoment kartlagda, tre över ribban, fyra agenter, fyra nej.
+
+  Grinden: `test/examples.mjs` läser namnen ur `index.html`s passerkort och
+  kräver att var och en finns i en fil under `examples/`. Skrivs avsnittet om
+  med nya påhittade namn faller bygget — provat genom att byta tillbaka ett av
+  de gamla namnen och se testet fälla.
+
+- [x] **P5** Kollegor har en väg in — löst 2026-08-18. Rutterna
+  `functions/api/team/{invite,members,remove}.js` skrevs i M3 och stod därefter
+  oanropade. Följden var att den knapp som såg ut att dela teamet —
+  delningslänken — ger mottagaren en **låst vy**, och att det riktiga svaret
+  ("mejla oss") krävde att vi är vakna.
+
+  Sidfotsknappen heter nu **Kollegor / dela team** och öppnar en ruta där
+  platserna listas överst, med adressfält och bort-knapp per rad; länken och
+  teamfilen ligger kvar under en egen rubrik som det de faktiskt är — teamet som
+  läsbart dokument. Rutan visas bara för ägaren, och vi frågar inte om det:
+  `/api/team/members` svarar 404 på allt annat, och då faller gränssnittet
+  tillbaka på mejltexten i stället för att visa en tom ruta.
+
+  **Verifierat i emulatorn** (`wrangler pages dev` mot lokal D1, riktig
+  inloggning med engångskod): medlemslistan, inbjudan (`ok:true, mailed:true`),
+  listan igen med två rader, borttagning, och att `agare@…` inte kan ta bort sig
+  själv. Testrader städade efteråt.
+
+  Grinden mot att det upprepas: `test/teams.mjs` läser **katalogen**
+  `functions/api/team/` och kräver att varje rutt där nämns i `portal/app.js`.
+  Nästa rutt någon lägger till omfattas utan att någon behöver minnas det.
+  Grinden är provad röd (en tom `zzzprov.js` i katalogen fällde den med rätt
+  meddelande) — ett test som inte kan bli rött är en kommentar.
+
+- [x] **BL2** Ångerrätten är en knapp — löst 2026-08-18. `villkor.html` bar sin
+  egen anteckning om att en ångerknapp måste finnas i samma gränssnitt den dag
+  ett köpflöde med direktbetalning byggs. Kassan byggdes 2026-08-06; knappen
+  fanns inte förrän nu.
+
+  Ny rutt `functions/api/subscription/withdraw.js`, medvetet skild från
+  uppsägningen: **uppsägning = sluta framåt** (teamet perioden ut, inga pengar
+  tillbaka), **ångerrätt = köpet görs ogjort** (åtkomsten upphör nu, pengarna
+  tillbaka). Samma rutt med en flagga hade förr eller senare pekat fel.
+
+  Fristen är 14 dagar från det **senaste** köpet — `purchasedAt()` tar
+  `max(created_at, plan_changed_at)`, så en uppgradering från provmånad startar
+  en ny frist i stället för att kunden ska ha ångerrätt räknad från den dag hon
+  byggde teamet. `/api/auth/me` bär därför ett tredje tal (`planChangedAt`), och
+  portalen räknar med samma formel; tre tester i `test/plan.mjs` fäller bygget
+  om rutten, portalen och villkorstexten glider isär.
+
+  Ordningen inuti rutten är vald och inte slumpad: Stripe först (`DELETE
+  /subscriptions/:id` — därför en femte parameter `method` i `stripeCall`),
+  planen sedan, mejlet sist. Faller Stripe avbryts hela anmälan, för det
+  omvända hade gett en kund utan tjänst som ändå debiteras. Faller mejlet står
+  det i svaret — anmälan är redan registrerad.
+
+  **Ingen kod flyttar pengar.** Rutten stänger dörren och mejlar oss;
+  återbetalningen görs för hand inom fristen. Att automatisera en oåterkallelig
+  utbetalning är ett större beslut än att stänga en dörr.
+
+  **Verifierat i emulatorn:** GET mot rutten ger 405, POST utan session 401,
+  ett 20 dagar gammalt team ger `window_closed`, ett färskt ger `withdrawn` →
+  `teams.plan = 'refunded'` i D1 → `/api/teams/:slug` går från 200 till
+  `plan_ended`, och en andra anmälan ger `nothing_to_withdraw`.
+
+- [x] **BL3** Konkurrensbilden är inte längre förbigången — löst 2026-08-18 med
+  `docs/omvarldsresearch-2026-08-18.md`, en uppföljning på en månad av
+  `omvarldsresearch-2026-07-17.md`. Punkten formulerades som "aikollegorna.se
+  leder med EU-drift", och det stämmer (4 900 kr/mån, dedikerad hårdvara hos
+  kunden, "ingen data lämnar era lokaler") — men det var inte det tyngsta
+  fyndet.
+
+  **Tyngst är att det största hotet inte är en konkurrent utan plattformsägaren.**
+  Claude Cowork ger filsystemsåtkomst, schemalagda uppgifter och
+  bakgrundsarbete gratis på varje betald Claude-plan, och Small
+  Business-bundlen lägger integrationer ovanpå. Det är vår mappfunktion plus
+  våra rutiner, från Anthropic, för ~210 kr/mån.
+
+  Näst tyngst: **Vorker.ai har lämnat väntelistan** (€25/€59 per månad i beta,
+  Fortnox- och Visma Spiris-integrationer, engelskspråkig sajt) — fönstret som
+  förra researchen kallade "öppet men inte länge" är alltså i färd med att
+  stängas på integrationssidan, men står fortfarande vidöppet på
+  skräddarsöm och språk: **ingen konkurrent genererar teamet ur kundens egen
+  verksamhet.** Sintra säljer 12 fasta helpers, Marblism 6, AI Kollegorna 3,
+  Vorker 1.
+
+  Fem drag ligger som **OM1–OM5** ovan.
 
 - [x] **SE1** Tolv branscher har tolv riktiga sidor — löst 2026-08-17. Uppmätt
   före och efter i webbläsare **med JavaScript avstängt** (det en sökmotor utan

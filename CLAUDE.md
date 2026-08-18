@@ -339,8 +339,24 @@ hand. Köpflödet finns sedan 2026-08-06 (`functions/api/checkout.js`,
 `checkout/status.js`, `stripe-webhook.js`, `migrations/0003_commerce.sql`).
 Capability-läsningen är stängd: `/api/teams/:slug` kräver inloggning och slår upp
 åtkomsten i `team_access`, så en borttagen rad stänger dörren i samma sekund.
-Platsrutterna finns också (`functions/api/team/{invite,members,remove}.js`) men
-inget gränssnitt anropar dem än.
+Platsrutterna (`functions/api/team/{invite,members,remove}.js`) fick ett
+gränssnitt 2026-08-18: portalens sidfotsknapp **Kollegor / dela team** listar
+platserna, bjuder in på adress och tar bort. Ett test i `test/teams.mjs` läser
+katalogen `functions/api/team/` och fäller bygget om en rutt där saknar
+anropare i `portal/app.js` — rutterna stod oanropade i månader medan
+delningslänken, som ligger närmast till hands, gav mottagaren en låst vy.
+
+**Ångerrätten är en knapp sedan 2026-08-18** (`functions/api/subscription/
+withdraw.js`). Skillnaden mot uppsägningen är hela poängen: uppsägning gäller
+framåt och kunden behåller teamet perioden ut; ångerrätten gör köpet ogjort —
+abonnemanget avslutas direkt hos Stripe (`DELETE /subscriptions/:id`, därför
+femte parametern `method` i `stripeCall`), `teams.plan` blir `refunded`, och
+kvitto mejlas till både kunden och `info@`. **Ingen kod flyttar pengar** —
+återbetalningen görs för hand inom fristen. Fristen är 14 dagar räknade från
+det *senaste* köpet (`purchasedAt()` tar `max(created_at, plan_changed_at)`, så
+en uppgradering från provmånad startar en ny frist), och samma tal står i
+portalens `WITHDRAWAL_DAYS` och i `villkor.html` §15 — tre tester i
+`test/plan.mjs` fäller bygget om de glider isär.
 
 **Portalens layout:** tre spalter på desktop — laget till vänster, chatten i
 mitten, arbetsytan och sidfoten till höger.
@@ -535,6 +551,8 @@ ny kund dyker upp i både galleri och portal automatiskt.
 │   │                               #   visuellt, kärna, affär, dokumentation
 │   ├── granskning-kundresa-2026-07-16.md  # 30 punkter längs kundresan
 │   ├── omvarldsresearch-2026-07-17.md     # Konkurrenter och marknad
+│   ├── omvarldsresearch-2026-08-18.md     # Uppföljning: funktionsglappet mot
+│   │                               #   konkurrenterna (OM1–OM5 i ROADMAP.md)
 │   ├── roadmap-anvandarvarde-2026-07-17.md # UX/retention, etapp 0–4 (byggd)
 │   ├── simulering-forlag-slutsatser-2026-07-18.md # Halvårssimulering, förlagskund
 │   ├── rollspel-foretag-2026-08-06.md     # Rollspelad kundresa, redovisningsbyrå
@@ -671,6 +689,19 @@ ny kund dyker upp i både galleri och portal automatiskt.
 > honom: aktivera Stripe-kontot och byta till live-nycklar (hål 0 i
 > `docs/lansering.md`). Börja inte ett pass med att föreslå det — det är
 > noterat, det är hans, och det står inte i vägen för något som byggs härnäst.
+>
+> **Passet 2026-08-18 — byggt, testat, INTE committat och INTE driftsatt.**
+> Arbetsträdet är smutsigt när du läser det här; börja med `git status`. Tre
+> punkter avbetade (**P5** platser för kollegor, **BL2** ångerknappen, **KR2**
+> startsidans bevis) plus omvärldsresearchen (**BL3**, ny fil i `docs/`, drag
+> som **OM1–OM5**). Testsviten är **175 gröna**, `npm run check:dist` ren.
+> Migrationer: inga nya. Nya secrets: inga. Ny rutt:
+> `functions/api/subscription/withdraw.js`.
+>
+> **Nästa pass enda uppgift:** ta **K4** — bygg-rutten är en oautentiserad
+> LLM-proxy och en väg tillbaka för uppsagda (`functions/api/ai.js:252-293`,
+> ~4–6 h) — om inte Mikael först fattar Cowork-beslutet, som avgör BF2, BF3 och
+> OM1 på en gång.
 >
 > Fas 1–3 nedan står kvar som historik över hur kärnan byggdes.
 
