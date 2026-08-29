@@ -1295,7 +1295,11 @@ function renderPortal() {
   backdrop.onclick = () => document.body.classList.remove("drawer-open");
   app.appendChild(backdrop);
   root.appendChild(app);
-  selectAgent(state.activeAgentId);
+  // { boot: true } — sidan väljer agent åt kunden vid varje laddning, och det
+  // är inte samma sak som att hon öppnat samtalet. Utan flaggan hade ett
+  // auto-levererat svar hos ingångsagenten kvitterats som läst innan kunden
+  // sett kortet, vilket är exakt buggen P6 handlade om — bara flyttad.
+  selectAgent(state.activeAgentId, { boot: true });
   renderPulse();       // lokala puls-kort — portalen har alltid något att säga
   checkTrialNotice();  // async: provmånadens slutdatum, om kontot säger att det är en provmånad
   runAutoRoutines();   // async: auto-rutiner som ska ligga klara idag
@@ -1641,7 +1645,7 @@ function renderMain() {
 }
 
 // ---------- agent selection ----------
-function selectAgent(id) {
+function selectAgent(id, opts) {
   state.activeAgentId = id;
   state.pendingRoutine = null; // agentbyte = rutinklicket är inte längre "på väg"
   const agent = agentById(id);
@@ -1673,6 +1677,12 @@ function selectAgent(id) {
     renderLog();
   };
   header.appendChild(clear);
+
+  // Att öppna samtalet är att läsa det auto-levererade svaret — det ligger
+  // längst ner i loggen. Kvittot tas bort, och pulsen ritas om så att kortet
+  // försvinner direkt i stället för vid nästa sidladdning. Undantaget är
+  // sidladdningens egen förvalda agent (se { boot: true } i renderApp).
+  if (!(opts && opts.boot) && autoMarkRead(id)) renderPulse();
 
   document.body.classList.remove("drawer-open"); // stäng mobil-drawern vid val
   renderLog();
@@ -2265,11 +2275,77 @@ async function suggestMemory(agentId) {
   box.appendChild(save);
 }
 
+// ---------- auto-levererat (överlever en omladdning) ----------
+//
+// P6, lagat 2026-08-29. `autoDelivered` var en modulvariabel: listan över
+// rutiner teamet kört automatiskt levde bara så länge fliken gjorde det.
+// Följden var värre än ett borttappat kort, för `routineMarkDone()` körs i
+// samma andetag:
+//
+//   • kortet "✅ X ligger klar hos Y — läs" försvann vid F5, tabbåterställning
+//     eller när PWA:n öppnades nästa gång, och
+//   • kortet "📌 Idag: X" kom inte tillbaka i stället, eftersom rutinen redan
+//     var avbockad.
+//
+// Alltså: arbetet var gjort och betalt, låg färdigt längst ner i en agents
+// historik — och portalen sa ingenting om det. Just den effekten ("teamet har
+// redan jobbat när jag kommer på måndagen") är hela skälet till att
+// auto-rutiner finns.
+//
+// Kvittot ligger nu i localStorage bredvid rutinloggen, med samma
+// slug-nyckling. Två regler avgör hur länge det står kvar:
+//
+//   LÄST — kunden har öppnat agentens samtal, alltså sett svaret. Då är kortet
+//     avklarat; att fortsätta visa det vore att tjata om något hon redan gjort.
+//   FÖRÅLDRAT — äldre än sju dagar. En auto-rutin är veckovis, så efter en
+//     vecka är påståendet "ligger klar" inte längre färskt: nästa körning har
+//     lagt ett nytt svar under det gamla.
+// Blocket mellan markörerna körs också av test/portal.mjs, hämtat ur den här
+// filen. Det beror bara på `state` och `localStorage`, som testet skickar in.
+// ⟦AUTO-START⟧
+const AUTO_MAX_ÅLDER = 7 * 86400000;
+const autoKey = () => "atb_auto_" + state.slug;
+
+function autoLoad() {
+  if (state.demo || !state.slug) return [];
+  try {
+    const v = JSON.parse(localStorage.getItem(autoKey()) || "null");
+    if (!Array.isArray(v)) return [];
+    const gräns = Date.now() - AUTO_MAX_ÅLDER;
+    return v.filter((d) => d && d.label && d.agentId && +d.at > gräns);
+  } catch (_) { return []; } // trasig post — hellre inget kort än en krasch i pulsen
+}
+
+function autoSave(list) {
+  if (state.demo || !state.slug) return;
+  try { localStorage.setItem(autoKey(), JSON.stringify(list)); } catch (_) { /* full storage */ }
+}
+
+// Samma etikett två gånger (rutinen kördes om en senare vecka) ersätter den
+// gamla i stället för att lägga sig bredvid — annars växer pulsen med kvitton
+// på samma sak.
+function autoDeliveredPush(label, agentId) {
+  const list = autoLoad().filter((d) => d.label !== label);
+  list.push({ label, agentId, at: Date.now() });
+  autoSave(list);
+}
+
+// Att öppna agentens samtal ÄR att läsa svaret — det ligger längst ner i
+// loggen. Anropas från selectAgent(), alltså oavsett om kunden kom via kortet,
+// via laget i vänsterspalten eller via mobilväljaren.
+function autoMarkRead(agentId) {
+  const list = autoLoad();
+  const kvar = list.filter((d) => d.agentId !== agentId);
+  if (kvar.length === list.length) return false;
+  autoSave(kvar);
+  return true;
+}
+// ⟦AUTO-SLUT⟧
+
 // ---------- puls-kort ----------
 // 2–3 lokalt beräknade kort ovanför chatten — ingen AI-kostnad, alltid
 // färska. Portalen har alltid något att säga när den öppnas.
 let pulseNewWeek = null;   // beräknas en gång per sidladdning
-const autoDelivered = [];  // auto-körda rutiner denna sidladdning → "ligger klar"-kort
 function renderPulse() {
   const old = $("#pulse-strip"); if (old) old.remove();
   if (state.demo) return;
@@ -2286,7 +2362,8 @@ function renderPulse() {
   }
 
   const cards = [];
-  autoDelivered.forEach((d) => {
+  // Ur localStorage, inte ur en modulvariabel: kvittot ska överleva en F5.
+  autoLoad().forEach((d) => {
     const a = agentById(d.agentId);
     cards.push({ icon: "✅", label: `${d.label} ligger klar hos ${a ? a.name : "teamet"} — läs`, act: () => selectAgent(d.agentId) });
   });
@@ -2453,7 +2530,7 @@ async function runAutoRoutines() {
         state.history[agent.id].push(userMsg, { role: "assistant", content: reply, at: Date.now(), auto: true });
         saveHistory();
         routineMarkDone(rt.label);
-        autoDelivered.push({ label: rt.label, agentId: agent.id });
+        autoDeliveredPush(rt.label, agent.id);
         // Rita inte om loggen mitt i en pågående strömning hos användaren.
         if (state.activeAgentId === agent.id && !state.streaming) renderLog();
         renderPulse();

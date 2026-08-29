@@ -29,8 +29,18 @@ Från genomgången 2026-08-17 · sju parallella linser + egen verifiering.
 
 ## Framåt — utveckling
 
-- [ ] **P1** Ingen mätning av var köpresan läcker. Kontrollerat igen 2026-08-17: de enda träffarna på `gtag`/`analytics` i repot är en **CSS-klass** som heter `.gtag`. Cloudflare Web Analytics är gratis, cookiefri och kräver ingen CSP-ändring · `index.html` (inga taggar) · `mätt` · ~20 min–1 h
-- [ ] **P6** Auto-körda rutiners "ligger klar"-bevis överlever inte en omladdning · `portal/app.js:2242` · `läst i koden` · ~2 h
+- [ ] **P1** Ingen mätning av var köpresan läcker. **Kodhalvan är gjord 2026-08-29, knappen är din.**
+  Påståendet att Cloudflare Web Analytics "kräver ingen CSP-ändring" var fel — uppmätt samma dag:
+  `script-src 'self'` stänger ute `https://static.cloudflareinsights.com`, och en CSP-blockering syns
+  inte för den som slog på knappen: panelen står bara tom, vilket ser ut som "ingen trafik". Värden
+  ligger nu i `_headers` med ett test som håller den kvar (`test/csp.mjs`, sju tester — filen hade
+  inga alls). `connect-src` behövde INTE vidgas, men det är villkorat: beaconen väljer mottagare med
+  `v.send.to || (v.version === undefined ? "https://cloudflareinsights.com/cdn-cgi/rum" : null)`
+  (läst i `beacon.min.js`), så **automatic setup** i Pages-dashboarden skickar till samma origin och
+  ryms i `'self'` — medan den manuella inklistrade snutten skickar till `cloudflareinsights.com` och
+  skulle blockeras, tyst. Slå alltså på den automatiska. Kontrollerat i drift 2026-08-29: ingen beacon
+  levereras i dag, alltså är mätningen inte påslagen. Kvar sedan: en mening i `integritet.html` om att
+  besöksstatistik samlas in cookiefritt — din text · `_headers`, Cloudflare-dashboarden · `mätt` · ~10 min
 - [ ] **OM1** Hållningen till Claude Cowork och ChatGPT Agents är inte bestämd. Cowork (april 2026) ger filsystemsåtkomst, schemalagda uppgifter och bakgrundsarbete — vår mappfunktion plus våra rutiner — gratis på varje betald Claude-plan, och Small Business-bundlen (maj) lägger integrationer ovanpå. Antingen är svaret "vi bygger teamet, du kör det var du vill" — och då är **BF2** (gratisbygget delar ut systemprompterna) en *funktion* som ska säljas, inte en läcka — eller så ska läckan stängas. Det är ett och samma beslut, och Coworks existens gör att det ska fattas nu · `docs/omvarldsresearch-2026-08-18.md` · `mätt` · beslut, inte kod
 - [ ] **OM2** Ingen sida säger var modellen körs eller vad som lagras. AI Kollegorna säljer 4 900 kr/mån delvis på "ingen data lämnar era lokaler"; vi kör OpenRouter → `openai/gpt-oss-120b` med geografin osagd. Samma sida täcker EU AI Acts transparenskrav (i kraft 2 augusti 2026, vi ligger i limited risk: kunden ska veta att motparten är AI) och tar bort deras enda övertag mot oss · `integritet.html`, `index.html` · `mätt` · ~2–4 h
 - [ ] **OM3** De två sakerna ingen konkurrent har står längst ner respektive i en sidopanel. Att en agent får **nej** är motgiftet mot exakt den kritik Sintra och Marblism får ("starka utkast, inte utförande"), och **mötet** löser Sintras mest citerade brist (helpers kan inte dela kontext). Flytta båda till framsidan — och gör det med en riktig körning, alltså tillsammans med **KR2** · `index.html:145`, `:163`, `:216-218` · `mätt` · ~2–4 h ihop med KR2
@@ -63,7 +73,8 @@ Rättade direkt i filerna (rent git-träd). Raderna står i terminalsvaret.
 
 ## Byggt 2026-08-29 (inte driftsatt)
 
-**K4** och **KA4** lösta. Ny fil: `functions/api/_build.js`. Testsviten **214
+**K4**, **KA4** och **P6** lösta; **P1**:s kodhalva gjord. Nya filer:
+`functions/api/_build.js`, `test/csp.mjs`, `test/portal.mjs`. Testsviten **229
 gröna**, `check:dist` ren. Inga migrationer, inga nya secrets, ingen ny rutt.
 
 Verifierat i emulatorn (`wrangler pages dev dist`), inte antaget: anrop utan
@@ -86,6 +97,13 @@ bindningen saknas även i drift. **Ingen riktig körning i Buildern har gjorts**
 `portal/teams/` och 37 par i `examples/` togs fram innan taket sattes, och
 båda grindarna mutationsprovades (måttet nollställt → rött; anropet
 bortkopplat → rött).
+
+**P6 är inte kört i webbläsare.** Verifieringen är statisk plus åtta nya
+enhetstester som kör blocket ur `portal/app.js`. En auto-rutin kräver ett
+riktigt AI-anrop, och den lokala nyckeln är ogiltig.
+
+**P1:s CSP-rad är mutationsprovad** (borttagen → rött), men beaconen är inte
+påslagen, så att raden verkligen räcker är `läst i koden` — inte `mätt`.
 
 ## Driftsatt 2026-08-18
 
@@ -134,6 +152,42 @@ kedja hela vägen fram, `/avregistrera` 400 på trasig token och 200 på okänd,
 i dag är påslaget.
 
 ## Klart
+
+- [x] **P6** Auto-körda rutiners "ligger klar"-bevis överlever en omladdning — löst 2026-08-29.
+
+  `autoDelivered` var en modulvariabel, alltså tom vid varje sidladdning. Följden
+  var värre än ett borttappat kort, för `routineMarkDone()` körs i samma
+  andetag: kortet *"✅ X ligger klar hos Y — läs"* försvann vid F5,
+  tabbåterställning eller nästa öppning av PWA:n — och kortet *"📌 Idag: X"* kom
+  inte tillbaka i stället, eftersom rutinen redan var avbockad. Arbetet var
+  alltså gjort och betalt, låg färdigt längst ner i en agents historik, och
+  portalen sa ingenting om det. Just den effekten — "teamet har redan jobbat när
+  jag kommer på måndagen" — är hela skälet till att auto-rutiner finns.
+
+  Kvittot ligger nu i localStorage bredvid rutinloggen, med samma slug-nyckling.
+  Två regler tar bort det: **läst** (kunden har öppnat agentens samtal, alltså
+  sett svaret) och **föråldrat** (äldre än sju dagar — en auto-rutin är
+  veckovis, så därefter har nästa körning lagt ett nytt svar under det gamla).
+  Samma etikett igen ersätter det gamla kvittot i stället för att lägga sig
+  bredvid.
+
+  **Fällan på vägen, som hade flyttat buggen i stället för att laga den:**
+  sidan väljer agent åt kunden vid varje laddning (`selectAgent` i `renderApp`).
+  Om det räknats som "öppnat samtalet" hade ett svar hos ingångsagenten —
+  alltså det vanligaste fallet, måndagsbriefen — kvitterats som läst innan
+  kortet ens visats. Boot-anropet bär därför `{ boot: true }` och kvitterar
+  ingenting; varje annat anrop är en kund som navigerat dit.
+
+  `test/portal.mjs` är ny (åtta tester) och kör blocket ur `portal/app.js`
+  mellan `⟦AUTO-START⟧`/`⟦AUTO-SLUT⟧` i stället för en kopia. Den täcker
+  omladdningen, läskvittot, dubbletten, sjudagarsgränsen, trasigt lager,
+  demoläget — och att skrivningen, läsningen och boot-flaggan faktiskt är
+  inkopplade. `portal/app.js` hade fram till nu noll tester, trots att B1 låg
+  precis där.
+
+  **Inte kört i webbläsare.** Verifieringen är statisk (`node --check`,
+  källkoppling i test) plus enhetstesterna. En auto-rutin kräver ett riktigt
+  AI-anrop, och den lokala nyckeln är ogiltig.
 
 - [x] **KA4** Perspektiven mäts, inte bara räknas — löst 2026-08-29.
 

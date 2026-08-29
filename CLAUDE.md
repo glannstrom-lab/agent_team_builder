@@ -402,6 +402,19 @@ i en form mönstret inte känner igen. Sätt inte tillbaka `Cache-Control` i
 `_headers`; det ser ut att fungera och gör det inte.
 
 Säkerhetsheaders/CSP sätts via `_headers` (kopieras till `dist/` vid bygge).
+**CSP:n har tester sedan 2026-08-29** (`test/csp.mjs`): de fyra låsen, att
+`connect-src` förblir `'self'`, att `form-action` släpper fram Stripe Checkout,
+att `Cache-Control` inte kommer tillbaka, och att `_headers` står kvar i ITEMS.
+En CSP som är fel felar **tyst** — en blockering syns i besökarens konsol och
+ingen annanstans — och filen har redan burit två sådana fel.
+
+`script-src` släpper in `https://static.cloudflareinsights.com` (P1). Raden står
+där innan mätningen är påslagen, med flit: utan den laddas beaconen aldrig, och
+den som slår på Web Analytics ser bara en tom panel, vilket inte går att skilja
+från "ingen trafik". `connect-src` behövde inte vidgas — men bara för att
+Cloudflares **automatiska** injicering skickar till samma origin
+(`/cdn-cgi/rum`). Den manuella inklistrade snutten skickar till
+`cloudflareinsights.com` och skulle blockeras. Slå på den automatiska.
 
 **Kör lokalt:** `python -m http.server 8420` från repo-roten (eller `npm run dev`),
 öppna `http://localhost:8420/`. Builder och portal kräver http:// (inte file://).
@@ -546,7 +559,7 @@ ny kund dyker upp i både galleri och portal automatiskt.
 │                                   #   plan_lifecycle, ai_errors, weekly_digest
 ├── test/                           # node --test: teams, stripe, plan, ai, throttle,
 │                                   #   examples, klient, intake, health, skalning,
-│                                   #   digest (214 tester)
+│                                   #   digest, csp, portal (229 tester)
 ├── scripts/                        # provision.mjs — lägg upp en kund för hand
 │                                   #   check-dist.mjs — kontrollerar versionsstämplingen
 ├── testoutput/                     # Råa pipeline-körningar (källmaterial, ej deployat)
@@ -739,15 +752,21 @@ ny kund dyker upp i både galleri och portal automatiskt.
 > vid generering och hämtas ur samma källa av testerna; båda grindarna är
 > mutationsprovade.
 >
-> Testsviten är **214 gröna**. Inga nya migrationer, inga nya secrets, ingen ny
+> **P6** — auto-körda rutiners "ligger klar"-kvitto ligger i localStorage och
+> överlever en omladdning. `test/portal.mjs` är ny; `portal/app.js` hade noll
+> tester trots att B1 låg precis där.
+>
+> **P1** — halva. CSP:n stängde ute Cloudflares beacon, vilket roadmapen
+> påstod att den inte gjorde; `_headers` släpper in den nu och `test/csp.mjs`
+> håller raden kvar. Själva påslaget är en knapp i Pages-dashboarden, och den
+> är Mikaels.
+>
+> Testsviten är **229 gröna**. Inga nya migrationer, inga nya secrets, ingen ny
 > rutt. Läget står i `ROADMAP.md` under *Byggt 2026-08-29*.
 >
-> **Nästa pass enda uppgift:** ta **P6** — auto-körda rutiners "ligger
-> klar"-bevis överlever inte en omladdning (`portal/app.js:2242`, ~2 h) — om
-> inte Mikael först fattar Cowork-beslutet, som avgör BF2, BF3 och OM1 på en
-> gång. **P1** står högre i listan men är förmodligen inte kod: Cloudflare Web
-> Analytics slås på med en knapp i Pages-dashboarden och injicerar sin egen
-> beacon — kontrollera det innan du bygger något.
+> **Nästa pass enda uppgift:** ta **P4** — grundteamets agenter går att lägga
+> till men aldrig redigera eller avsluta (`portal/app.js`, ~5 h) — om inte
+> Mikael först fattar Cowork-beslutet, som avgör BF2, BF3 och OM1 på en gång.
 >
 > Notera att K4 gör **BF2** mindre akut men inte löst: systemprompterna går
 > fortfarande att ladda ner gratis, de går bara inte längre att köra hos oss.

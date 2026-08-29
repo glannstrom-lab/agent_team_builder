@@ -1,9 +1,30 @@
 /*
-  Content-Security-Policy: default-src 'self'; connect-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'self' https://checkout.stripe.com; frame-ancestors 'none'
+  Content-Security-Policy: default-src 'self'; connect-src 'self'; script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'self' https://checkout.stripe.com; frame-ancestors 'none'
   Strict-Transport-Security: max-age=31536000; includeSubDomains
   Referrer-Policy: no-referrer
   X-Content-Type-Options: nosniff
   X-Frame-Options: DENY
+
+# ── static.cloudflareinsights.com i script-src (P1, 2026-08-29) ────────────
+# Cloudflare Web Analytics. Värden står här FÖRE att mätningen är påslagen, och
+# det är avsiktligt: utan raden laddas beaconen aldrig, och en CSP-blockering
+# syns inte för den som slog på knappen — panelen står bara tom, vilket ser ut
+# som "ingen trafik". ROADMAP.md påstod att Web Analytics "kräver ingen
+# CSP-ändring". Uppmätt 2026-08-29: det stämmer inte, `script-src 'self'`
+# stänger ute den.
+#
+# `connect-src` behövde däremot INTE vidgas, och det är villkorat: beaconen
+# väljer mottagare med `v.send.to || (v.version === undefined ?
+# "https://cloudflareinsights.com/cdn-cgi/rum" : null)` (läst i
+# beacon.min.js 2026-08-29). Cloudflares AUTOMATISKA injicering sätter
+# `version` och skickar då till samma origin, `/cdn-cgi/rum`, som `'self'`
+# redan tillåter. Den manuella snutten man klistrar in själv sätter ingen
+# version och skickar till `cloudflareinsights.com` — den skulle blockeras här,
+# tyst.
+#
+# Slå alltså på mätningen med **automatic setup** i Pages-dashboarden, inte med
+# ett inklistrat script. Ska den manuella vägen användas måste
+# `https://cloudflareinsights.com` läggas till i connect-src samtidigt.
 
 # ── connect-src är 'self' och inget mer (snävt 2026-08-17) ──────────────────
 # Här stod tidigare `'self' https://openrouter.ai`, en kvarleva från tiden när
