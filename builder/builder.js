@@ -1084,6 +1084,106 @@ async function structureTeam(intake, r) {
 // Därför fäller bara de två — ett golv som kräver allt hade gjort bygget
 // ostabilt av kosmetiska skäl, och ett golv som inte fäller alls är ingen
 // kontroll utan en förhoppning.
+// ── PERSPEKTIV-MÅTTET (KA4) ⟦DELAD-START⟧ ─────────────────────────────────
+//
+// Kvalitetschecklistan säger "två agenter i samma team delar inte perspektiv".
+// Fram till 2026-08-29 kontrollerades det som NÄRVARO: att rubriken
+// `DITT PERSPEKTIV` fanns. Två agenter kunde alltså bära exakt samma text
+// under rubriken och passera — kravet var formulerat som mätbart och mättes
+// inte. Det är den enda regeln i checklistan som direkt bär projektets
+// existensberättigande (samma input får inte ge samma output), så en kontroll
+// som bara räknar rubriker är sämre än ingen: den ser ut som ett skyddsnät.
+//
+// Måttet: överlappskoefficient på innehållsord — andelen av det MINDRE
+// ordförrådet som också finns i det andra perspektivet. Jaccard valdes bort
+// för att den döljer en kort dubblett bakom en lång text; överlappet gör inte
+// det. Korta ord och stoppord räknas inte, för "och att för av" finns i varje
+// svensk mening och skulle lyfta varje par mot varandra.
+//
+// TAKET ÄR MÄTT, INTE GISSAT (2026-08-29): 108 agentpar i portal/teams/ ger
+// median 0,12 · p90 0,23 · p99 0,36 · max 0,42 (konsult.js, förslag~
+// erfarenhetsbank). 37 par i examples/ ger median 0,14 · max 0,38. 0,70 ligger
+// alltså långt över allt som finns i repot i dag och fäller bara det som
+// verkligen är samma text två gånger. Höj det inte för att ett bygge föll —
+// mät om fördelningen först.
+var PERSPEKTIV_TAK = 0.70;
+// Golv på hur mycket text som måste stå under rubriken. Kortaste riktiga
+// sektionen i repot är 148 tecken; 60 fäller en tom eller enordig sektion utan
+// att röra något som finns. Utan golvet vore en tom rubrik "godkänd", och då
+// hade måttet ovan jämfört två tomma strängar och sagt att de är olika.
+var PERSPEKTIV_GOLV = 60;
+
+// Svenska stoppord + alla ord kortare än fyra tecken. Listan behöver inte vara
+// fullständig: den ska ta bort det som finns i VARJE perspektiv, inte allt som
+// är ointressant.
+var PERSPEKTIV_STOPPORD = new Set(
+  ("och att i på för av med som den det de en ett är var till om den här du din ditt " +
+   "dina vad hur inte men eller så vid kan ska alla alltid när där från vi oss vår vårt " +
+   "sig ur mot efter före under över mellan utan bara mer mest än ha har hade blir bli"
+  ).split(/\s+/)
+);
+
+// Texten under DITT PERSPEKTIV, fram till nästa versalrubrik. Returnerar tom
+// sträng när rubriken saknas — anropande kod skiljer på "saknas" och "tom".
+function perspektivText(sys) {
+  var s = String(sys || "");
+  var i = s.toUpperCase().indexOf("DITT PERSPEKTIV");
+  if (i < 0) return "";
+  var efter = s.slice(i + "DITT PERSPEKTIV".length);
+  // Nästa rubrik = en rad som börjar med minst fyra versaler i rad, med eller
+  // utan numrering. Hittas ingen är resten av prompten perspektivet.
+  var m = efter.match(/\n\s*(?:\d+\.\s*)?[A-ZÅÄÖ][A-ZÅÄÖ\s]{3,}[:\n]/);
+  return (m ? efter.slice(0, m.index) : efter).trim();
+}
+
+function perspektivOrd(text) {
+  var ut = new Set();
+  var delar = String(text || "").toLowerCase().replace(/[^a-zåäöéü\s-]/g, " ").split(/\s+/);
+  for (var i = 0; i < delar.length; i++) {
+    var w = delar[i];
+    if (w.length >= 4 && !PERSPEKTIV_STOPPORD.has(w)) ut.add(w);
+  }
+  return ut;
+}
+
+function perspektivLikhet(a, b) {
+  var A = perspektivOrd(a), B = perspektivOrd(b);
+  if (!A.size || !B.size) return 0;
+  var n = 0;
+  A.forEach(function (w) { if (B.has(w)) n++; });
+  return n / Math.min(A.size, B.size);
+}
+
+// Hela kontrollen på ett ställe, så att builder och tester bedömer likadant.
+// Returnerar en lista med brister (tom = godkänt) i stället för att kasta:
+// Buildern vill ha dem i ett felmeddelande, testerna i en assert.
+function perspektivBrister(agenter) {
+  var texter = [], brister = [];
+  for (var i = 0; i < agenter.length; i++) {
+    var a = agenter[i] || {};
+    var namn = a.name || a.id || "agent " + (i + 1);
+    var t = perspektivText(a.system);
+    texter.push({ namn: namn, t: t });
+    if (t.length < PERSPEKTIV_GOLV) {
+      brister.push(namn + ": DITT PERSPEKTIV är tom eller nästan tom (" + t.length +
+        " tecken) — rubriken finns men säger ingenting");
+    }
+  }
+  for (var x = 0; x < texter.length; x++) {
+    for (var y = x + 1; y < texter.length; y++) {
+      if (texter[x].t.length < PERSPEKTIV_GOLV || texter[y].t.length < PERSPEKTIV_GOLV) continue;
+      var l = perspektivLikhet(texter[x].t, texter[y].t);
+      if (l >= PERSPEKTIV_TAK) {
+        brister.push(texter[x].namn + " och " + texter[y].namn +
+          " har samma perspektiv (" + Math.round(l * 100) + " % överlapp) — " +
+          "då är den ena agenten utbytbar mot den andra");
+      }
+    }
+  }
+  return brister;
+}
+// ── ⟦DELAD-SLUT⟧ ──────────────────────────────────────────────────────────
+
 const OBLIGATORISKA_SEKTIONER = [
   { namn: "DITT PERSPEKTIV", varför: "utan den blir agenten utbytbar mot de andra" },
   { namn: "LEVERANS", varför: "utan den finns inga \"Klart när\"-punkter att leverera mot" },
@@ -1101,6 +1201,11 @@ function kontrolleraSystemprompter(team) {
       }
     }
   }
+  // KA4: rubriken räcker inte. Två agenter som resonerar från samma blick är
+  // ett team med en agent och flera namn — och då bryter körningen projektets
+  // enda regel som betyder mest.
+  brister.push(...perspektivBrister(team.agents));
+
   if (!brister.length) return;
 
   console.warn("[builder] systemprompter under golvet:", brister);

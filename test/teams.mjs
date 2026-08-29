@@ -198,3 +198,116 @@ test("varje platsrutt har ett gränssnitt som anropar den", () => {
   assert.ok(portal.includes("Bjud in en kollega"), "ingen rubrik för att bjuda in — rutan syns inte");
   assert.ok(portal.includes("Kollegor med tillgång"), "medlemslistan har ingen etikett");
 });
+
+// ── KA4: perspektiven ska faktiskt SKILJA SIG, inte bara finnas ────────────
+//
+// Golvet ovan (SEKTIONSGOLV) kontrollerar att rubriken `DITT PERSPEKTIV` står
+// där. Det är närvaro, inte innehåll: två agenter kunde bära exakt samma text
+// under rubriken och passera. Kvalitetschecklistans "två agenter i samma team
+// delar inte perspektiv" var alltså formulerad som mätbar och mättes inte —
+// och det är den regel som bär projektets existensberättigande.
+//
+// Testet kör builderns EGNA funktioner, hämtade ur källan mellan markörerna
+// ⟦DELAD-START⟧ och ⟦DELAD-SLUT⟧. En kopia här hade kunnat vara mildare än den
+// som faktiskt körs vid generering, vilket är samma fälla som prompten och
+// schemat gick i två gånger.
+const MÅTTET = (() => {
+  const src = readFileSync("builder/builder.js", "utf8");
+  const i = src.indexOf("⟦DELAD-START⟧");
+  const j = src.indexOf("⟦DELAD-SLUT⟧");
+  assert.ok(i >= 0 && j > i, "hittade inte det delade perspektiv-blocket i builder/builder.js");
+  // Markörerna står i kommentarrader. Klipp från raden EFTER startmarkören och
+  // fram till radbörjan för slutmarkören, annars börjar biten mitt i ett `//`.
+  const kropp = src.slice(src.indexOf("\n", i) + 1, src.lastIndexOf("\n", j) + 1);
+  assert.ok(kropp.includes("function perspektivBrister"),
+    "det delade blocket ser inte ut som väntat — flyttades markörerna?");
+  return new Function(
+    kropp + "; return { perspektivText, perspektivLikhet, perspektivBrister, PERSPEKTIV_TAK, PERSPEKTIV_GOLV };"
+  )();
+})();
+
+// Ett mått som ingen anropar är samma sorts skenkontroll som KA4 handlade om,
+// bara ett steg längre bak. Grinden är en rad, och den raden ska finnas.
+test("builderns generering kör faktiskt perspektiv-måttet", () => {
+  const src = readFileSync("builder/builder.js", "utf8");
+  const i = src.indexOf("function kontrolleraSystemprompter");
+  assert.ok(i >= 0, "hittade inte kontrolleraSystemprompter");
+  const kropp = src.slice(i, src.indexOf("\n}", i));
+  assert.ok(kropp.includes("perspektivBrister("),
+    "kontrolleraSystemprompter anropar inte perspektivBrister — måttet finns men körs aldrig");
+});
+
+// Motprov FÖRST: ett mått som alltid svarar "olika" hade gjort varje test
+// nedan grönt utan att mäta något. Det är exakt felet KA4 handlar om.
+test("perspektiv-måttet känner igen en dubblett", () => {
+  const a = "Du ser verksamheten ur kundens ögon och letar alltid efter var löftet " +
+    "spricker mellan offert och leverans. Du varnar för sådant som ser prydligt ut i " +
+    "kalkylen men skaver i kundmötet.";
+  const b = a.replace("kundens ögon", "kundens perspektiv");
+
+  assert.equal(MÅTTET.perspektivLikhet(a, a), 1, "identisk text ska ge 1");
+  assert.ok(MÅTTET.perspektivLikhet(a, b) >= MÅTTET.PERSPEKTIV_TAK,
+    "ett omskrivet ord ska inte räcka för att komma undan");
+
+  const brister = MÅTTET.perspektivBrister([
+    { name: "Ett", system: "DITT PERSPEKTIV\n" + a + "\n\nLEVERANS\n..." },
+    { name: "Två", system: "DITT PERSPEKTIV\n" + b + "\n\nLEVERANS\n..." },
+  ]);
+  assert.equal(brister.length, 1, "dubbletten skulle ha fällts");
+  assert.match(brister[0], /samma perspektiv/);
+});
+
+test("perspektiv-måttet släpper igenom två riktiga, olika perspektiv", () => {
+  const brister = MÅTTET.perspektivBrister([
+    { name: "Offert", system: "DITT PERSPEKTIV\nDu räknar hem varje jobb innan det " +
+      "börjar och letar efter timmar som ingen fakturerar. Du varnar när ett fastpris " +
+      "vilar på antaganden ingen kontrollerat.\n\nLEVERANS\n..." },
+    { name: "Text", system: "DITT PERSPEKTIV\nDu skriver som verkstaden låter och " +
+      "vaktar tonen mot kund. Du varnar när en formulering lovar mer än hantverket " +
+      "faktiskt hinner med.\n\nLEVERANS\n..." },
+  ]);
+  assert.deepEqual(brister, []);
+});
+
+test("en tom rubrik är inte ett perspektiv", () => {
+  const brister = MÅTTET.perspektivBrister([
+    { name: "Tom", system: "DITT PERSPEKTIV\n\nLEVERANS\nNågot annat." },
+  ]);
+  assert.equal(brister.length, 1);
+  assert.match(brister[0], /tom eller nästan tom/);
+});
+
+// Och så själva poängen: varje team som ligger i repot måste hålla ribban.
+for (const file of files) {
+  test(`${file} har agenter med olika perspektiv`, () => {
+    const team = loadTeam(file);
+    const brister = MÅTTET.perspektivBrister(team.agents);
+    assert.deepEqual(brister, [], brister.join("\n"));
+  });
+}
+
+// Fördelningen, inte bara taket. Uppmätt 2026-08-29 över 108 agentpar:
+// median 0,12 · p90 0,23 · p99 0,36 · max 0,42. Taket 0,70 har alltså god
+// marginal — men om marginalen försvinner ska det märkas HÄR, medan den som
+// lade till teamet fortfarande minns varför, och inte som ett fällt bygge hos
+// en kund. 0,55 är varningsnivån: fortfarande under taket, men långt över allt
+// vi sett.
+test("inget agentpar i repot närmar sig taket", () => {
+  let värst = { l: 0, var: "" };
+  for (const file of files) {
+    const agenter = loadTeam(file).agents;
+    for (let i = 0; i < agenter.length; i++) {
+      for (let j = i + 1; j < agenter.length; j++) {
+        const l = MÅTTET.perspektivLikhet(
+          MÅTTET.perspektivText(agenter[i].system),
+          MÅTTET.perspektivText(agenter[j].system)
+        );
+        if (l > värst.l) värst = { l, var: `${file}: ${agenter[i].id}~${agenter[j].id}` };
+      }
+    }
+  }
+  assert.ok(värst.l < 0.55,
+    `${värst.var} ligger på ${värst.l.toFixed(2)} — under taket ${MÅTTET.PERSPEKTIV_TAK} ` +
+    `men långt över allt annat i repot (max var 0,42 när måttet skrevs). Skriv om det ena ` +
+    `perspektivet, eller mät om fördelningen och flytta gränsen medvetet.`);
+});

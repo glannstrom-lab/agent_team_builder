@@ -546,7 +546,7 @@ ny kund dyker upp i både galleri och portal automatiskt.
 │                                   #   plan_lifecycle, ai_errors, weekly_digest
 ├── test/                           # node --test: teams, stripe, plan, ai, throttle,
 │                                   #   examples, klient, intake, health, skalning,
-│                                   #   digest (189 tester)
+│                                   #   digest (214 tester)
 ├── scripts/                        # provision.mjs — lägg upp en kund för hand
 │                                   #   check-dist.mjs — kontrollerar versionsstämplingen
 ├── testoutput/                     # Råa pipeline-körningar (källmaterial, ej deployat)
@@ -727,18 +727,30 @@ ny kund dyker upp i både galleri och portal automatiskt.
 > `functions/api/subscription/withdraw.js`. Verifieringen i drift står i
 > `ROADMAP.md` under *Driftsatt 2026-08-18*.
 >
-> **Passet 2026-08-29 är byggt** (inte driftsatt när detta skrivs). **K4** är
-> löst: den fria rutten tar ett STEG i stället för en systemprompt, och exakt ett
-> användarmeddelande. `functions/api/_build.js` är ny och äger byggets prompter,
-> PORTAL_RULES och TEAM_SCHEMA — de tre flyttade ur `builder/builder.js`, byte
-> för byte kontrollerat. Testsviten är **189 gröna**. Inga nya migrationer, inga
-> nya secrets, ingen ny rutt. Läget står i `ROADMAP.md` under *Byggt 2026-08-29*.
+> **Passet 2026-08-29 är byggt** (inte driftsatt när detta skrivs). Två punkter:
 >
-> **Nästa pass enda uppgift:** ta **P1** — ingen mätning av var köpresan läcker
-> (Cloudflare Web Analytics, gratis och cookiefri, ~20 min–1 h) — om inte Mikael
-> först fattar Cowork-beslutet, som avgör BF2, BF3 och OM1 på en gång. Notera att
-> K4 gör **BF2** mindre akut men inte löst: systemprompterna går fortfarande att
-> ladda ner gratis, de går bara inte längre att köra hos oss.
+> **K4** — den fria rutten tar ett STEG i stället för en systemprompt, och exakt
+> ett användarmeddelande. `functions/api/_build.js` är ny och äger byggets
+> prompter, PORTAL_RULES och TEAM_SCHEMA — de tre flyttade ur
+> `builder/builder.js`, byte för byte kontrollerat.
+>
+> **KA4** — "två agenter delar inte perspektiv" mäts nu (överlapp på
+> innehållsord, tak 0,70 satt ur en mätning av 108 + 37 agentpar). Måttet körs
+> vid generering och hämtas ur samma källa av testerna; båda grindarna är
+> mutationsprovade.
+>
+> Testsviten är **214 gröna**. Inga nya migrationer, inga nya secrets, ingen ny
+> rutt. Läget står i `ROADMAP.md` under *Byggt 2026-08-29*.
+>
+> **Nästa pass enda uppgift:** ta **P6** — auto-körda rutiners "ligger
+> klar"-bevis överlever inte en omladdning (`portal/app.js:2242`, ~2 h) — om
+> inte Mikael först fattar Cowork-beslutet, som avgör BF2, BF3 och OM1 på en
+> gång. **P1** står högre i listan men är förmodligen inte kod: Cloudflare Web
+> Analytics slås på med en knapp i Pages-dashboarden och injicerar sin egen
+> beacon — kontrollera det innan du bygger något.
+>
+> Notera att K4 gör **BF2** mindre akut men inte löst: systemprompterna går
+> fortfarande att ladda ner gratis, de går bara inte längre att köra hos oss.
 >
 > Fas 1–3 nedan står kvar som historik över hur kärnan byggdes.
 
@@ -789,7 +801,14 @@ vidare till fas 3 förrän fas 2 gör det.
 - [ ] Varje föreslagen skill kan motiveras med ett konkret fynd
 - [ ] Varje agent har en Leverans med "Klart när"-punkter som går att
       svara ja/nej på
-- [ ] Två agenter i samma team delar inte perspektiv
+- [ ] Två agenter i samma team delar inte perspektiv — **mäts sedan KA4**
+      (2026-08-29): överlappskoefficient på innehållsorden under
+      `DITT PERSPEKTIV`, tak 0,70. Måttet bor i `builder/builder.js` mellan
+      markörerna `⟦DELAD-START⟧`/`⟦DELAD-SLUT⟧`, körs vid generering och
+      hämtas därifrån av `test/teams.mjs` och `test/examples.mjs` — en kopia
+      i testet kunde blivit mildare än den som faktiskt kör. Taket är mätt:
+      108 agentpar i `portal/teams/` ger max 0,42, 37 par i `examples/` max
+      0,38. Höj det inte för att ett bygge föll; mät om fördelningen först.
 - [ ] VD-agenten i ett solo-projekt har ett operativt jobb
 - [ ] VD-assistenten vägrar kalla till möte när en enskild agent räcker
 - [ ] Varje möte landar i sitt definierade output-format

@@ -101,3 +101,44 @@ test("namnen i startsidans personalliggare kommer ur en riktig körning", () => 
   assert.ok(/class="st off">Avslag/.test(sida),
     "personalliggaren visar inga avslag — regeln om att en agent ska få nej syns då inte");
 });
+
+// ── KA4: facit ska inte hålla lägre ribba än det som genereras ─────────────
+//
+// Testet ovan räknar att varje agent HAR ett Perspektiv. Det säger inget om
+// att de skiljer sig — och `examples/` är det som `docs/` och startsidan pekar
+// på som bevis för att tre företag ger tre olika team. Ett facit där två
+// agenter resonerar från samma blick lär ut att ribban är låg.
+//
+// Måttet är builderns eget, hämtat ur källan mellan markörerna, av samma skäl
+// som i test/teams.mjs: en kopia här kunde blivit mildare än den som körs vid
+// generering.
+const MÅTT = (() => {
+  const src = readFileSync("builder/builder.js", "utf8");
+  const i = src.indexOf("⟦DELAD-START⟧");
+  const j = src.indexOf("⟦DELAD-SLUT⟧");
+  assert.ok(i >= 0 && j > i, "hittade inte det delade perspektiv-blocket i builder/builder.js");
+  const kropp = src.slice(src.indexOf("\n", i) + 1, src.lastIndexOf("\n", j) + 1);
+  return new Function(kropp + "; return { perspektivLikhet, PERSPEKTIV_TAK };")();
+})();
+
+// Exemplen är markdown, inte teamkonfigar: perspektivet står som en
+// `**Perspektiv:**`-rad följd av eventuella fortsättningsrader.
+function perspektivenI(text) {
+  return [...text.matchAll(/^\*\*Perspektiv:\*\*\s*(.+(?:\n(?!\*\*|#|$).*)*)/gm)]
+    .map((m) => m[1].trim());
+}
+
+for (const fil of filer) {
+  test(`${fil} har agenter med olika perspektiv`, () => {
+    const p = perspektivenI(readFileSync(fil, "utf8"));
+    assert.ok(p.length >= 2, `hittade ${p.length} perspektiv — regexen eller filen har ändrats`);
+    for (let i = 0; i < p.length; i++) {
+      for (let j = i + 1; j < p.length; j++) {
+        const l = MÅTT.perspektivLikhet(p[i], p[j]);
+        assert.ok(l < MÅTT.PERSPEKTIV_TAK,
+          `perspektiv ${i + 1} och ${j + 1} överlappar ${Math.round(l * 100)} % — ` +
+          `då är den ena agenten utbytbar mot den andra, i just den fil som ska bevisa motsatsen`);
+      }
+    }
+  });
+}

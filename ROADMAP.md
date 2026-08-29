@@ -29,7 +29,6 @@ Från genomgången 2026-08-17 · sju parallella linser + egen verifiering.
 
 ## Framåt — utveckling
 
-- [ ] **KA4** "Två agenter delar inte perspektiv" kontrolleras bara som närvaro. Både `kontrolleraSystemprompter()` och golvet i `test/teams.mjs` kollar att rubriken `DITT PERSPEKTIV` finns — aldrig att innehållet under den skiljer sig mellan agenterna. Kravet är formulerat som mätbart men mäts inte · `builder/builder.js:993-1020`, `test/teams.mjs:100-113`, `test/examples.mjs:52-61` · `mätt` · ~3–4 h
 - [ ] **P1** Ingen mätning av var köpresan läcker. Kontrollerat igen 2026-08-17: de enda träffarna på `gtag`/`analytics` i repot är en **CSS-klass** som heter `.gtag`. Cloudflare Web Analytics är gratis, cookiefri och kräver ingen CSP-ändring · `index.html` (inga taggar) · `mätt` · ~20 min–1 h
 - [ ] **P6** Auto-körda rutiners "ligger klar"-bevis överlever inte en omladdning · `portal/app.js:2242` · `läst i koden` · ~2 h
 - [ ] **OM1** Hållningen till Claude Cowork och ChatGPT Agents är inte bestämd. Cowork (april 2026) ger filsystemsåtkomst, schemalagda uppgifter och bakgrundsarbete — vår mappfunktion plus våra rutiner — gratis på varje betald Claude-plan, och Small Business-bundlen (maj) lägger integrationer ovanpå. Antingen är svaret "vi bygger teamet, du kör det var du vill" — och då är **BF2** (gratisbygget delar ut systemprompterna) en *funktion* som ska säljas, inte en läcka — eller så ska läckan stängas. Det är ett och samma beslut, och Coworks existens gör att det ska fattas nu · `docs/omvarldsresearch-2026-08-18.md` · `mätt` · beslut, inte kod
@@ -64,8 +63,8 @@ Rättade direkt i filerna (rent git-träd). Raderna står i terminalsvaret.
 
 ## Byggt 2026-08-29 (inte driftsatt)
 
-**K4** löst. Ny fil: `functions/api/_build.js`. Testsviten **189 gröna**,
-`check:dist` ren. Inga migrationer, inga nya secrets, ingen ny rutt.
+**K4** och **KA4** lösta. Ny fil: `functions/api/_build.js`. Testsviten **214
+gröna**, `check:dist` ren. Inga migrationer, inga nya secrets, ingen ny rutt.
 
 Verifierat i emulatorn (`wrangler pages dev dist`), inte antaget: anrop utan
 `step` ger **400 `build_step_required`** · okänt stegnamn likaså · tre
@@ -82,6 +81,11 @@ Båda vägarna fungerar och koden faller tillbaka automatiskt; en `console.warn`
 (en gång per isolat) säger ifrån i `wrangler pages deployment tail` om
 bindningen saknas även i drift. **Ingen riktig körning i Buildern har gjorts**
 — den kräver en giltig nyckel, och den lokala är död.
+
+**KA4 är mätt, inte bara byggt:** fördelningen över 108 agentpar i
+`portal/teams/` och 37 par i `examples/` togs fram innan taket sattes, och
+båda grindarna mutationsprovades (måttet nollställt → rött; anropet
+bortkopplat → rött).
 
 ## Driftsatt 2026-08-18
 
@@ -130,6 +134,45 @@ kedja hela vägen fram, `/avregistrera` 400 på trasig token och 200 på okänd,
 i dag är påslaget.
 
 ## Klart
+
+- [x] **KA4** Perspektiven mäts, inte bara räknas — löst 2026-08-29.
+
+  Kvalitetschecklistan säger "två agenter i samma team delar inte perspektiv".
+  Kontrollen var närvaro: `kontrolleraSystemprompter()` och golvet i
+  `test/teams.mjs` letade efter rubriken `DITT PERSPEKTIV`. Två agenter kunde
+  alltså bära exakt samma text under rubriken och passera överallt. Det är den
+  enda raden i checklistan som direkt bär projektets existensberättigande —
+  samma input får inte ge samma output — och en kontroll som bara räknar
+  rubriker är sämre än ingen, för den ser ut som ett skyddsnät.
+
+  Måttet är en **överlappskoefficient på innehållsord**: andelen av det mindre
+  ordförrådet som också finns i det andra perspektivet. Jaccard valdes bort —
+  den döljer en kort dubblett bakom en lång text. Stoppord och ord under fyra
+  tecken räknas inte, annars lyfter "och att för av" varje par mot varandra.
+
+  **Taket 0,70 är mätt, inte gissat.** 108 agentpar i `portal/teams/`: median
+  0,12 · p90 0,23 · p99 0,36 · max 0,42 (`konsult.js`, förslag~erfarenhetsbank).
+  37 par i `examples/`: median 0,14 · max 0,38. Dessutom ett golv på 60 tecken
+  under rubriken — kortaste riktiga sektionen i repot är 148, och utan golvet
+  hade en tom rubrik jämförts med en annan tom rubrik och bedömts som "olika".
+
+  Måttet ligger i `builder/builder.js` mellan markörerna `⟦DELAD-START⟧` och
+  `⟦DELAD-SLUT⟧`, körs vid generering (`kontrolleraSystemprompter` fäller
+  körningen), och **hämtas ur källan** av `test/teams.mjs` och
+  `test/examples.mjs`. Testerna kör alltså samma kod som kunden möter; en kopia
+  i testet kunde blivit mildare än den som faktiskt kör — samma fälla som
+  prompten och schemat gick i två gånger.
+
+  Fyra grindar, inte en: att måttet känner igen en dubblett (identisk text ger
+  1,0; ett omskrivet ord räcker inte för att slippa undan), att det släpper
+  igenom två riktiga olika perspektiv, att en tom rubrik fälls, och att
+  `kontrolleraSystemprompter` faktiskt **anropar** måttet. Dessutom ett test som
+  fäller om något par i repot passerar 0,55 — under taket, men långt över allt
+  som finns i dag, så en glidning märks medan den som lade till teamet minns
+  varför.
+
+  Mutationsprovat: `perspektivLikhet` som alltid svarar 0 fäller ett test, och
+  ett bortkopplat anrop fäller ett annat.
 
 - [x] **K4** Den fria rutten är ett bygge, inte en chatt — löst 2026-08-29.
 
