@@ -69,43 +69,46 @@ Rättade direkt i filerna (rent git-träd). Raderna står i terminalsvaret.
 - `docs/roadmap.md` pass 5 — "sw.js står på v22" (den står på v26) och "fyra commits" (uppmätt: 18 av 37).
 - `docs/roadmap.md` pass 6 — 429-fyndet är redan åtgärdat, och radnumren för nyckeltexten i `portal/app.js` pekar på annan kod i dag.
 
-## Byggt 2026-08-29 (inte driftsatt)
+## Driftsatt 2026-08-29
 
-**K4**, **KA4**, **P6**, **P4** och **OM5** lösta; **P1**:s kodhalva gjord. Nya
-filer: `functions/api/_build.js`, `test/csp.mjs`, `test/portal.mjs`. Testsviten
-**274 gröna**, `check:dist` ren. Inga migrationer, inga nya secrets, ingen ny
-rutt.
+Pages `6cb1cda5`, taggen `deploy-2026-08-29`. Fem commits: `4fbaaae` (K4),
+`158ba3c` (KA4), `95853bd` (P6 + P1:s kodhalva), `c249d9d` (P4), `2b22452`
+(OM5). Testsviten **274 gröna**, `check:dist` ren. **Inga migrationer, inga nya
+secrets, ingen ny rutt** — därför inget att rulla tillbaka i schemat om koden
+måste backas.
 
-Verifierat i emulatorn (`wrangler pages dev dist`), inte antaget: anrop utan
-`step` ger **400 `build_step_required`** · okänt stegnamn likaså · tre
-meddelanden med historik likaså · `step: "scale"` går hela vägen till uppström
-(502 därifrån, för den lokala `OPENROUTER_KEY` i `.dev.vars` är ogiltig —
-"Missing Authentication header") vilket bevisar att servern läste
-`prompts/shared/scale.md` · `/prompts/shared/scale.md` serveras med 200 och
-2 858 byte.
+Verifierat i drift, inte antaget:
 
-**Kvar som `läst i koden`, inte `mätt`:** att `env.ASSETS` är den väg som
-används i drift. `wrangler pages dev` listar inte ASSETS bland bindningarna, så
-lokalt kan reservvägen (självhämtning mot egen adress) ha burit i stället.
-Båda vägarna fungerar och koden faller tillbaka automatiskt; en `console.warn`
-(en gång per isolat) säger ifrån i `wrangler pages deployment tail` om
-bindningen saknas även i drift. **Ingen riktig körning i Buildern har gjorts**
-— den kräver en giltig nyckel, och den lokala är död.
+- **Det riskabla först.** `POST /api/ai` med `step: "scale"` och ett riktigt
+  intake gick hela vägen: prompten lästes **serversidan** och svaret strömmade
+  tillbaka från Cerebras. Det var K4:s enda öppna fråga — om `env.ASSETS` (eller
+  reservvägen) bär i produktion — och den är nu besvarad med en körning, inte
+  med en läsning.
+- Fria rutten **utan** `step` → **400 `build_step_required`** med den svenska
+  texten. Med historik (tre meddelanden) → **400**. Den gamla vägen tillbaka för
+  uppsagda är alltså stängd skarpt.
+- Portalanrop utan inloggning → **401 `login_required`**. `GET /api/ai` → 405.
+- `/api/health` **200 friskt**, alla tre kontrollerna sanna.
+- CSP:n i drift bär `script-src 'self' 'unsafe-inline'
+  https://static.cloudflareinsights.com` — beaconen är alltså inte längre
+  utestängd när knappen slås på.
+- Portalens `app.js?v=37ce5315` innehåller alla tre nya blocken
+  (`AUTO-START`, `EXT-START`, `TID-START`), `applyTeamExt` och `boot: true`.
+  Builderns `builder.js` har **noll** `fetchPrompt`-anrop kvar (bara kommentaren
+  som förklarar varför) och inget `TEAM_SCHEMA` — de bor på servern nu.
+- Sidorna svarar: hub, builder, portal, galleri, `villkor`, `integritet`, och
+  `prompts/shared/scale.md` (2 858 byte — prompterna måste ligga kvar publika
+  för att `env.ASSETS` ska nå dem, se **BF3**). Okänd adress → **404**.
 
-**KA4 är mätt, inte bara byggt:** fördelningen över 108 agentpar i
-`portal/teams/` och 37 par i `examples/` togs fram innan taket sattes, och
-båda grindarna mutationsprovades (måttet nollställt → rött; anropet
-bortkopplat → rött).
+**Kvar som `läst i koden`, inte `mätt`:** allt kunden ser med ögonen. P6:s
+puls-kort, P4:s ändra/avsluta-dialog och OM5:s timsiffra är verifierade med 48
+enhetstester som kör den riktiga koden ur källan — men ingen har öppnat
+portalen i en webbläsare på fem pass. Det kräver en giltig `OPENROUTER_KEY` i
+`.dev.vars`; den lokala svarar "Missing Authentication header".
 
-**Ingenting i portalen är kört i webbläsare** (P6, P4, OM5). Verifieringen är
-statisk plus 48 enhetstester som kör blocken ur `portal/app.js` — för P4
-bland annat mot varje riktig teamkonfig, med varje agent avslutad en i
-taget. Fem pass i rad har nu lagt kod där utan att någon sett den rita upp
-sig. Blockeraren är konkret: `OPENROUTER_KEY` i `.dev.vars` svarar "Missing
-Authentication header", så en riktig körning går inte att göra lokalt.
-
-**P1:s CSP-rad är mutationsprovad** (borttagen → rött), men beaconen är inte
-påslagen, så att raden verkligen räcker är `läst i koden` — inte `mätt`.
+**Två steg som är dina, och som ingen kod kan göra:** slå på Cloudflare Web
+Analytics med **automatic setup** (P1 — den manuella snutten blockeras av
+`connect-src`), och peka en uptime-vakt mot `/api/health`.
 
 ## Driftsatt 2026-08-18
 

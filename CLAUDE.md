@@ -760,7 +760,7 @@ ny kund dyker upp i både galleri och portal automatiskt.
 > `functions/api/subscription/withdraw.js`. Verifieringen i drift står i
 > `ROADMAP.md` under *Driftsatt 2026-08-18*.
 >
-> **Passet 2026-08-29 är byggt** (inte driftsatt när detta skrivs). Två punkter:
+> **Passet 2026-08-29 är driftsatt** (Pages `6cb1cda5`, taggen `deploy-2026-08-29`). Fem punkter:
 >
 > **K4** — den fria rutten tar ett STEG i stället för en systemprompt, och exakt
 > ett användarmeddelande. `functions/api/_build.js` är ny och äger byggets
@@ -790,13 +790,16 @@ ny kund dyker upp i både galleri och portal automatiskt.
 > `timeEstimate` på avbockade rutiner räknas; inget uppskattas per svar.
 >
 > Testsviten är **274 gröna**. Inga nya migrationer, inga nya secrets, ingen ny
-> rutt. Läget står i `ROADMAP.md` under *Byggt 2026-08-29*.
+> rutt. Verifieringen i drift står i `ROADMAP.md` under *Driftsatt 2026-08-29* —
+> viktigast: ett riktigt byggsteg kördes skarpt, så K4:s enda öppna fråga (om
+> `env.ASSETS` bär i produktion) är besvarad med en körning.
 >
-> **Ingenting i portalen är kört i webbläsare den här dagen** (P6, P4). Fyra
-> pass i rad har lagt kod i `portal/app.js` utan att någon sett den rita upp
-> sig. Nästa pass bör börja med att faktiskt öppna portalen — och det kräver en
-> giltig `OPENROUTER_KEY` i `.dev.vars`; den lokala svarar "Missing
-> Authentication header".
+> **Ingenting i portalen är kört i webbläsare** (P6, P4, OM5). Fem pass i rad
+> har lagt kod i `portal/app.js` utan att någon sett den rita upp sig — den är
+> nu i drift, verifierad med 48 enhetstester som kör den riktiga koden ur
+> källan, men inte med ögon. Nästa pass bör börja med att faktiskt öppna
+> portalen, och det kräver en giltig `OPENROUTER_KEY` i `.dev.vars`; den lokala
+> svarar "Missing Authentication header".
 >
 > **Nästa pass enda uppgift:** öppna portalen i en webbläsare och gå igenom
 > P6, P4 och OM5 för hand. Det kräver en giltig `OPENROUTER_KEY` i `.dev.vars` —
