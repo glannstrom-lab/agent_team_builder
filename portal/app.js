@@ -2301,12 +2301,105 @@ function routineMarkDone(label) {
   if (r.done.some((d) => (d.label || d) === label)) return;
   r.done.push({ label, at: Date.now() });
   routSave(r);
+  tidUppdateraVeckan(); // OM5: veckans sparade tid räknas om, inte upp
   touchStreak();
   syncStatusToFolder(); // dela avbockningen med kollegor via mappen (best effort)
   // Uppdatera sidopanelens rutinknapp utan full omritning.
   document.querySelectorAll(".routine-item").forEach((n) => {
     if (n.dataset.label === label) { n.classList.add("done"); const dEl = n.querySelector(".routine-day"); if (dEl) dEl.textContent = "klar ✓"; }
   });
+}
+
+// ---------- sparad tid (OM5) ----------
+//
+// Varje konkurrent säljer på sparad tid. Vi räknade den bara på ett ställe —
+// längst ner i "📈 Veckans arbete", en panel kunden måste öppna själv — och
+// aldrig där **köparen** ser den. Halvårssimuleringen är tydlig med varför det
+// spelar roll: värdet bevisas hos utföraren, men beslutet att fortsätta betala
+// fattas av någon annan, och den personen loggar sällan in.
+//
+// VAD SOM RÄKNAS, OCH VARFÖR INTE MER ÄN SÅ:
+//
+// Bara `timeEstimate` på rutiner kunden FAKTISKT bockat av. Inget annat.
+// `research.md` beställer den siffran som "minuter momentet brukar ta manuellt
+// ENLIGT RESEARCHEN (null om researchen inte anger tid — hitta aldrig på)", så
+// den är hämtad ur kundens egen beskrivning av sin vecka. Att lägga på en
+// schablon per svar eller per möte hade varit att uppfinna exakt den siffra
+// hela punkten går ut på att kunna stå för — och den som säljer på en påhittad
+// timme får frågan en gång, och slutar betala när svaret inte håller.
+//
+// Rutiner som saknar `timeEstimate` räknas därför inte, och antalet syns i
+// gränssnittet. Det är ärligare än att gissa, och det pekar dessutom på var
+// siffran kan bli bättre.
+// ⟦TID-START⟧
+const TID_MAX_VECKOR = 26; // ett halvår räcker för kvartalsvyn; resten är barlast
+
+// Ren räkning: summan av timeEstimate för de avbockade rutinerna, plus hur
+// många av dem som saknade en uppskattning.
+function sparadTid(routines, klara) {
+  const lista = Array.isArray(routines) ? routines : [];
+  let minuter = 0, räknade = 0, oräknade = 0;
+  (Array.isArray(klara) ? klara : []).forEach((k) => {
+    const label = (k && k.label) || k;
+    if (!label) return;
+    const rt = lista.find((r) => r && r.label === label);
+    // En avbockad rutin som inte längre finns i teamet (avslutad agent, ändrad
+    // konfig) räknas inte — vi vet inte vad den var värd.
+    if (!rt) { oräknade++; return; }
+    const m = Number(rt.timeEstimate);
+    if (Number.isFinite(m) && m > 0) { minuter += m; räknade++; }
+    else oräknade++;
+  });
+  return { minuter, räknade, oräknade };
+}
+
+// En halvtimmes upplösning uppåt från 90 minuter. "≈ 2,5 timmar" är ett
+// påstående man kan stå för; "2 h 37 min" låtsas om en precision som inte
+// finns i underlaget.
+function tidFormat(minuter) {
+  const m = Math.round(Number(minuter) || 0);
+  if (m <= 0) return "";
+  if (m < 90) return `≈ ${m} minuter`;
+  return `≈ ${(Math.round(m / 30) / 2).toString().replace(".", ",")} timmar`;
+}
+
+// ── veckoliggaren ─────────────────────────────────────────────────────────
+// `routLoad()` nollställs varje ISO-vecka, så utan en egen liggare kan
+// kvartalsvyn bara visa innevarande vecka — alltså just den siffra som är för
+// liten för att övertyga någon om ett år till.
+function tidLedger() {
+  if (state.demo || !state.slug) return [];
+  try {
+    const v = JSON.parse(localStorage.getItem("atb_sparad_" + state.slug) || "null");
+    return Array.isArray(v) ? v.filter((x) => x && x.v && Number.isFinite(+x.m)) : [];
+  } catch (_) { return []; }
+}
+
+// Sätter veckans summa i stället för att lägga till den. Skillnaden är hela
+// robustheten: körs den två gånger blir svaret detsamma, och bockar kunden av
+// ytterligare en rutin räknas veckan om från grunden i stället för att drifta.
+function tidBokför(minuter) {
+  if (state.demo || !state.slug) return;
+  const v = isoWeek();
+  const rader = tidLedger().filter((x) => x.v !== v);
+  if (minuter > 0) rader.push({ v, m: Math.round(minuter), at: Date.now() });
+  rader.sort((a, b) => (a.at || 0) - (b.at || 0));
+  try {
+    localStorage.setItem("atb_sparad_" + state.slug, JSON.stringify(rader.slice(-TID_MAX_VECKOR)));
+  } catch (_) { /* full storage — siffran är trevlig, inte kritisk */ }
+}
+
+function tidSedan(frånMs) {
+  return tidLedger().reduce((n, x) => (x.at >= frånMs ? n + (+x.m || 0) : n), 0);
+}
+// ⟦TID-SLUT⟧
+
+// Räknar om innevarande vecka ur rutinloggen och skriver den till liggaren.
+// Anropas när en rutin bockas av — inte på en timer, för då hade siffran
+// kunnat växa i en flik ingen tittar på.
+function tidUppdateraVeckan() {
+  if (state.demo || !team) return;
+  tidBokför(sparadTid(team.routines, routLoad().done).minuter);
 }
 
 // ---------- vecko-streak (med semester-freeze, en per kvartal) ----------
@@ -2611,6 +2704,13 @@ function renderPulse() {
     const a = agentById(d.agentId);
     cards.push({ icon: "✅", label: `${d.label} ligger klar hos ${a ? a.name : "teamet"} — läs`, act: () => selectAgent(d.agentId) });
   });
+  // OM5: siffran ska mötas, inte letas upp. Den låg bara längst ner i en panel
+  // kunden måste öppna själv — alltså osynlig för den som betalar.
+  const tidVeckan = sparadTid(team.routines, routLoad().done).minuter;
+  if (tidVeckan) {
+    cards.push({ icon: "⏱", label: `Teamet har gjort ${tidFormat(tidVeckan)} manuellt arbete i veckan — se vad`,
+      act: openWeekWork });
+  }
   if (pulseNewWeek) cards.push({ icon: "☀️", label: "Ny vecka — få \"Veckan som gick\" + förslag på veckans fokus", act: () => { pulseNewWeek = false; weekReview(); } });
   (team.routines || []).forEach((rt) => {
     if (rt.day === todayDayNo() && !routineDone(rt.label)) cards.push({ icon: "📌", label: `Idag: ${rt.label}`, act: () => runRoutine(rt) });
@@ -2712,12 +2812,17 @@ function weekReview() {
     if (q) perAgent.push(`- ${a.name}: ${q} frågor/uppgifter`);
   });
   const meetings = Object.values(state.history).flat().filter((m) => m && m.at && m.at >= since && m.role === "user" && /^🤝 Möte/.test(m.content || "")).length;
-  const doneR = routLoad().done.map((d) => d.label || d);
+  const klaraR = routLoad().done;
+  const doneR = klaraR.map((d) => d.label || d);
+  const veckansTid = tidFormat(sparadTid(team.routines, klaraR).minuter);
   const facts = memoryFactCount();
   const meta = [
     perAgent.length ? `Aktivitet per agent senaste 7 dagarna:\n${perAgent.join("\n")}` : "Ingen loggad aktivitet senaste 7 dagarna.",
     meetings ? `Antal möten: ${meetings}` : null,
     doneR.length ? `Avklarade rutiner denna vecka: ${doneR.join(", ")}` : null,
+    // Siffran med i underlaget, så att återblicken kan nämna den. Regeln om
+    // att inte gissa gäller: står det inget här ska agenten inte hitta på en.
+    veckansTid ? `Avklarade rutiner motsvarar ${veckansTid} manuellt arbete (summa av rutinernas tidsuppskattningar — räkna inte om den).` : null,
     facts ? `Teamets delade minne: ${facts} rader.` : null,
   ].filter(Boolean).join("\n");
   selectAgent(team.entryAgent);
@@ -3746,6 +3851,11 @@ function openQuarter() {
     });
   });
   const top = Object.entries(perAgent).sort((x, y) => y[1] - x[1])[0];
+  // OM5. Ur veckoliggaren, inte ur rutinloggen: den senare nollställs varje
+  // vecka, så kvartalet hade annars kunnat visa högst en veckas siffra — alltså
+  // just den som är för liten för att övertyga någon om ett år till.
+  const kvartalMin = tidSedan(qStart);
+  const kvartalTid = tidFormat(kvartalMin);
   const facts = memoryFactCount();
   const streak = streakCount();
   const box = openOverlay(`🏆 Kvartalet med teamet — ${quarterOf(Date.now())}`);
@@ -3755,6 +3865,12 @@ function openQuarter() {
   grid.appendChild(stat(questions, "frågor & uppgifter"));
   grid.appendChild(stat(answers, "leveranser från teamet"));
   if (meetings) grid.appendChild(stat(meetings, "möten"));
+  if (kvartalTid) {
+    // Talet i .q-num och enheten i etiketten, som de andra rutorna. "2,5 timmar"
+    // i 28 px fetstil spränger en 140 px kolumn.
+    const [tal, ...enhet] = kvartalTid.replace("≈ ", "").split(" ");
+    grid.appendChild(stat(tal, enhet.join(" ") + " manuellt arbete teamet gjort"));
+  }
   if (facts) grid.appendChild(stat(facts, "saker teamet lärt sig om er"));
   if (streak >= 2) grid.appendChild(stat(streak, "veckor i rad"));
   box.appendChild(grid);
@@ -3763,6 +3879,9 @@ function openQuarter() {
   copyBtn.onclick = async () => {
     const parts = [`Kvartalet med vårt AI-team (${quarterOf(Date.now())}):`, `• ${questions} frågor, ${answers} leveranser`];
     if (meetings) parts.push(`• ${meetings} möten där agenterna gav oberoende perspektiv`);
+    // Med i den delbara texten: det är den här raden köparen läser, och hela
+    // skälet till att siffran räknas.
+    if (kvartalTid) parts.push(`• Avklarade rutiner motsvarar ${kvartalTid} manuellt arbete`);
     if (facts) parts.push(`• Teamet kan nu ${facts} saker om vår verksamhet`);
     if (top) parts.push(`• Flitigast: ${top[0]}`);
     parts.push("Byggt med mittaiteam.se — ett AI-team skräddarsytt från vår faktiska vecka.");
@@ -3771,7 +3890,11 @@ function openQuarter() {
     setTimeout(() => (copyBtn.textContent = "Kopiera som text att dela"), 2000);
   };
   box.appendChild(copyBtn);
-  box.appendChild(el("p", "ovl-note", "Siffrorna bygger på det som finns sparat lokalt (historiken har ett tak per agent) — se dem som ett golv, inte facit."));
+  box.appendChild(el("p", "ovl-note",
+    "Siffrorna bygger på det som finns sparat lokalt (historiken har ett tak per agent) — se dem som ett golv, inte facit." +
+    (kvartalTid
+      ? " Tidssiffran är summan av tidsuppskattningarna på de rutiner ni faktiskt bockat av; rutiner utan uppskattning räknas inte, och inget uppskattas per svar eller möte."
+      : "")));
 }
 
 // ---------- veckans arbete (tidslinje) ----------
@@ -3792,18 +3915,24 @@ function openWeekWork() {
       else if (m.role === "assistant") { if (m.auto) d.auto.push(a.name); else d.agents[a.name] = (d.agents[a.name] || 0) + 1; }
     });
   });
-  let savedMin = 0;
-  routLoad().done.forEach((d) => {
-    const label = d.label || d;
-    const rt = (team.routines || []).find((r) => r.label === label);
-    if (rt && rt.timeEstimate) savedMin += rt.timeEstimate;
+  const klara = routLoad().done;
+  const tid = sparadTid(team.routines, klara);
+  klara.forEach((d) => {
     const i = d.at ? idx(d.at) : -1;
-    if (i >= 0 && i <= 6) dayEvents[i].routines.push(label);
+    if (i >= 0 && i <= 6) dayEvents[i].routines.push(d.label || d);
   });
   box.appendChild(el("p", "ovl-lead", "Det du och teamet gjort den här veckan — ur portalens egen logg, inget hämtas någonstans ifrån."));
-  if (savedMin) {
-    const h = savedMin >= 90 ? `≈ ${(Math.round(savedMin / 30) / 2).toString().replace(".", ",")} timmar` : `≈ ${savedMin} minuter`;
-    box.appendChild(el("div", "week-saved", `⏱ Avklarade rutiner motsvarar ${h} manuellt arbete`));
+  if (tid.minuter) {
+    box.appendChild(el("div", "week-saved",
+      `⏱ Avklarade rutiner motsvarar ${tidFormat(tid.minuter)} manuellt arbete`));
+  }
+  // Vad siffran INTE innehåller, sagt rakt ut. En avbockad rutin utan
+  // tidsuppskattning räknas inte, och att tiga om det vore att låta siffran se
+  // ut som hela sanningen. Det pekar dessutom på var den kan bli bättre.
+  if (tid.oräknade) {
+    box.appendChild(el("p", "ovl-note",
+      `${tid.oräknade} avklarad${tid.oräknade === 1 ? " rutin" : "a rutiner"} saknar tidsuppskattning och räknas inte in — ` +
+      `teamet fick ingen siffra ur researchen där, och vi gissar inte.`));
   }
   const DAY_FULL = ["Måndag", "Tisdag", "Onsdag", "Torsdag", "Fredag", "Lördag", "Söndag"];
   const todayI = Math.min(idx(Date.now()), 6);

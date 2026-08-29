@@ -213,3 +213,87 @@ test("urvalsfrågan filtrerar på veckodag, aktiv OCH senast skickad", async () 
     "utan det här villkoret skickar en cron som fyrar två gånger två brev");
   assert.match(fråga, /JOIN teams/, "planen måste med, annars går brev till spärrade kunder");
 });
+
+// ── OM5: timsiffran i brevet, och gränsen för vad den får påstå ────────────
+//
+// Brevet är den enda ytan som når KÖPAREN utan att hon loggar in, och enligt
+// halvårssimuleringen är det där beslutet att fortsätta betala fattas. Därför
+// hör siffran hemma här.
+//
+// Men rutten har `teams.config` och ingenting annat: historiken, avbockningarna
+// och minnet bor i kundens webbläsare. Brevet kan alltså aldrig påstå att något
+// ÄR sparat — bara vad rutinerna är värda om de körs. Testerna nedan vaktar
+// just den skillnaden; det är den som avgör om siffran är ett argument eller
+// en lögn.
+
+// Som `kör`, men fångar det som skickas uppströms.
+async function körOchFånga(db, e, { tid = MÅNDAG_08 } = {}) {
+  const origFetch = globalThis.fetch;
+  const origNow = Date.now;
+  let skickat = null;
+  Date.now = () => tid;
+  globalThis.fetch = async (url, init) => {
+    skickat = JSON.parse(init.body);
+    return new Response(JSON.stringify({
+      choices: [{ message: { content: "Hej!" } }],
+      usage: { prompt_tokens: 300, completion_tokens: 120 },
+    }), { status: 200, headers: { "content-type": "application/json" } });
+  };
+  try {
+    await onRequestPost({ env: e, request: req() });
+    return skickat;
+  } finally {
+    globalThis.fetch = origFetch;
+    Date.now = origNow;
+  }
+}
+
+const konfigMed = (routines) => JSON.stringify({
+  company: "Lerverk",
+  entryAgent: "veckopiloten",
+  agents: [{ id: "veckopiloten", name: "Veckopiloten", job: "Håller ihop veckan", system: "Du är Veckopiloten." }],
+  routines,
+});
+
+const prompt = (skickat) => (skickat.messages || []).map((m) => m.content).join("\n");
+
+test("rutinernas timsiffra kommer med i brevet", async () => {
+  const db = dbStub({ rader: [rad({ config: konfigMed([
+    { label: "Nyhetsbrev", day: "fre", timeEstimate: 90 },
+    { label: "Fakturajakt", timeEstimate: 60 },
+  ]) })] });
+  const p = prompt(await körOchFånga(db, env(db)));
+  assert.match(p, /TIDSSIFFRAN/, "siffran saknas — då säljer brevet inte på det konkurrenterna säljer på");
+  assert.match(p, /2,5 timmar/, "150 minuter ska bli 2,5 timmar");
+});
+
+test("brevet får inte påstå att tiden redan är sparad", async () => {
+  // Servern vet inte om rutinerna körts. Utan den instruktionen skriver
+  // modellen gärna "den här veckan sparade ni 2,5 timmar" till en kund som
+  // inte loggat in på en månad — och då är siffran en lögn, inte ett argument.
+  const db = dbStub({ rader: [rad({ config: konfigMed([{ label: "Nyhetsbrev", timeEstimate: 150 }]) })] });
+  const p = prompt(await körOchFånga(db, env(db)));
+  assert.match(p, /aldrig som något som redan/);
+  assert.match(p, /Du vet inte om rutinerna körts/);
+});
+
+test("utan tidsuppskattningar står ingen siffra i brevet", async () => {
+  // KONFIG:s rutin saknar timeEstimate — precis som en rutin gör när
+  // researchen inte angav någon tid. Ett brev som hittar på en timme är värre
+  // än ett utan.
+  const db = dbStub();
+  const p = prompt(await körOchFånga(db, env(db)));
+  assert.ok(!/TIDSSIFFRAN/.test(p), "en siffra dök upp trots att underlaget saknar tider");
+});
+
+test("en siffra under en halvtimme är inget argument och utelämnas", async () => {
+  const db = dbStub({ rader: [rad({ config: konfigMed([{ label: "Snabbkoll", timeEstimate: 20 }]) })] });
+  const p = prompt(await körOchFånga(db, env(db)));
+  assert.ok(!/TIDSSIFFRAN/.test(p));
+});
+
+test("rutinlistan bär sina minuter, så att modellen kan peka på rätt rutin", async () => {
+  const db = dbStub({ rader: [rad({ config: konfigMed([{ label: "Nyhetsbrev", day: "fre", timeEstimate: 90 }]) })] });
+  const p = prompt(await körOchFånga(db, env(db)));
+  assert.match(p, /Nyhetsbrev.*90 min manuellt/);
+});

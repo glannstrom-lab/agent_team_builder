@@ -64,6 +64,31 @@ function sameSecret(a, b) {
   return d === 0;
 }
 
+// ── veckans timsiffra i brevet (OM5) ──────────────────────────────────────
+//
+// Konkurrenterna säljer på sparad tid. Brevet är den enda ytan som når KÖPAREN
+// utan att hon loggar in, och enligt halvårssimuleringen är det där beslutet
+// att fortsätta betala fattas — så det är här siffran gör mest nytta.
+//
+// Men servern vet ingenting om vad kunden gjort. Rutten har `teams.config` och
+// inget annat: historiken, avbockningarna och minnet bor i kundens webbläsare
+// och i hennes egen mapp. Brevet kan alltså inte påstå att något ÄR sparat.
+//
+// Det den kan säga är vad rutinerna är värda om de körs — en egenskap hos
+// teamets konstruktion, hämtad ur `timeEstimate`, som i sin tur kommer ur
+// kundens egen beskrivning av sin vecka (`research.md`: "null om researchen
+// inte anger tid — hitta aldrig på"). Saknas siffror helt står det ingenting,
+// vilket är rätt: ett veckobrev som hittar på en timme är värre än ett utan.
+function rutinTimmar(routines) {
+  const minuter = (Array.isArray(routines) ? routines : []).reduce((n, r) => {
+    const m = Number(r && r.timeEstimate);
+    return n + (Number.isFinite(m) && m > 0 ? m : 0);
+  }, 0);
+  if (minuter < 30) return null; // för litet för att vara ett argument
+  if (minuter < 90) return `${Math.round(minuter)} minuter`;
+  return `${(Math.round(minuter / 30) / 2).toString().replace(".", ",")} timmar`;
+}
+
 // Prompten. Brevet ska vara kort och peka på veckan — inte en rapport, och
 // framför allt inte en påhittad lägesbeskrivning. Modellen vet ingenting om vad
 // kunden gjort sedan sist, och får därför uttryckligen inte låtsas att den gör.
@@ -74,8 +99,9 @@ function digestPrompt(cfg) {
     .map((a) => `- ${a.name}: ${a.job || a.role || a.tagline || ""}`.trim())
     .join("\n");
   const rutiner = (cfg.routines || [])
-    .map((r) => `- ${r.label}${r.day ? ` (${r.day})` : ""}`)
+    .map((r) => `- ${r.label}${r.day ? ` (${r.day})` : ""}${r.timeEstimate ? ` — ca ${r.timeEstimate} min manuellt` : ""}`)
     .join("\n");
+  const timmar = rutinTimmar(cfg.routines);
 
   const system = [
     entry.system || `Du är ${entry.name || "VD-assistent"} i AI-teamet hos ${namn}.`,
@@ -89,6 +115,14 @@ function digestPrompt(cfg) {
     "1. En kort hälsning.",
     "2. Tre saker som är värda att lägga veckan på, var och en med en rad om varför och vilken agent i teamet som hjälper till.",
     "3. En avslutande rad: den enskilt viktigaste saken att börja med.",
+    "",
+    ...(timmar ? [
+      "",
+      `TIDSSIFFRAN: teamets stående rutiner motsvarar ungefär ${timmar} manuellt arbete i veckan.`,
+      "Nämn den EN gång, som vad som ligger och väntar — aldrig som något som redan",
+      "är gjort eller sparat. Du vet inte om rutinerna körts. Skriv den som",
+      `"rutinerna vi har liggande motsvarar ungefär ${timmar} i veckan", aldrig som "vi sparade".`,
+    ] : []),
     "",
     "VIKTIGAST AV ALLT: du vet INTE vad kunden gjort sedan sist. Du har ingen",
     "tillgång till hennes kalender, inkorg eller anteckningar. Påstå aldrig att",
@@ -104,6 +138,7 @@ function digestPrompt(cfg) {
     "TEAMET:",
     agenter || "(inga agenter i konfigurationen)",
     rutiner ? "\nSTÅENDE RUTINER:\n" + rutiner : "",
+    timmar ? `\nRUTINERNAS VÄRDE: ca ${timmar} manuellt arbete i veckan om alla körs.` : "",
     cfg.seasons && cfg.seasons.length
       ? "\nÅRSRYTM:\n" + cfg.seasons.map((s) => `- ${s.label || s.name || ""}: ${s.note || s.what || ""}`).join("\n")
       : "",

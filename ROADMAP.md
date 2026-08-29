@@ -45,7 +45,6 @@ Från genomgången 2026-08-17 · sju parallella linser + egen verifiering.
 - [ ] **OM2** Ingen sida säger var modellen körs eller vad som lagras. AI Kollegorna säljer 4 900 kr/mån delvis på "ingen data lämnar era lokaler"; vi kör OpenRouter → `openai/gpt-oss-120b` med geografin osagd. Samma sida täcker EU AI Acts transparenskrav (i kraft 2 augusti 2026, vi ligger i limited risk: kunden ska veta att motparten är AI) och tar bort deras enda övertag mot oss · `integritet.html`, `index.html` · `mätt` · ~2–4 h
 - [ ] **OM3** De två sakerna ingen konkurrent har står längst ner respektive i en sidopanel. Att en agent får **nej** är motgiftet mot exakt den kritik Sintra och Marblism får ("starka utkast, inte utförande"), och **mötet** löser Sintras mest citerade brist (helpers kan inte dela kontext). Flytta båda till framsidan — och gör det med en riktig körning, alltså tillsammans med **KR2** · `index.html:145`, `:163`, `:216-218` · `mätt` · ~2–4 h ihop med KR2
 - [ ] **OM4** Integrationsspåret är varken valt eller bortvalt. Alla konkurrenter har verktygsåtkomst (Lindy 5 000+, Vorker Fortnox/Visma, Marblism Gmail/WordPress) — våra agenter kan tala, deras kan göra. Antingen **en** integration väl gjord (kalender eller Gmail; Fortnox är Vorkers hemmaplan), eller sälj bortvalet explicit: "vi kopplas inte in i era system." Att inte välja är det enda som är fel · `docs/omvarldsresearch-2026-08-18.md` · `mätt` · beslut först
-- [ ] **OM5** Konkurrenterna säljer på sparad tid; vi räknar aldrig. Underlaget finns redan lokalt (antal svar, körda rutiner, hållna möten) — en timsiffra i "Veckan som gick" och i veckobrevet är det som gör värdet synligt för **köparen**, inte bara för utföraren (churn-mekaniken i halvårssimuleringen) · `portal/app.js`, `functions/api/digest/run.js` · `läst i koden` · ~3–5 h
 - [ ] **P2** Gratisbygget fångar ingen e-post — övergiven körning är borta för alltid · `builder/builder.js:1432-1493` · `läst i koden` · ~4 h
 - [ ] **P3** Provmånaden har ingen utgående livlina utanför portalen · `functions/api/_plan.js:65-86` · `mätt` · ~6 h
 
@@ -72,9 +71,10 @@ Rättade direkt i filerna (rent git-träd). Raderna står i terminalsvaret.
 
 ## Byggt 2026-08-29 (inte driftsatt)
 
-**K4**, **KA4**, **P6** och **P4** lösta; **P1**:s kodhalva gjord. Nya filer:
-`functions/api/_build.js`, `test/csp.mjs`, `test/portal.mjs`. Testsviten **257
-gröna**, `check:dist` ren. Inga migrationer, inga nya secrets, ingen ny rutt.
+**K4**, **KA4**, **P6**, **P4** och **OM5** lösta; **P1**:s kodhalva gjord. Nya
+filer: `functions/api/_build.js`, `test/csp.mjs`, `test/portal.mjs`. Testsviten
+**274 gröna**, `check:dist` ren. Inga migrationer, inga nya secrets, ingen ny
+rutt.
 
 Verifierat i emulatorn (`wrangler pages dev dist`), inte antaget: anrop utan
 `step` ger **400 `build_step_required`** · okänt stegnamn likaså · tre
@@ -97,11 +97,12 @@ bindningen saknas även i drift. **Ingen riktig körning i Buildern har gjorts**
 båda grindarna mutationsprovades (måttet nollställt → rött; anropet
 bortkopplat → rött).
 
-**Ingenting i portalen är kört i webbläsare** (P6 och P4). Verifieringen är
-statisk plus 36 enhetstester som kör blocken ur `portal/app.js` — för P4
+**Ingenting i portalen är kört i webbläsare** (P6, P4, OM5). Verifieringen är
+statisk plus 48 enhetstester som kör blocken ur `portal/app.js` — för P4
 bland annat mot varje riktig teamkonfig, med varje agent avslutad en i
-taget. En auto-rutin kräver dessutom ett riktigt AI-anrop, och den lokala
-nyckeln är ogiltig.
+taget. Fem pass i rad har nu lagt kod där utan att någon sett den rita upp
+sig. Blockeraren är konkret: `OPENROUTER_KEY` i `.dev.vars` svarar "Missing
+Authentication header", så en riktig körning går inte att göra lokalt.
 
 **P1:s CSP-rad är mutationsprovad** (borttagen → rött), men beaconen är inte
 påslagen, så att raden verkligen räcker är `läst i koden` — inte `mätt`.
@@ -153,6 +154,49 @@ kedja hela vägen fram, `/avregistrera` 400 på trasig token och 200 på okänd,
 i dag är påslaget.
 
 ## Klart
+
+- [x] **OM5** Sparad tid räknas — och syns där köparen tittar — löst 2026-08-29.
+
+  Konkurrenterna säljer på sparad tid. Vi räknade den faktiskt redan, men bara
+  på **ett** ställe: längst ner i "📈 Veckans arbete", en panel kunden måste
+  öppna själv. Halvårssimuleringen säger varför det är fel plats — värdet bevisas
+  hos utföraren, men beslutet att fortsätta betala fattas av någon som sällan
+  loggar in.
+
+  **Vad som räknas, och varför inte mer än så.** Bara `timeEstimate` på rutiner
+  kunden faktiskt bockat av. `research.md` beställer den siffran som "minuter
+  momentet brukar ta manuellt ENLIGT RESEARCHEN (null om researchen inte anger
+  tid — hitta aldrig på)", alltså hämtad ur kundens egen beskrivning av sin
+  vecka. Att lägga på en schablon per svar eller per möte hade varit att
+  uppfinna exakt den siffra hela punkten går ut på att kunna stå för — och den
+  som säljer på en påhittad timme får frågan en gång, och slutar betala när
+  svaret inte håller. Rutiner utan uppskattning räknas inte, och **antalet skrivs
+  ut i gränssnittet** i stället för att tigas ihjäl.
+
+  Fyra ytor i stället för en: **puls-kortet** (det man möts av), **"Veckan som
+  gick"** (siffran med i underlaget, med instruktion att inte räkna om den),
+  **kvartalsöverblicken** — inklusive den delbara texten, som är själva den rad
+  köparen läser — och panelen som redan hade den.
+
+  Kvartalet krävde en egen **veckoliggare** (`atb_sparad_<slug>`, 26 veckor):
+  `routLoad()` nollställs varje ISO-vecka, så kvartalsvyn hade annars kunnat
+  visa högst en veckas siffra, alltså just den som är för liten för att övertyga
+  någon om ett år till. Liggaren **räknar om** veckan i stället för att räkna
+  upp den — körs bokföringen två gånger blir svaret detsamma.
+
+  **Veckobrevet fick en annan siffra, med flit.** Rutten har `teams.config` och
+  ingenting annat — historiken och avbockningarna bor i kundens webbläsare — så
+  servern kan omöjligt veta vad som gjorts. Brevet säger därför vad rutinerna är
+  värda *om de körs*, och prompten säger uttryckligen: nämn den en gång, som vad
+  som ligger och väntar, aldrig som något som redan är sparat. Under en halvtimme
+  utelämnas siffran helt; saknas uppskattningar står ingenting. Ett veckobrev som
+  hittar på en timme är värre än ett utan.
+
+  Tio tester i `test/portal.mjs` och fem i `test/digest.mjs`, mest om vad
+  siffran INTE innehåller — det är där den spricker. Mutationsprovat: en
+  schablon för rutiner utan tid → tio röda; golvet borttaget i brevet → två röda.
+
+  **Inte kört i webbläsare** (femte passet i rad, se skulden i sprintrutan).
 
 - [x] **P4** Grundteamets agenter går att ändra och avsluta — löst 2026-08-29.
 

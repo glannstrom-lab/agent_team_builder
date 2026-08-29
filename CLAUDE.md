@@ -182,6 +182,10 @@ skisser i `design/` (deployas inte).
   applicerade av `applyTeamExt()` vid varje laddning och varje mappsynk. Avsluta
   är inte radera — historiken ligger kvar och kommer tillbaka med agenten),
   Dela & exportera team, kvartalsöverblick,
+  **sparad tid** (OM5 2026-08-29: summan av `timeEstimate` på de rutiner kunden
+  faktiskt bockat av — inget uppskattas per svar eller möte, och rutiner utan
+  uppskattning räknas inte och sägs vara oräknade. Veckoliggaren
+  `atb_sparad_<slug>` finns för att `routLoad()` nollställs varje ISO-vecka),
   filimport (PDF/Word/xlsx/csv via `portal/vendor/`), svenska myndighetsdatum
   (`portal/deadlines-se.js`), diktering och seasons-årshjul. Multi-tenant via
   `?team=<slug>` → `portal/teams/<slug>.js`; utan parameter visas en
@@ -461,6 +465,15 @@ Delarna, och varför de ligger där de ligger:
   medan svaret ersattes med 404. `mittaiteam.se/avregistrera` läser dessutom
   bättre i ett mejl.
 
+**Brevet bär en timsiffra sedan OM5 (2026-08-29), och den är av ett annat slag
+än portalens.** Rutten har `teams.config` och ingenting annat — historiken och
+avbockningarna bor i kundens webbläsare — så servern kan omöjligt veta vad som
+gjorts. Brevet säger därför vad rutinerna är värda *om de körs*
+(`rutinTimmar()` ur `timeEstimate`), och prompten säger uttryckligen: nämn den
+en gång, som vad som ligger och väntar, aldrig som något som redan är sparat.
+Under en halvtimme utelämnas siffran; saknas uppskattningar står ingenting. Ett
+veckobrev som hittar på en timme är värre än ett utan.
+
 Kostnaden bokförs som allt annat: `ai_budget`, teamets månadsrad (samma fair use
 som chatten) och en egen dygnsrad `digest:global` med eget tak på 200 — samma
 resonemang som byggets tak i K3, så att breven inte kan svälta betalande kunders
@@ -563,7 +576,7 @@ ny kund dyker upp i både galleri och portal automatiskt.
 │                                   #   plan_lifecycle, ai_errors, weekly_digest
 ├── test/                           # node --test: teams, stripe, plan, ai, throttle,
 │                                   #   examples, klient, intake, health, skalning,
-│                                   #   digest, csp, portal (257 tester)
+│                                   #   digest, csp, portal (274 tester)
 ├── scripts/                        # provision.mjs — lägg upp en kund för hand
 │                                   #   check-dist.mjs — kontrollerar versionsstämplingen
 ├── testoutput/                     # Råa pipeline-körningar (källmaterial, ej deployat)
@@ -772,7 +785,11 @@ ny kund dyker upp i både galleri och portal automatiskt.
 > radera: historiken kommer tillbaka med agenten, och ingångsagenten flyttas
 > automatiskt om det är hen som ställs åt sidan.
 >
-> Testsviten är **257 gröna**. Inga nya migrationer, inga nya secrets, ingen ny
+> **OM5** — sparad tid syns nu i puls-kortet, "Veckan som gick",
+> kvartalsöverblicken (inklusive den delbara texten) och veckobrevet. Bara
+> `timeEstimate` på avbockade rutiner räknas; inget uppskattas per svar.
+>
+> Testsviten är **274 gröna**. Inga nya migrationer, inga nya secrets, ingen ny
 > rutt. Läget står i `ROADMAP.md` under *Byggt 2026-08-29*.
 >
 > **Ingenting i portalen är kört i webbläsare den här dagen** (P6, P4). Fyra
@@ -781,10 +798,12 @@ ny kund dyker upp i både galleri och portal automatiskt.
 > giltig `OPENROUTER_KEY` i `.dev.vars`; den lokala svarar "Missing
 > Authentication header".
 >
-> **Nästa pass enda uppgift:** ta **OM5** — konkurrenterna säljer på sparad tid
-> och vi räknar aldrig (`portal/app.js`, `functions/api/digest/run.js`, ~3–5 h)
-> — om inte Mikael först fattar Cowork-beslutet, som avgör BF2, BF3 och OM1 på
-> en gång.
+> **Nästa pass enda uppgift:** öppna portalen i en webbläsare och gå igenom
+> P6, P4 och OM5 för hand. Det kräver en giltig `OPENROUTER_KEY` i `.dev.vars` —
+> be om en. Går det inte: ta **P2** (gratisbygget fångar ingen e-post,
+> `builder/builder.js`, ~4 h), men notera att den punkten har en GDPR-sida som
+> är Mikaels att avgöra innan koden skrivs. Cowork-beslutet avgör fortfarande
+> BF2, BF3 och OM1 på en gång.
 >
 > Notera att K4 gör **BF2** mindre akut men inte löst: systemprompterna går
 > fortfarande att ladda ner gratis, de går bara inte längre att köra hos oss.

@@ -315,3 +315,157 @@ test("även ett team utan `always`-agent får en ingång", () => {
   }, { retired: ["a"] });
   assert.equal(t.entryAgent, "b");
 });
+
+// ── OM5: sparad tid, och det som INTE räknas ───────────────────────────────
+//
+// Konkurrenterna säljer på sparad tid. Siffran fanns men låg längst ner i en
+// panel kunden måste öppna själv — alltså osynlig för den som betalar, som är
+// den som ska övertygas (churn-mekaniken i halvårssimuleringen).
+//
+// Testerna nedan handlar mest om vad siffran INTE innehåller. Det är där den
+// spricker: en påhittad timme får frågan en gång, och sedan slutar kunden
+// betala. `research.md` beställer `timeEstimate` som "minuter momentet brukar
+// ta manuellt ENLIGT RESEARCHEN (null om researchen inte anger tid — hitta
+// aldrig på)", och den regeln måste hålla hela vägen ut i gränssnittet.
+function laddaTid({ demo = false, slug = "kund" } = {}) {
+  const i = KÄLLA.indexOf("⟦TID-START⟧");
+  const j = KÄLLA.indexOf("⟦TID-SLUT⟧");
+  assert.ok(i >= 0 && j > i, "hittade inte tidsblocket i portal/app.js");
+  const kropp = KÄLLA.slice(KÄLLA.indexOf("\n", i) + 1, KÄLLA.lastIndexOf("\n", j) + 1);
+  assert.ok(kropp.includes("function sparadTid"), "tidsblocket ser inte ut som väntat");
+
+  const lager = new Map();
+  const localStorage = {
+    getItem: (k) => (lager.has(k) ? lager.get(k) : null),
+    setItem: (k, v) => lager.set(k, String(v)),
+  };
+  const api = new Function("state", "localStorage", "isoWeek", kropp +
+    "; return { sparadTid, tidFormat, tidLedger, tidBokför, tidSedan, TID_MAX_VECKOR };"
+  )({ demo, slug }, localStorage, () => "2026-W35");
+  return { ...api, lager };
+}
+
+const RUTINER = [
+  { label: "Veckobrief", timeEstimate: 45 },
+  { label: "Fakturajakt", timeEstimate: 30 },
+  { label: "Omvärld", timeEstimate: null },   // researchen gav ingen tid
+];
+
+test("sparad tid är summan av de avbockade rutinernas uppskattningar", () => {
+  const { sparadTid } = laddaTid();
+  const r = sparadTid(RUTINER, [{ label: "Veckobrief" }, { label: "Fakturajakt" }]);
+  assert.equal(r.minuter, 75);
+  assert.equal(r.räknade, 2);
+  assert.equal(r.oräknade, 0);
+});
+
+test("en rutin utan tidsuppskattning räknas inte — och döljs inte", () => {
+  // Att gissa här vore att uppfinna precis den siffra hela punkten går ut på
+  // att kunna stå för. Antalet oräknade rapporteras i stället, och visas.
+  const { sparadTid } = laddaTid();
+  const r = sparadTid(RUTINER, [{ label: "Veckobrief" }, { label: "Omvärld" }]);
+  assert.equal(r.minuter, 45, "Omvärld har timeEstimate null och får inte bidra");
+  assert.equal(r.oräknade, 1);
+});
+
+test("inget uppskattas per svar, per möte eller per agent", () => {
+  // Motprovet mot den frestande genvägen: "varje svar sparar tio minuter".
+  // Utan avbockade rutiner är siffran noll, hur mycket kunden än chattat.
+  const { sparadTid } = laddaTid();
+  assert.equal(sparadTid(RUTINER, []).minuter, 0);
+  assert.equal(sparadTid([], [{ label: "Veckobrief" }]).minuter, 0);
+});
+
+test("en avbockad rutin som inte längre finns i teamet räknas inte", () => {
+  // Kan hända efter en avslutad agent (P4) eller en ny Builder-körning. Vi vet
+  // inte vad den var värd, så den får inte bidra — men den ska synas som
+  // oräknad i stället för att försvinna tyst.
+  const { sparadTid } = laddaTid();
+  const r = sparadTid(RUTINER, [{ label: "Finns inte längre" }]);
+  assert.equal(r.minuter, 0);
+  assert.equal(r.oräknade, 1);
+});
+
+test("trasiga uppskattningar bidrar inte", () => {
+  const { sparadTid } = laddaTid();
+  const konstiga = [
+    { label: "a", timeEstimate: "45" },   // sträng: Number() ger 45, det är ok
+    { label: "b", timeEstimate: -30 },    // negativ tid finns inte
+    { label: "c", timeEstimate: NaN },
+    { label: "d" },
+  ];
+  const r = sparadTid(konstiga, [{ label: "a" }, { label: "b" }, { label: "c" }, { label: "d" }]);
+  assert.equal(r.minuter, 45);
+  assert.equal(r.oräknade, 3);
+});
+
+test("formatet lovar bara den precision underlaget har", () => {
+  const { tidFormat } = laddaTid();
+  assert.equal(tidFormat(0), "");
+  assert.equal(tidFormat(45), "≈ 45 minuter");
+  assert.equal(tidFormat(90), "≈ 1,5 timmar");
+  assert.equal(tidFormat(157), "≈ 2,5 timmar", "halvtimmar, inte 2 h 37 min");
+  assert.match(tidFormat(120), /^≈ 2 timmar$/);
+});
+
+test("veckoliggaren räknar om veckan, den räknar inte upp den", () => {
+  // Idempotens: körs bokföringen två gånger ska svaret vara detsamma. Annars
+  // driftar kvartalssiffran uppåt varje gång kunden bockar av något.
+  const { tidBokför, tidLedger } = laddaTid();
+  tidBokför(75);
+  tidBokför(75);
+  assert.deepEqual(tidLedger().map((x) => x.m), [75]);
+  tidBokför(120); // ännu en rutin avbockad samma vecka
+  assert.deepEqual(tidLedger().map((x) => x.m), [120]);
+});
+
+test("liggaren summerar över veckor, men bara inom perioden", () => {
+  const { tidLedger, tidSedan, lager } = laddaTid();
+  const dag = 86400000;
+  lager.set("atb_sparad_kund", JSON.stringify([
+    { v: "2026-W20", m: 60, at: Date.now() - 100 * dag },  // förra kvartalet
+    { v: "2026-W34", m: 90, at: Date.now() - 10 * dag },
+    { v: "2026-W35", m: 45, at: Date.now() },
+  ]));
+  assert.equal(tidLedger().length, 3);
+  assert.equal(tidSedan(Date.now() - 30 * dag), 135);
+  assert.equal(tidSedan(0), 195);
+});
+
+test("liggaren växer inte i all oändlighet", () => {
+  const { tidLedger, TID_MAX_VECKOR, lager } = laddaTid();
+  lager.set("atb_sparad_kund", JSON.stringify(
+    Array.from({ length: TID_MAX_VECKOR + 10 }, (_, i) => ({ v: "w" + i, m: 10, at: i }))
+  ));
+  // Skrivningen kapar; läsningen behöver inte göra det.
+  const api = laddaTid();
+  api.lager.set("atb_sparad_kund", lager.get("atb_sparad_kund"));
+  api.tidBokför(5);
+  assert.equal(api.tidLedger().length, TID_MAX_VECKOR);
+});
+
+test("demoläget bokför ingen tid", () => {
+  const { tidBokför, tidLedger, lager } = laddaTid({ demo: true });
+  tidBokför(75);
+  assert.equal(lager.size, 0);
+  assert.deepEqual(tidLedger(), []);
+});
+
+// ── kopplingen: siffran ska nå de ytor punkten handlar om ──────────────────
+
+test("siffran syns där köparen faktiskt tittar", () => {
+  // Poängen med OM5 var aldrig att räkna — det gjordes redan — utan att sluta
+  // gömma resultatet i en panel man måste leta upp.
+  assert.match(KÄLLA, /cards\.push\(\{ icon: "⏱"/, "puls-kortet saknas");
+  assert.match(KÄLLA, /veckansTid \? `Avklarade rutiner motsvarar/, '"Veckan som gick" får inte siffran som underlag');
+  assert.match(KÄLLA, /const kvartalMin = tidSedan\(qStart\)/, "kvartalsvyn räknar inte över veckor");
+  assert.match(KÄLLA, /parts\.push\(`• Avklarade rutiner motsvarar/, "den delbara texten saknar siffran");
+});
+
+test("avbockningen bokför veckan", () => {
+  const i = KÄLLA.indexOf("function routineMarkDone");
+  assert.ok(i > 0, "hittade inte routineMarkDone");
+  const kropp = KÄLLA.slice(i, KÄLLA.indexOf("\n}", i));
+  assert.match(kropp, /tidUppdateraVeckan\(\)/,
+    "en avbockad rutin skrivs inte till veckoliggaren — kvartalsvyn blir då tom");
+});
