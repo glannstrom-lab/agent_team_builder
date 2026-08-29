@@ -31,6 +31,7 @@
 
 import { json, nowMs, allowAttempt, clientIp, sessionUser } from "./auth/_lib.js";
 import { planState, planUpdateSql, PLAN_REASON } from "./_plan.js";
+import { byggSteg, ärByggsteg } from "./_build.js";
 
 // ── tak ───────────────────────────────────────────────────────────────────
 //
@@ -209,6 +210,19 @@ const FEL = {
     refunded:
       "Köpet av det här teamet är återbetalat, så agenterna svarar inte längre. Vill ni börja om finns teamet kvar — hör av er till info@mittaiteam.se.",
   },
+  // Den fria rutten tar bara emot byggets egna steg (K4). Texten ska duga för
+  // två helt olika läsare: en kund med en gammal flik öppen — därför "ladda om
+  // sidan" först — och den som petar i anropen, som ska förstå att vägen är
+  // stängd med flit och var den öppna dörren finns.
+  byggsteg:
+    "Det här anropet hör inte till ett bygge. Ladda om sidan och börja om, så fungerar det. " +
+    "Vill ni chatta med ert eget team gör ni det i portalen på mittaiteam.se — det kräver ett aktivt abonnemang.",
+  // Egen text, inte `uppström`: det här är vårt fel och inte leverantörens, och
+  // kunden ska inte skickas att "försöka igen om en stund" när ingenting blir
+  // bättre av att vänta.
+  byggTrasigt:
+    "Något är fel hos oss och bygget kan inte startas just nu. Vi är meddelade. " +
+    "Mejla gärna info@mittaiteam.se så hör vi av oss när det fungerar igen.",
   timeout: "Det tog för lång tid att få svar. Försök igen — händer det två gånger i rad, mejla info@mittaiteam.se så tittar vi på det.",
   strömTimeout: "Svaret tog för lång tid och avbröts. Försök igen.",
   strömBröts: "Svaret avbröts på vägen. Försök igen.",
@@ -276,13 +290,15 @@ export async function onRequestPost(context) {
     messages.push({ role: m.role === "assistant" ? "assistant" : "user", content: m.content });
   }
 
-  const system = typeof body.system === "string" ? body.system : "";
+  // `let`, för på den fria rutten byts klientens systemprompt ut mot vår egen
+  // längre ner (K4). Storleken mäts ändå på det klienten skickade: text vi
+  // slänger ska inte heller få vara en megabyte.
+  let system = typeof body.system === "string" ? body.system : "";
   const size = system.length + messages.reduce((n, m) => n + m.content.length, 0);
   if (size > MAX_INPUT_CHARS) return json({ error: "för mycket text i ett anrop" }, 413);
 
   const t = nowMs();
   const ip = clientIp(request) || "okänd";
-  const wantsJson = !!(body.json || body.schema);
 
   // ── vem frågar, och om vad? ────────────────────────────────────────────
   //
@@ -334,6 +350,68 @@ export async function onRequestPost(context) {
   }
 
   const portal = subject.startsWith("team:");
+
+  // ── den fria rutten är ett BYGGE, inte en chatt (K4) ───────────────────
+  //
+  // Fram till nu fick den fria rutten en godtycklig systemprompt och en
+  // godtycklig historik, och svarade fritt. Två följder, och den andra är den
+  // dyra:
+  //
+  //   1. Vem som helst kunde använda oss som gratis chatbot. Taken höll
+  //      kostnaden nere men gjorde inte trafiken till något vi ville ha.
+  //   2. En kund vars plan tagit slut kunde ta sin nedladdade teamkonfig,
+  //      klistra in agentens systemprompt och FORTSÄTTA ANVÄNDA TEAMET — utan
+  //      slug, alltså utan betalvägg. Spärren ovan gällde bara den som lämnade
+  //      kvar slugen i anropet, alltså bara den ärliga.
+  //
+  // Rättningen är strukturell och inte en kontroll: klienten skickar inte
+  // längre någon systemprompt hit. Den skickar ett STEG-namn, och servern
+  // hämtar prompten själv ur `prompts/` (se _build.js). Det finns då ingen
+  // text att smyga in — den fria rutten kan producera byggets egna
+  // mellandokument och ett team-JSON, ingenting annat.
+  //
+  // Enkelturskravet stänger resten: varje byggsteg skickar exakt ETT
+  // användarmeddelande, medan en chatt per definition bär historik. Utan det
+  // kravet vore ett kapat byggsteg fortfarande en gratis samtalstråd, om än
+  // med fel systemprompt.
+  let schema = body.schema || null;
+  let maxTokens = Math.min(Number(body.maxTokens) || 4096, MAX_OUTPUT_TOKENS);
+  if (!portal) {
+    if (!ärByggsteg(body.step)) {
+      return json({ error: FEL.byggsteg, code: "build_step_required" }, 400);
+    }
+    if (messages.length !== 1 || messages[0].role !== "user") {
+      return json({ error: FEL.byggsteg, code: "build_step_required" }, 400);
+    }
+    let steg;
+    try {
+      steg = await byggSteg(env, request, body.step, body);
+    } catch (e) {
+      // Prompten gick inte att läsa. Det är en driftmiss hos oss — filen är
+      // borttagen ur bygget, eller ASSETS svarar inte — och kunden ska inte
+      // mötas av ett halvt bygge med tom systemprompt.
+      //
+      // Raden i ai_errors är samma hållning som D3: `console.error` syns bara
+      // för den som råkar titta i tail, och det var precis så B1 kunde ligga
+      // stum i tio dagar. Koden heter `build_prompt` och inte `service_down`,
+      // så /api/health larmar INTE på den — det här felet fälls i stället av
+      // två tester före deploy (stegnamn mot BUILD_STEPS, prompt mot
+      // PROMPT_FILES). Spåret finns för den som felsöker efteråt.
+      console.error("[ai] byggsteg", body.step, e && e.message);
+      waitUntil(db.prepare(
+        "INSERT INTO ai_errors (day, code, count, last_at) VALUES (?, ?, 1, ?) " +
+        "ON CONFLICT(day, code) DO UPDATE SET count = count + 1, last_at = excluded.last_at"
+      ).bind(utcDay(t), "build_prompt", t).run().catch(() => {}));
+      return json({ error: FEL.byggTrasigt, code: "build_unavailable" }, 503);
+    }
+    system = steg.system;
+    schema = steg.schema;
+    maxTokens = steg.maxTokens;
+  }
+  // Portalen får fortfarande be om JSON utan schema (minnesförslag m.m.).
+  // Bygget får det bara via sitt schema — ett byggsteg som tvingas till
+  // json_object hade svarat med en tom klammer i stället för sitt dokument.
+  const wantsJson = portal ? !!(body.json || schema) : !!schema;
 
   // ── tak ────────────────────────────────────────────────────────────────
   const ipBucket = portal ? "ip:ai:paid:" + ip : "ip:ai:" + ip;
@@ -395,7 +473,9 @@ export async function onRequestPost(context) {
 
   const payload = {
     model: MODEL_ID,
-    max_tokens: Math.min(Number(body.maxTokens) || 4096, MAX_OUTPUT_TOKENS),
+    // Portalen klampas mot MAX_OUTPUT_TOKENS ovan; bygget får steget eget tak
+    // ur BUILD_STEPS, alltså det tal steget faktiskt behöver.
+    max_tokens: maxTokens,
     stream: true,
     stream_options: { include_usage: true },
     // Se leverantörsvalet högst upp. require_parameters sållar bort de
@@ -416,9 +496,9 @@ export async function onRequestPost(context) {
     // vädjan i systemprompten, och modellen hoppade över starters och
     // routines — de fält portalens agentkort och veckorutiner bygger på.
     // Ett schema med required kan den inte hoppa över.
-    ...(body.schema
-      ? { response_format: { type: "json_schema", json_schema: { name: "team", strict: true, schema: body.schema } } }
-      : body.json ? { response_format: { type: "json_object" } } : {}),
+    ...(schema
+      ? { response_format: { type: "json_schema", json_schema: { name: "team", strict: true, schema } } }
+      : wantsJson ? { response_format: { type: "json_object" } } : {}),
     messages: system ? [{ role: "system", content: system }, ...messages] : messages,
   };
 

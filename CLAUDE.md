@@ -127,22 +127,25 @@ skisser i `design/` (deployas inte).
 
 - **Hub** (`index.html`) — front-dörr och säljsida som navigerar till de fyra.
 - **Builder** (`builder/`) — bygg ett team live framför en kund. Kör den
-  **riktiga pipelinen** i webbläsaren: hämtar `prompts/shared/research.md`,
-  `scale.md`, `proposal.md` (+ `ai-consultant/first-project.md`) live och kör
-  dem verbatim, steg för steg, plus ett avslutande sammanställningssteg som
-  formaterar förslaget till render-JSON + portal-systemprompter (ändrar inget
-  innehåll). Intaget är ett strukturerat frågeformulär (mappar till
+  **riktiga pipelinen**: `prompts/shared/research.md`, `scale.md`,
+  `proposal.md` (+ `ai-consultant/first-project.md`) verbatim, steg för steg,
+  plus ett avslutande sammanställningssteg som formaterar förslaget till
+  render-JSON + portal-systemprompter (ändrar inget innehåll). **Sedan K4
+  (2026-08-29) skickar Buildern inget `system` — den namnger ett STEG**, och
+  servern hämtar prompten (`functions/api/_build.js`). Intaget är ett
+  strukturerat frågeformulär (mappar till
   intake-kontraktet i `research.md`, inkl. Avgränsningar) följt av max två
   AI-följdfrågor — hybrid av formulär och intervju. Dessutom en **valbar
   förvalsenkät** (`builder/survey-data.js`): bransch, kunder, arbetsmoment
   (tvåklick = tidstjuv ⏱), verktyg, mål m.m. som rena kryssval — den som har
   svårt att formulera sin verksamhet kan bygga helt utan fritext. Körningar
-  persisteras per steg (`atb_last_run`) och kan återupptas efter fel/F5. Eftersom den hämtar
-  filerna live följer den alltid de underhållna prompterna — Builder och
-  `/build-team` kan inte glida isär **i research, skalning och förslag**.
-  Sammanställningssteget (`PORTAL_RULES` i `builder.js`) och arbetsledarläget
-  bor däremot bara i webblagret och speglar `templates/shared/portal-team.md`
-  för hand — ändras den ena måste den andra följa med.
+  persisteras per steg (`atb_last_run`) och kan återupptas efter fel/F5.
+  Eftersom prompt-filerna läses live (nu serversidan) följer bygget alltid de
+  underhållna prompterna — Builder och `/build-team` kan inte glida isär **i
+  research, skalning och förslag**. Sammanställningssteget (`PORTAL_RULES` i
+  `functions/api/_build.js`) och arbetsledarläget bor däremot bara i webblagret
+  och speglar `templates/shared/portal-team.md` för hand — ändras den ena måste
+  den andra följa med.
   **Arbetsledarläge** (`workstyle: "coach"`): kunden som redan betalar för egen
   AI får arbetspaket i stället för färdigt innehåll — brief, en självbärande
   prompt i kodblock, "Klart när"-checklista och erbjudande om granskning.
@@ -244,6 +247,29 @@ klienten sätter: en klient som utelämnar slugen får byggets villkor, inte gra
 portalsvar. Slugen bärs som modultillstånd i `atb-claude.js` (`setTeam()`), inte
 av sju anropsställen i portalen.
 
+**Och byggets villkor är sedan K4 (2026-08-29) att det verkligen är ett bygge.**
+Meningen ovan — "en klient som utelämnar slugen får byggets villkor" — var sann
+och ändå otillräcklig, för byggets villkor var *vilken systemprompt som helst,
+gratis*. Följden: en kund vars provmånad tagit slut kunde ta sin nedladdade
+teamkonfig (`downloadConfig()`, se **BF2**), klistra in agentens systemprompt,
+utelämna slugen och fortsätta använda teamet gratis. Betalväggen gällde alltså
+bara den som lämnade kvar slugen — den ärliga.
+
+Rättningen är strukturell och inte en kontroll: **klienten skickar ingen
+systemprompt till den fria rutten längre.** Den skickar `step` — ett namn ur
+`BUILD_STEPS` i `functions/api/_build.js` — och servern hämtar prompten själv ur
+`prompts/` (via `env.ASSETS`, med självhämtning som reserv). Dessutom tar den
+fria rutten **exakt ett användarmeddelande**: ett byggsteg har aldrig fler, en
+chatt har alltid fler. Kvar som möjlig utdata: byggets egna mellandokument och
+ett team-JSON. Steget äger också `max_tokens` och schemat — klientens siffror
+läses inte.
+
+Två följdregler, båda testade i `test/ai.mjs`: ett stegnamn i `builder.js` som
+saknas i `BUILD_STEPS` fäller bygget (annars 400 för alla i drift), och en
+prompt-fil som faller ur `PROMPT_FILES` i `build-dist.mjs` gör det också
+(annars 503 på just det steget — och för `first-project.md` bara i konsult-läget,
+alltså precis den sorts fel som får ligga i veckor).
+
 **Noll provsvar (beslut 2026-08-06).** Inte fem, som en tidigare spec sa. Att
 chatta med sitt eget team är det som säljs — vore det gratis vore köpet valfritt.
 Den som vill se portalen först tittar på ett demoteam. Därför finns heller ingen
@@ -302,7 +328,7 @@ tokentak, `response_format`, `require_parameters` eller avstängt resonemang
 hjälpte. Felen varierade mellan körningar, så inläsningen gick inte att laga.
 
 **Sammanställningssteget använder ett riktigt JSON-schema i strict-läge**
-(`TEAM_SCHEMA` i `builder/builder.js`), inte bara `json_object`. Skillnaden
+(`TEAM_SCHEMA` i `functions/api/_build.js`), inte bara `json_object`. Skillnaden
 är avgörande: `json_object` garanterar syntax, inte innehåll — utan schema
 utelämnade modellen `starters` och `routines`, alltså portalens agentkort och
 veckorutiner. Med `required` och `minItems` kan den inte göra det.
@@ -317,13 +343,14 @@ genererade teamfiler, vilket lämnade portalens årshjul permanent tomt. Omvänt
 krävde schemat ett toppnivå-`why` som ingen prompt definierade, så modellen
 tvingades hitta på det.
 
-**Prompten och `TEAM_SCHEMA` är ETT kontrakt i två filer** (`builder.js`,
-schemablocket i `structureTeam()` respektive konstanten längre ner). Ändras det
-ena måste det andra följa med, i **båda** riktningarna: ett fält som beställs men
-inte står i schemat kommer aldrig tillbaka, och ett fält som krävs i schemat men
-inte beställs blir påhittat. Lägg inte till något i schemat utan en läsare i
-koden — det var så `language` och `defaultModel` blev dödfält. Samma fällatyp som
-`starters`-fyndet; den har nu slagit till två gånger.
+**Prompten och `TEAM_SCHEMA` är ETT kontrakt — sedan K4 (2026-08-29) i EN fil**
+(`functions/api/_build.js`: `structurePrompt()` och konstanten några rader ner).
+Ändras det ena måste det andra följa med, i **båda** riktningarna: ett fält som
+beställs men inte står i schemat kommer aldrig tillbaka, och ett fält som krävs
+i schemat men inte beställs blir påhittat. Lägg inte till något i schemat utan
+en läsare i koden — det var så `language` och `defaultModel` blev dödfält. Samma
+fällatyp som `starters`-fyndet; den slog till två gånger medan de två halvorna
+låg i olika filer, vilket är skälet till att de nu ligger bredvid varandra.
 
 Ändras modellraden måste kostnadssiffrorna i `index.html` (`#forbrukning`)
 och avsnitt 3–4 i `villkor.html` följa med. Nuvarande nivå: $0,037/$0,170 per
@@ -377,10 +404,10 @@ i en form mönstret inte känner igen. Sätt inte tillbaka `Cache-Control` i
 Säkerhetsheaders/CSP sätts via `_headers` (kopieras till `dist/` vid bygge).
 
 **Kör lokalt:** `python -m http.server 8420` från repo-roten (eller `npm run dev`),
-öppna `http://localhost:8420/`. Builder och portal kräver http:// (inte file://),
-och Buildern kräver att `prompts/` serveras. För att testa backend-lagret
-(`/api/*` + D1) lokalt: `npm run db:migrate:local` och sedan `npm run dev:cf`
-(Cloudflares emulator — den vanliga python-servern serverar inte `/api`).
+öppna `http://localhost:8420/`. Builder och portal kräver http:// (inte file://).
+Den servern räcker för att TITTA; en riktig körning i Buildern kräver
+`npm run dev:cf`, för prompterna läses av `/api/ai` sedan K4 och python-servern
+serverar inte `/api`. Kör `npm run db:migrate:local` en gång först.
 Bygg/deploy: `npm run build` / `npm run deploy`. **`npm run deploy` kör
 testsviten först** (sedan 2026-08-17) — CI triggar på push, deploy kräver ingen
 push, och utan den raden var de två skyddsnäten helt frånkopplade från det enda
@@ -509,6 +536,8 @@ ny kund dyker upp i både galleri och portal automatiskt.
 ├── design/                         # Elva designskisser; variant 8 blev systemet.
 │                                   #   Deployas inte — saknas medvetet i ITEMS
 ├── functions/                      # Cloudflare Pages Functions (/api/* — moln-team)
+│                                   #   api/_build.js = byggets prompter + TEAM_SCHEMA
+│                                   #   (fria rutten tar ett STEG, inte en prompt)
 │                                   #   OBS: deployas från repo-roten, aldrig via dist/
 │                                   #   avregistrera.js ligger UTANFÖR /api/ (HTML-svar)
 ├── worker-veckobrev/               # Klockan för veckobrevet (egen Worker, cron)
@@ -517,7 +546,7 @@ ny kund dyker upp i både galleri och portal automatiskt.
 │                                   #   plan_lifecycle, ai_errors, weekly_digest
 ├── test/                           # node --test: teams, stripe, plan, ai, throttle,
 │                                   #   examples, klient, intake, health, skalning,
-│                                   #   digest (166 tester)
+│                                   #   digest (189 tester)
 ├── scripts/                        # provision.mjs — lägg upp en kund för hand
 │                                   #   check-dist.mjs — kontrollerar versionsstämplingen
 ├── testoutput/                     # Råa pipeline-körningar (källmaterial, ej deployat)
@@ -698,10 +727,18 @@ ny kund dyker upp i både galleri och portal automatiskt.
 > `functions/api/subscription/withdraw.js`. Verifieringen i drift står i
 > `ROADMAP.md` under *Driftsatt 2026-08-18*.
 >
-> **Nästa pass enda uppgift:** ta **K4** — bygg-rutten är en oautentiserad
-> LLM-proxy och en väg tillbaka för uppsagda (`functions/api/ai.js:252-293`,
-> ~4–6 h) — om inte Mikael först fattar Cowork-beslutet, som avgör BF2, BF3 och
-> OM1 på en gång.
+> **Passet 2026-08-29 är byggt** (inte driftsatt när detta skrivs). **K4** är
+> löst: den fria rutten tar ett STEG i stället för en systemprompt, och exakt ett
+> användarmeddelande. `functions/api/_build.js` är ny och äger byggets prompter,
+> PORTAL_RULES och TEAM_SCHEMA — de tre flyttade ur `builder/builder.js`, byte
+> för byte kontrollerat. Testsviten är **189 gröna**. Inga nya migrationer, inga
+> nya secrets, ingen ny rutt. Läget står i `ROADMAP.md` under *Byggt 2026-08-29*.
+>
+> **Nästa pass enda uppgift:** ta **P1** — ingen mätning av var köpresan läcker
+> (Cloudflare Web Analytics, gratis och cookiefri, ~20 min–1 h) — om inte Mikael
+> först fattar Cowork-beslutet, som avgör BF2, BF3 och OM1 på en gång. Notera att
+> K4 gör **BF2** mindre akut men inte löst: systemprompterna går fortfarande att
+> ladda ner gratis, de går bara inte längre att köra hos oss.
 >
 > Fas 1–3 nedan står kvar som historik över hur kärnan byggdes.
 

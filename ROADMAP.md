@@ -24,9 +24,8 @@ Från genomgången 2026-08-17 · sju parallella linser + egen verifiering.
 
 ## Sedan — skav som märks
 
-- [ ] **BF2** Gratisbygget delar ut hela den betalda leveransen. `downloadConfig()` skriver `stripTeam(team)` till fil — inklusive varje agents fullständiga systemprompt — utan konto och utan betalning. Prompterna går att klistra in i gratis ChatGPT och köra löpande, vilket underminerar beslutet "noll provsvar" vars motivering är att det är teamet som säljs. Behöver ett medvetet beslut, inte en bieffekt · `builder/builder.js:1765-1772`, `index.html:604` · `läst i koden` · ~2–4 h
-- [ ] **BF3** Fyra prompter ligger öppet på webben, inklusive den filen projektet självt kallar nyckelsteget. Uppmätt: `curl …/prompts/shared/research.md` ger 200 och 17 807 byte klartext. Buildern måste kunna hämta dem klientsidan, så exponeringen har ett skäl — men `build-dist.mjs` säger att resten av `prompts/` är "konsult-IP", och den gränsen går inte att hålla samtidigt · `build-dist.mjs:45-53` · `mätt` · ~30 min (acceptera) / ~1 dag (serverside)
-- [ ] **K4** Bygg-rutten är en oautentiserad LLM-proxy och en väg tillbaka för uppsagda · `functions/api/ai.js:252-293` · `läst i koden` · ~4–6 h
+- [ ] **BF2** Gratisbygget delar ut hela den betalda leveransen. `downloadConfig()` skriver `stripTeam(team)` till fil — inklusive varje agents fullständiga systemprompt — utan konto och utan betalning. Prompterna går att klistra in i gratis ChatGPT och köra löpande, vilket underminerar beslutet "noll provsvar" vars motivering är att det är teamet som säljs. Behöver ett medvetet beslut, inte en bieffekt. **Mindre akut sedan K4** (2026-08-29): prompterna går att ladda ner, men inte längre att KÖRA gratis hos oss · `builder/builder.js`, `index.html:604` · `läst i koden` · ~2–4 h
+- [ ] **BF3** Fyra prompter ligger öppet på webben, inklusive den filen projektet självt kallar nyckelsteget. Uppmätt: `curl …/prompts/shared/research.md` ger 200 och 17 807 byte klartext. Skälet som fanns — Buildern måste kunna hämta dem klientsidan — **gäller inte längre sedan K4** (2026-08-29): det är servern som läser dem. Kvar står att `build-dist.mjs` kallar resten av `prompts/` "konsult-IP", en gräns som inte går att hålla samtidigt. Vägen är nu billigare än förut: filerna måste ligga i `dist/` för att `env.ASSETS` ska nå dem, men en Function på `/prompts/[[path]]` kan svara 404 utåt — ASSETS-läsningen går förbi Functions-routingen. Verifiera den ordningen innan du bygger på den · `build-dist.mjs:45-53`, `functions/api/_build.js` · `mätt` · ~30 min (acceptera) / ~2 h (stäng utåt)
 
 ## Framåt — utveckling
 
@@ -62,6 +61,27 @@ Rättade direkt i filerna (rent git-träd). Raderna står i terminalsvaret.
 - `docs/roadmap.md` pass 5 — påstod att bara lyckade anrop bokförs; `bokför(null)` räknar upp `calls` även vid nätverksfel och HTTP-fel.
 - `docs/roadmap.md` pass 5 — "sw.js står på v22" (den står på v26) och "fyra commits" (uppmätt: 18 av 37).
 - `docs/roadmap.md` pass 6 — 429-fyndet är redan åtgärdat, och radnumren för nyckeltexten i `portal/app.js` pekar på annan kod i dag.
+
+## Byggt 2026-08-29 (inte driftsatt)
+
+**K4** löst. Ny fil: `functions/api/_build.js`. Testsviten **189 gröna**,
+`check:dist` ren. Inga migrationer, inga nya secrets, ingen ny rutt.
+
+Verifierat i emulatorn (`wrangler pages dev dist`), inte antaget: anrop utan
+`step` ger **400 `build_step_required`** · okänt stegnamn likaså · tre
+meddelanden med historik likaså · `step: "scale"` går hela vägen till uppström
+(502 därifrån, för den lokala `OPENROUTER_KEY` i `.dev.vars` är ogiltig —
+"Missing Authentication header") vilket bevisar att servern läste
+`prompts/shared/scale.md` · `/prompts/shared/scale.md` serveras med 200 och
+2 858 byte.
+
+**Kvar som `läst i koden`, inte `mätt`:** att `env.ASSETS` är den väg som
+används i drift. `wrangler pages dev` listar inte ASSETS bland bindningarna, så
+lokalt kan reservvägen (självhämtning mot egen adress) ha burit i stället.
+Båda vägarna fungerar och koden faller tillbaka automatiskt; en `console.warn`
+(en gång per isolat) säger ifrån i `wrangler pages deployment tail` om
+bindningen saknas även i drift. **Ingen riktig körning i Buildern har gjorts**
+— den kräver en giltig nyckel, och den lokala är död.
 
 ## Driftsatt 2026-08-18
 
@@ -110,6 +130,47 @@ kedja hela vägen fram, `/avregistrera` 400 på trasig token och 200 på okänd,
 i dag är påslaget.
 
 ## Klart
+
+- [x] **K4** Den fria rutten är ett bygge, inte en chatt — löst 2026-08-29.
+
+  Hålet hade två halvor, och den andra var den kommersiella. Rutten tog emot
+  vilken systemprompt som helst utan slug, utan konto och utan betalning: dels
+  gick den att använda som gratis chatbot på vår nyckel, dels kunde en kund vars
+  provmånad eller abonnemang tagit slut ta sin nedladdade teamkonfig — som
+  innehåller varje agents fullständiga systemprompt (**BF2**) — utelämna slugen
+  och fortsätta använda teamet. Betalväggen gällde bara den som lämnade kvar
+  slugen i anropet, alltså bara den ärliga kunden.
+
+  Rättningen är strukturell och inte en kontroll: **klienten skickar ingen
+  systemprompt till den fria rutten längre.** Den skickar `step` — ett namn ur
+  `BUILD_STEPS` — och servern hämtar prompten själv ur `prompts/` (`env.ASSETS`,
+  med självhämtning som reserv). Dessutom tar den fria rutten **exakt ett
+  användarmeddelande**: ett byggsteg har aldrig fler, en chatt har alltid fler.
+  Steget äger också `max_tokens` och schemat; klientens siffror läses inte.
+  Kvar som möjlig utdata: byggets egna mellandokument och ett team-JSON.
+
+  På vägen flyttade tre saker ur `builder/builder.js` till `_build.js`:
+  `PORTAL_RULES`, `CLARIFY_PROMPT` och `TEAM_SCHEMA`. Det är inte bara en flytt
+  — CLAUDE.md kallade prompten och schemat "ETT kontrakt i två filer" och
+  räknade upp två tillfällen då de glidit isär (`starters`/`routines`, sedan
+  `firstProject`/`seasons`/`triggers`). Nu står beställningen och schemat i
+  samma fil. Alla fyra varianter av sammanställningsprompten (läge × arbetssätt)
+  jämfördes byte för byte mot den gamla klientkoden före flytten, och
+  `TEAM_SCHEMA` deep-equal-jämfördes.
+
+  Grindarna, båda i `test/ai.mjs`: ett stegnamn i `builder.js` som saknas i
+  `BUILD_STEPS` fäller bygget (annars 400 för alla i drift), och en prompt-fil
+  som faller ur `PROMPT_FILES` i `build-dist.mjs` gör det också (annars 503 på
+  just det steget — och för `first-project.md` bara i konsult-läget, alltså
+  precis den sorts fel som får ligga i veckor).
+
+  Portalen är orörd: den skickar `system` som förut och gatas av slug plus
+  inloggning. Demoläget rör aldrig rutten — varje anropsställe i `portal/app.js`
+  ligger bakom en `state.demo`-spärr, kontrollerat.
+
+  **Vad detta INTE gör:** **BF2** står kvar. Systemprompterna går fortfarande
+  att ladda ner gratis ur Buildern; de går bara inte längre att köra hos oss.
+  Om de ska sluta delas ut är ett eget beslut, och det hänger ihop med **OM1**.
 
 - [x] **KR2** "Beviset" har en körning bakom sig — löst 2026-08-18. Under
   rubriken *Ingen av dem är påhittad* stod fyra påhittade namn

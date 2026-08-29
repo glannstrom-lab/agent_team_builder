@@ -92,7 +92,12 @@
   // Strömmar ett svar och anropar onDelta(text) för varje textbit.
   // En väg (/api/ai), ett format (OpenAI-SSE). opts.model och opts.apiKey
   // ignoreras med flit — anropsställena får fortsätta skicka dem.
-  // opts: { system, messages, maxTokens?, json?, schema?, team?, signal?, onDelta, onUsage? }
+  // opts: { system, messages, maxTokens?, json?, schema?, team?, step?, stepOpts?, signal?, onDelta, onUsage? }
+  //
+  // `step` är Builderns väg (K4): den fria rutten tar inte emot en systemprompt
+  // längre, utan ett stegnamn som servern slår upp i functions/api/_build.js.
+  // Portalen skickar `system` som förut — där är det kundens EGET köpta team,
+  // och den vägen är gatad av `team` + inloggning i stället.
   async function stream(opts) {
     const { system, messages, maxTokens, signal, onDelta, json } = opts;
     // opts.model och opts.apiKey ignoreras med flit. Anropsställena får
@@ -116,7 +121,13 @@
       signal: signal || undefined,
       credentials: "same-origin", // sessionen avgör om förbrukningen räknas per konto
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ system, messages, maxTokens: maxTokens || 4096, json: !!json, schema: opts.schema || null, team: opts.team || currentTeam || undefined }),
+      body: JSON.stringify(Object.assign(
+        { system, messages, maxTokens: maxTokens || 4096, json: !!json, schema: opts.schema || null, team: opts.team || currentTeam || undefined },
+        // Byggets steg + dess booleaner (mode/workstyle/person/survey). De är
+        // med flit BOOLEANER och uppräkningar, aldrig fri text: allt som får
+        // vara text hos klienten kan hamna i en systemprompt vi inte skrivit.
+        opts.step ? Object.assign({ step: opts.step }, opts.stepOpts || {}) : null
+      )),
     };
 
     // Automatiska omförsök på 429/529/5xx innan strömningen börjat — de

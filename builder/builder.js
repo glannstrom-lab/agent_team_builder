@@ -29,20 +29,9 @@ function syncModelForProvider() {
   state.model = window.ATBClaude.MODEL_ID;
 }
 
-// Regler för hur en agent blir en portal-systemprompt (speglar templates/shared/portal-team.md).
-const PORTAL_RULES = `Bygg varje agents "system" som en komplett systemprompt SKRIVEN FÖR AGENTEN (inte för användaren):
-1. Kontext om företaget + agentens jobb (jobb-meningen ur proposalen).
-2. DITT PERSPEKTIV — proposalens Perspektiv: blicken agenten resonerar från, vad den alltid letar efter/varnar för. Det som gör att två agenter med närliggande uppgifter svarar olika.
-3. DINA KAPACITETER — punktlista ur proposalen.
-4. (Bara VD-assistenten) DITT TEAM — lista övriga agenter och vad de gör, så den kan hänvisa rätt. VD-assistenten granskar dessutom mötesbidrag mot varje agents "Klart när"-punkter innan sammanställning.
-5. LEVERANS — proposalens Leverans + "Klart när"-punkter: hur ett färdigt svar ser ut, så agenten levererar mot det istället för att resonera fritt.
-6. ARBETSSÄTT — be om data agenten saknar istället för att gissa.
-7. TON — kort; nybörjarkund → pedagogisk/klarspråk, van/byggare → rakare. Avsluta med "Svara på <språk>."
-8. VIKTIGT — vad agenten INTE gör (proposalens "Rör inte"); slutbeslut/juridik ligger hos människan.
-9. STARTERS — per agent: 2–4 korta exempeluppgifter i du-form ("Skriv ett utkast till …", "Gå igenom …"), hämtade ur agentens kapaciteter och kundens veckomoment. De blir klickbara startförslag i portalen — konkreta nog att skicka direkt.
-10. WHY — per agent: EN mening som knyter agenten till kundens egna ord ur intaket/researchen, riktad till kunden: "Du sa att offerterna tar söndagskvällarna — därför finns Offertagenten." Använd kundens formuleringar, fabricera inget. Detta visas på "Därför ser ert team ut så här"-sidan i portalen.`;
+// PORTAL_RULES flyttade till functions/api/_build.js (K4) — Buildern skickar
+// inte längre någon systemprompt till den fria rutten, den namnger ett steg.
 
-const PROMPTS = {}; // cache av hämtade prompt-filer
 const state = {
   // Kunden har ingen egen nyckel (2026-08-06). Fältet står kvar tomt eftersom
   // anropsställena skickar med det; stream() ignorerar det.
@@ -64,14 +53,8 @@ const el = (t, c, x) => { const e = document.createElement(t); if (c) e.classNam
 const esc = (s) => (s || "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const slugify = (s) => s.toLowerCase().replace(/[åä]/g, "a").replace(/ö/g, "o").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40) || "team";
 
-async function fetchPrompt(path) {
-  if (PROMPTS[path]) return PROMPTS[path];
-  const res = await fetch(path);
-  if (!res.ok) throw new Error(`Kunde inte läsa ${path} (${res.status}). Servera projektroten så att prompts/ är åtkomlig.`);
-  const txt = await res.text();
-  PROMPTS[path] = txt;
-  return txt;
-}
+// fetchPrompt() är borta (K4): prompt-filerna läses av servern i stället, så
+// att den fria rutten inte kan matas med en annan systemprompt än byggets.
 
 function hubLink() { const a = el("a", "hublink", "← Mitt AI-team"); a.href = "../"; return a; }
 
@@ -763,10 +746,7 @@ function buildIntakeBlock(intake) {
 // Formulär först, sedan max två AI-följdfrågor på det som stack ut — så
 // tappas inte djupet från fri intervju. Frågorna är nice-to-have: vid fel
 // eller "OK" startar pipelinen direkt.
-const CLARIFY_PROMPT = `Du granskar ett intake-underlag för att bygga ett AI-agentteam.
-Bedöm om research-steget kan arbeta med det: konkreta veckomoment (helst med tidsangivelse), begriplig verksamhet, någon bild av verktyg.
-Svara EXAKT "OK" om underlaget räcker.
-Annars: ställ 1–2 korta följdfrågor som skulle göra störst skillnad — en per rad, varje rad börjar med "- ". Fråga bara om sådant som inte redan står i underlaget. Inga andra ord, ingen inledning.`;
+// CLARIFY_PROMPT och dess två tillägg bor i functions/api/_build.js (K4).
 
 // ── ENKÄT UTAN FRITEXT ÄR INTE ETT UNDERLAG (KA1) ──────────────────────────
 //
@@ -813,19 +793,15 @@ async function clarifyThenBuild(intake, form, btn) {
   btn.disabled = true; btn.textContent = "Läser dina svar…";
   let out = "OK";
   try {
+    // Prompten och dess två tillägg bor i functions/api/_build.js sedan K4.
+    // Härifrån skickas bara vilka av dem som gäller — två booleaner, ingen
+    // text. Följdfrågorna måste fråga om rätt sak: utan `person` frågar
+    // modellen gärna en ekonomiassistent hur många anställda hon har.
     out = (await window.ATBClaude.collect({
       apiKey: state.apiKey, model: state.model,
-      // Följdfrågorna måste fråga om rätt sak. Utan tillägget nedan frågar
-      // modellen gärna en ekonomiassistent hur många anställda hon har.
-      system: CLARIFY_PROMPT
-        + (person
-          ? "\nUNDERLAGET GÄLLER EN ENSKILD PERSON i sitt jobb. Fråga om personens vecka, roll, system och förväntningar — aldrig om företagets storlek, kunder, omsättning eller marknadsföring."
-          : "")
-        + (baraKryss
-          ? "\nUNDERLAGET KOMMER HELT FRÅN KRYSSVAL i en enkät med fasta listor. Det innehåller därför ingenting som skiljer den här verksamheten från vilken annan som helst i samma bransch. Svara ALDRIG \"OK\". Ställ två frågor som bara just den här verksamheten kan besvara — om förra veckan konkret, om vad som blev ogjort, om vad som gör den svår. Fråga inte om något som en lista kunde ha innehållit (bransch, verktyg, kundtyp)."
-          : ""),
+      step: "clarify",
+      stepOpts: { person, survey: baraKryss },
       messages: [{ role: "user", content: buildIntakeBlock(intake) }],
-      maxTokens: 300,
     })).trim();
   } catch (_) { /* följdfrågor är nice-to-have — utom vid rent enkätintag, se nedan */ }
   btn.disabled = false; btn.textContent = orig;
@@ -921,13 +897,16 @@ async function runBuild(intake, prevR) {
   const r = prevR || {};
   state.lastRun = { intake, intakeBlock, r };
 
+  // `step` namnger prompten; filen läses av servern, inte här. Stegnamnen är
+  // nycklarna i BUILD_STEPS (functions/api/_build.js) — byter du namn på ett
+  // här måste registret följa med, annars svarar rutten 400 build_step_required.
   const stages = [
-    { key: "research", label: "Research — analyserar arbetsmoment", file: "../prompts/shared/research.md", stream: true, max: 8192, user: () => intakeBlock, store: "research" },
-    { key: "scale", label: "Skalning — väljer antal agenter", file: "../prompts/shared/scale.md", stream: false, max: 1024, user: () => `INTAKE:\n${intakeBlock}\n\nRESEARCH-DOKUMENT:\n${r.research}`, store: "scaling" },
-    { key: "proposal", label: "Förslag — formar agenterna", file: "../prompts/shared/proposal.md", stream: true, max: 8192, user: () => `INTAKE:\n${intakeBlock}\n\nRESEARCH-DOKUMENT:\n${r.research}\n\nSKALNINGSBESLUT:\n${r.scaling}`, store: "proposal" },
+    { key: "research", label: "Research — analyserar arbetsmoment", step: "research", stream: true, user: () => intakeBlock, store: "research" },
+    { key: "scale", label: "Skalning — väljer antal agenter", step: "scale", stream: false, user: () => `INTAKE:\n${intakeBlock}\n\nRESEARCH-DOKUMENT:\n${r.research}`, store: "scaling" },
+    { key: "proposal", label: "Förslag — formar agenterna", step: "proposal", stream: true, user: () => `INTAKE:\n${intakeBlock}\n\nRESEARCH-DOKUMENT:\n${r.research}\n\nSKALNINGSBESLUT:\n${r.scaling}`, store: "proposal" },
   ];
   if (intake.mode === "ai-consultant") {
-    stages.push({ key: "firstproject", label: "Första projektet — väljer en startpunkt", file: "../prompts/ai-consultant/first-project.md", stream: true, max: 4096, user: () => `INTAKE:\n${intakeBlock}\n\nRESEARCH-DOKUMENT:\n${r.research}\n\nFÖRSLAG:\n${r.proposal}`, store: "firstproject" });
+    stages.push({ key: "firstproject", label: "Första projektet — väljer en startpunkt", step: "firstproject", stream: true, user: () => `INTAKE:\n${intakeBlock}\n\nRESEARCH-DOKUMENT:\n${r.research}\n\nFÖRSLAG:\n${r.proposal}`, store: "firstproject" });
   }
   stages.push({ key: "structure", label: "Sammanställer teamet", stream: false });
 
@@ -947,7 +926,6 @@ async function runBuild(intake, prevR) {
         return;
       }
       if (stg.store && r[stg.store]) { markDone(stg.key); continue; } // klar sedan tidigare — betala inte igen
-      const sys = await fetchPrompt(stg.file);
       const panel = $("#analysis-text");
       // Tom panel = död sida. Under tankepausen står här vad som ska dyka upp;
       // första tecknet skriver över texten (acc är tom, så det sker av sig självt).
@@ -958,13 +936,13 @@ async function runBuild(intake, prevR) {
       // första tecknet — det är den enda signal vi har på att tankepausen är slut.
       const onDelta = (d) => { acc += d; panel.textContent = acc; panel.scrollTop = panel.scrollHeight; clockWriting(acc.length); };
       if (stg.stream) {
-        await streamClaude(sys, [{ role: "user", content: stg.user() }], onDelta, stg.max);
+        await streamSteg(stg.step, [{ role: "user", content: stg.user() }], onDelta);
       } else {
         // Enda icke-strömmande steget i loopen är skalningen (sammanställningen
         // tas om hand ovan). Panelen ska ändå säga vad som pågår.
         panel.textContent = (stg.key === "scale" ? "Väger underlaget mot skalningsreglerna." : "Arbetar med steget.")
           + "\n\nDet här steget strömmar inte — svaret kommer i ett stycke när det är klart.";
-        acc = await callClaude(sys, [{ role: "user", content: stg.user() }], stg.max);
+        acc = await callSteg(stg.step, [{ role: "user", content: stg.user() }]);
         if (stg.key === "scale") {
           // Visa och spara bara beslutet, inte vägen dit. Nästa steg
           // (proposal) ska se vad som beslutats — inte modellens tvekan.
@@ -1038,54 +1016,21 @@ async function structureWithStatus(intake, r) {
 }
 
 // Sista steget: omvandla research + proposal till render-struktur + portal-systemprompter.
+//
+// Beställningen (vilka fält som ska fyllas, hur en systemprompt ska se ut) och
+// TEAM_SCHEMA som tvingar fram dem flyttade till functions/api/_build.js i K4.
+// De var "ETT kontrakt i två filer" och hade glidit isär två gånger — nu står
+// de i samma fil, och klienten kan ändå inte skicka in en egen systemprompt på
+// den fria rutten. Härifrån går bara läget och arbetssättet, som två val ur
+// en känd uppsättning.
 async function structureTeam(intake, r) {
-  // Den här texten MÅSTE spegla TEAM_SCHEMA längre ner, fält för fält. De är
-  // ett kontrakt i två filer: det som inte står i schemat kan inte genereras
-  // (additionalProperties: false), och det som krävs i schemat men inte
-  // beställs här blir påhittat. `scaling` stod här förut och lästes av ingen —
-  // skalningsbeslutet finns redan som eget steg i `r.scaling`.
-  const schema = `{
-  "company": string,
-  "slug": string,
-  "tagline": string,
-  "firstProject": ${intake.mode === "ai-consultant" ? '{ "name": string, "problem": string, "week1": string, "owner": string }' : "null"},
-  "divergence": string,
-  "rejected": [{ "name": string, "why": string }],
-  "routines": [{ "label": string, "agentId": string, "day": number|null, "timeEstimate": number|null, "auto": boolean, "prompt": string }],
-  "seasons": [{ "label": string, "month": number, "day": number|null, "agentId": string|null, "prompt": string|null }],
-  "agents": [{
-    "id": string, "name": string, "icon": string, "role": string, "tagline": string,
-    "always": boolean, "job": string, "why": string, "capabilities": [string], "triggers": [string],
-    "starters": [string], "system": string
-  }]
-}`;
-  const coachRules = intake.workstyle === "coach" ? `
-
-ARBETSLEDARLÄGE (viktigt): kunden gör själva utförandet i sin egen AI (t.ex. ChatGPT). Varje agents system-prompt ska instruera agenten att leverera ARBETSPAKET i stället för färdigt innehåll: 1) kort brief (vad och varför), 2) en FÄRDIG självbärande prompt i ett \`\`\`-kodblock — med all kontext kundens AI behöver inbakad, 3) "Klart när"-checklistan att bedöma resultatet mot, 4) erbjudande att kvalitetsgranska om kunden klistrar tillbaka resultatet. Starters formuleras som arbetspaket-beställningar ("Gör ett arbetspaket för veckans nyhetsbrev").` : "";
-  const sys = `Du sammanställer ett redan färdigt agent-team till strukturerad JSON för rendering och för en kundportal.
-
-HÄMTA ALLT INNEHÅLL FRÅN FÖRSLAGET OCH RESEARCHEN NEDAN. Fabricera inget, lägg inte till eller ta bort agenter, ändra inte besluten. Du formaterar bara om — innehållet är redan bestämt.
-
-${PORTAL_RULES}${coachRules}
-
-VD-assistenten ska ha id "vd-assistent" och vara först i listan, sedan VD (id "vd"), sedan specialister i prioritetsordning. always=true för VD och VD-assistent. VD ⚡, VD-assistent 🧭, domän-emoji för specialister. Avvisade moment kommer från researchen/förslaget (minst ett).
-
-DIVERGENCE: en mening ur proposalens/researchens divergens-check — varför just DETTA team inte skulle passa en annan aktör i samma bransch ("Skulle det passa en annan keramiker? Nej, för …"). Hämta ur underlaget; finns ingen divergens-check, härled den ur teamets mest verksamhetsspecifika val.
-
-SEASONS: kundens årshjul — BARA händelser som uttryckligen nämns i intake/research (mässor, deklarationsdatum, högsäsonger, ansökningsdeadlines). month 1–12, day om känd annars null, agentId = mest relevant agent annars null, prompt = valfri startuppgift i du-form. Fabricera inga datum; tom lista om årsrytmen är okänd. Portalen påminner kunden i förväg ("X dagar till mässan").
-
-TRIGGERS: per agent, 0–3 konkreta situationer i kundens vardag då man ska vända sig till just den agenten ("När en offert ska ut", "Inför månadsbokslutet"). Hämta dem ur researchens arbetsmoment. Har en agent ingen tydlig utlösare — VD och VD-assistent har sällan det, de är alltid på — lämna listan tom. Hitta aldrig på en situation för att fylla ut.
-
-RUTINER: 3–5 stående rutiner hämtade ur kundens faktiska veckomoment (inte påhittade). label = kort namn; agentId = agenten som äger momentet; day = veckodag 1–7 (1=måndag) om momentet är dagbundet, annars null; timeEstimate = minuter momentet brukar ta manuellt ENLIGT RESEARCHEN (null om researchen inte anger tid — hitta aldrig på); auto = true på HÖGST EN rutin och bara om dess prompt är komplett utan [fyll i]-luckor (portalen kör den då automatiskt på rätt dag), annars false; prompt = uppgiften i du-form med [fyll i]-luckor för det agenten behöver av användaren, konkret nog att skicka direkt.
-
-Returnera ENBART giltig JSON enligt schemat (ingen text runt, inga markdown-staket):
-${schema}`;
   const fpBlock = r.firstproject ? `\n\nFÖRSTA PROJEKTET:\n${r.firstproject}` : "";
   const user = `RESEARCH-DOKUMENT:\n${r.research}\n\nSKALNINGSBESLUT:\n${r.scaling}\n\nFÖRSLAG (agenterna):\n${r.proposal}${fpBlock}\n\nSammanställ som JSON.`;
 
-  // json: true — se kommentaren i functions/api/ai.js. Det här steget är det
-  // enda i pipelinen som måste ge maskinläsbart svar, och det var det som föll.
-  const raw = await callClaude(sys, [{ role: "user", content: user }], 16000, true, TEAM_SCHEMA);
+  // Steget är det enda i pipelinen som måste ge maskinläsbart svar, och det var
+  // det som föll. Schemat sätts av servern (strict-läge, se _build.js) — det är
+  // skillnaden mot json_object, som bara garanterar syntax.
+  const raw = await callSteg("structure", [{ role: "user", content: user }], { mode: intake.mode, workstyle: intake.workstyle });
   let team;
   try {
     team = parseTeamJson(raw);
@@ -1168,95 +1113,9 @@ function kontrolleraSystemprompter(team) {
   throw err;
 }
 
-// Schemat som modellen MÅSTE följa. Strict-läget kräver att varje objekt har
-// additionalProperties: false och att alla fält står i required — det är just
-// den strängheten som gör att starters och routines inte kan hoppas över.
-// Uppmätt 2026-08-06: med bara json_object utelämnade modellen båda, och
-// portalens agentkort och veckorutiner hade levererats tomma.
-//
-// BAKSIDAN, uppmätt 2026-08-15 och lagad 2026-08-16: `additionalProperties:
-// false` betyder att ett fält som saknas i schemat inte bara är valfritt —
-// det är FÖRBJUDET. Prompten ovan beställde `firstProject`, `seasons` och
-// `agents[].triggers`, och modellen kunde inte leverera något av dem hur
-// tydligt den än blev tillsagd. Följderna gick åt olika håll och båda var
-// tysta:
-//
-//   • `seasons` saknades i ALLA genererade teamfiler → portalens årshjul var
-//     permanent tomt, och ingen kunde se varför.
-//   • `firstProject` gick inte att producera → konsult-lägets 🎯-panel kunde
-//     aldrig fyllas, trots att first-project-steget kördes och betalades.
-//   • `triggers` → "Triggas av"-chipsen i builderns förhandsvisning var döda.
-//
-// Omvänt krävde schemat ett toppnivå-`why` som ingen prompt definierade och
-// ingen kod läste: modellen tvingades hitta på det för att svaret skulle
-// valideras.
-//
-// REGELN: prompten och schemat är ETT kontrakt i två filer. Ändras det ena
-// måste det andra följa med, i båda riktningarna — ett fält som beställs men
-// inte står här kommer aldrig tillbaka, och ett fält som krävs här men inte
-// beställs blir påhittat. Lägg inte till något här utan en läsare i koden;
-// det var så `language` och `defaultModel` blev dödfält.
-const TEAM_SCHEMA = {
-  type: "object", additionalProperties: false,
-  // Allt i properties måste stå i required — strict-läget tillåter inga
-  // valfria fält. Det som får saknas uttrycks som nullbar typ eller tom lista,
-  // inte som en utelämnad nyckel.
-  required: ["company", "tagline", "slug", "divergence", "agents", "rejected", "routines", "seasons", "firstProject"],
-  properties: {
-    company: { type: "string" }, tagline: { type: "string" }, slug: { type: "string" },
-    divergence: { type: "string" },
-    agents: {
-      type: "array", minItems: 2,
-      items: {
-        type: "object", additionalProperties: false,
-        required: ["id", "name", "icon", "role", "tagline", "always", "job", "why", "capabilities", "triggers", "starters", "system"],
-        properties: {
-          id: { type: "string" }, name: { type: "string" }, icon: { type: "string" },
-          role: { type: "string" }, tagline: { type: "string" }, always: { type: "boolean" },
-          job: { type: "string" }, why: { type: "string" },
-          capabilities: { type: "array", minItems: 3, items: { type: "string" } },
-          // Inget minItems: alla agenter har inte en naturlig utlösare, och
-          // ett golv här hade betytt påhittade triggers i stället för tomma.
-          triggers: { type: "array", items: { type: "string" } },
-          starters: { type: "array", minItems: 3, maxItems: 3, items: { type: "string" } },
-          system: { type: "string" },
-        },
-      },
-    },
-    rejected: {
-      type: "array", minItems: 1,
-      items: { type: "object", additionalProperties: false, required: ["name", "why"],
-        properties: { name: { type: "string" }, why: { type: "string" } } },
-    },
-    routines: {
-      type: "array", minItems: 3,
-      items: { type: "object", additionalProperties: false,
-        required: ["label", "agentId", "day", "timeEstimate", "auto", "prompt"],
-        properties: { label: { type: "string" }, agentId: { type: "string" },
-          day: { type: ["integer", "null"] }, timeEstimate: { type: ["integer", "null"] },
-          auto: { type: "boolean" }, prompt: { type: "string" } } },
-    },
-    // Årshjulet. Tom lista är ett giltigt och vanligt svar — prompten förbjuder
-    // uttryckligen att datum fabriceras, så ett minItems här hade beställt just
-    // det den förbjuder.
-    seasons: {
-      type: "array",
-      items: { type: "object", additionalProperties: false,
-        required: ["label", "month", "day", "agentId", "prompt"],
-        properties: { label: { type: "string" }, month: { type: "integer" },
-          day: { type: ["integer", "null"] }, agentId: { type: ["string", "null"] },
-          prompt: { type: ["string", "null"] } } },
-    },
-    // Bara konsult-läget har ett första projekt. I team-builder-läget beställer
-    // prompten uttryckligen null, därför nullbar i stället för utelämnad.
-    firstProject: {
-      type: ["object", "null"], additionalProperties: false,
-      required: ["name", "problem", "week1", "owner"],
-      properties: { name: { type: "string" }, problem: { type: "string" },
-        week1: { type: "string" }, owner: { type: "string" } },
-    },
-  },
-};
+// TEAM_SCHEMA bor i functions/api/_build.js (K4), i samma fil som den prompt
+// som beställer fälten. Kontraktet var spritt över två filer och hade glidit
+// isär två gånger; nu kan Buildern inte ens skicka ett eget schema.
 
 // Läser modellens svar som JSON, och lagar det om det behövs.
 //
@@ -1955,18 +1814,24 @@ function renderError(msg, canRetryStructure, canResume) {
 }
 
 // ---------- Claude API ----------
-// Tunna omslag runt den delade klienten (../atb-claude.js). callClaude samlar
-// hela svaret; streamClaude strömmar via onDelta. Abort-signalen kommer från
+// Tunna omslag runt den delade klienten (../atb-claude.js). callSteg samlar
+// hela svaret; streamSteg strömmar via onDelta. Abort-signalen kommer från
 // "Avbryt körningen"-knappen.
-async function callClaude(system, messages, maxTokens, json, schema) {
+//
+// Buildern skickar SEDAN K4 inget `system` alls: den namnger ett steg, och
+// servern (functions/api/_build.js) slår upp prompten. Det är därför den fria
+// rutten inte längre går att använda som gratis chatt eller som väg tillbaka
+// för en uppsagd kund — det finns ingen systemprompt att skicka in.
+// `stepOpts` är stegets booleaner och lägen, aldrig kundtext.
+async function callSteg(step, messages, stepOpts) {
   return window.ATBClaude.collect({
-    apiKey: state.apiKey, model: state.model, system, messages, maxTokens, json, schema,
+    apiKey: state.apiKey, model: state.model, step, stepOpts, messages,
     signal: state.abort ? state.abort.signal : undefined,
   });
 }
-async function streamClaude(system, messages, onDelta, maxTokens) {
+async function streamSteg(step, messages, onDelta, stepOpts) {
   await window.ATBClaude.stream({
-    apiKey: state.apiKey, model: state.model, system, messages, maxTokens, onDelta,
+    apiKey: state.apiKey, model: state.model, step, stepOpts, messages, onDelta,
     signal: state.abort ? state.abort.signal : undefined,
   });
 }
