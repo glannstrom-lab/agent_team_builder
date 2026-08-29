@@ -419,9 +419,112 @@ function saveTeamExt(ext) {
   if (folderActive()) queueFolder(() => writeFolderFile(TEAMEXT_FILE, JSON.stringify(ext, null, 2)));
   return true;
 }
+// ---------- tillägget applicerat på grundkonfigen (P4) ----------
+//
+// Fram till 2026-08-29 var tillägget enkelriktat: kunden kunde LÄGGA TILL
+// agenter, aldrig ändra eller avsluta dem som kom med bygget. Följden var att
+// teamet bara kunde växa. En agent som formats för ett arbetsmoment kunden
+// slutat med — eller som fått fel ton, fel namn, fel blick — stod kvar i
+// vänsterspalten för alltid, och den enda utvägen var att bygga om hela teamet
+// från början. Det är fel utväg av två skäl: den kostar ett nytt bygge, och den
+// slänger historiken.
+//
+// Nu bär tillägget tre saker till, alla frivilliga och alla borttagbara:
+//
+//   retired — grundagenter kunden ställt åt sidan. Det är AVSLUTA, inte radera:
+//     historiken ligger kvar under agentens id, och "Ta tillbaka" ger både
+//     agenten och samtalet tillbaka. En raderad agent hade tagit med sig ett
+//     halvårs anteckningar som kunden inte visste att hon förlorade.
+//   edits — namn, en rad om vad agenten gör, och systemprompten. Original­texten
+//     rörs aldrig; en ändring är ett lager ovanpå och går att ångra.
+//   entry — vem som leder veckostart, möten och veckobrev. Sätts automatiskt
+//     när ingångsagenten avslutas, för utan den raden hade portalen laddat med
+//     en `entryAgent` som inte finns och fallit tillbaka på "första i listan",
+//     vilket är slumpen och inte ett val.
+//
+// Allt bor i samma `teamExt` som de tillagda agenterna, alltså i localStorage
+// och (med kopplad mapp) i team-tillagg.json — samma väg, samma kö, samma
+// synk till en annan dator.
+// ⟦EXT-START⟧
+const EXT_SYSTEM_MIN = 40; // en systemprompt kortare än så är inte en agent
+
+// Ren funktion: tar grundkonfigen och tillägget, ger tillbaka teamet kunden
+// ska se. Muterar `team` (den är portalens levande objekt) men läser bara
+// `ext`. Körs vid varje laddning — därför måste den tåla ett tillägg som pekar
+// på agenter som inte längre finns i grundkonfigen.
+function applyTeamExt(team, ext) {
+  ext = ext || {};
+
+  // 1. Tillagda agenter och rutiner, som förut.
+  (ext.agents || []).forEach((a) => {
+    if (!a || !a.id || !a.system) return;
+    if (team.agents.some((b) => b.id === a.id)) return;
+    a.added = true;
+    team.agents.push(a);
+  });
+  (ext.routines || []).forEach((r) => {
+    if (!r || !r.label) return;
+    if ((team.routines || []).some((x) => x.label === r.label)) return;
+    (team.routines = team.routines || []).push(r);
+  });
+
+  // 2. Ändringar. Bara de tre fälten — resten av agenten (id, ikon, starters,
+  //    triggers) kommer från bygget och är inte kundens att skriva om här.
+  const edits = ext.edits || {};
+  team.agents.forEach((a) => {
+    const e = edits[a.id];
+    if (!e) return;
+    if (typeof e.name === "string" && e.name.trim()) a.name = e.name.trim();
+    if (typeof e.tagline === "string") a.tagline = e.tagline.trim();
+    if (typeof e.system === "string" && e.system.trim().length >= EXT_SYSTEM_MIN) a.system = e.system;
+    a.edited = true;
+  });
+
+  // 3. Avslutade. Filtreras bort ur teamet men rörs inte i historiken.
+  const retired = new Set(Array.isArray(ext.retired) ? ext.retired : []);
+  if (retired.size) {
+    const kvar = team.agents.filter((a) => !retired.has(a.id));
+    // Skyddsnät: ett team utan agenter är en portal utan innehåll, och varje
+    // render därefter kastar. Hellre en agent för mycket än en tom skärm.
+    if (kvar.length) team.agents = kvar;
+  }
+
+  // 4. Ingångsagenten sist, när listan är färdig. Ordningen spelar roll:
+  //    en entry som pekar på någon avslutad ska ersättas, inte behållas.
+  const finns = (id) => !!id && team.agents.some((a) => a.id === id);
+  if (finns(ext.entry)) team.entryAgent = ext.entry;
+  else if (!finns(team.entryAgent)) {
+    const alltid = team.agents.find((a) => a.always);
+    team.entryAgent = (alltid || team.agents[0]).id;
+  }
+  return team;
+}
+
+// Vem som tar över om `id` avslutas. Används både av bekräftelserutan (så att
+// kunden får veta det INNAN hon klickar ja) och av själva avslutandet — samma
+// svar på båda ställena, annars säger dialogen ett namn och portalen väljer ett
+// annat.
+function extEntryEfter(team, id) {
+  const kvar = team.agents.filter((a) => a.id !== id);
+  if (!kvar.length) return null;
+  if (team.entryAgent !== id) return team.entryAgent;
+  return (kvar.find((a) => a.always) || kvar[0]).id;
+}
+// ⟦EXT-SLUT⟧
+
 // Vid mappkoppling: hämta hem tillägg som gjorts i en annan webbläsare.
 // Union, aldrig radering — den som tagit bort en agent har redan skrivit om
 // filen, så det som ligger kvar där är sådant som ska finnas.
+//
+// Union betyder olika saker för de olika fälten, och skillnaden är avsiktlig:
+//   agents/routines — läggs till om de saknas.
+//   retired         — läggs till. Ett avslut gjort på kontorsdatorn ska gälla
+//                     också hemma; annars dyker agenten upp igen på en dator
+//                     och kunden tror att avslutet inte fastnade.
+//   edits           — per agent, och den LOKALA vinner. Den som just skrivit om
+//                     en systemprompt här ska inte få den överskriven av en
+//                     äldre version från filen.
+//   entry           — tas bara om vi saknar ett eget val.
 async function mergeTeamExtFromFolder() {
   if (!folderActive() || !team) return false;
   let fromFile = null;
@@ -429,12 +532,16 @@ async function mergeTeamExtFromFolder() {
     const fh = await state.folder.handle.getFileHandle(TEAMEXT_FILE);
     fromFile = JSON.parse(await (await fh.getFile()).text());
   } catch (_) { return false; } // ingen fil (eller trasig) — inget att hämta
-  if (!fromFile || !Array.isArray(fromFile.agents)) return false;
+  if (!fromFile || typeof fromFile !== "object") return false;
+
   const cur = loadTeamExt();
   const agents = (cur.agents || []).slice();
   const routines = (cur.routines || []).slice();
+  const retired = (cur.retired || []).slice();
+  const edits = Object.assign({}, cur.edits || {});
   let changed = false;
-  fromFile.agents.forEach((a) => {
+
+  (fromFile.agents || []).forEach((a) => {
     if (!a || !a.id || !a.system || agents.some((b) => b.id === a.id)) return;
     agents.push(a); changed = true;
   });
@@ -442,22 +549,37 @@ async function mergeTeamExtFromFolder() {
     if (!r || !r.label || routines.some((x) => x.label === r.label)) return;
     routines.push(r); changed = true;
   });
+  (fromFile.retired || []).forEach((id) => {
+    if (typeof id !== "string" || retired.includes(id)) return;
+    retired.push(id); changed = true;
+  });
+  Object.keys(fromFile.edits || {}).forEach((id) => {
+    if (edits[id]) return; // lokal ändring vinner
+    edits[id] = fromFile.edits[id]; changed = true;
+  });
+  if (!cur.entry && typeof fromFile.entry === "string") { cur.entry = fromFile.entry; changed = true; }
+
   if (!changed) return false;
-  cur.agents = agents; cur.routines = routines;
+  cur.agents = agents; cur.routines = routines; cur.retired = retired; cur.edits = edits;
   try { localStorage.setItem(teamExtKey(), JSON.stringify(cur)); } catch (e) { storeWarn("teamets tillägg", e); }
   // Lägg in i det laddade teamet direkt, annars syns de först vid nästa F5.
-  agents.forEach((a) => { if (!team.agents.some((b) => b.id === a.id)) { a.added = true; team.agents.push(a); } });
-  routines.forEach((r) => { if (!(team.routines || []).some((x) => x.label === r.label)) (team.routines = team.routines || []).push(r); });
+  // Samma funktion som laddningsvägen använder, så att en agent som kommer hem
+  // via mappen behandlas exakt som en som redan låg här.
+  applyTeamExt(team, cur);
   assignAvatars(team);
   return true;
 }
+
 // Tvåvägs: hämta först hem filens tillägg (så inget skrivs över), skicka
 // sedan upp den sammanslagna listan. Returnerar true om teamet ändrades.
 async function syncTeamExtWithFolder() {
   if (!folderActive()) return false;
   const changed = await mergeTeamExtFromFolder();
   const cur = loadTeamExt();
-  if ((cur.agents || []).length || (cur.routines || []).length) {
+  // Också avslut och ändringar, inte bara tillägg: annars skrivs filen utan
+  // dem och nästa dator hämtar hem ett team där den avslutade agenten står kvar.
+  if ((cur.agents || []).length || (cur.routines || []).length ||
+      (cur.retired || []).length || Object.keys(cur.edits || {}).length) {
     queueFolder(() => writeFolderFile(TEAMEXT_FILE, JSON.stringify(cur, null, 2)));
   }
   return changed;
@@ -732,12 +854,7 @@ async function loadTeam(slug) {
   // efter bygget läggs ovanpå grundkonfigen vid varje laddning.
   try {
     const ext = JSON.parse(localStorage.getItem("atb_teamext_" + slug) || "null");
-    if (ext && Array.isArray(ext.agents)) {
-      ext.agents.forEach((a) => { if (a && a.id && a.system && !team.agents.some((b) => b.id === a.id)) { a.added = true; team.agents.push(a); } });
-      (ext.routines || []).forEach((r) => {
-        if (r && r.label && !(team.routines || []).some((x) => x.label === r.label)) (team.routines = team.routines || []).push(r);
-      });
-    }
+    if (ext) applyTeamExt(team, ext);
   } catch (_) { /* trasigt tillägg — kör grundkonfigen */ }
   assignAvatars(team); // ge varje agent en (stabil, slumpad) avatar om ingen är satt
   state.slug = slug;
@@ -2342,6 +2459,133 @@ function autoMarkRead(agentId) {
 }
 // ⟦AUTO-SLUT⟧
 
+
+// ---------- ändra en agent (P4) ----------
+// Tre fält, inte hela agenten. Id, ikon, starters och triggers kommer ur
+// bygget och hör ihop med resten av konfigen; namn, den korta raden och
+// systemprompten är det kunden faktiskt vill åt när något skaver.
+//
+// Originalet skrivs aldrig över: ändringen är ett lager i `teamExt`, och
+// "Återställ" tar bort lagret i stället för att försöka skriva tillbaka en
+// text vi inte har kvar.
+function openAgentEdit(agent) {
+  const box = openOverlay("✎ " + agent.name);
+  box.appendChild(el("p", "ovl-lead",
+    "Ändringarna gäller bara ert team och går att återställa. Originalet från bygget rörs inte."));
+
+  const fält = (etikett, värde, rader, hjälp) => {
+    const id = "edit-" + etikett.replace(/\W+/g, "-").toLowerCase();
+    const lab = el("label", "ovl-label", etikett);
+    lab.setAttribute("for", id);
+    box.appendChild(lab);
+    if (hjälp) box.appendChild(el("p", "ovl-note", hjälp));
+    const n = rader ? el("textarea", "ovl-ta") : el("input", "ovl-input");
+    if (rader) n.rows = rader; else n.type = "text";
+    n.id = id;
+    n.value = värde || "";
+    box.appendChild(n);
+    return n;
+  };
+
+  const nName = fält("Namn", agent.name, 0);
+  const nTag = fält("En rad om vad hen gör", agent.tagline, 2);
+  const nSys = fält("Så här arbetar agenten", agent.system, 12,
+    "Det här är instruktionen agenten följer i varje svar. Skriv om tonen, lägg till vad hen ska " +
+    "fråga efter, eller stryk något hen inte ska göra. Behåll rubrikerna — DITT PERSPEKTIV är det " +
+    "som gör att den här agenten svarar annorlunda än de andra.");
+
+  const errEl = el("div", "setup-err"); errEl.setAttribute("role", "alert"); errEl.style.display = "none";
+  box.appendChild(errEl);
+
+  const spara = el("button", "btn-primary ovl-save", "Spara ändringen"); spara.type = "button";
+  spara.onclick = () => {
+    const namn = nName.value.trim();
+    const sys = nSys.value.trim();
+    if (!namn) { errEl.textContent = "Agenten behöver ett namn."; errEl.style.display = "block"; return; }
+    // En tömd systemprompt gör agenten till en allmän chatt utan perspektiv —
+    // alltså precis det teamet finns för att inte vara. Hellre stopp här än en
+    // agent som svarar som vilken AI som helst och ingen förstår varför.
+    if (sys.length < EXT_SYSTEM_MIN) {
+      errEl.textContent = "Instruktionen är för kort. Beskriv hur agenten ska arbeta — annars svarar hen som vilken AI som helst.";
+      errEl.style.display = "block"; return;
+    }
+    const cur = loadTeamExt();
+    cur.edits = cur.edits || {};
+    cur.edits[agent.id] = { name: namn, tagline: nTag.value.trim(), system: sys };
+    if (!saveTeamExt(cur)) { errEl.textContent = "Ändringen kunde inte sparas — webbläsarens lagring är full."; errEl.style.display = "block"; return; }
+    // Applicera direkt på det laddade teamet: annars står gamla namnet kvar i
+    // vänsterspalten tills kunden laddar om, och det ser ut som att sparningen
+    // inte gick igenom.
+    agent.name = namn;
+    agent.tagline = nTag.value.trim();
+    agent.system = sys;
+    agent.edited = true;
+    closeOverlay();
+    renderPortal();
+  };
+  box.appendChild(spara);
+
+  if ((loadTeamExt().edits || {})[agent.id]) {
+    // act-btn och inte btn-ghost: den senare finns bara i builderns CSS, och
+    // portalen laddar inte den — knappen hade blivit ostylad.
+    const åter = el("button", "act-btn ovl-save", "Återställ till originalet"); åter.type = "button";
+    åter.onclick = () => {
+      if (!confirm(`Återställa ${agent.name} till hur agenten såg ut vid bygget?`)) return;
+      const cur = loadTeamExt();
+      if (cur.edits) delete cur.edits[agent.id];
+      saveTeamExt(cur);
+      closeOverlay();
+      location.reload(); // originaltexten finns bara i grundkonfigen
+    };
+    box.appendChild(åter);
+  }
+}
+
+// ---------- avsluta en agent (P4) ----------
+// AVSLUTA, inte radera. Historiken ligger kvar under agentens id och kommer
+// tillbaka med agenten. En tillagd agent tas däremot bort på riktigt — den har
+// ingen originalversion att återvända till.
+function retireAgent(agent) {
+  if (team.agents.length <= 1) {
+    alert("Det här är teamets sista agent. Lägg till en ny först, eller bygg om teamet.");
+    return;
+  }
+  const nyEntry = extEntryEfter(team, agent.id);
+  const byte = nyEntry && nyEntry !== team.entryAgent
+    ? `\n\n${agentById(nyEntry).name} tar över veckostart, möten och veckobrev.`
+    : "";
+
+  if (agent.added) {
+    if (!confirm(`Ta bort ${agent.name} ur teamet?${byte}`)) return;
+    const cur = loadTeamExt();
+    cur.agents = (cur.agents || []).filter((x) => x.id !== agent.id);
+    cur.routines = (cur.routines || []).filter((r) => r.agentId !== agent.id);
+    if (cur.edits) delete cur.edits[agent.id];
+    if (nyEntry && nyEntry !== team.entryAgent) cur.entry = nyEntry;
+    saveTeamExt(cur); // även till mappen — annars kommer agenten tillbaka där
+    team.agents = team.agents.filter((x) => x.id !== agent.id);
+    team.routines = (team.routines || []).filter((r) => r.agentId !== agent.id);
+  } else {
+    if (!confirm(`Avsluta ${agent.name}?\n\nSamtalet sparas och agenten går att ta tillbaka under "Utveckla teamet".${byte}`)) return;
+    const cur = loadTeamExt();
+    cur.retired = (cur.retired || []).concat([agent.id]);
+    // Namnet sparas så att listan över avslutade kan visa något läsbart —
+    // agenten själv finns ju inte kvar i det laddade teamet att slå upp.
+    cur.edits = cur.edits || {};
+    cur.edits[agent.id] = Object.assign({}, cur.edits[agent.id], { name: agent.name });
+    if (nyEntry && nyEntry !== team.entryAgent) cur.entry = nyEntry;
+    saveTeamExt(cur);
+    team.agents = team.agents.filter((x) => x.id !== agent.id);
+  }
+
+  if (nyEntry) team.entryAgent = nyEntry;
+  // Stod kunden i den avslutade agentens chatt? Peka om till ingången, annars
+  // renderas en portal utan aktiv agent (och nästa send kastar).
+  if (state.activeAgentId === agent.id) state.activeAgentId = team.entryAgent;
+  closeOverlay();
+  renderPortal();
+}
+
 // ---------- puls-kort ----------
 // 2–3 lokalt beräknade kort ovanför chatten — ingen AI-kostnad, alltid
 // färska. Portalen har alltid något att säga när den öppnas.
@@ -2799,31 +3043,61 @@ function openGrow() {
   };
   box.appendChild(go);
 
-  // Befintliga tillägg — kan tas bort (grundteamet kan inte).
-  const ext = loadTeamExt();
-  if (Array.isArray(ext.agents) && ext.agents.length) {
-    box.appendChild(el("div", "ovl-label", "Tillagda efter bygget"));
-    ext.agents.forEach((a) => {
+  // ── Grundteamet: ändra eller avsluta (P4) ────────────────────────────────
+  //
+  // Låg tidigare utanför kundens räckvidd helt. En agent som fått fel ton eller
+  // vars arbetsmoment försvunnit stod kvar i vänsterspalten för alltid, och
+  // enda utvägen var att bygga om hela teamet — vilket kostar ett nytt bygge
+  // och slänger historiken.
+  const extNu = loadTeamExt();
+  const avslutade = Array.isArray(extNu.retired) ? extNu.retired : [];
+
+  box.appendChild(el("div", "ovl-label", "Teamet i dag"));
+  team.agents.forEach((a) => {
+    const row = el("div", "doc-row");
+    const namn = el("span", "doc-title", `${a.icon || "•"} ${a.name}`);
+    if (a.id === team.entryAgent) namn.textContent += " — leder veckostart och möten";
+    row.appendChild(namn);
+
+    const änd = el("button", "act-btn", "Ändra"); änd.type = "button";
+    änd.title = "Namn, vad agenten gör, och hur den arbetar";
+    änd.onclick = () => openAgentEdit(a);
+    row.appendChild(änd);
+
+    // En agent som lades till efter bygget tas bort helt (den har ingen
+    // originalversion att återvända till); en grundagent AVSLUTAS och går att
+    // ta tillbaka. Två olika saker, därför två olika ord i knappen.
+    // .doc-del är en 36 px ikonknapp — den passar ✕ men klipper ordet
+    // "Avsluta". Textknappen får därför samma stil som "Ändra" bredvid.
+    const av = el("button", a.added ? "doc-del" : "act-btn", a.added ? "✕" : "Avsluta"); av.type = "button";
+    av.title = a.added ? "Ta bort tillägget" : "Ställ agenten åt sidan — samtalet sparas och går att ta tillbaka";
+    av.onclick = () => retireAgent(a);
+    row.appendChild(av);
+
+    box.appendChild(row);
+  });
+
+  if (avslutade.length) {
+    box.appendChild(el("div", "ovl-label", "Avslutade — samtalen ligger kvar"));
+    avslutade.forEach((id) => {
+      const e = (extNu.edits || {})[id] || {};
       const row = el("div", "doc-row");
-      row.appendChild(el("span", "doc-title", `${a.icon || "•"} ${a.name}`));
-      const del = el("button", "doc-del", "✕"); del.type = "button"; del.title = "Ta bort tillägget (historiken för agenten rensas inte)";
-      del.onclick = () => {
-        if (!confirm(`Ta bort ${a.name} ur teamet?`)) return;
+      row.appendChild(el("span", "doc-title", `⏸ ${e.name || id}`));
+      const åter = el("button", "act-btn", "Ta tillbaka"); åter.type = "button";
+      åter.onclick = () => {
         const cur = loadTeamExt();
-        cur.agents = (cur.agents || []).filter((x) => x.id !== a.id);
-        cur.routines = (cur.routines || []).filter((r) => r.agentId !== a.id);
-        saveTeamExt(cur); // även till mappen — annars kommer agenten tillbaka där
-        team.agents = team.agents.filter((x) => x.id !== a.id);
-        team.routines = (team.routines || []).filter((r) => r.agentId !== a.id);
-        // Stod kunden i den borttagna agentens chatt? Peka om till ingången,
-        // annars renderas en portal utan aktiv agent (och nästa send kastar).
-        if (state.activeAgentId === a.id) state.activeAgentId = agentById(team.entryAgent) ? team.entryAgent : team.agents[0].id;
-        closeOverlay(); renderPortal();
+        cur.retired = (cur.retired || []).filter((x) => x !== id);
+        saveTeamExt(cur);
+        closeOverlay();
+        location.reload(); // agenten kommer ur grundkonfigen — den måste läsas om
       };
-      row.appendChild(del);
+      row.appendChild(åter);
       box.appendChild(row);
     });
+    box.appendChild(el("p", "ovl-note",
+      "En avslutad agent är inte raderad: historiken ligger kvar och kommer tillbaka med agenten."));
   }
+
   box.appendChild(el("p", "ovl-note", folderActive()
     ? `Tillägg sparas i den här webbläsaren OCH i mappen "${state.folder.name}" (team-tillagg.json) — de överlever alltså en rensad webbläsare och följer med till en annan dator. För en full omprövning av hela teamet: kör en ny Builder-körning.`
     : "Tillägg sparas lokalt i den här webbläsaren (och följer med i delningslänkar/teamfiler du skapar härifrån). Koppla en mapp under Minne & underlag om de ska överleva en rensad webbläsare. För en full omprövning av hela teamet: kör en ny Builder-körning."));

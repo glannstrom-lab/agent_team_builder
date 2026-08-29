@@ -47,7 +47,6 @@ Från genomgången 2026-08-17 · sju parallella linser + egen verifiering.
 - [ ] **OM4** Integrationsspåret är varken valt eller bortvalt. Alla konkurrenter har verktygsåtkomst (Lindy 5 000+, Vorker Fortnox/Visma, Marblism Gmail/WordPress) — våra agenter kan tala, deras kan göra. Antingen **en** integration väl gjord (kalender eller Gmail; Fortnox är Vorkers hemmaplan), eller sälj bortvalet explicit: "vi kopplas inte in i era system." Att inte välja är det enda som är fel · `docs/omvarldsresearch-2026-08-18.md` · `mätt` · beslut först
 - [ ] **OM5** Konkurrenterna säljer på sparad tid; vi räknar aldrig. Underlaget finns redan lokalt (antal svar, körda rutiner, hållna möten) — en timsiffra i "Veckan som gick" och i veckobrevet är det som gör värdet synligt för **köparen**, inte bara för utföraren (churn-mekaniken i halvårssimuleringen) · `portal/app.js`, `functions/api/digest/run.js` · `läst i koden` · ~3–5 h
 - [ ] **P2** Gratisbygget fångar ingen e-post — övergiven körning är borta för alltid · `builder/builder.js:1432-1493` · `läst i koden` · ~4 h
-- [ ] **P4** Grundteamets agenter går att lägga till, aldrig redigera eller avsluta · `portal/app.js:2617-2691` · `läst i koden` · ~5 h
 - [ ] **P3** Provmånaden har ingen utgående livlina utanför portalen · `functions/api/_plan.js:65-86` · `mätt` · ~6 h
 
 ## Dokumentationsfel — rättade 2026-08-17
@@ -73,8 +72,8 @@ Rättade direkt i filerna (rent git-träd). Raderna står i terminalsvaret.
 
 ## Byggt 2026-08-29 (inte driftsatt)
 
-**K4**, **KA4** och **P6** lösta; **P1**:s kodhalva gjord. Nya filer:
-`functions/api/_build.js`, `test/csp.mjs`, `test/portal.mjs`. Testsviten **229
+**K4**, **KA4**, **P6** och **P4** lösta; **P1**:s kodhalva gjord. Nya filer:
+`functions/api/_build.js`, `test/csp.mjs`, `test/portal.mjs`. Testsviten **257
 gröna**, `check:dist` ren. Inga migrationer, inga nya secrets, ingen ny rutt.
 
 Verifierat i emulatorn (`wrangler pages dev dist`), inte antaget: anrop utan
@@ -98,9 +97,11 @@ bindningen saknas även i drift. **Ingen riktig körning i Buildern har gjorts**
 båda grindarna mutationsprovades (måttet nollställt → rött; anropet
 bortkopplat → rött).
 
-**P6 är inte kört i webbläsare.** Verifieringen är statisk plus åtta nya
-enhetstester som kör blocket ur `portal/app.js`. En auto-rutin kräver ett
-riktigt AI-anrop, och den lokala nyckeln är ogiltig.
+**Ingenting i portalen är kört i webbläsare** (P6 och P4). Verifieringen är
+statisk plus 36 enhetstester som kör blocken ur `portal/app.js` — för P4
+bland annat mot varje riktig teamkonfig, med varje agent avslutad en i
+taget. En auto-rutin kräver dessutom ett riktigt AI-anrop, och den lokala
+nyckeln är ogiltig.
 
 **P1:s CSP-rad är mutationsprovad** (borttagen → rött), men beaconen är inte
 påslagen, så att raden verkligen räcker är `läst i koden` — inte `mätt`.
@@ -152,6 +153,59 @@ kedja hela vägen fram, `/avregistrera` 400 på trasig token och 200 på okänd,
 i dag är påslaget.
 
 ## Klart
+
+- [x] **P4** Grundteamets agenter går att ändra och avsluta — löst 2026-08-29.
+
+  Tillägget var enkelriktat: kunden kunde LÄGGA TILL agenter, aldrig röra dem
+  som kom med bygget. En agent som formats för ett arbetsmoment kunden slutat
+  med — eller som fått fel ton, fel namn, fel blick — stod kvar i vänsterspalten
+  för alltid, och enda utvägen var en ny Builder-körning. Fel utväg av två skäl:
+  den kostar ett nytt bygge, och den slänger historiken.
+
+  `teamExt` bär nu tre saker till, alla frivilliga och alla borttagbara:
+
+  - **`retired`** — grundagenter kunden ställt åt sidan. Det är *avsluta*, inte
+    radera: historiken ligger kvar under agentens id, och "Ta tillbaka" ger både
+    agenten och samtalet tillbaka. En raderad agent hade tagit med sig ett
+    halvårs anteckningar utan att kunden visste att hon förlorade dem. En
+    *tillagd* agent tas däremot bort på riktigt — den har ingen originalversion
+    att återvända till, och därför står det olika ord på de två knapparna.
+  - **`edits`** — namn, raden om vad agenten gör, och systemprompten.
+    Originalet skrivs aldrig över; ändringen är ett lager, och "Återställ" tar
+    bort lagret i stället för att skriva tillbaka en text vi inte har kvar. En
+    instruktion kortare än 40 tecken avvisas: en tömd systemprompt gör agenten
+    till en vanlig chatt utan perspektiv, alltså precis det teamet finns för att
+    inte vara.
+  - **`entry`** — vem som leder veckostart, möten och veckobrev. Sätts
+    automatiskt när ingångsagenten avslutas. Utan den raden hade portalen
+    laddat med en `entryAgent` som inte finns och fallit tillbaka på "första i
+    listan", vilket är slumpen och inte ett val. Bekräftelserutan säger vem som
+    tar över *innan* kunden klickar ja, och den räknas av samma funktion som
+    själva avslutet (`extEntryEfter`) — annars säger dialogen ett namn och
+    portalen väljer ett annat.
+
+  Allt bor i samma tillägg som de tillagda agenterna: localStorage, och med
+  kopplad mapp även `team-tillagg.json`. Mappsynken slogs ihop till samma
+  `applyTeamExt()` som laddningsvägen — förut hade de var sin sammanslagning,
+  alltså två sanningar om samma sak. `retired` är union över datorer (ett avslut
+  gjort på kontoret ska gälla hemma), medan en lokal `edits`-post vinner över
+  filens: den som just skrivit om en systemprompt ska inte få den överskriven av
+  en äldre version.
+
+  **Sextusen tester syns inte i en webbläsare, så det här testades i stället:**
+  `applyTeamExt` körs ur källan (`⟦EXT-START⟧`/`⟦EXT-SLUT⟧`) mot **varje riktig
+  teamkonfig i `portal/teams/`**, med varje agent avslutad en i taget — 14 filer,
+  och kravet är att teamet aldrig blir tomt och att `entryAgent` alltid pekar på
+  någon som finns. Plus fallen som inte finns i repot: ett team utan
+  `always`-agent, ett tillägg som pekar på id:n som försvunnit ur grundkonfigen
+  (ny Builder-körning), och en dubblett som försöker skriva över en grundagent.
+  Mutationsprovat: skyddet mot tomt team borttaget → rött; entry-lagningen
+  borttagen → rött.
+
+  **Inte kört i webbläsare.** UI-delen (dialogen, knapparna) är verifierad
+  statiskt — bland annat att `btn-ghost` inte finns i `portal/portal.css` och
+  att `.doc-del` är en 36 px ikonknapp som hade klippt ordet "Avsluta". Båda
+  rättade innan commit, men ingen har sett dialogen rita upp sig.
 
 - [x] **P6** Auto-körda rutiners "ligger klar"-bevis överlever en omladdning — löst 2026-08-29.
 

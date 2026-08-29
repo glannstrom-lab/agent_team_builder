@@ -17,7 +17,7 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 
 const KÄLLA = readFileSync("portal/app.js", "utf8");
 
@@ -127,4 +127,191 @@ test("sidladdningens egen agentväxling räknas inte som läst", () => {
     "renderApp markerar agenten som öppnad av kunden");
   assert.ok(/if \(!\(opts && opts\.boot\) && autoMarkRead\(id\)\)/.test(KÄLLA),
     "selectAgent tar inte hänsyn till boot-flaggan");
+});
+
+// ── P4: grundteamet går att ändra och avsluta ──────────────────────────────
+//
+// Tillägget var enkelriktat: kunden kunde lägga till agenter, aldrig ändra
+// eller avsluta dem som kom med bygget. En agent som fått fel ton eller vars
+// arbetsmoment försvunnit stod kvar för alltid, och enda utvägen var att bygga
+// om hela teamet — vilket kostar ett nytt bygge och slänger historiken.
+//
+// `applyTeamExt` körs vid VARJE laddning och vid varje mappsynk. Går den fel
+// får kunden ett team som inte är hennes, eller ingen portal alls. Därför
+// testas den ur källan, inte som kopia.
+function laddaExt() {
+  const i = KÄLLA.indexOf("⟦EXT-START⟧");
+  const j = KÄLLA.indexOf("⟦EXT-SLUT⟧");
+  assert.ok(i >= 0 && j > i, "hittade inte ext-blocket i portal/app.js");
+  const kropp = KÄLLA.slice(KÄLLA.indexOf("\n", i) + 1, KÄLLA.lastIndexOf("\n", j) + 1);
+  assert.ok(kropp.includes("function applyTeamExt"), "ext-blocket ser inte ut som väntat");
+  return new Function(kropp + "; return { applyTeamExt, extEntryEfter, EXT_SYSTEM_MIN };")();
+}
+
+const SYS = "DITT PERSPEKTIV\nDu ser verksamheten ur kundens ögon och letar efter var löftet spricker.\n\nLEVERANS\nEtt utkast.";
+const grundteam = () => ({
+  company: "Lerverk",
+  entryAgent: "vd-assistent",
+  agents: [
+    { id: "vd-assistent", name: "Veckopiloten", icon: "🧭", always: true, tagline: "håller ihop veckan", system: SYS },
+    { id: "vd", name: "Studiochefen", icon: "⚡", always: true, tagline: "prioriterar", system: SYS },
+    { id: "text", name: "Butiksskribenten", icon: "✍️", tagline: "skriver produkttexter", system: SYS },
+  ],
+  routines: [{ label: "Veckobrief", agentId: "vd-assistent", prompt: "Sammanfatta veckan." }],
+});
+
+test("utan tillägg är teamet oförändrat", () => {
+  const { applyTeamExt } = laddaExt();
+  const t = applyTeamExt(grundteam(), {});
+  assert.equal(t.agents.length, 3);
+  assert.equal(t.entryAgent, "vd-assistent");
+});
+
+test("en avslutad grundagent försvinner ur teamet", () => {
+  const { applyTeamExt } = laddaExt();
+  const t = applyTeamExt(grundteam(), { retired: ["text"] });
+  assert.deepEqual(t.agents.map((a) => a.id), ["vd-assistent", "vd"]);
+});
+
+test("avslutas ingångsagenten tar någon annan över — annars laddar portalen utan ingång", () => {
+  const { applyTeamExt } = laddaExt();
+  const t = applyTeamExt(grundteam(), { retired: ["vd-assistent"] });
+  assert.ok(!t.agents.some((a) => a.id === "vd-assistent"));
+  assert.ok(t.agents.some((a) => a.id === t.entryAgent),
+    "entryAgent pekar på någon som inte finns — veckostart, möten och veckobrev går sönder");
+  // En `always`-agent går före en specialist: det är de som är formade för att
+  // hålla ihop veckan.
+  assert.equal(t.entryAgent, "vd");
+});
+
+test("kundens eget val av ingångsagent vinner", () => {
+  const { applyTeamExt } = laddaExt();
+  const t = applyTeamExt(grundteam(), { entry: "text" });
+  assert.equal(t.entryAgent, "text");
+});
+
+test("ett entry-val som pekar på någon avslutad ignoreras", () => {
+  const { applyTeamExt } = laddaExt();
+  const t = applyTeamExt(grundteam(), { retired: ["text"], entry: "text" });
+  assert.ok(t.agents.some((a) => a.id === t.entryAgent));
+  assert.notEqual(t.entryAgent, "text");
+});
+
+test("allt kan inte avslutas — en tom portal är ingen portal", () => {
+  const { applyTeamExt } = laddaExt();
+  const t = applyTeamExt(grundteam(), { retired: ["vd-assistent", "vd", "text"] });
+  assert.ok(t.agents.length >= 1, "ett team utan agenter kastar vid varje render");
+  assert.ok(t.agents.some((a) => a.id === t.entryAgent));
+});
+
+test("ändringar läggs ovanpå, fält för fält", () => {
+  const { applyTeamExt } = laddaExt();
+  const nySys = SYS + "\n\nSkriv alltid kortare än 200 ord.";
+  const t = applyTeamExt(grundteam(), { edits: { text: { name: "Texten", system: nySys } } });
+  const a = t.agents.find((x) => x.id === "text");
+  assert.equal(a.name, "Texten");
+  assert.equal(a.system, nySys);
+  assert.equal(a.tagline, "skriver produkttexter", "fält som inte ändrats ska stå kvar");
+  assert.equal(a.edited, true);
+});
+
+test("en tömd systemprompt skrivs inte in — då vore agenten en vanlig chatt", () => {
+  const { applyTeamExt, EXT_SYSTEM_MIN } = laddaExt();
+  const t = applyTeamExt(grundteam(), { edits: { text: { system: "x".repeat(EXT_SYSTEM_MIN - 1) } } });
+  assert.equal(t.agents.find((x) => x.id === "text").system, SYS,
+    "en för kort instruktion ska falla tillbaka på originalet, inte ersätta det");
+});
+
+test("ett tillägg som pekar på agenter som inte finns kvar tål laddningen", () => {
+  // Grundkonfigen kan ha ändrats sedan tillägget skrevs (ny Builder-körning,
+  // annan teamfil). Då pekar retired/edits på id:n som inte finns — det får
+  // inte kasta, för koden körs vid varje laddning.
+  const { applyTeamExt } = laddaExt();
+  const t = applyTeamExt(grundteam(), {
+    retired: ["finns-inte"], edits: { "inte-heller": { name: "X" } }, entry: "borta",
+  });
+  assert.equal(t.agents.length, 3);
+  assert.equal(t.entryAgent, "vd-assistent");
+});
+
+test("tillagda agenter och rutiner kommer med, utan dubbletter", () => {
+  const { applyTeamExt } = laddaExt();
+  const ext = {
+    agents: [{ id: "stod", name: "Stödsökaren", system: SYS }, { id: "vd", name: "Dubblett", system: SYS }],
+    routines: [{ label: "Ansökningar", agentId: "stod" }, { label: "Veckobrief", agentId: "vd" }],
+  };
+  const t = applyTeamExt(grundteam(), ext);
+  assert.deepEqual(t.agents.map((a) => a.id), ["vd-assistent", "vd", "text", "stod"]);
+  assert.equal(t.agents.find((a) => a.id === "vd").name, "Studiochefen", "en dubblett får inte skriva över grundagenten");
+  assert.equal(t.agents.find((a) => a.id === "stod").added, true);
+  assert.deepEqual(t.routines.map((r) => r.label), ["Veckobrief", "Ansökningar"]);
+});
+
+test("extEntryEfter säger samma sak som avslutandet gör", () => {
+  // Bekräftelserutan visar namnet på den som tar över INNAN kunden klickar ja.
+  // Räknar de två olika säger dialogen ett namn och portalen väljer ett annat.
+  const { applyTeamExt, extEntryEfter } = laddaExt();
+  const t = grundteam();
+  const utlovad = extEntryEfter(t, "vd-assistent");
+  const efter = applyTeamExt(grundteam(), { retired: ["vd-assistent"], entry: utlovad });
+  assert.equal(efter.entryAgent, utlovad);
+
+  // Och när någon annan än ingången avslutas ska ingången stå kvar.
+  assert.equal(extEntryEfter(grundteam(), "text"), "vd-assistent");
+});
+
+test("laddning och mappsynk går genom samma funktion", () => {
+  // Två vägar in i samma team. Gjorde de olika saker skulle en agent som kom
+  // hem via mappen behandlas annorlunda än en som redan låg här.
+  const träffar = KÄLLA.match(/applyTeamExt\(team, /g) || [];
+  assert.ok(träffar.length >= 2,
+    "applyTeamExt anropas inte från både laddningen och mappsynken");
+  assert.ok(!/ext\.agents\.forEach\(\(a\) => \{ if \(a && a\.id && a\.system/.test(KÄLLA),
+    "den gamla, egna sammanslagningen i laddningsvägen finns kvar — då är det två sanningar igen");
+});
+
+test("avslut och ändringar skrivs också till mappen", () => {
+  // Utan dem skrivs team-tillagg.json utan avsluten, och nästa dator hämtar
+  // hem ett team där den avslutade agenten står kvar.
+  const i = KÄLLA.indexOf("async function syncTeamExtWithFolder");
+  assert.ok(i > 0, "hittade inte syncTeamExtWithFolder");
+  const kropp = KÄLLA.slice(i, KÄLLA.indexOf("\n}", i));
+  assert.match(kropp, /cur\.retired/);
+  assert.match(kropp, /cur\.edits/);
+});
+
+// Mot de RIKTIGA teamkonfigarna, inte bara ett hittepåteam. `applyTeamExt`
+// körs vid varje laddning av var och en av dem, och toy-teamet ovan råkar ha
+// två `always`-agenter — det har inte alla. Ett team där ingen är `always`
+// hade fallit på `alltid || team.agents[0]` om den raden såg annorlunda ut.
+const TEAMDIR = "portal/teams";
+const teamfiler = readdirSync(TEAMDIR).filter((f) => f.endsWith(".js") && f !== "index.js");
+
+function riktigtTeam(fil) {
+  const win = {};
+  new Function("window", readFileSync(`${TEAMDIR}/${fil}`, "utf8"))(win);
+  return win.TEAM;
+}
+
+for (const fil of teamfiler) {
+  test(`${fil} överlever att varje agent avslutas, en i taget`, () => {
+    const { applyTeamExt } = laddaExt();
+    const original = riktigtTeam(fil);
+    for (const a of original.agents) {
+      const t = applyTeamExt(riktigtTeam(fil), { retired: [a.id] });
+      assert.ok(t.agents.length >= 1, `${a.id}: teamet blev tomt`);
+      assert.ok(!t.agents.some((x) => x.id === a.id), `${a.id}: står kvar trots avslut`);
+      assert.ok(t.agents.some((x) => x.id === t.entryAgent),
+        `${a.id}: entryAgent "${t.entryAgent}" finns inte i teamet — veckostart och möten går sönder`);
+    }
+  });
+}
+
+test("även ett team utan `always`-agent får en ingång", () => {
+  const { applyTeamExt } = laddaExt();
+  const t = applyTeamExt({
+    entryAgent: "a",
+    agents: [{ id: "a", name: "A", system: "x" }, { id: "b", name: "B", system: "x" }],
+  }, { retired: ["a"] });
+  assert.equal(t.entryAgent, "b");
 });

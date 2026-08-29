@@ -177,7 +177,11 @@ skisser i `design/` (deployas inte).
   1–4, juli 2026): kom igång-checklista, puls-kort,
   vecko-streak, "Veckan som gick", auto-körda rutiner, minnesförslag med
   godkännande, sök i historik + arkiv till mappen, "Utveckla teamet" (växtväg
-  via tidigare avvisade agenter), Dela & exportera team, kvartalsöverblick,
+  via tidigare avvisade agenter — och sedan P4 2026-08-29 även **ändra och
+  avsluta** grundteamets agenter: `retired`/`edits`/`entry` i `teamExt`,
+  applicerade av `applyTeamExt()` vid varje laddning och varje mappsynk. Avsluta
+  är inte radera — historiken ligger kvar och kommer tillbaka med agenten),
+  Dela & exportera team, kvartalsöverblick,
   filimport (PDF/Word/xlsx/csv via `portal/vendor/`), svenska myndighetsdatum
   (`portal/deadlines-se.js`), diktering och seasons-årshjul. Multi-tenant via
   `?team=<slug>` → `portal/teams/<slug>.js`; utan parameter visas en
@@ -559,7 +563,7 @@ ny kund dyker upp i både galleri och portal automatiskt.
 │                                   #   plan_lifecycle, ai_errors, weekly_digest
 ├── test/                           # node --test: teams, stripe, plan, ai, throttle,
 │                                   #   examples, klient, intake, health, skalning,
-│                                   #   digest, csp, portal (229 tester)
+│                                   #   digest, csp, portal (257 tester)
 ├── scripts/                        # provision.mjs — lägg upp en kund för hand
 │                                   #   check-dist.mjs — kontrollerar versionsstämplingen
 ├── testoutput/                     # Råa pipeline-körningar (källmaterial, ej deployat)
@@ -705,9 +709,12 @@ ny kund dyker upp i både galleri och portal automatiskt.
 > avsnitt 4 i `villkor.html` och `TIERS` i `functions/api/_stripe.js` ändras
 > alltid samma dag.
 >
-> **Två beslut kvar** (utskrivna i `docs/roadmap.md`): om capability-läsningen
-> ska dö helt, och var "Utveckla teamet" ska spara. De två första är fattade
-> 2026-08-06: **noll provsvar** och **ingen live-provning av eget team**.
+> **Ett beslut kvar** (utskrivet i `docs/roadmap.md`): om capability-läsningen
+> ska dö helt. De två första är fattade 2026-08-06: **noll provsvar** och
+> **ingen live-provning av eget team**. Det tredje — var "Utveckla teamet" ska
+> spara — är besvarat av koden sedan P4 (2026-08-29): i `teamExt`, alltså
+> localStorage plus `team-tillagg.json` när en mapp är kopplad. Samma väg som
+> tilläggen redan tog; inget nytt lager.
 >
 > **Pass 2 är gjort och driftsatt 2026-08-07** — planen har en livscykel (se
 > avsnittet ovan). Migration 0005 körd skarpt, koden deployad (commit `a50ecf3`),
@@ -761,12 +768,23 @@ ny kund dyker upp i både galleri och portal automatiskt.
 > håller raden kvar. Själva påslaget är en knapp i Pages-dashboarden, och den
 > är Mikaels.
 >
-> Testsviten är **229 gröna**. Inga nya migrationer, inga nya secrets, ingen ny
+> **P4** — grundteamets agenter går att ändra och avsluta. Avsluta är inte
+> radera: historiken kommer tillbaka med agenten, och ingångsagenten flyttas
+> automatiskt om det är hen som ställs åt sidan.
+>
+> Testsviten är **257 gröna**. Inga nya migrationer, inga nya secrets, ingen ny
 > rutt. Läget står i `ROADMAP.md` under *Byggt 2026-08-29*.
 >
-> **Nästa pass enda uppgift:** ta **P4** — grundteamets agenter går att lägga
-> till men aldrig redigera eller avsluta (`portal/app.js`, ~5 h) — om inte
-> Mikael först fattar Cowork-beslutet, som avgör BF2, BF3 och OM1 på en gång.
+> **Ingenting i portalen är kört i webbläsare den här dagen** (P6, P4). Fyra
+> pass i rad har lagt kod i `portal/app.js` utan att någon sett den rita upp
+> sig. Nästa pass bör börja med att faktiskt öppna portalen — och det kräver en
+> giltig `OPENROUTER_KEY` i `.dev.vars`; den lokala svarar "Missing
+> Authentication header".
+>
+> **Nästa pass enda uppgift:** ta **OM5** — konkurrenterna säljer på sparad tid
+> och vi räknar aldrig (`portal/app.js`, `functions/api/digest/run.js`, ~3–5 h)
+> — om inte Mikael först fattar Cowork-beslutet, som avgör BF2, BF3 och OM1 på
+> en gång.
 >
 > Notera att K4 gör **BF2** mindre akut men inte löst: systemprompterna går
 > fortfarande att ladda ner gratis, de går bara inte längre att köra hos oss.
