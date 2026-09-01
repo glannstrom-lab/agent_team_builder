@@ -85,6 +85,35 @@ Från genomgången 2026-09-01 · sex parallella linser + egen verifiering.
 - [ ] **P2** Gratisbygget fångar ingen e-post — övergiven körning är borta för alltid · `builder/builder.js:1432-1493` · `läst i koden` · ~4 h
 - [ ] **P3** Provmånaden har ingen utgående livlina utanför portalen · `functions/api/_plan.js:65-86` · `mätt` · ~6 h
 
+## Driftsatt 2026-09-01
+
+Pages `a125bc7a`, commit `dbde03b`. **Ingenting kundvänt ändrades** — wrangler
+rapporterade `Uploaded 0 files (103 already uploaded)`, alltså byte-identiskt
+innehåll. Passets enda kodändring är en kommentar i `build-dist.mjs`, och
+`granskning/` står inte i ITEMS. Deployen kördes för att bekräfta att kedjan är
+grön, inte för att skeppa något.
+
+Verifierat i drift efteråt:
+
+- `/api/health` **200 friskt**, alla tre kontrollerna sanna.
+- Fria rutten utan `step` → **400 `build_step_required`** med den svenska
+  texten. K4-grinden står.
+- Hub, builder, portal och galleri svarar 200; `villkor.html` och
+  `integritet.html` ger 308 till de extensionslösa adresserna som svarar 200
+  (Pages standard, inget fel). Okänd adress → **404**.
+- **BF3 bekräftad skarpt:** `prompts/shared/research.md` svarar 200 med
+  17 807 byte klartext. Siffran i BF3 är alltså inte historisk — den gäller nu.
+
+**Fynd under deployen, och det är det viktigaste i det här avsnittet:** `main`
+låg **sju commits före `origin/main`** — `4fbaaae` (K4) till och med `dbde03b`.
+Hela 2026-08-29-passet är alltså driftsatt sedan tre dagar utan att någonsin ha
+pushats. Två följder: **CI har aldrig kört på den kod som ligger i produktion**
+(workflowen triggar på push, deployen kräver ingen), och argumentet i
+CLAUDE.md:s backup-avsnitt — att D1 är den enda datakällan som inte går att
+återskapa, eftersom "koden, prompterna och besluten ligger i git" — förutsätter
+en git som finns någon annanstans än på samma disk som `backup/`. Den
+förutsättningen höll inte i dag. Se **DR13**.
+
 ## Dokumentationsfel — rättade 2026-09-01
 
 Rättade direkt i filerna (rent git-träd före och efter; `npm test` 274 gröna,
