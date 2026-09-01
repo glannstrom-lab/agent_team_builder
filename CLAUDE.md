@@ -207,9 +207,10 @@ och ett globalt dygnstak (4 000). Förbrukningen bokförs i `ai_budget` och
 4 000, bokförd på raden `build:global` i `ai_usage`. Utan den delade gratis,
 anonym byggtrafik hink med betalande kunder, och en dag med ovanligt många
 byggen kunde stänga portalen för dem som betalat — nu finns alltid minst 1 500
-svar kvar åt portalen. Taken har tester i `test/ai.mjs` (17 st); rutten hade
-noll fram till 2026-08-16, trots att den är den enda filen där en manipulerad
-klient kan kosta oss pengar.
+svar kvar åt portalen. Taken har tester i `test/ai.mjs` (34 st, uppmätt
+2026-09-01 — 17 när de skrevs 2026-08-16); rutten hade noll fram till
+2026-08-16, trots att den är den enda filen där en manipulerad klient kan kosta
+oss pengar.
 Nyckelvägen är borta: `renderKeySetup()` finns inte längre i portalen, och
 `atb-claude.js` har bara `/api/ai`.
 
@@ -520,7 +521,7 @@ finns bara där. **Kopiorna ligger på samma disk som repot** — de skyddar mot
 trasig migration, inte mot en trasig disk. Flytta dem någon annanstans.
 
 **Rulla tillbaka kod och schema tillsammans.** Pages har rollback i sin
-dashboard, men migrationerna (`migrations/0001`–`0005`) är enkelriktade: det
+dashboard, men migrationerna (`migrations/0001`–`0007`) är enkelriktade: det
 finns inga down-skript, och `ALTER TABLE ADD COLUMN` i 0003 och 0005 är inte
 idempotenta om de körs om för hand. Att rulla tillbaka *bara* koden går bra så
 länge migrationerna bara lägger till kolumner — extra kolumner ignoreras. Den

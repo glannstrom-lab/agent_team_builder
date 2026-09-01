@@ -47,9 +47,11 @@ if (dangling.length) {
   process.exit(1);
 }
 
-// Buildern kör exakt dessa filer verbatim (builder/builder.js). Resten av
-// prompts/ — intake, pedagogik, generate, handoff — är konsult-IP och
-// publiceras inte på den publika sajten.
+// Servern läser exakt dessa filer verbatim (functions/api/_build.js, via
+// env.ASSETS) — sedan K4 hämtar Buildern inga prompter själv. De måste
+// därför ligga i dist/ för att ASSETS ska nå dem; att de samtidigt blir
+// publikt läsbara utåt är BF3 i ROADMAP.md. Resten av prompts/ — intake,
+// pedagogik, generate, handoff — är konsult-IP och publiceras inte.
 const PROMPT_FILES = [
   "prompts/shared/research.md",
   "prompts/shared/scale.md",
