@@ -105,14 +105,21 @@ Verifierat i drift efteråt:
   17 807 byte klartext. Siffran i BF3 är alltså inte historisk — den gäller nu.
 
 **Fynd under deployen, och det är det viktigaste i det här avsnittet:** `main`
-låg **sju commits före `origin/main`** — `4fbaaae` (K4) till och med `dbde03b`.
-Hela 2026-08-29-passet är alltså driftsatt sedan tre dagar utan att någonsin ha
-pushats. Två följder: **CI har aldrig kört på den kod som ligger i produktion**
-(workflowen triggar på push, deployen kräver ingen), och argumentet i
-CLAUDE.md:s backup-avsnitt — att D1 är den enda datakällan som inte går att
+låg **åtta commits före `origin/main`** — allt från `4fbaaae` (K4) till
+`3533ad9`. Hela 2026-08-29-passet var alltså driftsatt sedan tre dagar utan att
+någonsin ha pushats. Två följder: **CI hade inte kört på den kod som låg i
+produktion** (workflowen triggar på push, deployen kräver ingen), och argumentet
+i CLAUDE.md:s backup-avsnitt — att D1 är den enda datakällan som inte går att
 återskapa, eftersom "koden, prompterna och besluten ligger i git" — förutsätter
 en git som finns någon annanstans än på samma disk som `backup/`. Den
-förutsättningen höll inte i dag. Se **DR13**.
+förutsättningen höll inte. Se **DR13**.
+
+**Stängt samma dag:** `6bdc993..3533ad9` pushad, `origin/main..main` är tomt, och
+CI-körningen på `3533ad9` gick **grön** (tester, bygge, `check-dist`) —
+[run 33540117832](https://github.com/glannstrom-lab/agent_team_builder/actions/runs/33540117832).
+Föregående körning var `6bdc993` den **18 augusti**: testsviten hade alltså inte
+sett produktionskoden på två veckor. `npm run deploy` pushar fortfarande inte —
+kör `git log --oneline origin/main..main` efter varje driftsättning.
 
 ## Dokumentationsfel — rättade 2026-09-01
 
