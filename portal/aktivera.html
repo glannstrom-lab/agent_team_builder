@@ -63,8 +63,13 @@
     show(
       '<div class="setup-badge">Saknar kvitto</div>' +
       "<h1>Den här sidan behöver ett köp</h1>" +
-      "<p>Adressen saknar det kvitto-id som Stripe skickar med efter en betalning. Har ni just betalat: gå tillbaka till kvittomejlet och följ länken därifrån.</p>" +
-      '<p>Har ni redan ett team? <a href="./">Logga in här.</a></p>'
+      // KR6: här stod "gå tillbaka till kvittomejlet och följ länken därifrån".
+      // Stripes kvittomejl leder till Stripes EGEN kvittosida, inte till vår
+      // success_url — den länken finns alltså inte. Rätt räddningsplanka är
+      // inloggningen: teamet levereras av webhooken oavsett vad som hände med
+      // fliken, så adressen kunden betalade med räcker hela vägen in.
+      "<p>Adressen saknar det kvitto-id som Stripe skickar med efter en betalning. Har ni just betalat behöver ni inte den här sidan: teamet levereras oavsett vad som hände med fliken.</p>" +
+      '<p><a class="btn-primary" href="./">Logga in med adressen ni betalade med</a></p>'
     );
     return;
   }
@@ -106,8 +111,12 @@
     show(
       '<div class="setup-badge">Tar längre tid än väntat</div>' +
       "<h1>Betalningen är registrerad</h1>" +
-      "<p>Teamet är betalt, men aktiveringen har inte gått igenom än. Det löser sig oftast av sig självt inom några minuter — ladda om sidan då.</p>" +
-      "<p>Står det kvar: mejla <a href=\"mailto:info@mittaiteam.se\">info@mittaiteam.se</a> så fixar vi det för hand. Uppge gärna <code>" + esc(sessionId.slice(0, 20)) + "…</code></p>"
+      // KR6: sidan sa "ladda om / mejla oss" utan att nämna det som faktiskt
+      // fungerar. Leveransen sker i webhooken, inte i den här fliken — kunden
+      // kan alltså stänga den och logga in i stället för att sitta och vänta.
+      "<p>Teamet är betalt, och leveransen sker på vår sida — inte i den här fliken. Ni kan stänga den.</p>" +
+      '<p><a class="btn-primary" href="./">Logga in med adressen ni betalade med</a></p>' +
+      "<p>Fungerar inte inloggningen inom några minuter: mejla <a href=\"mailto:info@mittaiteam.se\">info@mittaiteam.se</a> så fixar vi det för hand. Uppge gärna <code>" + esc(sessionId.slice(0, 20)) + "…</code></p>"
     );
   }
 

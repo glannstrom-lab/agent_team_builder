@@ -1930,8 +1930,11 @@ function perspToggle(perspectives) {
 // ---------- ISO-vecka ----------
 // Bodde tidigare i kostnadsvisningen; används av veckorutiner, streak och
 // pulskortet.
-function isoWeek() {
-  const d = new Date();
+// `when` utelämnad = den här veckan. Parametern finns för RE1: "Veckan som
+// gick" måste kunna fråga efter FÖREGÅENDE veckas nyckel, annars går det inte
+// att skilja en tom ny vecka från en vecka utan arbete.
+function isoWeek(when) {
+  const d = when ? new Date(when) : new Date();
   const day = (d.getDay() + 6) % 7;
   d.setDate(d.getDate() - day + 3); // torsdagen i samma vecka
   const jan4 = new Date(d.getFullYear(), 0, 4);
@@ -2266,6 +2269,19 @@ function refreshSidebar() {
   if (!old) return;
   old.replaceWith(renderSidebar());
   document.querySelectorAll(".agent-item").forEach((n) => n.classList.toggle("active", n.dataset.agent === state.activeAgentId));
+  // KR3: provmånadskortet ritas av checkTrialNotice() in i `.ws`, som byggs
+  // inuti renderSidebar() — och raden ovan byter ut hela sidopanelen. Utan det
+  // här anropet försvinner kortet vid varje omritning och kommer aldrig
+  // tillbaka förrän kunden laddar om sidan.
+  //
+  // Uppmätt i webbläsare 2026-09-06: kortet var borta redan efter att
+  // presentationsrundan stängts (den anropar refreshSidebar när den lämnas),
+  // alltså innan kunden hunnit göra någonting alls. Portalens enda väg från
+  // 90 till 290 kr satt i ett kort som i praktiken aldrig syntes.
+  //
+  // Funktionen är idempotent: den avbryter på `#trial-card`, respekterar
+  // snooze och gör ett `/api/auth/me`-anrop som redan är cachat i meOnce().
+  checkTrialNotice();
 }
 
 // ============================================================
@@ -2391,6 +2407,42 @@ function tidBokför(minuter) {
 
 function tidSedan(frånMs) {
   return tidLedger().reduce((n, x) => (x.at >= frånMs ? n + (+x.m || 0) : n), 0);
+}
+
+// Summan för EN vecka. Liggaren överlever veckoskiftet; rutinloggen gör det
+// inte, och det är hela skillnaden i RE1.
+function tidForVecka(v) {
+  return tidLedger().reduce((n, x) => (x.v === v ? n + (+x.m || 0) : n), 0);
+}
+
+// ── veckan som gick (RE1) ─────────────────────────────────────────────────
+//
+// `routLoad()` nollställer posten vid varje ISO-veckoskifte, och pulskortet
+// "Ny vecka" visas exakt vid veckans FÖRSTA öppning — alltså precis då loggen
+// ser tom ut. Återblicken frågade därför alltid efter en vecka som just
+// börjat, och rapporterade noll rutiner och noll sparad tid till en kund som
+// kanske gjort allt. Reproducerat 2026-09-01: tre avbockade rutiner värda 135
+// minuter blev 0 st och 0 minuter i underlaget.
+//
+// Den sparade posten ligger däremot kvar ORÖRD tills första avbockningen i
+// den nya veckan skriver över den. Förra veckan går alltså att läsa, så länge
+// man frågar efter rätt veckonyckel.
+//
+// Returnerar vilken vecka svaret gäller, så att texten kan säga rätt sak i
+// stället för att gissa: "förra veckan" och "denna vecka" är inte samma
+// påstående till någon som betalar för att slippa gissa.
+const isoWeekFörra = () => isoWeek(Date.now() - 7 * 86400000);
+
+function routVeckanSomGick() {
+  if (state.demo || !state.slug) return { vecka: "denna", done: [] };
+  try {
+    const r = JSON.parse(localStorage.getItem("atb_rout_" + state.slug) || "null");
+    if (r && Array.isArray(r.done)) {
+      if (r.week === isoWeekFörra()) return { vecka: "förra", done: r.done };
+      if (r.week === isoWeek()) return { vecka: "denna", done: r.done };
+    }
+  } catch (_) { /* trasig post — hellre tomt än påhittat */ }
+  return { vecka: "denna", done: [] };
 }
 // ⟦TID-SLUT⟧
 
@@ -2711,7 +2763,18 @@ function renderPulse() {
     cards.push({ icon: "⏱", label: `Teamet har gjort ${tidFormat(tidVeckan)} manuellt arbete i veckan — se vad`,
       act: openWeekWork });
   }
-  if (pulseNewWeek) cards.push({ icon: "☀️", label: "Ny vecka — få \"Veckan som gick\" + förslag på veckans fokus", act: () => { pulseNewWeek = false; weekReview(); } });
+  if (pulseNewWeek) {
+    // RE1: vid veckans första öppning är innevarande vecka per definition tom,
+    // så ⏱-kortet ovan tiger — och det är precis då kunden tittar. Ge kortet
+    // förra veckans siffra i stället för att lägga till ett andra kort som
+    // leder till en tom vy.
+    const förraTid = tidForVecka(isoWeekFörra()) ||
+      sparadTid(team.routines, routVeckanSomGick().done).minuter;
+    const etikett = förraTid
+      ? `Ny vecka — förra veckan gjorde teamet ${tidFormat(förraTid)} manuellt arbete. Se veckan som gick`
+      : "Ny vecka — få \"Veckan som gick\" + förslag på veckans fokus";
+    cards.push({ icon: "☀️", label: etikett, act: () => { pulseNewWeek = false; weekReview(); } });
+  }
   (team.routines || []).forEach((rt) => {
     if (rt.day === todayDayNo() && !routineDone(rt.label)) cards.push({ icon: "📌", label: `Idag: ${rt.label}`, act: () => runRoutine(rt) });
   });
@@ -2812,17 +2875,26 @@ function weekReview() {
     if (q) perAgent.push(`- ${a.name}: ${q} frågor/uppgifter`);
   });
   const meetings = Object.values(state.history).flat().filter((m) => m && m.at && m.at >= since && m.role === "user" && /^🤝 Möte/.test(m.content || "")).length;
-  const klaraR = routLoad().done;
+  // RE1: fråga efter den vecka återblicken handlar om, inte efter den som just
+  // börjat. `gick.vecka` säger vilken det blev, så texten inte påstår fel sak.
+  const gick = routVeckanSomGick();
+  const klaraR = gick.done;
   const doneR = klaraR.map((d) => d.label || d);
-  const veckansTid = tidFormat(sparadTid(team.routines, klaraR).minuter);
+  const när = gick.vecka === "förra" ? "förra veckan" : "denna vecka";
+  // Har rutinloggen redan skrivits över av en avbockning i den nya veckan är
+  // etiketterna borta för alltid — men liggaren bär kvar minuterna. En siffra
+  // utan lista är sämre än båda och bättre än ingenting.
+  const minuter = sparadTid(team.routines, klaraR).minuter ||
+    (gick.vecka === "denna" && !klaraR.length ? tidForVecka(isoWeekFörra()) : 0);
+  const veckansTid = tidFormat(minuter);
   const facts = memoryFactCount();
   const meta = [
     perAgent.length ? `Aktivitet per agent senaste 7 dagarna:\n${perAgent.join("\n")}` : "Ingen loggad aktivitet senaste 7 dagarna.",
     meetings ? `Antal möten: ${meetings}` : null,
-    doneR.length ? `Avklarade rutiner denna vecka: ${doneR.join(", ")}` : null,
+    doneR.length ? `Avklarade rutiner ${när}: ${doneR.join(", ")}` : null,
     // Siffran med i underlaget, så att återblicken kan nämna den. Regeln om
     // att inte gissa gäller: står det inget här ska agenten inte hitta på en.
-    veckansTid ? `Avklarade rutiner motsvarar ${veckansTid} manuellt arbete (summa av rutinernas tidsuppskattningar — räkna inte om den).` : null,
+    veckansTid ? `Avklarade rutiner ${när} motsvarar ${veckansTid} manuellt arbete (summa av rutinernas tidsuppskattningar — räkna inte om den).` : null,
     facts ? `Teamets delade minne: ${facts} rader.` : null,
   ].filter(Boolean).join("\n");
   selectAgent(team.entryAgent);

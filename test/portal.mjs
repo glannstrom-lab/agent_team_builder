@@ -339,9 +339,13 @@ function laddaTid({ demo = false, slug = "kund" } = {}) {
     getItem: (k) => (lager.has(k) ? lager.get(k) : null),
     setItem: (k, v) => lager.set(k, String(v)),
   };
+  // isoWeek(when) tar numera ett datum (RE1). Stubben måste svara på samma
+  // sätt som den riktiga: utan argument = den här veckan, med ett datum sju
+  // dygn bakåt = föregående. En stubb som ignorerar argumentet hade gjort
+  // varje test här till teater.
   const api = new Function("state", "localStorage", "isoWeek", kropp +
-    "; return { sparadTid, tidFormat, tidLedger, tidBokför, tidSedan, TID_MAX_VECKOR };"
-  )({ demo, slug }, localStorage, () => "2026-W35");
+    "; return { sparadTid, tidFormat, tidLedger, tidBokför, tidSedan, tidForVecka, isoWeekFörra, routVeckanSomGick, TID_MAX_VECKOR };"
+  )({ demo, slug }, localStorage, (when) => (when ? "2026-W34" : "2026-W35"));
   return { ...api, lager };
 }
 
@@ -457,7 +461,10 @@ test("siffran syns där köparen faktiskt tittar", () => {
   // Poängen med OM5 var aldrig att räkna — det gjordes redan — utan att sluta
   // gömma resultatet i en panel man måste leta upp.
   assert.match(KÄLLA, /cards\.push\(\{ icon: "⏱"/, "puls-kortet saknas");
-  assert.match(KÄLLA, /veckansTid \? `Avklarade rutiner motsvarar/, '"Veckan som gick" får inte siffran som underlag');
+  // Sedan RE1 bär meningen även VILKEN vecka siffran gäller — en återblick som
+  // säger "denna vecka" om förra veckans arbete är fel på ett sätt kunden
+  // märker. Därför matchas `${när}` och inte bara ordföljden.
+  assert.match(KÄLLA, /veckansTid \? `Avklarade rutiner \$\{när\} motsvarar/, '"Veckan som gick" får inte siffran som underlag');
   assert.match(KÄLLA, /const kvartalMin = tidSedan\(qStart\)/, "kvartalsvyn räknar inte över veckor");
   assert.match(KÄLLA, /parts\.push\(`• Avklarade rutiner motsvarar/, "den delbara texten saknar siffran");
 });
@@ -468,4 +475,129 @@ test("avbockningen bokför veckan", () => {
   const kropp = KÄLLA.slice(i, KÄLLA.indexOf("\n}", i));
   assert.match(kropp, /tidUppdateraVeckan\(\)/,
     "en avbockad rutin skrivs inte till veckoliggaren — kvartalsvyn blir då tom");
+});
+
+// ── RE1: "Veckan som gick" läste en logg som just nollställts ───────────────
+//
+// Pulskortet "Ny vecka" visas exakt när `lastVisit !== isoWeek()`, alltså vid
+// veckans FÖRSTA öppning — och i samma ögonblick returnerar `routLoad()` en tom
+// logg, eftersom den sparade posten bär förra veckans nummer. Återblicken fick
+// därför alltid noll rutiner och noll sparad tid som underlag, för en kund som
+// kanske gjort allt. Reproducerat 2026-09-01: tre rutiner värda 135 minuter
+// blev 0 st och 0 minuter.
+//
+// Testerna nedan kör den riktiga koden ur källan. Stubben för isoWeek svarar
+// "2026-W35" utan argument och "2026-W34" med — samma kontrakt som den
+// riktiga funktionen efter att den fått en `when`-parameter.
+
+const FÖRRA_VECKAN = { week: "2026-W34", done: [{ label: "Veckobrief" }, { label: "Fakturajakt" }] };
+
+test("veckan som gick läses ur förra veckans post, inte ur den tomma nya", () => {
+  const api = laddaTid();
+  api.lager.set("atb_rout_kund", JSON.stringify(FÖRRA_VECKAN));
+
+  const g = api.routVeckanSomGick();
+  assert.equal(g.vecka, "förra", "posten bär förra veckans nyckel och ska läsas som förra veckan");
+  assert.equal(g.done.length, 2);
+  assert.equal(api.sparadTid(RUTINER, g.done).minuter, 75,
+    "detta är hela felet: 75 minuter rapporterades som 0 för en kund som gjort jobbet");
+});
+
+test("har kunden redan bockat av i den nya veckan gäller den nya veckan", () => {
+  // Då är förra veckans etiketter överskrivna och borta för alltid — men
+  // svaret ska säga "denna vecka", inte påstå att det är förra.
+  const api = laddaTid();
+  api.lager.set("atb_rout_kund", JSON.stringify({ week: "2026-W35", done: [{ label: "Veckobrief" }] }));
+
+  const g = api.routVeckanSomGick();
+  assert.equal(g.vecka, "denna");
+  assert.equal(g.done.length, 1);
+});
+
+test("en post från en äldre vecka än förra räknas inte som förra veckan", () => {
+  // Kunden var borta i en månad. Att presentera fyra veckor gammalt arbete som
+  // "veckan som gick" vore att hitta på — hellre tomt.
+  const api = laddaTid();
+  api.lager.set("atb_rout_kund", JSON.stringify({ week: "2026-W30", done: [{ label: "Veckobrief" }] }));
+
+  const g = api.routVeckanSomGick();
+  assert.equal(g.vecka, "denna");
+  assert.deepEqual(g.done, []);
+});
+
+test("trasig eller saknad post ger tomt, inte en krasch", () => {
+  const api = laddaTid();
+  assert.deepEqual(api.routVeckanSomGick(), { vecka: "denna", done: [] });
+  api.lager.set("atb_rout_kund", "{trasig json");
+  assert.deepEqual(api.routVeckanSomGick(), { vecka: "denna", done: [] });
+  api.lager.set("atb_rout_kund", JSON.stringify({ week: "2026-W34", done: "inte en lista" }));
+  assert.deepEqual(api.routVeckanSomGick(), { vecka: "denna", done: [] });
+});
+
+test("demoläget läser ingen rutinlogg", () => {
+  const api = laddaTid({ demo: true });
+  api.lager.set("atb_rout_kund", JSON.stringify(FÖRRA_VECKAN));
+  assert.deepEqual(api.routVeckanSomGick(), { vecka: "denna", done: [] });
+});
+
+test("liggaren bär minuterna även när etiketterna är överskrivna", () => {
+  // Andra halvan av RE1: bockar kunden av något i den nya veckan INNAN hon
+  // öppnar återblicken är rutinloggen borta. Veckoliggaren överlever
+  // veckoskiftet och är då den enda källan som har kvar siffran.
+  const api = laddaTid();
+  api.lager.set("atb_sparad_kund", JSON.stringify([{ v: "2026-W34", m: 135, at: 1 }, { v: "2026-W35", m: 30, at: 2 }]));
+
+  assert.equal(api.tidForVecka(api.isoWeekFörra()), 135, "förra veckans summa ska gå att hämta för sig");
+  assert.equal(api.tidForVecka("2026-W35"), 30);
+  assert.equal(api.tidForVecka("2026-W01"), 0, "en vecka utan rad är noll, inte odefinierad");
+});
+
+test("pulskortet möter kunden med förra veckans siffra, inte en tyst nolla", () => {
+  // Källnivå: kortet byggs i renderPulse() och går inte att köra utan DOM.
+  // Det som ska vaktas är att grenen finns och att den läser rätt källa.
+  const i = KÄLLA.indexOf("if (pulseNewWeek) {");
+  assert.ok(i > 0, "hittade inte grenen för veckans första öppning");
+  const kropp = KÄLLA.slice(i, KÄLLA.indexOf("\n  }", i));
+  assert.match(kropp, /tidForVecka\(isoWeekFörra\(\)\)/,
+    "kortet läser inte förra veckan — då är siffran tom precis när kunden tittar");
+  assert.match(kropp, /förra veckan gjorde teamet/,
+    "etiketten säger inte vilken vecka siffran gäller");
+});
+
+// ── KR3: provmånadskortet ritas om när sidopanelen ritas om ────────────────
+//
+// Kortet är portalens enda väg från 90 till 290 kr inifrån produkten.
+// `checkTrialNotice()` ritar det in i `.ws`, som byggs inuti `renderSidebar()`
+// — och `refreshSidebar()` byter ut hela `.sidebar`. Utan ett anrop där
+// försvinner kortet vid första omritningen och kommer aldrig tillbaka.
+//
+// Uppmätt i webbläsare 2026-09-06: kortet var borta redan efter att
+// presentationsrundan stängts, alltså innan kunden gjort någonting alls.
+
+// Kommentarerna räknas INTE. Första versionen av det här testet passerade med
+// anropet borttaget, eftersom kommentaren ovanför det nämner funktionen vid
+// namn — en vakt som läser källtext måste läsa kod, annars vaktar den prosan.
+const utanKommentarer = (s) => s.replace(/^\s*\/\/.*$/gm, "");
+
+test("refreshSidebar ritar om provmånadskortet", () => {
+  const i = KÄLLA.indexOf("function refreshSidebar");
+  assert.ok(i > 0, "hittade inte refreshSidebar");
+  const kropp = utanKommentarer(KÄLLA.slice(i, KÄLLA.indexOf("\n}", i)));
+  assert.match(kropp, /checkTrialNotice\(\)/,
+    "sidopanelen byts ut utan att kortet ritas om — KR3 är tillbaka");
+});
+
+test("kortet är idempotent, så omritningen inte kan ge två kort", () => {
+  // Vakten sitter i renderTrialCard, inte i checkTrialNotice — den senare är
+  // async och hinner anropas flera gånger medan meOnce() väntar.
+  const i = KÄLLA.indexOf("function renderTrialCard");
+  assert.ok(i > 0, "hittade inte renderTrialCard");
+  const kropp = KÄLLA.slice(i, KÄLLA.indexOf("\n}", i));
+  assert.match(kropp, /\$\("#trial-card"\)/,
+    "utan vakten på #trial-card ritar varje refreshSidebar ett kort till");
+
+  // Och anropet i checkTrialNotice måste faktiskt gå dit.
+  const j = KÄLLA.indexOf("async function checkTrialNotice");
+  assert.ok(j > 0, "hittade inte checkTrialNotice");
+  assert.match(KÄLLA.slice(j, KÄLLA.indexOf("\n}", j)), /renderTrialCard\(info, today\)/);
 });

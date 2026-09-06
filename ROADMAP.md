@@ -22,8 +22,6 @@ Från genomgången 2026-09-01 · sex parallella linser + egen verifiering.
 
 ## Nu — riktiga fel
 
-- [ ] **KR3** Provmånadskortet dör så fort kunden rör arbetsytan. `checkTrialNotice()` anropas på exakt ett ställe (`app.js:1421`, vid boot) och ritar kortet i `.ws` — som byggs inuti `renderSidebar()`. `refreshSidebar()` byter ut hela `.sidebar` utan att anropa den igen, så kortet försvinner vid alla tre anropsställena (`:1540` expandera arbetsytan, `:2096` godkänt minnesförslag, `:5094`). Det drabbar precis den aktiva kunden som ska konvertera, och knappen "Fortsätt löpande — 290 kr/mån" är tills e-postlivlinan finns den enda vägen dit inifrån produkten. Fixen är en rad sist i `refreshSidebar()`; funktionen är redan idempotent (`#trial-card`-vakt + snooze) · `portal/app.js:1421`, `:2264-2269`, `:3773-3775` · `läst i koden` · ~15 min
-- [ ] **RE1** "Veckan som gick" är alltid tom — den läser en logg som just nollställts. Pulskortet visas exakt när `lastVisit !== isoWeek()`, alltså vid veckans FÖRSTA öppning; i samma ögonblick returnerar `routLoad()` en tom logg eftersom den sparade posten bär förra veckans nummer. Chattaktiviteten i samma funktion räknas däremot på `nu − 7 dygn` och täcker förra veckan — underlaget blandar två tidsfönster utan att någon bestämt det. **Reproducerad** med den riktiga koden ur källan (`granskning/2026-09-01/repro-veckan-som-gick.mjs`): 3 avbockade rutiner värda 135 minuter blev 0 st och 0 minuter i underlaget. Fixen: läs förra veckans post ur `atb_rout_<slug>` när `r.week` är föregående ISO-vecka — den ligger kvar orörd tills första avbockningen skriver över. Ge tidspulskortet samma källa · `portal/app.js:2806-2831`, `:2292`, `:2709` · `reproducerad` · ~2 h
 - [ ] **KR4** Provmånaden kan köpas om varje månad — 90 kr i stället för 290, i all evighet. `startUpgrade` blockerar en ny provmånad på SAMMA slug ("sälja samma sak två gånger", `checkout.js:120-124`), men webhookens nytt-team-gren har ingen kundkontroll alls: den skapar team och kopplar till e-postadressen villkorslöst, oavsett hur många team adressen redan äger. Varken villkoren eller prislistan säger något om en provmånad per kund (noll träffar på båda ställena). Med gratis bygge och körningen kvar i webbläsaren är cykeln två klick i månaden; med kopplad mapp följer företagsminnet med. Samma felklass som pass 2 lagade, flyttad en nivå upp: provmånaden tar slut per *team*, inte per *kund*. Förslag: leverera ändå (betalt är betalt) men flagga raden och mejla `info@`; villkorsraden är din text · `functions/api/stripe-webhook.js:133-192`, `checkout.js:120-124`, `villkor.html:255` · `läst i koden` · ~2 h + villkorsrad
 - [ ] **BF4** Villkoren visas aldrig före köpet — och §15 lovar ett samtycke som ingen kod inhämtar. Uppmätt: noll förekomster av "villkor" eller "ånger" i kundens gränssnitt genom hela köpflödet (Builderns avslut, kassan, `aktivera.html`); träffarna i `builder.js` är kodkommentarer. `checkout.js` sätter varken `consent_collection` eller `custom_text`. Samtidigt står i `villkor.html:539`: "Vi ber om det samtycket uttryckligen" — det finns ingen sådan fråga någonstans. Distansavtalslagen kräver information om ångerrätten INNAN avtalet ingås; utan den börjar fristen inte löpa, och ångerknappen (BL2) skyddar då inte mot en väsentligt längre frist än de 14 dagar koden räknar med. Fix: `consent_collection[terms_of_service]=required` i båda sessionsanropen + villkors-URL i Stripes dashboard (ditt steg). **Meningen i §15 är din text — jag har inte rört den** · `functions/api/checkout.js:83-96`, `:150-163`, `villkor.html:539-540` · `mätt` · ~1–2 h
 - [ ] **BF5** Integritetspolicyns fyra gallringslöften har ingen verkställare. Uppmätt med `grep -rn "DELETE FROM" functions/ scripts/`: repots enda `DELETE FROM users` ligger i kollega-borttagningen (`team/remove.js:71`), ingen rad raderar ur `teams`, inloggningskoderna förbrukas (`consumed_at`) men raderas aldrig, och `pending`-städningen körs bara när NÄSTA checkout råkar starta (`checkout.js:106-109`) — med få kunder alltså sällan eller aldrig. Dessutom ackumulerar `ai_usage` rader nycklade på `ip:<ip>` utan angiven lagringstid. Art. 13-information som inte stämmer är det första en granskande IT-leverantör kontrollerar. Fix: en `POST /api/underhall/gallring` som veckobrevs-workern anropar med samma `DIGEST_SECRET`-mönster — klockan finns redan, den knackar bara aldrig på någon städrutt · `integritet.html:374-407`, `functions/api/checkout.js:106-109`, `api/ai.js:426, 576` · `mätt` · ~4 h
@@ -31,11 +29,9 @@ Från genomgången 2026-09-01 · sex parallella linser + egen verifiering.
 ## Sedan — skav som märks
 
 - [ ] **KR5** Buildern säljer teamet en gång till — direkt efter att kunden köpt det. `clearRun()` anropas bara av "Släng den" (`builder.js:233`, `:886`) och `aktivera.html` rör aldrig `atb_last_run`. Kunden som just betalat och sedan klickar "Bygg ert team" möts av återupptagningsrutan och därefter av avslutets "Teamet finns bara i den här webbläsaren … byter du dator är det borta" — falskt för henne — plus en fungerande köpknapp för teamet hon redan äger (dubbeldebitering, två team, manuell återbetalning). Det är också bränslet till **KR4**. Fix: låt `aktivera.html` (samma origin) skriva `atb_last_run_purchased = slug` när statusrutten svarar klart · `builder/builder.js:218-235`, `:886`, `:1679-1698` · `läst i koden` · ~1–2 h
-- [ ] **KR6** Kvittosidans räddningsplanka pekar på en länk som inte finns. Vid saknat kvitto-id säger sidan "gå tillbaka till kvittomejlet och följ länken därifrån" — men Stripes kvittomejl leder till Stripes egen kvittosida, inte till vår `success_url`. Och `stuck()` säger "ladda om / mejla oss" utan att nämna det som faktiskt fungerar: teamet levereras av webhooken oavsett vad som hände med fliken. Fix: byt båda styckena mot "gå till mittaiteam.se/portal och logga in med adressen ni betalade med" · `portal/aktivera.html:66`, `:105-111` · `läst i koden` · ~20 min
 - [ ] **KA7** Enkätvägens hela skydd är femton tecken. Grinden från 2026-08-17 håller (kontrollerat: rent kryssintag ger tvingande följdfrågor utan "hoppa över"), men `builder.js:851` kräver bara att ETT av två reservsvar är ≥15 tecken — det andra blir `"(inget svar)"`. Två kunder i samma bransch kan alltså skilja sig på ca 110 tecken av ~1 250, och researchsteget ska hitta hela verksamhetens särart i en enda mening — hos just den kund som valde kryssvägen för att hon har svårt att formulera sin verksamhet. Fix: kräv svar på båda frågorna (de mäter olika saker — veckan och skillnaden mot branschen) och höj golvet till ~40 tecken; eka in `intake.extra` under "Var det klämmer" i stället för sist som "Kompletterande svar" · `builder/builder.js:764`, `:849-857` · `mätt` · ~1 h
 - [ ] **KA8** Golvet skyddar PERSPEKTIV men inte LEVERANS. `kontrolleraSystemprompter` kräver att båda rubrikerna finns, men bara `DITT PERSPEKTIV` har ett innehållsgolv (`PERSPEKTIV_GOLV = 60`, `builder.js:1114`). En `LEVERANS`-rubrik med ingenting under passerar — och det är "Klart när"-punkterna under den som gör kvalitetschecklistans ja/nej-svarbara leveranser möjliga. Referensnivån är mätt: de kurerade teamens systemprompter ligger på 2 453–4 931 tecken, median 3 052. `lansering.md:45` säger att nuvarande modell ger 1 319 och att fixen är `minLength` i schemat — **den biter troligen inte**: OpenAI-stilens structured output ignorerar oftast `minLength`. Fix: `leveransText()` med eget golv i det delade blocket, så testerna kör samma kod som kunden · `builder/builder.js:1114`, `:1192-1206` · `mätt` · ~2 h
 - [ ] **DR6** Mejlvägen kan dö totalt medan `/api/health` säger 200. Inloggning sker med engångskod till mejlen — utskicket är alltså enskild felpunkt för ALL portalåtkomst. Men `sendMail` gör bara `console.error` + throw; ingenting bokförs i `ai_errors`, och hälsokontrollen tittar varken på mejlfel eller på om de övriga sju hemligheterna är satta. En roterad avsändarnyckel ger exakt B1-scenariot igen: produkten stum för nya inloggningar, hälsan grön, upptäckt när en kund hör av sig — via den kanal som inte fungerar. Frågan "kan vi upptäcka att en secret saknas?" har i dag svaret nej för 7 av 10 värden. Fix: boka `ai_errors` med kod `mail` i felgrenen (samma upsert finns i `ai.js:611`) + närvaro-booleaner i `health.js` · `functions/api/auth/_lib.js:266-294`, `api/health.js:44-79` · `läst i koden` · ~1–2 h
-- [ ] **DR7** Vakten behöver inte vara en tredje part — CI:t kan vara den. **Skärpning av D3**, som stått som din uppgift i tre pass och kräver att någon minns att registrera ett konto. En `.github/workflows/health.yml` med `on: schedule: '*/15 * * * *'` och `curl -fsS https://mittaiteam.se/api/health` gör samma sak: GitHub mejlar repoägaren när en körning fäller. Noll nya konton, samma verktyg som `test.yml`. Med **DR6** och **DR9** gjorda täcker samma vakt mejlvägen och kostnaden också · `.github/workflows/test.yml` (mall) · `läst i koden` · ~20 min
 - [ ] **DR8** Betalningens livscykel har noll tester. Webhookens dispatcher har sex grenar; inget test kör `onRequestPost`. `test/plan.mjs:23` importerar bara hjälparen `subscriptionOf`, `test/stripe.mjs` testar signaturkontrollen i `_stripe.js`. Samma för `teams/[slug].js` — dörren varje betalande kund går genom — och för `checkout.js`. En regression här är per definition tyst: "uppsagd kund behåller åtkomst" märks aldrig; "invoice.paid öppnar inte en spärrad kund igen" märks som en arg kund veckor senare. Pass 2-dokumentationen varnar själv: "allt ser ut att fungera precis som förut". Selen finns: `test/ai.mjs` kör redan riktiga `onRequestPost` med stubbad D1 · `functions/api/stripe-webhook.js:40, 68-77`, `api/teams/[slug].js`, `api/checkout.js` · `mätt` · ~3 h
 - [ ] **DR9** Kostnaden syns först när krediten är slut — alltså som driftstopp. Räknat på dagens tak och priser: värsta anrop på fria rutten ≈ 5 öre, dygnets tak sammantaget ≈ 200 kr. Men det finns inget globalt MÅNADSTAK (bara per team), så en uthållig skörd kostar ~6 000 kr/mån tills någon tittar i `ai_budget` för hand eller 402:an gör hälsan röd. **Instrumentet före ratten** (pass 3.2 i `docs/roadmap.md` är fortfarande öppen): en fjärde boolean `budget_ok` i `/api/health` — dygnets tokens ur `ai_budget` under en larmnivå — låter vakten från **DR7** fånga rusningen innan den blir ett stopp, utan att siffror läcker ur den öppna rutten. Taket sätts sedan, när kurvan är sedd · `functions/api/ai.js:55-99`, `api/health.js` · `mätt` · ~1 h
 - [ ] **DR10** Modellen bor på tre ställen och inget test håller ihop dem. `openai/gpt-oss-120b` står i `atb-claude.js:26`, `functions/api/ai.js:99` och `functions/api/digest/run.js:28`; noll träffar på strängen i `test/`. Dagen modellen byts uppdateras de två första i samma arbetsflöde och veckobrevet glöms — uppströms svarar 404, felet bokas i `ai_errors` som ingen läser, breven slutar komma. Veckobrevet saknar dessutom helt en "kom brevet fram?"-detektor: dör workern själv skrivs ingenting någonstans. Fix: (a) ett tio-minuters test som kräver att de tre strängarna är identiska; (b) hälsokontroll på prenumeranter vars dag passerat utan `last_sent_day`-uppdatering på >8 dagar · `atb-claude.js:26`, `functions/api/ai.js:99`, `api/digest/run.js:28` · `mätt` · ~1,5 h
@@ -298,6 +294,65 @@ kedja hela vägen fram, `/avregistrera` 400 på trasig token och 200 på okänd,
 i dag är påslaget.
 
 ## Klart
+
+- [x] **KR3** Provmånadskortet ritas om när sidopanelen ritas om — löst 2026-09-06.
+
+  `checkTrialNotice()` anropades på exakt ett ställe: vid boot. Kortet den ritar
+  hamnar i `.ws`, som byggs inuti `renderSidebar()`, och `refreshSidebar()` byter
+  ut hela `.sidebar`. Kortet är portalens **enda väg från 90 till 290 kr inifrån
+  produkten**, och det försvann vid första omritningen.
+
+  **Värre än punkten sa, uppmätt i webbläsare:** kortet var borta redan efter att
+  presentationsrundan stängts — den anropar `refreshSidebar()` när den lämnas, och
+  den möter varje ny kund vid första besöket. Kunden hann alltså aldrig se kortet.
+
+  Fixen är raden punkten föreslog, sist i `refreshSidebar()`; den täcker alla tre
+  anropsställena. **Verifierat med ögon** mot lokal emulator med `--plan trial
+  --dagar 27`: kortet står kvar genom hela genomgången och visar "3 dagar kvar"
+  med rätt slutdatum · `portal/app.js:2264` · `mätt`
+
+- [x] **RE1** "Veckan som gick" läser förra veckan i stället för en logg som just nollställts — löst 2026-09-06.
+
+  `routLoad()` nollställer posten vid varje ISO-veckoskifte, och pulskortet visas
+  exakt vid veckans **första** öppning — alltså precis när loggen ser tom ut.
+  Återblicken rapporterade därför noll rutiner och noll sparad tid till en kund
+  som kanske gjort allt.
+
+  `isoWeek()` tar nu ett datum, och `routVeckanSomGick()` frågar efter
+  föregående veckas nyckel: posten ligger orörd tills första avbockningen i den
+  nya veckan skriver över den. Svaret bär **vilken** vecka det gäller, så texten
+  säger "förra veckan" eller "denna vecka" i stället för att gissa. Är loggen
+  redan överskriven bär veckoliggaren (`atb_sparad_`) minuterna vidare — en
+  siffra utan lista är bättre än ingetdera.
+
+  Pulskortet fick samma källa: vid veckans första öppning står det nu
+  "Ny vecka — förra veckan gjorde teamet ≈ 4,5 timmar manuellt arbete" i stället
+  för att tiga. **Verifierat med ögon**, och underlaget som gick till teamet
+  fångades i klienten: *"Avklarade rutiner förra veckan: Veckoplan med VD,
+  Veckans bloggpost"* — exakt de 270 minuter som förut blev 0 ·
+  `portal/app.js:1933`, `:2395`, `:2820` · `mätt`
+
+- [x] **KR6** Kvittosidan pekar på inloggningen i stället för på en länk som inte finns — löst 2026-09-06.
+
+  Vid saknat kvitto-id sa sidan "gå tillbaka till kvittomejlet och följ länken
+  därifrån". Stripes kvittomejl leder till Stripes egen kvittosida, inte till vår
+  `success_url` — den länken finns inte. Och `stuck()` sa "ladda om / mejla oss"
+  utan att nämna det som faktiskt fungerar: **leveransen sker i webhooken, inte i
+  fliken.** Båda styckena pekar nu på inloggningen med adressen kunden betalade
+  med, som primär knapp · `portal/aktivera.html:66`, `:105-111`
+
+- [x] **DR7** Vakten är CI:t — löst 2026-09-06.
+
+  `.github/workflows/health.yml` kör var femtonde minut och fäller på
+  `/api/health` (som svarar 503 när tjänsten inte kan svara kunder), på
+  startsidan, och på `/api/auth/me` som får svara 2xx eller 4xx men inte 5xx.
+  GitHub mejlar repoägaren när en körning fäller. Noll nya konton, samma verktyg
+  som `test.yml`. Alla tre kontrollerna körda för hand mot produktionen samma
+  dag.
+
+  **Vad den inte fångar, utskrivet i filen:** B1-scenariot. Det felet satt i
+  klienten och `/api/health` svarade 200 hela tiden. Ett syntetiskt byggsteg vore
+  nästa steg — det kostar pengar per körning, och beslutet är Mikaels.
 
 - [x] **KA6** Prompten och schemat sa emot varandra om ANTALET startförslag — löst 2026-09-06.
 

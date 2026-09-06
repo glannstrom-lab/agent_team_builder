@@ -1,0 +1,56 @@
+# Uptime-vakt för mittaiteam.se — DR7.
+#
+# Varför den här och inte UptimeRobot: `/api/health` har svarat rätt sedan
+# 2026-08-17, men ingen har lyssnat. Punkten "peka en vakt mot rutten" stod som
+# Mikaels uppgift i tre pass och krävde att någon minns att registrera ett
+# konto hos en tredje part. GitHub Actions kan samma sak med verktyg som redan
+# används här, och mejlar repoägaren när en körning fäller.
+#
+# Vad som mäts: `curl -fsS` fäller på HTTP >= 400. Rutten svarar **503 när
+# tjänsten inte kan svara kunder** — saknad `OPENROUTER_KEY`, D1 som inte
+# svarar, eller ett kreditfel (402 uppströms) den senaste tjugo minuterna.
+# Den gör INGET AI-anrop, så vakten kostar ingenting att köra.
+#
+# Var femtonde minut, inte varje minut: felen den fångar (tömd kredit, roterad
+# nyckel, migrerad databas) är timmarslånga tillstånd, inte sekundlånga glapp.
+# Och GitHub köar schemalagda körningar under hög last ändå.
+#
+# OBS om B1-scenariot: den här vakten hade INTE fångat att produkten låg stum
+# 6–16 augusti. Det felet satt i klienten (ett ReferenceError i strömningen) och
+# `/api/health` hade svarat 200 hela tiden. Vakten täcker serverns
+# förutsättningar, inte att kunden får text på skärmen. Ett syntetiskt
+# byggsteg vore nästa steg — det kostar pengar per körning, och beslutet är
+# Mikaels.
+name: health
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  health:
+    runs-on: ubuntu-latest
+    steps:
+      - name: /api/health svarar friskt
+        run: |
+          svar=$(curl -fsS --max-time 20 https://mittaiteam.se/api/health)
+          echo "$svar"
+          # `curl -f` fäller redan på 503. Kontrollen nedan fångar det osannolika
+          # men värre fallet: 200 med ok:false — alltså en rutt som säger att
+          # allt är bra samtidigt som den listar problem.
+          echo "$svar" | grep -q '"ok":true' || { echo "::error::/api/health svarade 200 men inte ok:true"; exit 1; }
+
+      - name: Startsidan svarar
+        run: curl -fsS --max-time 20 -o /dev/null https://mittaiteam.se/
+
+      # Betalvägens dörr. En 402 här är rätt svar (ingen session), en 5xx är det
+      # inte — och den skillnaden syns inte på startsidan.
+      - name: API-rutterna lever
+        run: |
+          kod=$(curl -s --max-time 20 -o /dev/null -w "%{http_code}" https://mittaiteam.se/api/auth/me)
+          echo "auth/me → $kod"
+          case "$kod" in 2*|4*) ;; *) echo "::error::auth/me svarade $kod"; exit 1;; esac
