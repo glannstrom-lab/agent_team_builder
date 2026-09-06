@@ -1,0 +1,417 @@
+{
+  "version": 1,
+  "kontrollerad": "2026-09-06",
+  "kommentar": "Registret över filer som måste ändras samma dag. Varje ankare är kontrollerat den dag som står i kontrollerad — kör `node .claude/skills/kopplad-andring/kontrollera.mjs --revidera` för att se att de fortfarande finns. Ett ankare som ruttnat gör registret farligare än inget register, för det ser ut att vakta något.",
+  "kopplingar": [
+    {
+      "id": "prisbelopp",
+      "rubrik": "Prisstegen: 0 / 90 / 290 / offert",
+      "varfor": "Kunden ser ett pris, villkoren säger ett annat och kassan tar ett tredje. Det upptäcks av den som betalar, inte av oss.",
+      "vaktas_av": [
+        "test/stripe.mjs — visar de gällande beloppen och inga strukna",
+        "test/stripe.mjs — builderns avslutsruta erbjuder exakt de nivåer kassan känner"
+      ],
+      "delar": [
+        {
+          "fil": "index.html",
+          "ankare": "290 kr",
+          "roll": "prislistan kunden ser"
+        },
+        {
+          "fil": "villkor.html",
+          "ankare": "290 kr",
+          "roll": "avsnitt 4 — det som är avtalat"
+        },
+        {
+          "fil": "functions/api/_stripe.js",
+          "ankare": "STRIPE_PRICE_STANDARD",
+          "roll": "TIERS — det kassan faktiskt tar"
+        },
+        {
+          "fil": "builder/builder.js",
+          "ankare": "const PLANS = [",
+          "roll": "knapparna i builderns avslut"
+        }
+      ]
+    },
+    {
+      "id": "modell-id",
+      "rubrik": "Modellen och de kostnadssiffror som motiverar priset",
+      "varfor": "Modellraden står på tre ställen och ingen delas. Byts en av dem kör bygget, portalen och veckobrevet olika modeller — och kostnadskalkylen som säljer att AI:n ingår bygger på den gamla prislappen. OVAKTAD: ingen test läser MODEL_ID.",
+      "vaktas_av": [],
+      "foreslagen_vakt": "test/klient.mjs — läs MODEL_ID ur alla tre filerna med regex och assert.equal dem mot varandra; assert att index.html nämner samma modellnamn.",
+      "delar": [
+        {
+          "fil": "atb-claude.js",
+          "ankare": "openai/gpt-oss-120b",
+          "roll": "builder + portal"
+        },
+        {
+          "fil": "functions/api/ai.js",
+          "ankare": "openai/gpt-oss-120b",
+          "roll": "proxyn (stream() ignorerar klientens modell)"
+        },
+        {
+          "fil": "functions/api/digest/run.js",
+          "ankare": "openai/gpt-oss-120b",
+          "roll": "veckobrevet — går aldrig genom ai.js"
+        },
+        {
+          "fil": "index.html",
+          "ankare": "$0,037",
+          "roll": "#forbrukning — kalkylen som säger att AI:n kan ingå"
+        },
+        {
+          "fil": "villkor.html",
+          "ankare": "openai/gpt-oss-120b",
+          "roll": "avsnitt 3-4 — modellnamnet är avtalat mot kunden"
+        }
+      ]
+    },
+    {
+      "id": "provmanad",
+      "rubrik": "Provmånadens längd — 30 dagar",
+      "varfor": "Kortet i arbetsytan säger fem dagar kvar samma dag som spärren slår till, om talen glider isär.",
+      "vaktas_av": [
+        "test/plan.mjs — portalen och servern räknar provmånaden lika",
+        "test/plan.mjs — gränsen går exakt på dygn 30, inte 29 och inte 31"
+      ],
+      "delar": [
+        {
+          "fil": "functions/api/_plan.js",
+          "ankare": "TRIAL_DAYS = 30",
+          "roll": "spärren"
+        },
+        {
+          "fil": "portal/app.js",
+          "ankare": "TRIAL_LENGTH_DAYS = 30",
+          "roll": "kortet kunden ser"
+        },
+        {
+          "fil": "villkor.html",
+          "ankare": "Provmånaden löper i 30 dagar",
+          "roll": "det avtalade"
+        }
+      ]
+    },
+    {
+      "id": "angerfrist",
+      "rubrik": "Ångerfristen — 14 dagar",
+      "varfor": "Distansavtalslagen räknar från köpet. Säger koden och villkoren olika är det villkoren som gäller mot kunden.",
+      "vaktas_av": [
+        "test/plan.mjs — portalen och rutten räknar med samma antal dagar",
+        "test/plan.mjs — villkoren säger samma antal dagar som koden"
+      ],
+      "delar": [
+        {
+          "fil": "functions/api/subscription/withdraw.js",
+          "ankare": "WITHDRAWAL_DAYS = 14",
+          "roll": "rutten som gör köpet ogjort"
+        },
+        {
+          "fil": "portal/app.js",
+          "ankare": "WITHDRAWAL_DAYS = 14",
+          "roll": "texten i uppsägningsrutan"
+        },
+        {
+          "fil": "villkor.html",
+          "ankare": "ångra köpet inom 14 dagar",
+          "roll": "§15"
+        }
+      ]
+    },
+    {
+      "id": "byggsteg",
+      "rubrik": "Byggets steg: namn, prompt och publicering",
+      "varfor": "Sedan K4 skickar Buildern ett STEGNAMN, inte en prompt. Ett namn som saknas i BUILD_STEPS fäller hela bygget för alla i drift; en prompt-fil som faller ur PROMPT_FILES ger 503 på just det steget — för first-project bara i konsult-läget, alltså precis den sorts fel som får ligga i veckor.",
+      "vaktas_av": [
+        "test/ai.mjs — varje steg Buildern namnger finns i BUILD_STEPS",
+        "test/ai.mjs — varje prompt ett byggsteg läser publiceras av build-dist.mjs",
+        "test/ai.mjs — okänt byggsteg avvisas"
+      ],
+      "delar": [
+        {
+          "fil": "builder/builder.js",
+          "ankare": "step: \"research\"",
+          "roll": "klienten namnger steget"
+        },
+        {
+          "fil": "functions/api/_build.js",
+          "ankare": "BUILD_STEPS",
+          "roll": "servern äger prompt, max_tokens och schema"
+        },
+        {
+          "fil": "build-dist.mjs",
+          "ankare": "PROMPT_FILES",
+          "roll": "prompterna måste publiceras till dist/ för att kunna läsas"
+        },
+        {
+          "fil": "prompts/shared/research.md",
+          "ankare": "",
+          "roll": "själva prompten"
+        }
+      ]
+    },
+    {
+      "id": "schema-prompt",
+      "rubrik": "Prompten och TEAM_SCHEMA är ETT kontrakt",
+      "varfor": "Ett fält som beställs men inte står i schemat kommer aldrig tillbaka (additionalProperties: false gör det förbjudet, inte valfritt). Ett fält som krävs i schemat men inte beställs blir påhittat. Fällan har slagit till två gånger på FÄLT; KA6 var samma fälla på ANTAL — prompten beställde 2–4 startförslag medan schemat tvingade exakt 3. Lagad 2026-09-06. Regeln är enkelriktad: allt prompten tillåter måste schemat tillåta.",
+      "vaktas_av": [
+        "test/ai.mjs — sammanställningen får SERVERNS schema i strict-läge",
+        "test/ai.mjs — konsult-läget beställer firstProject, team-builder-läget beställer null",
+        "test/teams.mjs — stripTeam bär vidare varje agentfält portalen läser",
+        "test/ai.mjs — prompten beställer inga antal som schemat förbjuder",
+        "test/ai.mjs — antalet startförslag säger samma sak på alla tre ställen"
+      ],
+      "delar": [
+        {
+          "fil": "functions/api/_build.js",
+          "ankare": "structurePrompt",
+          "roll": "beställningen"
+        },
+        {
+          "fil": "functions/api/_build.js",
+          "ankare": "TEAM_SCHEMA",
+          "roll": "vad som är tillåtet att svara"
+        },
+        {
+          "fil": "templates/shared/portal-team.md",
+          "ankare": "EXAKT 3",
+          "roll": "samma regler för /build-team — speglas för hand"
+        },
+        {
+          "fil": "portal/app.js",
+          "ankare": "starters",
+          "roll": "läsaren: lägg inget i schemat utan en läsare här"
+        }
+      ]
+    },
+    {
+      "id": "portal-regler",
+      "rubrik": "PORTAL_RULES i webblagret speglar templates/shared/portal-team.md för hand",
+      "varfor": "Sammanställningssteget och arbetsledarläget bor bara i webblagret. Ändras den ena halvan glider Buildern och /build-team isär — och till skillnad från research, scale och proposal, som läses ur samma filer, finns ingen mekanik som håller ihop dem. Sedan 2026-09-06 vaktas EN siffra (antalet startförslag) av test/ai.mjs; allt annat i de tio punkterna speglas fortfarande för hand. FORTSATT I HUVUDSAK OVAKTAD.",
+      "vaktas_av": [],
+      "foreslagen_vakt": "Utvidga 'antalet startförslag säger samma sak på alla tre ställen' till de övriga nyckeltalen i PORTAL_RULES (antal rutiner, triggers, teckengolv) och till att punkternas antal är detsamma i båda filerna.",
+      "delar": [
+        {
+          "fil": "functions/api/_build.js",
+          "ankare": "PORTAL_RULES",
+          "roll": "webblagrets regler"
+        },
+        {
+          "fil": "templates/shared/portal-team.md",
+          "ankare": "",
+          "roll": "reglerna för /build-team"
+        }
+      ]
+    },
+    {
+      "id": "fair-use",
+      "rubrik": "Fair use — 1 000 svar per konto och månad",
+      "varfor": "Taket är avtalat i villkoren och utlovat på startsidan. Sänks konstanten utan att texten följer med bryter vi avtalet mot en betalande kund; höjs texten utan konstanten får kunden ett fel som villkoren säger inte ska finnas. OVAKTAD.",
+      "vaktas_av": [],
+      "foreslagen_vakt": "test/ai.mjs — läs MAX_CALLS_PER_TEAM ur källan och assert att både villkor.html och index.html innehåller samma tal.",
+      "delar": [
+        {
+          "fil": "functions/api/ai.js",
+          "ankare": "MAX_CALLS_PER_TEAM = 1000",
+          "roll": "spärren"
+        },
+        {
+          "fil": "villkor.html",
+          "ankare": "1 000 svar per konto och",
+          "roll": "avsnitt 3 — det avtalade taket"
+        },
+        {
+          "fil": "index.html",
+          "ankare": "1 000 svar per konto och månad",
+          "roll": "löftet på säljsidan"
+        }
+      ]
+    },
+    {
+      "id": "csp",
+      "rubrik": "CSP och säkerhetsheaders",
+      "varfor": "En CSP som är fel felar tyst: blockeringen syns i besökarens konsol och ingen annanstans. Filen har redan burit två sådana fel. Cache-Control hör INTE hit — Pages skriver över den.",
+      "vaktas_av": [
+        "test/csp.mjs — de fyra låsen står kvar",
+        "test/csp.mjs — connect-src är 'self' och inget mer",
+        "test/csp.mjs — ingen Cache-Control i _headers",
+        "test/csp.mjs — _headers följer faktiskt med till dist/"
+      ],
+      "delar": [
+        {
+          "fil": "_headers",
+          "ankare": "Content-Security-Policy",
+          "roll": "policyn"
+        },
+        {
+          "fil": "build-dist.mjs",
+          "ankare": "\"_headers\"",
+          "roll": "ITEMS — utan raden publiceras ingen CSP alls"
+        },
+        {
+          "fil": "portal/vendor",
+          "ankare": "",
+          "roll": "varje nytt bibliotek här måste rymmas i policyn"
+        }
+      ]
+    },
+    {
+      "id": "versionsstampling",
+      "rubrik": "Färskheten: ?v=hash i HTML och samma URL:er i service workerns SHELL",
+      "varfor": "Cloudflare Pages äger Cache-Control på statiska tillgångar och skriver över den — hela färskheten ligger i stämplingen. Begär sw.js andra URL:er än sidorna precachas en variant och körs en annan.",
+      "vaktas_av": [
+        "scripts/check-dist.mjs (körs av CI och av npm run deploy)",
+        "build-dist.mjs (avbryter om SHELL- eller CACHE-raden skrivits om)"
+      ],
+      "delar": [
+        {
+          "fil": "build-dist.mjs",
+          "ankare": "const SHELL = [",
+          "roll": "stämplaren"
+        },
+        {
+          "fil": "portal/sw.js",
+          "ankare": "const SHELL = [",
+          "roll": "det som precachas"
+        },
+        {
+          "fil": "portal/sw.js",
+          "ankare": "const CACHE = ",
+          "roll": "cachenamnet — hashas automatiskt vid bygget"
+        }
+      ]
+    },
+    {
+      "id": "platsrutter",
+      "rubrik": "Varje API-rutt under functions/api/team/ har en anropare i portalen",
+      "varfor": "Rutterna stod oanropade i månader medan delningslänken, som ligger närmast till hands, gav mottagaren en låst vy.",
+      "vaktas_av": [
+        "test/teams.mjs — varje platsrutt har ett gränssnitt som anropar den"
+      ],
+      "delar": [
+        {
+          "fil": "functions/api/team",
+          "ankare": "",
+          "roll": "rutterna"
+        },
+        {
+          "fil": "portal/app.js",
+          "ankare": "/api/team/",
+          "roll": "knappen som använder dem"
+        }
+      ]
+    },
+    {
+      "id": "migration-kod",
+      "rubrik": "Migration och kod rullas tillsammans",
+      "varfor": "Migrationerna är enkelriktade: inga down-skript, och ADD COLUMN i 0003 och 0005 är inte idempotenta om de körs om för hand. Att rulla tillbaka bara koden går bra så länge migrationerna bara LÄGGER TILL kolumner. Den dag en migration tar bort något koden läser blir en ren kodrollback en tyst krasch i drift.",
+      "vaktas_av": [],
+      "foreslagen_vakt": "Ingen kod kan vakta detta — det är en procedur. Se skillen driftsatt.",
+      "delar": [
+        {
+          "fil": "migrations",
+          "ankare": "",
+          "roll": "schemat"
+        },
+        {
+          "fil": "functions/api",
+          "ankare": "",
+          "roll": "läsarna"
+        }
+      ]
+    },
+    {
+      "id": "secrets",
+      "rubrik": "Tio värden måste vara satta i drift",
+      "varfor": "Listan finns bara i CLAUDE.md. Prisnycklarna läses dynamiskt via TIERS[...].env och syns inte om man greppar efter env.STRIPE_PRICE. En ny secret som inte förs in i tabellen gör en återuppsättning till en läsövning i functions/.",
+      "vaktas_av": [
+        "test/health.mjs — saknad OPENROUTER_KEY ger 503"
+      ],
+      "foreslagen_vakt": "DR6: boka mejlfel i ai_errors och lägg närvaro-booleaner för alla tio i /api/health. I dag har frågan kan vi upptäcka att en secret saknas? svaret nej för 7 av 10.",
+      "delar": [
+        {
+          "fil": "CLAUDE.md",
+          "ankare": "DIGEST_SECRET",
+          "roll": "återställningsplanen"
+        },
+        {
+          "fil": "functions/api/_stripe.js",
+          "ankare": "env:",
+          "roll": "de dynamiskt lästa prisnycklarna"
+        },
+        {
+          "fil": "functions/api/health.js",
+          "ankare": "",
+          "roll": "det som faktiskt kontrolleras"
+        }
+      ]
+    },
+    {
+      "id": "teamregister",
+      "rubrik": "Ett nytt kundteam syns bara om registret vet om det",
+      "varfor": "Stage 2-kroken lägger till en rad per ny kund. Utan raden finns teamet men syns inte i kundväljaren.",
+      "vaktas_av": [
+        "test/teams.mjs — det finns teamfiler att testa",
+        "test/stripe.mjs — slugar upprepas inte"
+      ],
+      "delar": [
+        {
+          "fil": "portal/teams/index.js",
+          "ankare": "window.TEAMS",
+          "roll": "registret"
+        },
+        {
+          "fil": "portal/teams",
+          "ankare": "",
+          "roll": "en fil per kund"
+        },
+        {
+          "fil": "site",
+          "ankare": "",
+          "roll": "galleri-sidan som Stage 2 också genererar"
+        }
+      ]
+    },
+    {
+      "id": "startsidans-bevis",
+      "rubrik": "Personalliggaren på startsidan kommer ur en riktig körning",
+      "varfor": "Bevis som är påhittade är inte bevis. Ändras exemplet måste liggaren följa med.",
+      "vaktas_av": [
+        "test/examples.mjs — namnen i startsidans personalliggare kommer ur en riktig körning"
+      ],
+      "delar": [
+        {
+          "fil": "index.html",
+          "ankare": "id=\"liggare\"",
+          "roll": "beviset"
+        },
+        {
+          "fil": "examples/team-builder/lerverk/test-output.md",
+          "ankare": "",
+          "roll": "körningen det kommer ur"
+        }
+      ]
+    },
+    {
+      "id": "avatarer",
+      "rubrik": "Avatarräkningen och bildfilerna",
+      "varfor": "COUNT i avatars.js delas ut modulo antalet filer. Läggs en bild till utan att talet ändras används den aldrig; sänks talet utan att bilden tas bort pekar tilldelningen på en fil som saknas — och den ytan visar ett trasigt porträtt, inte ett felmeddelande.",
+      "vaktas_av": [],
+      "foreslagen_vakt": "Ett test som räknar filerna i portal/avatars/ och jämför med COUNT i avatars.js.",
+      "delar": [
+        {
+          "fil": "avatars.js",
+          "ankare": "const COUNT = 25",
+          "roll": "tilldelningen"
+        },
+        {
+          "fil": "portal/avatars",
+          "ankare": "",
+          "roll": "bilderna"
+        }
+      ]
+    }
+  ]
+}

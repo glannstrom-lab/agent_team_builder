@@ -22,7 +22,6 @@ Från genomgången 2026-09-01 · sex parallella linser + egen verifiering.
 
 ## Nu — riktiga fel
 
-- [ ] **KA6** Prompten och schemat säger emot varandra — i filen K4 skapade för att göra just det omöjligt. `PORTAL_RULES` punkt 9 beställer "2–4 korta exempeluppgifter"; `TEAM_SCHEMA` hundra rader ner tvingar `minItems: 3, maxItems: 3`; `templates/shared/portal-team.md:102` säger "EXAKT 3". Schemat vinner, så utdatan blir alltid tre — men modellen får motstridiga instruktioner i det steg som är dyrast att köra om. Kontraktet stämmer i övrigt i båda riktningarna, fält för fält kontrollerat · `functions/api/_build.js:116`, `:214` · `mätt` · ~5 min
 - [ ] **KR3** Provmånadskortet dör så fort kunden rör arbetsytan. `checkTrialNotice()` anropas på exakt ett ställe (`app.js:1421`, vid boot) och ritar kortet i `.ws` — som byggs inuti `renderSidebar()`. `refreshSidebar()` byter ut hela `.sidebar` utan att anropa den igen, så kortet försvinner vid alla tre anropsställena (`:1540` expandera arbetsytan, `:2096` godkänt minnesförslag, `:5094`). Det drabbar precis den aktiva kunden som ska konvertera, och knappen "Fortsätt löpande — 290 kr/mån" är tills e-postlivlinan finns den enda vägen dit inifrån produkten. Fixen är en rad sist i `refreshSidebar()`; funktionen är redan idempotent (`#trial-card`-vakt + snooze) · `portal/app.js:1421`, `:2264-2269`, `:3773-3775` · `läst i koden` · ~15 min
 - [ ] **RE1** "Veckan som gick" är alltid tom — den läser en logg som just nollställts. Pulskortet visas exakt när `lastVisit !== isoWeek()`, alltså vid veckans FÖRSTA öppning; i samma ögonblick returnerar `routLoad()` en tom logg eftersom den sparade posten bär förra veckans nummer. Chattaktiviteten i samma funktion räknas däremot på `nu − 7 dygn` och täcker förra veckan — underlaget blandar två tidsfönster utan att någon bestämt det. **Reproducerad** med den riktiga koden ur källan (`granskning/2026-09-01/repro-veckan-som-gick.mjs`): 3 avbockade rutiner värda 135 minuter blev 0 st och 0 minuter i underlaget. Fixen: läs förra veckans post ur `atb_rout_<slug>` när `r.week` är föregående ISO-vecka — den ligger kvar orörd tills första avbockningen skriver över. Ge tidspulskortet samma källa · `portal/app.js:2806-2831`, `:2292`, `:2709` · `reproducerad` · ~2 h
 - [ ] **KR4** Provmånaden kan köpas om varje månad — 90 kr i stället för 290, i all evighet. `startUpgrade` blockerar en ny provmånad på SAMMA slug ("sälja samma sak två gånger", `checkout.js:120-124`), men webhookens nytt-team-gren har ingen kundkontroll alls: den skapar team och kopplar till e-postadressen villkorslöst, oavsett hur många team adressen redan äger. Varken villkoren eller prislistan säger något om en provmånad per kund (noll träffar på båda ställena). Med gratis bygge och körningen kvar i webbläsaren är cykeln två klick i månaden; med kopplad mapp följer företagsminnet med. Samma felklass som pass 2 lagade, flyttad en nivå upp: provmånaden tar slut per *team*, inte per *kund*. Förslag: leverera ändå (betalt är betalt) men flagga raden och mejla `info@`; villkorsraden är din text · `functions/api/stripe-webhook.js:133-192`, `checkout.js:120-124`, `villkor.html:255` · `läst i koden` · ~2 h + villkorsrad
@@ -246,6 +245,34 @@ kedja hela vägen fram, `/avregistrera` 400 på trasig token och 200 på okänd,
 i dag är påslaget.
 
 ## Klart
+
+- [x] **KA6** Prompten och schemat sa emot varandra om ANTALET startförslag — löst 2026-09-06.
+
+  `PORTAL_RULES` punkt 9 beställde "2–4 korta exempeluppgifter", `TEAM_SCHEMA`
+  hundra rader ner tvingade `minItems: 3, maxItems: 3`, och
+  `templates/shared/portal-team.md:102` sa "EXAKT 3". Schemat vann, så utdatan
+  blev ändå tre — felet syntes aldrig hos en kund. Det som kostade var att
+  modellen fick motstridiga instruktioner i det steg som är dyrast att köra om,
+  och att den tredje halvan (mallen för `/build-team`) speglas för hand.
+
+  **Fixen är en rad; vakten är poängen.** Punkt 9 säger nu EXAKT 3. Två tester i
+  `test/ai.mjs` läser den RIKTIGA systemprompten rutten skickar — via samma
+  `uppström()`-hjälpare som resten av filen, inte ur en kopia:
+
+  - *"prompten beställer inga antal som schemat förbjuder"* — generell. Plockar
+    ut intervallen för `starters`, `triggers` och `routines` ur prompttexten och
+    jämför mot schemats `minItems`/`maxItems`. Regeln är enkelriktad: allt
+    prompten tillåter måste schemat tillåta. Snävare prompt än schema är i sin
+    ordning (rutiner 3–5 mot `minItems: 3` utan tak), vidare är ett fel.
+  - *"antalet startförslag säger samma sak på alla tre ställen"* — specifik.
+    Täcker det schemat omöjligt kan täcka: mallen för `/build-team`, som läses
+    av en människa och inte av valideringen.
+
+  Båda mutationsprovade: prompten tillbaka till "2–4" fäller båda, mallen ändrad
+  till 4 fäller den andra, och ett löst `maxItems` i schemat fäller den också.
+
+  Hittat och lagat med skillen `kopplad-andring`, som skrevs samma dag —
+  kopplingen `schema-prompt` är därmed inte längre en av de sex ovaktade.
 
 - [x] **OM5** Sparad tid räknas — och syns där köparen tittar — löst 2026-08-29.
 

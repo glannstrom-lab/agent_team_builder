@@ -113,7 +113,7 @@ const PORTAL_RULES = `Bygg varje agents "system" som en komplett systemprompt SK
 6. ARBETSSÄTT — be om data agenten saknar istället för att gissa.
 7. TON — kort; nybörjarkund → pedagogisk/klarspråk, van/byggare → rakare. Avsluta med "Svara på <språk>."
 8. VIKTIGT — vad agenten INTE gör (proposalens "Rör inte"); slutbeslut/juridik ligger hos människan.
-9. STARTERS — per agent: 2–4 korta exempeluppgifter i du-form ("Skriv ett utkast till …", "Gå igenom …"), hämtade ur agentens kapaciteter och kundens veckomoment. De blir klickbara startförslag i portalen — konkreta nog att skicka direkt.
+9. STARTERS — per agent: EXAKT 3 korta exempeluppgifter i du-form ("Skriv ett utkast till …", "Gå igenom …"), hämtade ur agentens kapaciteter och kundens veckomoment. De blir klickbara startförslag i portalen — konkreta nog att skicka direkt.
 10. WHY — per agent: EN mening som knyter agenten till kundens egna ord ur intaket/researchen, riktad till kunden: "Du sa att offerterna tar söndagskvällarna — därför finns Offertagenten." Använd kundens formuleringar, fabricera inget. Detta visas på "Därför ser ert team ut så här"-sidan i portalen.`;
 
 const COACH_RULES = `
@@ -124,6 +124,16 @@ ARBETSLEDARLÄGE (viktigt): kunden gör själva utförandet i sin egen AI (t.ex.
 // inte står i schemat kan inte genereras (additionalProperties: false), och det
 // som krävs i schemat men inte beställs här blir påhittat. Sedan K4 står de i
 // samma fil, vilket är hela poängen med att flytta hit dem.
+//
+// ANTALEN är den halva som glider tystast, för de bryter ingenting synligt.
+// KA6, lagad 2026-09-06: punkt 9 beställde "2–4 startförslag" medan schemat
+// hundra rader ner tvingar exakt 3. Schemat vinner alltid, så utdatan blev
+// ändå tre — men modellen fick motstridiga instruktioner i det dyraste steget
+// att köra om, och `templates/shared/portal-team.md` (samma regler för
+// /build-team) sa en tredje sak. Regeln är enkelriktad och värd att kunna:
+// **allt prompten tillåter måste schemat tillåta.** Prompten får vara
+// snävare än schemat (rutiner 3–5 mot minItems 3 är i sin ordning), aldrig
+// vidare. Två tester i test/ai.mjs fäller numera bygget på båda felen.
 function structurePrompt({ konsult, coach }) {
   const schema = `{
   "company": string,

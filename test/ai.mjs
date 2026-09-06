@@ -521,6 +521,77 @@ test("sammanställningen får SERVERNS schema i strict-läge", async () => {
   assert.ok(props.agents.items.properties.triggers, "agents[].triggers saknas");
 });
 
+// ── antalen i kontraktet (KA6) ──────────────────────────────────────────────
+//
+// Fälten fanns i båda halvorna, men SIFFRORNA sa emot varandra: prompten
+// beställde "2–4 startförslag", schemat tvingade exakt 3. Schemat vinner, så
+// felet syntes aldrig i utdatan — modellen fick bara motstridiga instruktioner
+// i det steg som är dyrast att köra om. Det är samma fällatyp som
+// starters/routines och firstProject/seasons, en nivå ner: inte vilka fält,
+// utan hur många.
+//
+// Regeln är enkelriktad: ALLT PROMPTEN TILLÅTER MÅSTE SCHEMAT TILLÅTA.
+// Snävare prompt än schema är i sin ordning (rutiner 3–5 mot minItems 3 utan
+// tak); vidare prompt än schema är ett fel, för då beställs ett svar som
+// valideringen kastar.
+//
+// Intervallen läses ur den RIKTIGA systemprompten rutten skickar, inte ur en
+// kopia — samma skäl som gör att perspektivmåttet hämtas ur builder.js.
+const ANTAL = [
+  { fält: "starters", mönster: /STARTERS[^\n]*?:\s*(?:EXAKT\s+(\d+)|(\d+)\s*[–-]\s*(\d+))/i },
+  { fält: "triggers", mönster: /TRIGGERS:[^\n]*?(?:EXAKT\s+(\d+)|(\d+)\s*[–-]\s*(\d+))/i },
+  { fält: "routines", mönster: /RUTINER:\s*(?:EXAKT\s+(\d+)|(\d+)\s*[–-]\s*(\d+))/i },
+];
+
+const intervall = (text, mönster) => {
+  const m = mönster.exec(text);
+  if (!m) return null;
+  return m[1] ? { min: +m[1], max: +m[1] } : { min: +m[2], max: +m[3] };
+};
+
+test("prompten beställer inga antal som schemat förbjuder", async () => {
+  const { skickat } = await uppström({ step: "structure", mode: "team-builder", messages: ETT });
+  const prompt = skickat.messages[0].content;
+  const agentProps = skickat.response_format.json_schema.schema.properties.agents.items.properties;
+  const toppProps = skickat.response_format.json_schema.schema.properties;
+
+  for (const { fält, mönster } of ANTAL) {
+    const i = intervall(prompt, mönster);
+    assert.ok(i, `hittade inget antal för ${fält} i prompten — skrevs punkten om?`);
+    const s = agentProps[fält] || toppProps[fält];
+    assert.ok(s, `${fält} finns i prompten men inte i schemat`);
+    if (s.minItems != null) {
+      assert.ok(i.min >= s.minItems,
+        `prompten tillåter ${i.min} ${fält} men schemat kräver minst ${s.minItems} — ` +
+        `svaret kastas av valideringen och steget körs om i onödan`);
+    }
+    if (s.maxItems != null) {
+      assert.ok(i.max <= s.maxItems,
+        `prompten tillåter ${i.max} ${fält} men schemat tillåter högst ${s.maxItems} — ` +
+        `det var precis KA6: "2–4 startförslag" mot maxItems 3`);
+    }
+  }
+});
+
+test("antalet startförslag säger samma sak på alla tre ställen", async () => {
+  // Tredje stället är /build-teams egen mall, som speglas FÖR HAND. Den kan
+  // inte fångas av schemat: den läses av en människa och av Claude Code, inte
+  // av valideringen.
+  const { skickat } = await uppström({ step: "structure", mode: "team-builder", messages: ETT });
+  const prompt = intervall(skickat.messages[0].content, ANTAL[0].mönster);
+  const schema = skickat.response_format.json_schema.schema.properties.agents.items.properties.starters;
+
+  assert.equal(prompt.min, prompt.max, "prompten ska beställa ett exakt antal startförslag, inte ett intervall");
+  assert.equal(schema.minItems, schema.maxItems, "schemat ska låsa antalet startförslag");
+  assert.equal(prompt.min, schema.minItems, "prompten och schemat säger olika om antalet startförslag");
+
+  const mall = readFileSync("templates/shared/portal-team.md", "utf8");
+  const m = /EXAKT (\d+) klickbara startuppgifter/.exec(mall);
+  assert.ok(m, "templates/shared/portal-team.md säger inte längre hur många startuppgifter som gäller");
+  assert.equal(Number(m[1]), schema.minItems,
+    "portal-team.md och webblagrets kontrakt har glidit isär — Buildern och /build-team bygger då olika team");
+});
+
 test("konsult-läget beställer firstProject, team-builder-läget beställer null", async () => {
   const konsult = await uppström({ step: "structure", mode: "ai-consultant", messages: ETT });
   const vanligt = await uppström({ step: "structure", mode: "team-builder", messages: ETT });
