@@ -171,23 +171,25 @@ footer b{color:var(--ink)}
 <section>
   <div class="wrap narrow">
     <div class="uppdat">
-      <span class="datum">Uppdaterad 6 september 2026</span>
-      <h2>KA6 är lagad och driftsatt — och KR3 är värre än den här sidan sa</h2>
-      <p>Sidan uppdateras på samma adress; åtgärdade poster märks <em>Fixat</em> i stället för att raderas. Det som hänt sedan 1 september:</p>
+      <span class="datum">Uppdaterad 6 september 2026 · andra passet</span>
+      <h2>Fem poster fixade och driftsatta — två av dem verifierade med ögon</h2>
+      <p>Sidan uppdateras på samma adress; åtgärdade poster märks <em>Fixat</em> i stället för att raderas. Dagen har två driftsättningar: <code>6f1af73a</code> (KA6 + fem projekt-skills) och <code>69cffcc0</code> (KR3, RE1, KR6, DR7).</p>
       <ul>
-        <li><b>KA6 lagad, testad och driftsatt</b> (Pages <code>6f1af73a</code>, commit <code>893a6b4</code>). Fixen var en rad; vakten är poängen — två nya tester läser den riktiga systemprompten rutten skickar och fäller om prompten beställer antal som schemat förbjuder. Verifierad skarpt med ett riktigt sammanställningssteg mot produktionen: <strong>exakt 3 startförslag på var och en av fyra agenter</strong>.</li>
-        <li><b>KR3 är nu reproducerad i webbläsare — och fixen måste täcka ett ställe till.</b> Kortet är borta redan när presentationsöverlägget stängs, alltså före de tre anropsställen posten listar. Se posten nedan.</li>
-        <li><b>Fem projekt-skills byggda</b> (<code>.claude/skills/</code>): deploy-kedjan, registret över kopplade filer, kvalitetsgrinden för genererade team, en Playwright-genomgång av portalen och köpkedjan länk för länk. Det var portalgenomgången som hittade KR3-skärpningen.</li>
-        <li><b>Två observationer utan eget ID</b>, bokförda i <code>ROADMAP.md</code> under <em>Driftsatt 2026-09-06</em>: varje moln-team ger två konsolfel vid laddning (portalen provar <code>teams/&lt;slug&gt;.js</code> före <code>/api/teams/:slug</code>), och <code>LEVERANS</code> hittad med <code>indexOf</code> träffar ordet i löpande text — mätt på <code>studio.js</code>.</li>
+        <li><b>KA6</b> — prompten och schemat säger inte längre emot varandra om antalet startförslag. Två tester läser den riktiga systemprompten rutten skickar. Verifierat skarpt: ett riktigt sammanställningssteg mot produktionen gav <strong>exakt 3 startförslag på var och en av fyra agenter</strong>.</li>
+        <li><b>KR3</b> — och den var <em>värre</em> än den här sidan sa. Kortet var borta redan när presentationsrundan stängdes, alltså innan kunden gjort någonting alls. Lagat och sett med ögon: kortet står nu kvar genom hela genomgången och visar "3 dagar kvar" med rätt slutdatum.</li>
+        <li><b>RE1</b> — återblicken läser förra veckan. Sett med ögon: pulskortet säger <em>"Ny vecka — förra veckan gjorde teamet ≈ 4,5 timmar manuellt arbete"</em>, och underlaget som gick till teamet innehöll de två rutinerna vid namn. Exakt de 270 minuter som förut blev noll.</li>
+        <li><b>KR6</b> — kvittosidan pekar på inloggningen i stället för på en länk som inte finns.</li>
+        <li><b>DR7</b> — vakten är CI:t: <code>.github/workflows/health.yml</code>, var femtonde minut, noll nya konton.</li>
       </ul>
+      <p><b>Fynd om testerna själva:</b> det första KR3-testet passerade med fixen borttagen — det matchade <em>kommentaren</em> ovanför anropet, som nämner funktionen vid namn. En vakt som läser källtext måste läsa kod. Alla nio nya tester är mutationsprovade.</p>
     </div>
 
     <h2>Börja här</h2>
-    <p class="undertext">Tjugo minuter tar de två första. Den tredje är den enda reproducerade buggen.</p>
+    <p class="undertext">Alla tre är gjorda och driftsatta 6 september. De står kvar för historiken — nästa tre står under <em>Vad som återstår</em>.</p>
     <ol class="borja">
       <li class="klar"><div><b>Byt "2–4" mot "exakt 3"</b> <span class="kod">KA6 · gjort 2026-09-06</span><p>Gjort och driftsatt, med två tester som håller antalen i kontraktet överens. Verifierat med ett riktigt byggsteg mot produktionen.</p></div></li>
-      <li><div><b>Lägg <code>checkTrialNotice()</code> sist i <code>refreshSidebar()</code></b> <span class="kod">KR3 · 15 min</span><p>Portalens enda brygga från 90 till 290 kr. <strong>Reproducerad 6 september:</strong> kortet är borta redan när presentationsöverlägget stängs — fixen måste täcka fyra anropsställen, inte tre.</p></div></li>
-      <li><div><b>Låt "Veckan som gick" läsa förra veckan</b> <span class="kod">RE1 · ~2 h</span><p>Reproducerad: återblicken rapporterar alltid noll rutiner och noll sparad tid. Ta den efter KR3 — båda ligger i samma fil och kan verifieras i samma webbläsarpass.</p></div></li>
+      <li class="klar"><div><b>Lägg <code>checkTrialNotice()</code> sist i <code>refreshSidebar()</code></b> <span class="kod">KR3 · gjort 2026-09-06</span><p>Portalens enda brygga från 90 till 290 kr. <strong>Reproducerad 6 september:</strong> kortet är borta redan när presentationsöverlägget stängs — fixen måste täcka fyra anropsställen, inte tre.</p></div></li>
+      <li class="klar"><div><b>Låt "Veckan som gick" läsa förra veckan</b> <span class="kod">RE1 · gjort 2026-09-06</span><p>Reproducerad: återblicken rapporterar alltid noll rutiner och noll sparad tid. Ta den efter KR3 — båda ligger i samma fil och kan verifieras i samma webbläsarpass.</p></div></li>
     </ol>
   </div>
 </section>
@@ -196,8 +198,8 @@ footer b{color:var(--ink)}
   <div class="wrap">
     <div class="grad"><span class="stampel g-avvikelse">Avvikelse</span><span class="rakning">6 poster — trasigt, eller osant för kunden</span></div>
 
-      <article class="post avvikelse">
-        <div class="post-huvud"><span class="id">RE1</span><h3>"Veckan som gick" är alltid tom — den läser en logg som just nollställts</h3><span class="bricka repro">reproducerad</span></div>
+      <article class="post avvikelse fixad">
+        <div class="post-huvud"><span class="id">RE1</span><h3>"Veckan som gick" är alltid tom — den läser en logg som just nollställts</h3><span class="bricka fixat">fixat 2026-09-06</span></div>
         <p>Pulskortet "Ny vecka" visas exakt när <code>lastVisit !== isoWeek()</code>, alltså vid veckans <em>första</em> öppning. I samma ögonblick returnerar <code>routLoad()</code> en tom logg, eftersom den sparade posten bär förra veckans nummer. Återblicken över förra veckan får därmed noll avklarade rutiner och noll sparad tid som underlag — medan chattaktiviteten i samma funktion räknas på <code>nu − 7 dygn</code> och alltså <em>täcker</em> förra veckan. Underlaget blandar två tidsfönster utan att någon bestämt det.</p>
         <p>Måndagsöppningen är portalens viktigaste ögonblick, och OM5 byggde fyra ytor för att visa sparad tid. Just den yta kunden möter först säger ingenting om det hon faktiskt gjorde.</p>
         <div class="utskrift"><pre>Sparad rutinlogg i webbläsaren : {"week":"2026-W35","done":[3 rutiner]}
@@ -206,12 +208,12 @@ weekReview() läser routLoad().done → []
 Avklarade rutiner i underlaget    : 0 st
 Sparad tid i underlaget           : 0 minuter
 Vad kunden FAKTISKT gjorde        : 3 rutiner = 135 minuter</pre></div>
-        <div class="fix"><b>Fix</b>Läs förra veckans post ur <code>atb_rout_&lt;slug&gt;</code> när <code>r.week</code> är föregående ISO-vecka — den ligger kvar orörd tills första avbockningen skriver över den. Ge tidspulskortet samma källa.</div>
+        <div class="fix"><b>Fix</b>Läs förra veckans post ur <code>atb_rout_&lt;slug&gt;</code> när <code>r.week</code> är föregående ISO-vecka — den ligger kvar orörd tills första avbockningen skriver över den. Ge tidspulskortet samma källa.</div><div class="gjort"><b>Gjort — 6 september 2026</b><code>isoWeek()</code> tar nu ett datum, och <code>routVeckanSomGick()</code> frågar efter föregående veckas nyckel — posten ligger orörd tills första avbockningen i den nya veckan skriver över den. Svaret bär <em>vilken</em> vecka det gäller, så texten säger "förra veckan" eller "denna vecka" i stället för att gissa. Är loggen redan överskriven bär veckoliggaren minuterna vidare. Pulskortet fick samma källa. <b>Sett med ögon:</b> kortet säger "Ny vecka — förra veckan gjorde teamet ≈ 4,5 timmar manuellt arbete", och underlaget som gick till teamet innehöll "Avklarade rutiner förra veckan: Veckoplan med VD, Veckans bloggpost" — exakt de 270 minuter som förut blev 0. Sex tester, mutationsprovade.</div>
         <div class="fot"><span class="plats">portal/app.js:2806–2831 · :2292 · :2709</span><span>~2 h</span><span>repro i granskning/2026-09-01/</span></div>
       </article>
 
-      <article class="post avvikelse">
-        <div class="post-huvud"><span class="id">KR3</span><h3>Provmånadskortet dör så fort kunden rör arbetsytan</h3><span class="bricka repro">reproducerad</span></div>
+      <article class="post avvikelse fixad">
+        <div class="post-huvud"><span class="id">KR3</span><h3>Provmånadskortet dör så fort kunden rör arbetsytan</h3><span class="bricka fixat">fixat 2026-09-06</span></div>
         <p><code>checkTrialNotice()</code> anropas på exakt ett ställe: vid boot. Kortet den ritar hamnar i <code>.ws</code>, som byggs inuti <code>renderSidebar()</code> — och <code>refreshSidebar()</code> byter ut hela <code>.sidebar</code> utan att anropa <code>checkTrialNotice()</code> igen. Kortet försvinner alltså när kunden expanderar arbetsytan, godkänner ett minnesförslag, eller vid det tredje anropsstället.</p>
         <p>Det drabbar precis fel kund: den som <em>använder</em> portalen aktivt är den som ska konvertera, och kortets knapp "Fortsätt löpande — 290 kr/mån" är, tills e-postlivlinan finns, den enda vägen dit inifrån produkten.</p>
         <div class="utskrift"><pre>Reproducerat 2026-09-06, lokal emulator, plan=trial, created_at 27 dygn bakat
@@ -221,7 +223,7 @@ efter agentbyte             #trial-card = 0
 efter ett svar              #trial-card = 0
 efter expanderad arbetsyta  #trial-card = 0</pre></div>
         <p><b>Skärpning 6 september:</b> posten sa "expanderar arbetsytan, godkänner ett minnesförslag, eller det tredje anropsstället". Uppmätt i webbläsare försvinner kortet <em>före</em> alla tre — presentationsrundan (<code>#ovl</code>) ritar om sidopanelen när den stängs, och den möter varje ny kund vid första besöket. Kunden hinner alltså aldrig se kortet över huvud taget.</p>
-        <div class="fix"><b>Fix</b>En rad <code>checkTrialNotice();</code> sist i <code>refreshSidebar()</code> — den täcker alla fyra vägarna. Funktionen är redan idempotent: den vaktar på <code>#trial-card</code> och respekterar snooze.</div>
+        <div class="fix"><b>Fix</b>En rad <code>checkTrialNotice();</code> sist i <code>refreshSidebar()</code> — den täcker alla fyra vägarna. Funktionen är redan idempotent: den vaktar på <code>#trial-card</code> och respekterar snooze.</div><div class="gjort"><b>Gjort — 6 september 2026</b>Raden ligger sist i <code>refreshSidebar()</code>. <b>Och posten underskattade felet:</b> uppmätt i webbläsare var kortet borta redan efter att presentationsrundan (<code>#ovl</code>) stängts — den anropar <code>refreshSidebar()</code> när den lämnas och möter varje ny kund vid första besöket, så kunden hann aldrig se kortet över huvud taget. Verifierat med ögon mot lokal emulator med <code>--plan trial --dagar 27</code>: kortet står kvar genom hela genomgången och visar "3 dagar kvar" med rätt slutdatum. Två tester i <code>test/portal.mjs</code>, mutationsprovade. Commit <code>f13c289</code>, Pages <code>69cffcc0</code>.</div>
         <div class="fot"><span class="plats">portal/app.js:1421 · :2264–2269 · :3773–3775</span><span>~15 min</span><span>repro: .claude/skills/portal-med-ogon/</span></div>
       </article>
 
@@ -271,10 +273,10 @@ efter expanderad arbetsyta  #trial-card = 0</pre></div>
         <div class="fot"><span class="plats">builder/builder.js:218–235 · :886 · :1679–1698</span><span>~1–2 h</span></div>
       </article>
 
-      <article class="post anmarkning">
-        <div class="post-huvud"><span class="id">KR6</span><h3>Kvittosidans räddningsplanka pekar på en länk som inte finns</h3><span class="bricka">läst i koden</span></div>
+      <article class="post anmarkning fixad">
+        <div class="post-huvud"><span class="id">KR6</span><h3>Kvittosidans räddningsplanka pekar på en länk som inte finns</h3><span class="bricka fixat">fixat 2026-09-06</span></div>
         <p>Vid saknat kvitto-id säger sidan "gå tillbaka till kvittomejlet och följ länken därifrån" — men Stripes kvittomejl leder till Stripes egen kvittosida, inte till vår <code>success_url</code>. Och <code>stuck()</code> säger "ladda om eller mejla oss" utan att nämna det som faktiskt fungerar: teamet levereras av webhooken oavsett vad som hände med fliken.</p>
-        <div class="fix"><b>Fix</b>Byt båda styckena mot "gå till mittaiteam.se/portal och logga in med adressen ni betalade med". Två textändringar, löser båda fallen självbetjänat.</div>
+        <div class="fix"><b>Fix</b>Byt båda styckena mot "gå till mittaiteam.se/portal och logga in med adressen ni betalade med". Två textändringar, löser båda fallen självbetjänat.</div><div class="gjort"><b>Gjort — 6 september 2026</b>Båda styckena pekar nu på inloggningen med adressen kunden betalade med, som primär knapp — och säger rakt ut att leveransen sker i webhooken, inte i fliken. Verifierat i drift: den döda hänvisningen finns inte kvar i någon text kunden ser.</div>
         <div class="fot"><span class="plats">portal/aktivera.html:66 · :105–111</span><span>~20 min</span></div>
       </article>
 
@@ -300,8 +302,8 @@ efter expanderad arbetsyta  #trial-card = 0</pre></div>
         <div class="fot"><span class="plats">functions/api/auth/_lib.js:266–294 · api/health.js:44–79</span><span>~1–2 h</span></div>
       </article>
 
-      <article class="post anmarkning">
-        <div class="post-huvud"><span class="id">DR7</span><h3>Vakten behöver inte vara en tredje part — CI:t kan vara den</h3><span class="bricka">läst i koden</span></div>
+      <article class="post anmarkning fixad">
+        <div class="post-huvud"><span class="id">DR7</span><h3>Vakten behöver inte vara en tredje part — CI:t kan vara den</h3><span class="bricka fixat">fixat 2026-09-06</span></div>
         <p>"Peka en uptime-vakt mot <code>/api/health</code>" har stått som din uppgift i tre pass. Det är precis den sortens rutin som kräver att någon minns att registrera ett konto någonstans. En <code>.github/workflows/health.yml</code> med <code>schedule: '*/15 * * * *'</code> och ett <code>curl -fsS</code> mot rutten gör samma sak: GitHub mejlar repoägaren när en körning fäller. Noll nya konton, samma verktyg som <code>test.yml</code> redan använder.</p>
         <div class="fix"><b>Fix</b>Kopiera <code>test.yml</code>, byt steget mot ett curl-anrop. Med DR6 och DR9 gjorda täcker samma vakt även mejlvägen och kostnaden.</div>
         <div class="fot"><span class="plats">.github/workflows/test.yml (mall)</span><span>~20 min</span></div>
