@@ -809,19 +809,28 @@ ny kund dyker upp i både galleri och portal automatiskt.
 > viktigast: ett riktigt byggsteg kördes skarpt, så K4:s enda öppna fråga (om
 > `env.ASSETS` bär i produktion) är besvarad med en körning.
 >
-> **Ingenting i portalen är kört i webbläsare** (P6, P4, OM5). Fem pass i rad
-> har lagt kod i `portal/app.js` utan att någon sett den rita upp sig — den är
-> nu i drift, verifierad med 48 enhetstester som kör den riktiga koden ur
-> källan, men inte med ögon. Nästa pass bör börja med att faktiskt öppna
-> portalen, och det kräver en giltig `OPENROUTER_KEY` i `.dev.vars`; den lokala
-> svarar "Missing Authentication header".
+> **Portalen ÄR körd i webbläsare sedan 2026-09-06** — rättar stycket som stod
+> här. Skillen `portal-med-ogon` öppnar den i Chromium i två lägen, och
+> `satt-upp-lokalt.mjs` skriver team, konto, `team_access` och en **sessionsrad**
+> i lokala D1, så en riktig inloggad kund går att spela upp utan mejlsteg.
+> Blockeraren var mindre än den såg ut: **bara chatten kräver en giltig
+> `OPENROUTER_KEY`** — rutiner, provmånadskort, "Utveckla teamet", sök och
+> "Veckan som gick" ritas utan den. Demoläget kan däremot aldrig visa dem
+> (`if (state.demo) return` på ett fyrtiotal ställen), och ett showcase-slug
+> tvingar demoläge även för en inloggad kund.
 >
-> **Nästa pass enda uppgift:** öppna portalen i en webbläsare och gå igenom
-> P6, P4 och OM5 för hand. Det kräver en giltig `OPENROUTER_KEY` i `.dev.vars` —
-> be om en. Går det inte: ta **P2** (gratisbygget fångar ingen e-post,
-> `builder/builder.js`, ~4 h), men notera att den punkten har en GDPR-sida som
-> är Mikaels att avgöra innan koden skrivs. Cowork-beslutet avgör fortfarande
-> BF2, BF3 och OM1 på en gång.
+> Kvar att bedöma med ögon: **P6** (bocka av en rutin, ladda om), **P4**
+> (avsluta en grundagent, se historiken komma tillbaka) och **OM5** (att bara
+> avbockade rutiners `timeEstimate` räknas). Att ytorna öppnar utan att kasta är
+> mätt; att de gör rätt sak är det inte.
+>
+> **Nästa pass enda uppgift:** laga **KR3** — en rad sist i `refreshSidebar()`.
+> Felet är reproducerat i webbläsare 2026-09-06 och är värre än punkten säger:
+> provmånadskortet är borta redan när presentationsöverlägget (`#ovl`) stängs,
+> alltså före de tre anropsställen KR3 listar. Ta **RE1** i samma pass om tiden
+> räcker (samma yta, `portal/app.js`), och verifiera båda med
+> `portal-med-ogon`. Cowork-beslutet avgör fortfarande BF2, BF3 och OM1 på en
+> gång.
 >
 > Notera att K4 gör **BF2** mindre akut men inte löst: systemprompterna går
 > fortfarande att ladda ner gratis, de går bara inte längre att köra hos oss.

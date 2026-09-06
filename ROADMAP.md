@@ -84,6 +84,59 @@ Från genomgången 2026-09-01 · sex parallella linser + egen verifiering.
 - [ ] **P2** Gratisbygget fångar ingen e-post — övergiven körning är borta för alltid · `builder/builder.js:1432-1493` · `läst i koden` · ~4 h
 - [ ] **P3** Provmånaden har ingen utgående livlina utanför portalen · `functions/api/_plan.js:65-86` · `mätt` · ~6 h
 
+## Driftsatt 2026-09-06
+
+Pages `6f1af73a`, commits `16939bb` (fem projekt-skills) och `893a6b4` (KA6).
+Taggen `deploy-2026-09-06`. Wrangler rapporterade `Uploaded 0 files (103 already
+uploaded)` — **inget statiskt innehåll ändrades**, hela passets kodändring ligger
+i Functions-bundeln (`functions/api/_build.js`, en rad prompttext plus
+kommentar). Inga migrationer, inga nya secrets, ingen ny rutt.
+
+Verifierat i drift efteråt:
+
+- `/api/health` **200 friskt**, alla tre kontrollerna sanna.
+- Hub, portal, builder, galleri och branschsidor svarar 200; `villkor.html` ger
+  308 till den extensionslösa adressen (Pages standard). Okänd adress → **404**.
+- Fria rutten utan `step` → **400 `build_step_required`** med den svenska
+  texten. K4-grinden står.
+- **Ett riktigt sammanställningssteg kört skarpt mot produktionen** (fiktivt
+  underlag, cykelverkstad i Umeå): 200, 8 310 tecken giltig JSON, fyra agenter,
+  fyra rutiner, ett avvisat moment, en säsong — och **exakt 3 startförslag på
+  var och en av de fyra agenterna**. Det är verifieringen av KA6: den ändrade
+  prompttexten och `TEAM_SCHEMA` är överens i drift, inte bara i testet. `mätt`
+
+**Push-glappet hade en orsak till, och den är stängd.** `main` hade **ingen
+upstream konfigurerad** — `git push` utan argument avbröts med
+"set-upstream"-uppmaningen och gjorde ingenting. `git log origin/main..main`
+fungerade hela tiden (referensen fanns), så glappet var osynligt från den
+kontrollen. Satt nu: `main` följer `origin/main`. CI-körningen på `893a6b4` gick
+grön.
+
+**Nytt i repot: `.claude/skills/` — fem procedurer som går att köra.**
+`driftsatt` (den här kedjan), `kopplad-andring` (registret över filer som måste
+ändras samma dag, 16 kopplingar), `kvalitet-team` (kärnregeln mätt, inklusive
+överlapp *mellan* team), `portal-med-ogon` (Playwright, demo eller riktig
+inloggad kund) och `kundresa` (köpkedjan länk för länk). De hittade tre saker
+under sitt eget bygge:
+
+- **KR3 är reproducerad i webbläsare** och är värre än punkten säger:
+  provmånadskortet är borta redan när presentationsöverlägget (`#ovl`) stängs,
+  alltså före de tre `refreshSidebar()`-anrop KR3 listar. Fixen är fortfarande
+  en rad, men den måste täcka alla fyra. `mätt`
+- **Varje moln-team ger två konsolfel vid laddning.** Portalen provar
+  `teams/<slug>.js` innan den faller tillbaka på `/api/teams/:slug`
+  (`portal/app.js:825`), så varje betalande kund får en 404 och ett MIME-fel i
+  konsolen. Fallbacken är avsiktlig; bruset döljer riktiga fel vid felsökning
+  hos en kund. `mätt`
+- **`sektionText` på `LEVERANS` med `indexOf` klipper ut fel stycke** när ordet
+  står i löpande text — uppmätt på `studio.js`. Det delade perspektivmåttet i
+  `builder/builder.js` har samma svaghet för sin rubrik; den har inte slagit
+  till, för "DITT PERSPEKTIV" sällan står i brödtext.
+
+Kvar och Mikaels: Stripe live-nycklar (hål 0), Web Analytics med **automatic
+setup**, och en uptime-vakt mot `/api/health` — eller **DR7**, som gör CI till
+vakten utan nya konton.
+
 ## Driftsatt 2026-09-01
 
 Pages `a125bc7a`, commit `dbde03b`. **Ingenting kundvänt ändrades** — wrangler
