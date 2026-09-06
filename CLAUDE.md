@@ -620,11 +620,25 @@ ny kund dyker upp i både galleri och portal automatiskt.
 │   └── idekatalog-anstalld-smaforetagare-2026-07-18.md # Idébank (topp 5 byggd)
 │
 ├── .claude/
-│   └── commands/
-│       ├── build-team.md           # /build-team [företagsnamn?]
-│       ├── update-team.md          # /update-team (båda lägena)
-│       ├── consult.md              # /consult — startar ai-consultant-läget
-│       └── handoff.md              # /handoff — avslutar ett konsultuppdrag
+│   ├── commands/                   # Produktens flöden (det verktyget GÖR)
+│   │   ├── build-team.md           # /build-team [företagsnamn?]
+│   │   ├── update-team.md          # /update-team (båda lägena)
+│   │   ├── consult.md              # /consult — startar ai-consultant-läget
+│   │   └── handoff.md              # /handoff — avslutar ett konsultuppdrag
+│   │
+│   └── skills/                     # Arbetets procedurer (hur projektet UNDERHÅLLS).
+│       │                           #   Var och en har ett körbart skript — proceduren
+│       │                           #   ska gå att köra, inte bara läsas.
+│       ├── driftsatt/              # Deploy hela vägen: förkontroll → push → migration
+│       │                           #   → deploy → verifiering i drift → tagg → ROADMAP-post
+│       ├── kopplad-andring/        # Registret över filer som måste ändras samma dag
+│       │                           #   (kopplingar.json, 16 st — 6 utan test som vaktar)
+│       ├── kvalitet-team/          # Grindar ett genererat team mot kärnregeln, inkl.
+│       │                           #   överlapp MELLAN team (ingen test mäter det)
+│       ├── portal-med-ogon/        # Playwright-genomgång av portalen: demoläge offline,
+│       │                           #   eller riktig inloggad kund mot npm run dev:cf
+│       └── kundresa/               # Köpkedjan länk för länk: bygge → köp → webhook
+│                                   #   → kvitto → inloggning → första svaret
 │
 ├── prompts/
 │   ├── shared/                     # Prompts som används av båda lägena
