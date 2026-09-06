@@ -82,7 +82,57 @@ Från genomgången 2026-09-01 · sex parallella linser + egen verifiering.
 
 ## Driftsatt 2026-09-06
 
-Pages `6f1af73a`, commits `16939bb` (fem projekt-skills) och `893a6b4` (KA6).
+> Dagen har **två** driftsättningar. Den första (`6f1af73a`) är KA6 och
+> skillsen; den andra (`69cffcc0`, taggen `deploy-2026-09-06b`) är KR3, RE1,
+> KR6 och DR7. Båda står här, i ordning.
+
+### Andra driftsättningen — `69cffcc0`, commit `f13c289`
+
+Fyra punkter, **två av dem verifierade med ögon** i den lokala emulatorn innan
+de gick ut. `Uploaded 4 files (99 already uploaded)`. Inga migrationer, inga
+nya secrets, en ny fil under `.github/workflows/`.
+
+- **KR3** — provmånadskortet ritas om när sidopanelen ritas om. Punkten sa tre
+  anropsställen; uppmätt i webbläsare var kortet borta redan efter att
+  presentationsrundan stängts, alltså innan kunden gjort någonting alls. Fixen
+  (en rad sist i `refreshSidebar()`) täcker alla.
+- **RE1** — "Veckan som gick" läser förra veckan. `isoWeek()` tar ett datum,
+  `routVeckanSomGick()` frågar efter rätt veckonyckel, och svaret bär vilken
+  vecka det gäller så texten slipper gissa.
+- **KR6** — kvittosidan pekar på inloggningen i stället för på en länk som inte
+  finns.
+- **DR7** — vakten är CI:t: `.github/workflows/health.yml`, var femtonde minut.
+
+Verifierat i drift efteråt:
+
+- `/api/health` **200 friskt**, alla tre kontrollerna sanna. `mätt`
+- Hub, portal, builder svarar 200; okänd adress **404**; `aktivera.html` ger 308
+  till den extensionslösa adressen (Pages standard). `mätt`
+- **Den publicerade `app.js?v=5e2b7686` innehåller både `routVeckanSomGick` och
+  `checkTrialNotice();` i `refreshSidebar()`** — fixarna är alltså ute, inte
+  bara committade. `mätt`
+- Kvittosidan i drift säger "Logga in med adressen ni betalade med" på båda
+  ställena, och den döda hänvisningen till kvittomejlet finns inte kvar i någon
+  text kunden ser (bara i en kodkommentar som förklarar varför). `mätt`
+- `health`-workflowen är registrerad hos GitHub. Dess tre kontroller kördes för
+  hand mot produktionen samma dag; första schemalagda körningen är det riktiga
+  kvittot.
+
+**Verifieringen med ögon, och varför den bar:** fixturen från
+`portal-med-ogon` (`--plan trial --dagar 27`) framkallade provmånadskortet, och
+genomgången mätte det efter varje steg — kortet står nu kvar hela vägen. För RE1
+sattes förra veckans rutinlogg och veckoliggare i webbläsaren, varpå pulskortet
+sa *"Ny vecka — förra veckan gjorde teamet ≈ 4,5 timmar manuellt arbete"* och
+underlaget som gick till teamet innehöll *"Avklarade rutiner förra veckan:
+Veckoplan med VD, Veckans bloggpost"*. Exakt de 270 minuter som förut blev noll.
+
+**Fynd om testerna själva:** det första KR3-testet passerade med fixen
+borttagen. Det läste funktionens källtext och matchade **kommentaren** ovanför
+anropet, som nämner funktionen vid namn. En vakt som läser källtext måste läsa
+kod — `utanKommentarer()` i `test/portal.mjs` finns nu för det, och alla nio nya
+tester är mutationsprovade.
+
+### Första driftsättningen — Pages `6f1af73a`, commits `16939bb` (fem projekt-skills) och `893a6b4` (KA6).
 Taggen `deploy-2026-09-06`. Wrangler rapporterade `Uploaded 0 files (103 already
 uploaded)` — **inget statiskt innehåll ändrades**, hela passets kodändring ligger
 i Functions-bundeln (`functions/api/_build.js`, en rad prompttext plus

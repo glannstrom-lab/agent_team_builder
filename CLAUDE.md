@@ -824,13 +824,19 @@ ny kund dyker upp i både galleri och portal automatiskt.
 > avbockade rutiners `timeEstimate` räknas). Att ytorna öppnar utan att kasta är
 > mätt; att de gör rätt sak är det inte.
 >
-> **Nästa pass enda uppgift:** laga **KR3** — en rad sist i `refreshSidebar()`.
-> Felet är reproducerat i webbläsare 2026-09-06 och är värre än punkten säger:
-> provmånadskortet är borta redan när presentationsöverlägget (`#ovl`) stängs,
-> alltså före de tre anropsställen KR3 listar. Ta **RE1** i samma pass om tiden
-> räcker (samma yta, `portal/app.js`), och verifiera båda med
-> `portal-med-ogon`. Cowork-beslutet avgör fortfarande BF2, BF3 och OM1 på en
-> gång.
+> **KR3 och RE1 är lagade och driftsatta 2026-09-06** (Pages `69cffcc0`), båda
+> verifierade med ögon i den lokala emulatorn. Samma pass tog **KR6**
+> (kvittosidans döda hänvisning) och **DR7** (vakten är CI:t —
+> `.github/workflows/health.yml`).
+>
+> **Nästa pass enda uppgift:** ta **BF4** — villkoren visas aldrig före köpet,
+> och `villkor.html` §15 lovar ett samtycke ingen kod inhämtar. Kodfixen är
+> liten (`consent_collection[terms_of_service]=required` i båda
+> sessionsanropen i `functions/api/checkout.js`), men den kräver en villkors-URL
+> i Stripes dashboard, vilket är Mikaels. **Fråga om den innan koden skrivs.**
+> Går det inte: **KR4** (provmånaden kan köpas om varje månad) eller **DR8**
+> (betalningens livscykel har noll tester, ~3 h, inget beroende av någon annan).
+> Cowork-beslutet avgör fortfarande BF2, BF3 och OM1 på en gång.
 >
 > Notera att K4 gör **BF2** mindre akut men inte löst: systemprompterna går
 > fortfarande att ladda ner gratis, de går bara inte längre att köra hos oss.
