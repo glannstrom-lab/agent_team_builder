@@ -86,6 +86,22 @@ section h2+.undertext{color:var(--dim);margin-bottom:26px;max-width:64ch}
   border:1px solid var(--line);border-radius:3px;padding:3px 7px 2px;color:var(--dim);white-space:nowrap}
 .bricka.repro{color:var(--blagron);border-color:currentColor}
 .bricka.matt{color:var(--ockra-text);border-color:currentColor}
+.bricka.fixat{color:#2E6B4F;border-color:currentColor;background:rgba(46,107,79,.07)}
+.post.fixad{opacity:.92;border-left:3px solid #2E6B4F}
+.post.fixad h3{text-decoration:line-through;text-decoration-thickness:1px;text-decoration-color:rgba(30,25,19,.35)}
+.gjort{background:rgba(46,107,79,.07);border:1px solid rgba(46,107,79,.25);border-radius:5px;
+  padding:11px 13px;margin-top:11px;font-size:14.5px;line-height:1.55}
+.gjort b{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+  color:#2E6B4F;display:block;margin-bottom:5px}
+.uppdat{background:var(--paper);border:1px solid var(--line);border-left:3px solid var(--ockra);
+  border-radius:6px;padding:19px 21px;margin:0 0 26px}
+.uppdat h2{margin:0 0 4px;font-size:19px}
+.uppdat .datum{font-family:var(--mono);font-size:11px;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--ockra-text);display:block;margin-bottom:9px}
+.uppdat ul{margin:11px 0 0;padding-left:19px}
+.uppdat li{margin-bottom:7px;line-height:1.55}
+.borja li.klar b{text-decoration:line-through;text-decoration-thickness:1px}
+.borja li.klar{opacity:.7}
 .post p{margin-bottom:9px}
 .post p:last-of-type{margin-bottom:0}
 .fix{background:var(--sunk);border:1px solid var(--line);border-radius:5px;padding:11px 13px;margin:11px 0 0;font-size:15.4px}
@@ -154,11 +170,23 @@ footer b{color:var(--ink)}
 
 <section>
   <div class="wrap narrow">
+    <div class="uppdat">
+      <span class="datum">Uppdaterad 6 september 2026</span>
+      <h2>KA6 är lagad och driftsatt — och KR3 är värre än den här sidan sa</h2>
+      <p>Sidan uppdateras på samma adress; åtgärdade poster märks <em>Fixat</em> i stället för att raderas. Det som hänt sedan 1 september:</p>
+      <ul>
+        <li><b>KA6 lagad, testad och driftsatt</b> (Pages <code>6f1af73a</code>, commit <code>893a6b4</code>). Fixen var en rad; vakten är poängen — två nya tester läser den riktiga systemprompten rutten skickar och fäller om prompten beställer antal som schemat förbjuder. Verifierad skarpt med ett riktigt sammanställningssteg mot produktionen: <strong>exakt 3 startförslag på var och en av fyra agenter</strong>.</li>
+        <li><b>KR3 är nu reproducerad i webbläsare — och fixen måste täcka ett ställe till.</b> Kortet är borta redan när presentationsöverlägget stängs, alltså före de tre anropsställen posten listar. Se posten nedan.</li>
+        <li><b>Fem projekt-skills byggda</b> (<code>.claude/skills/</code>): deploy-kedjan, registret över kopplade filer, kvalitetsgrinden för genererade team, en Playwright-genomgång av portalen och köpkedjan länk för länk. Det var portalgenomgången som hittade KR3-skärpningen.</li>
+        <li><b>Två observationer utan eget ID</b>, bokförda i <code>ROADMAP.md</code> under <em>Driftsatt 2026-09-06</em>: varje moln-team ger två konsolfel vid laddning (portalen provar <code>teams/&lt;slug&gt;.js</code> före <code>/api/teams/:slug</code>), och <code>LEVERANS</code> hittad med <code>indexOf</code> träffar ordet i löpande text — mätt på <code>studio.js</code>.</li>
+      </ul>
+    </div>
+
     <h2>Börja här</h2>
     <p class="undertext">Tjugo minuter tar de två första. Den tredje är den enda reproducerade buggen.</p>
     <ol class="borja">
-      <li><div><b>Byt "2–4" mot "exakt 3"</b> <span class="kod">KA6 · 5 min</span><p>Prompten och schemat i samma fil säger emot varandra — i den fil K4 skapade för att göra just det omöjligt.</p></div></li>
-      <li><div><b>Lägg <code>checkTrialNotice()</code> sist i <code>refreshSidebar()</code></b> <span class="kod">KR3 · 15 min</span><p>Portalens enda brygga från 90 till 290 kr försvinner i dag så fort en aktiv kund rör arbetsytan.</p></div></li>
+      <li class="klar"><div><b>Byt "2–4" mot "exakt 3"</b> <span class="kod">KA6 · gjort 2026-09-06</span><p>Gjort och driftsatt, med två tester som håller antalen i kontraktet överens. Verifierat med ett riktigt byggsteg mot produktionen.</p></div></li>
+      <li><div><b>Lägg <code>checkTrialNotice()</code> sist i <code>refreshSidebar()</code></b> <span class="kod">KR3 · 15 min</span><p>Portalens enda brygga från 90 till 290 kr. <strong>Reproducerad 6 september:</strong> kortet är borta redan när presentationsöverlägget stängs — fixen måste täcka fyra anropsställen, inte tre.</p></div></li>
       <li><div><b>Låt "Veckan som gick" läsa förra veckan</b> <span class="kod">RE1 · ~2 h</span><p>Reproducerad: återblicken rapporterar alltid noll rutiner och noll sparad tid. Ta den efter KR3 — båda ligger i samma fil och kan verifieras i samma webbläsarpass.</p></div></li>
     </ol>
   </div>
@@ -183,18 +211,25 @@ Vad kunden FAKTISKT gjorde        : 3 rutiner = 135 minuter</pre></div>
       </article>
 
       <article class="post avvikelse">
-        <div class="post-huvud"><span class="id">KR3</span><h3>Provmånadskortet dör så fort kunden rör arbetsytan</h3><span class="bricka">läst i koden</span></div>
+        <div class="post-huvud"><span class="id">KR3</span><h3>Provmånadskortet dör så fort kunden rör arbetsytan</h3><span class="bricka repro">reproducerad</span></div>
         <p><code>checkTrialNotice()</code> anropas på exakt ett ställe: vid boot. Kortet den ritar hamnar i <code>.ws</code>, som byggs inuti <code>renderSidebar()</code> — och <code>refreshSidebar()</code> byter ut hela <code>.sidebar</code> utan att anropa <code>checkTrialNotice()</code> igen. Kortet försvinner alltså när kunden expanderar arbetsytan, godkänner ett minnesförslag, eller vid det tredje anropsstället.</p>
         <p>Det drabbar precis fel kund: den som <em>använder</em> portalen aktivt är den som ska konvertera, och kortets knapp "Fortsätt löpande — 290 kr/mån" är, tills e-postlivlinan finns, den enda vägen dit inifrån produkten.</p>
-        <div class="fix"><b>Fix</b>En rad <code>checkTrialNotice();</code> sist i <code>refreshSidebar()</code>. Funktionen är redan idempotent — den vaktar på <code>#trial-card</code> och respekterar snooze.</div>
-        <div class="fot"><span class="plats">portal/app.js:1421 · :2264–2269 · :3773–3775</span><span>~15 min</span></div>
+        <div class="utskrift"><pre>Reproducerat 2026-09-06, lokal emulator, plan=trial, created_at 27 dygn bakat
+vid laddning                #trial-card = 1
+efter stangt overlagg       #trial-card = 0   &lt;-- redan har
+efter agentbyte             #trial-card = 0
+efter ett svar              #trial-card = 0
+efter expanderad arbetsyta  #trial-card = 0</pre></div>
+        <p><b>Skärpning 6 september:</b> posten sa "expanderar arbetsytan, godkänner ett minnesförslag, eller det tredje anropsstället". Uppmätt i webbläsare försvinner kortet <em>före</em> alla tre — presentationsrundan (<code>#ovl</code>) ritar om sidopanelen när den stängs, och den möter varje ny kund vid första besöket. Kunden hinner alltså aldrig se kortet över huvud taget.</p>
+        <div class="fix"><b>Fix</b>En rad <code>checkTrialNotice();</code> sist i <code>refreshSidebar()</code> — den täcker alla fyra vägarna. Funktionen är redan idempotent: den vaktar på <code>#trial-card</code> och respekterar snooze.</div>
+        <div class="fot"><span class="plats">portal/app.js:1421 · :2264–2269 · :3773–3775</span><span>~15 min</span><span>repro: .claude/skills/portal-med-ogon/</span></div>
       </article>
 
-      <article class="post avvikelse">
-        <div class="post-huvud"><span class="id">KA6</span><h3>Kontraktet säger emot sig självt — i filen som skapades för att hindra det</h3><span class="bricka matt">mätt</span></div>
+      <article class="post avvikelse fixad">
+        <div class="post-huvud"><span class="id">KA6</span><h3>Kontraktet säger emot sig självt — i filen som skapades för att hindra det</h3><span class="bricka fixat">fixat 2026-09-06</span></div>
         <p><code>PORTAL_RULES</code> punkt 9 beställer "2–4 korta exempeluppgifter". <code>TEAM_SCHEMA</code>, hundra rader ner i samma fil, tvingar <code>minItems: 3, maxItems: 3</code>. <code>templates/shared/portal-team.md:102</code> säger "EXAKT 3". Schemat vinner, så utdatan blir alltid tre — men modellen får motstridiga instruktioner i det steg som är dyrast att köra om.</p>
         <p>K4 flyttade ihop de två halvorna just för att "prompten och schemat är ETT kontrakt". Motsägelsen överlevde flytten. I övrigt stämmer kontraktet i båda riktningarna, fält för fält.</p>
-        <div class="fix"><b>Fix</b>Byt "2–4" mot "exakt 3" i punkt 9.</div>
+        <div class="gjort"><b>Gjort — 6 september 2026</b>Punkt 9 säger nu EXAKT 3. Två tester i <code>test/ai.mjs</code> läser den <em>riktiga</em> systemprompten rutten skickar, inte en kopia: <em>"prompten beställer inga antal som schemat förbjuder"</em> (generell — plockar ut intervallen för <code>starters</code>, <code>triggers</code> och <code>routines</code> och jämför mot schemats gränser) och <em>"antalet startförslag säger samma sak på alla tre ställen"</em> (täcker mallen för <code>/build-team</code>, som valideringen omöjligt kan nå). Regeln är enkelriktad: <strong>allt prompten tillåter måste schemat tillåta</strong> — snävare prompt är i sin ordning, vidare är ett fel. Båda mutationsprövade i tre riktningar. Verifierat skarpt: ett riktigt sammanställningssteg mot produktionen gav exakt 3 startförslag på var och en av fyra agenter. Commit <code>893a6b4</code>, Pages <code>6f1af73a</code>.</div>
         <div class="fot"><span class="plats">functions/api/_build.js:116 · :214</span><span>~5 min</span></div>
       </article>
 
