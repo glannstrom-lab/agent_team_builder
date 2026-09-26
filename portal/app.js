@@ -1563,6 +1563,7 @@ function renderSidebar() {
   // Se wsCollapsed(): allt visas permanent så fort det finns chatthistorik.
   const extras = [];
   extras.push(["📈", "Veckans arbete", openWeekWork, "Vad du och teamet gjort den här veckan — och tid tillbaka"]);
+  // Kvartalet nås från Veckans arbete sedan RE5; här bara när kvartalet slutar.
   if (!state.demo && quarterEndsSoon()) extras.push(["🏆", "Kvartalet med teamet", openQuarter, "Kvartalets siffror — delbara med en kollega"]);
   if (!state.demo) extras.push(["🔄", "Utveckla teamet", openGrow, "Lägg till en agent när verksamheten förändras — avvisade moment står först i kön"]);
   if (!state.demo) extras.push(["🔍", "Sök i historiken", openSearch, "Sök i alla samtal och arkivet"]);
@@ -1575,9 +1576,9 @@ function renderSidebar() {
 
   // Verktygen bygger alla på portalens egen logg och har ingenting att visa
   // förrän kunden använt teamet — de hör därför till det som fälls ut.
+  // RE5: rapporten och leveranslistan bor i Veckans arbete sedan 2026-09-26 —
+  // de var samma logg som den, i andra kostymer.
   const tools = state.demo ? [] : [
-    ["📣", "Rapport till chefen", statusReport, "Statusuppdatering ur veckans logg — klar att klistra in i mejl eller Slack"],
-    ["🏅", "Det här har jag levererat", deliveredList, "Underlag inför löne-, medarbetar- eller kundavstämningssamtal"],
     ["🎭", "Öva ett samtal", openPractice, "Rollspela ett svårt samtal — agenten spelar motparten och ger feedback"],
   ];
   if (hideExtras) {
@@ -4059,6 +4060,23 @@ function openWeekWork() {
     if (i >= 0 && i <= 6) dayEvents[i].routines.push(d.label || d);
   });
   box.appendChild(el("p", "ovl-lead", "Det du och teamet gjort den här veckan — ur portalens egen logg, inget hämtas någonstans ifrån."));
+  // RE5 (2026-09-26): rapporten, leveranslistan och kvartalet var tre egna
+  // rader i sidopanelen — samma logg i fyra kostymer. Nu är de vägar vidare
+  // härifrån, och veckobrevet står bredvid: bryggan till den som betalar är
+  // att även chefen får måndagsbrevet.
+  if (!state.demo) {
+    const vidare = el("div", "clarify-actions");
+    const knapp = (text, titel, fn) => {
+      const b = el("button", "link-btn", text); b.type = "button"; b.title = titel;
+      b.onclick = () => { closeOverlay(); fn(); };
+      vidare.appendChild(b);
+    };
+    knapp("📣 Rapport till chefen", "Statusuppdatering ur veckans logg — klar att klistra in i mejl eller Slack", statusReport);
+    knapp("🏅 Det här har jag levererat", "Underlag inför löne-, medarbetar- eller kundavstämningssamtal", deliveredList);
+    knapp("🏆 Kvartalet", "Kvartalets siffror — delbara med en kollega", openQuarter);
+    knapp("✉️ Få veckan som mejl", "Teamets veckostart som mejl på måndagar — bjud in chefen under Kollegor, så kan hen få den också", openDigest);
+    box.appendChild(vidare);
+  }
   if (tid.minuter) {
     box.appendChild(el("div", "week-saved",
       `⏱ Avklarade rutiner motsvarar ${tidFormat(tid.minuter)} manuellt arbete`));

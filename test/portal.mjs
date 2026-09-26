@@ -714,3 +714,12 @@ test("KA21: kontrollmeddelandet börjar med sökfrågan och förbjuder att bekr�
   assert.match(t, /säg aldrig att något stämmer om källorna du hittade inte handlar om just den uppgiften/);
   assert.match(t, /Momsen får inte dras av/);
 });
+
+test("RE5: rapporten, leveranslistan, kvartalet och veckobrevet nås från Veckans arbete — inte som egna rader", () => {
+  const vecka = KÄLLA.slice(KÄLLA.indexOf("function openWeekWork("), KÄLLA.indexOf("function openWeekWork(") + 3000);
+  for (const fn of ["statusReport", "deliveredList", "openQuarter", "openDigest"]) {
+    assert.ok(vecka.includes(`, ${fn});`), `${fn} saknas i Veckans arbete`);
+  }
+  const sidopanel = KÄLLA.slice(KÄLLA.indexOf("const tools = state.demo ? [] : ["), KÄLLA.indexOf("const tools = state.demo ? [] : [") + 400);
+  assert.ok(!sidopanel.includes("statusReport") && !sidopanel.includes("deliveredList"), "rapporten och leveranslistan står fortfarande som egna rader");
+});
