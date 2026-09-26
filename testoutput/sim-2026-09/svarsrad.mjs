@@ -10,7 +10,7 @@ const hist = { [team.entryAgent]: [
 const b = await chromium.launch();
 const fel = [];
 for (const [namn, vp] of [["desktop", { width: 1400, height: 900 }], ["mobil", { width: 390, height: 844 }]]) {
-  const ctx = await b.newContext({ viewport: vp });
+  const ctx = await b.newContext({ viewport: vp, ...(namn === "mobil" ? { hasTouch: true, isMobile: true } : {}) });
   await ctx.addCookies([{ name: "atb_session", value: s.token, domain: "mittaiteam.se", path: "/", secure: true, httpOnly: true }]);
   await ctx.addInitScript(([k, v]) => { try { localStorage.setItem(k, v); localStorage.setItem("atb_intro_seen", "1"); } catch (_) {} }, ["atb_hist_" + s.slug, JSON.stringify(hist)]);
   const p = await ctx.newPage();
@@ -25,6 +25,10 @@ for (const [namn, vp] of [["desktop", { width: 1400, height: 900 }], ["mobil", {
   console.log(namn, "knappar:", knappar.join(" | "));
   const rad = acts.length ? acts[acts.length - 1] : null;
   if (rad) { const box = await rad.evaluate((e) => e.closest(".msg, .row, div").getBoundingClientRect().toJSON()); console.log(namn, "radens höjd:", Math.round(box.height), "px"); }
+  const bubbla = await p.$$(".msg");
+  if (namn === "desktop" && bubbla.length) await bubbla[bubbla.length - 1].hover();
+  const mer = await p.$$("button:has-text(\"⋯ Mer\")"); if (mer.length) await mer[mer.length - 1].click();
+  await p.waitForTimeout(300);
   await p.screenshot({ path: `testoutput/sim-2026-09/skarmbilder/svarsrad-${namn}.png`, fullPage: false });
   await ctx.close();
 }

@@ -1900,6 +1900,11 @@ function bubble(role, text, msg) {
   if (role === "assistant") {
     b.setAttribute("aria-label", "Svar");
     renderMarkdown(b, text); // agenterna svarar med rubriker/listor/fetstil
+    // Bubblan FÖRST, knapparna under den. Ordningen var omvänd fram till
+    // 2026-09-26: på dator doldes det (knapparna syns bara vid hovring), men
+    // på mobil stod knapparna ovanför varje sparat svar. Syntes först i en
+    // skärmbild — inte vid läsning av koden.
+    row.appendChild(b);
     if (text) addActions(row, () => text); // färdiga svar får kopiera/ladda ner
     // Mötesanteckningar bär deltagarnas oberoende perspektiv — produktens
     // bevis för att mötet inte är en modell som lajvar roller. Visa dem.
@@ -1909,8 +1914,8 @@ function bubble(role, text, msg) {
     // submitMessage(). Faller alltid tillbaka på den skickade texten, så
     // vanliga meddelanden och äldre historik ser ut precis som förut.
     b.textContent = (msg && msg.display) || text;
+    row.appendChild(b);
   }
-  row.appendChild(b);
   return row;
 }
 

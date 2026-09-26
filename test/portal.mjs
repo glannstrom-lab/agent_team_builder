@@ -648,3 +648,11 @@ test("RE2: rättelsen blir en daterad rad i företagsminnet, och knappen finns u
   const ruta = KÄLLA.slice(KÄLLA.indexOf("function openFelRuta("), KÄLLA.indexOf("function addActions("));
   assert.ok(ruta.includes("saveMemory(") && ruta.includes("openAgentEdit(agent)"), "rutan ska spara i minnet och leda till agentens instruktion");
 });
+
+test("svarsknapparna ritas UNDER det sparade svaret, inte ovanför", () => {
+  const i = KÄLLA.indexOf("function bubble(role, text, msg)");
+  const kropp = KÄLLA.slice(i, KÄLLA.indexOf("\n}\n", i));
+  const bubblan = kropp.indexOf("row.appendChild(b);");
+  const knappar = kropp.indexOf("addActions(row");
+  assert.ok(bubblan > 0 && knappar > 0 && bubblan < knappar, "bubblan måste läggas i raden före knapparna");
+});
