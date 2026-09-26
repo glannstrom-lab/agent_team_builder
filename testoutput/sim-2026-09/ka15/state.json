@@ -1,0 +1,61 @@
+{
+  "history": {
+    "vd-assistent": [
+      {
+        "role": "user",
+        "content": "En BRF vill ha stambyte i 12 lägenheter. Kan föreningen få ROT-avdrag på det? Två meningar.",
+        "at": 1790456409730
+      },
+      {
+        "role": "assistant",
+        "content": "Nej — ROT gäller arbete i bostaden och kräver att bostadsrättshavaren har underhållsansvar enligt stadgarna; arbete på gemensamma ytor (som stamledningar i föreningens utrymmen) ger inte rotavdrag. Bostadsrättshavaren kan däremot få rotavdrag för arbete inne i den egna lägenheten om underhållsansvaret ligger på hen enligt stadgarna (källa: Skatteverket, \"Ger arbetet rätt till rotavdrag\")."
+      },
+      {
+        "role": "user",
+        "content": "Petersson har inte betalat på 23 dagar. Hur stor påminnelseavgift får jag ta? En mening.",
+        "at": 1790456411477
+      },
+      {
+        "role": "assistant",
+        "content": "Högst 60 kr — men bara om ni avtalat om påminnelseavgift senast när skulden uppkom (lag 1981:739, 2 och 4 §§)."
+      },
+      {
+        "role": "user",
+        "content": "Jag läste att julgåvan till Ali får vara 1 800 kr skattefritt i år, stämmer det? Kort.",
+        "at": 1790456412566
+      },
+      {
+        "role": "assistant",
+        "content": "Nej. Julgåva är skattefri upp till 600 kr inklusive moms för inkomstår 2026 (550 kr för 2025) — källa: Skatteverket, \"Gåvor\". 1 800 kr stämmer inte."
+      }
+    ]
+  },
+  "memory": "",
+  "docs": [],
+  "calls": [
+    {
+      "at": null,
+      "sek": 1.613,
+      "finish": "stop",
+      "in": 3930,
+      "out": 135,
+      "tecken": 391
+    },
+    {
+      "at": null,
+      "sek": 0.969,
+      "finish": "stop",
+      "in": 4097,
+      "out": 46,
+      "tecken": 110
+    },
+    {
+      "at": null,
+      "sek": 1.122,
+      "finish": "stop",
+      "in": 4180,
+      "out": 60,
+      "tecken": 148
+    }
+  ]
+}
