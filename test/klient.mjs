@@ -215,3 +215,8 @@ test("kravSlut: ett helt svar går igenom, och utan flaggan är portalen oförä
   const utan = ladda(ström([{ choices: [{ delta: { content: "Halv" } }] }]));
   assert.equal(await utan.atb.collect({ messages: [] }), "Halv");
 });
+
+test("en felram mitt i strömmen (tidsgräns hos oss) går att försöka om i bygget", async () => {
+  const { atb } = ladda(ström([{ choices: [{ delta: { content: "Halv" } }] }, { error: { message: "Svaret tog för lång tid och avbröts. Försök igen." } }]));
+  await assert.rejects(() => atb.collect({ messages: [], kravSlut: true }), (e) => e.försökIgen === true && /för lång tid/.test(e.message));
+});

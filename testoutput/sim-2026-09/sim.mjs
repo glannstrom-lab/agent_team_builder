@@ -141,7 +141,10 @@ async function steg(step, user) {
 // tre gånger. Simuleringen ska bygga som kunden bygger.
 async function stegMedKontroll(step, user, n) {
   for (let f = 1; f <= 3; f++) {
-    const r = await steg(step, user);
+    let r;
+    // En felram i strömmen (tidsgräns, avbrott) går att försöka om, som i
+    // Buildern (atb-claude.js sätter försökIgen på den).
+    try { r = await steg(step, user); } catch (e) { console.error(`  ${step} bröts (försök ${f}): ${e.message}`); continue; }
     const brister = r.finish !== "stop" ? ["svaret bröts (finish=" + r.finish + ")"] : B.stegBrister(step, r.text, n);
     if (!brister.length) return r.text;
     console.error(`  ${step} underkänt (försök ${f}): ${brister.join("; ")}`);

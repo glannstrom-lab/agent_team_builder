@@ -183,7 +183,15 @@
         const val = evt.choices && evt.choices[0];
         const delta = val && val.delta;
         if (delta && typeof delta.content === "string" && delta.content) onDelta(delta.content);
-        else if (evt.error) throw new Error(evt.error.message || "Strömningsfel");
+        else if (evt.error) {
+          // En felram i strömmen betyder att strömmen bröts eller löpte ut hos
+          // oss (ai.js skickar dem) — samma sak som ett avbrutet svar, alltså
+          // något Buildern kan försöka om (2026-09-26: ett bygge dog på
+          // "Svaret tog för lång tid" utan omförsök).
+          const e = new Error(evt.error.message || "Strömningsfel");
+          e.kod = "avbrutet"; e.försökIgen = true;
+          throw e;
+        }
         if (val && val.finish_reason) finishReason = val.finish_reason;
         if (evt.usage) { used.input = evt.usage.prompt_tokens || 0; used.output = evt.usage.completion_tokens || 0; }
       } catch (e) {
