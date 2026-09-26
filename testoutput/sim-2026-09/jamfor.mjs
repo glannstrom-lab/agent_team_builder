@@ -34,7 +34,8 @@ const DELAD = (() => { const i = BUILDER.indexOf("⟦DELAD-START⟧"), j = BUILD
   return BUILDER.slice(BUILDER.indexOf("\n", i) + 1, BUILDER.lastIndexOf("\n", j) + 1); })();
 const B = new Function(DELAD + "\n" + klipp("const OBLIGATORISKA_SEKTIONER", "// TEAM_SCHEMA bor i") + "\n" +
   klipp("function parseTeamJson", "async function retryStructure") + "\n" + klipp("function rensaSkalning", "\n}\n") + "\n}\n" +
-  "return { kontrolleraSystemprompter, parseTeamJson, rensaSkalning };")();
+  klipp("function skalningsTak", "// Sammanställningssteget är långt") +
+  "return { kontrolleraSystemprompter, parseTeamJson, rensaSkalning, skalningsTak, hållSkalningsTak };")();
 
 // ── produktionens byggmodul, med prompterna från disk ─────────────────────
 const build = await import(pathToFileURL(join(ROT, "functions/api/_build.js")).href);
@@ -91,7 +92,9 @@ async function bygg() {
   r.clarify = await steg("clarify", ib);
   r.research = await steg("research", ib);
   const sk = await steg("scale", `INTAKE:\n${ib}\n\nRESEARCH-DOKUMENT:\n${r.research}`);
-  r.scaling = B.rensaSkalning(sk) || sk;
+  const ii = läs(join(KDIR, "intake.md"));
+  r.scaling = B.hållSkalningsTak(B.rensaSkalning(sk) || sk, B.skalningsTak({ audience: meta.person ? "person" : "business",
+    mode: meta.mode, size: (ii.match(/^storlek:\s*(\S+)/m) || [])[1], maturity: (ii.match(/^ai_mognad:\s*(\S+)/m) || [])[1] }));
   r.proposal = await steg("proposal", `INTAKE:\n${ib}\n\nRESEARCH-DOKUMENT:\n${r.research}\n\nSKALNINGSBESLUT:\n${r.scaling}`);
   if (meta.mode === "ai-consultant") r.firstproject = await steg("firstproject", `INTAKE:\n${ib}\n\nRESEARCH-DOKUMENT:\n${r.research}\n\nFÖRSLAG:\n${r.proposal}`);
   const fp = r.firstproject ? `\n\nFÖRSTA PROJEKTET:\n${r.firstproject}` : "";

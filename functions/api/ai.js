@@ -125,6 +125,10 @@ export const KOSTNAD = {
   krPerWebbsökning: 0.10,
   larmKr: 30,
   takKr: 40,
+  // DR9: hela tjänstens AI-kostnad per dygn. /api/health går röd över den.
+  // 150 kr/dygn är ungefär 50 gånger dagens förbrukning och ryms under det
+  // globala anropstaket (4 000 svar); det är en larmnivå, inte en spärr.
+  dygnLarmKr: 150,
 };
 export function kronorFör({ input_tok = 0, output_tok = 0 } = {}, webbsökningar = 0) {
   const usd = (input_tok * KOSTNAD.inUsdPerMtok + output_tok * KOSTNAD.utUsdPerMtok) / 1e6;

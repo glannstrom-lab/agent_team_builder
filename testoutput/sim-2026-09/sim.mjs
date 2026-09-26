@@ -55,7 +55,8 @@ const B = new Function(
   klipp("const OBLIGATORISKA_SEKTIONER", "// TEAM_SCHEMA bor i") + "\n" +
   klipp("function parseTeamJson", "async function retryStructure") + "\n" +
   klipp("function rensaSkalning", "\n}\n") + "\n}\n" +
-  "return { kontrolleraSystemprompter, parseTeamJson, rensaSkalning };"
+  klipp("function skalningsTak", "// Sammanställningssteget är långt") +
+  "return { kontrolleraSystemprompter, parseTeamJson, rensaSkalning, skalningsTak, hållSkalningsTak };"
 )();
 
 // ── portalens egna funktioner (systemFor + contextFor), ur källan ──────────
@@ -121,6 +122,12 @@ function intakeBlock() {
   if (existsSync(svar)) b = b.replace(/```\s*$/, "\n## Kompletterande svar (följdfrågor)\n" + läs(svar).trim() + "\n```");
   return b;
 }
+// Samma fält som Builderns intake-objekt, för skalningstaket (KA10).
+const skalIntake = () => {
+  const ii = läs(join(KDIR, "intake.md"));
+  return { audience: meta.person ? "person" : "business", mode: meta.mode,
+    size: (ii.match(/^storlek:\s*(\S+)/m) || [])[1], maturity: (ii.match(/^ai_mognad:\s*(\S+)/m) || [])[1] };
+};
 const stepOpts = () => ({ mode: meta.mode || "team-builder", workstyle: meta.workstyle || "classic", person: !!meta.person, survey: false });
 async function steg(step, user) {
   const t0 = Date.now();
@@ -143,7 +150,7 @@ async function build() {
   if (!r.research) { r.research = await steg("research", ib); spara(); }
   if (!r.scaling) {
     const s = await steg("scale", `INTAKE:\n${ib}\n\nRESEARCH-DOKUMENT:\n${r.research}`);
-    r.scaling_raw = s; r.scaling = B.rensaSkalning(s) || s; spara();
+    r.scaling_raw = s; r.scaling = B.hållSkalningsTak(B.rensaSkalning(s) || s, B.skalningsTak(skalIntake())); spara();
   }
   if (!r.proposal) { r.proposal = await steg("proposal", `INTAKE:\n${ib}\n\nRESEARCH-DOKUMENT:\n${r.research}\n\nSKALNINGSBESLUT:\n${r.scaling}`); spara(); }
   if (meta.mode === "ai-consultant" && !r.firstproject) {

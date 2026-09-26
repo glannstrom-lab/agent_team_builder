@@ -949,6 +949,8 @@ async function runBuild(intake, prevR) {
           const rent = rensaSkalning(acc);
           if (rent) acc = rent;
           else console.warn("[builder] skalningssvaret saknade 'Skalningsbeslut:' — visar råtexten");
+          // KA10: taket ur tabellen, innan förslaget byggs på beslutet.
+          acc = hållSkalningsTak(acc, skalningsTak(intake));
         }
         panel.textContent = acc;
       }
@@ -998,6 +1000,38 @@ function rensaSkalning(text) {
     ut.push(rad.trim());
   }
   return ut.length ? ut.join("\n") : null;
+}
+
+// ── Skalningsbeslutet läses av koden (KA10, 2026-09-26) ───────────────────
+//
+// `scale.md` beslutar ett antal agenter, men ingen kod läste talet. Uppmätt:
+// en ensam gymnasielärare fick "Skalningsbeslut: 6 agenter" fast tabellen
+// säger 2–4 för solo, och med gpt-oss kom ibland inget beslut alls (tomt
+// svar, KA12) — förslaget byggdes då utan tak. Taket räknas nu här ur samma
+// tabell som scale.md, och ett beslut över taket (eller inget beslut) skrivs
+// om innan förslaget byggs. Tabellen: scale.md steg 1 och 2, docs/scaling.md.
+function skalningsTak(intake) {
+  const i = intake || {};
+  const storlek = i.audience === "person" ? "solo" : String(i.size || "litet");
+  const TAK = { solo: 4, mikro: 4, litet: 7, medelstort: 10, stort: 14 };
+  const tak = TAK[storlek] || 7;
+  if (i.mode !== "ai-consultant") return tak;
+  if (i.maturity === "nybörjare") return 3;
+  if (i.maturity === "van") return Math.max(3, Math.ceil(tak / 2));
+  return tak;
+}
+
+// Returnerar beslutet som det ska användas: oförändrat om det håller sig
+// inom taket, annars omskrivet till taket med en rad om varför.
+function hållSkalningsTak(text, tak) {
+  const t = String(text || "");
+  const m = t.match(/Skalningsbeslut\s*:\s*\**\s*(\d+)/i);
+  const n = m ? Number(m[1]) : null;
+  if (n !== null && n >= 2 && n <= tak) return t;
+  const orsak = n === null
+    ? "Skalningssteget gav inget beslut; taket för storleken används."
+    : `Skalningssteget föreslog ${n}, men taket för storleken är ${tak} (scale.md). Slå ihop de minst distinkta klustren.`;
+  return `Skalningsbeslut: ${tak} agenter (VD + VD-assistent + ${tak - 2} specialister)\nMotivering: ${orsak}`;
 }
 
 // Sammanställningssteget är långt (upp till 16k tokens, icke-strömmat) och

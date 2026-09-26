@@ -82,3 +82,40 @@ test("saknas beslutet returneras null — då visas råtexten", () => {
   assert.equal(rensaSkalning(""), null);
   assert.equal(rensaSkalning(null), null);
 });
+
+// ── KA10: skalningsbeslutet läses och hålls inom tabellens tak ─────────────
+const skalningsTak = plocka("skalningsTak");
+const hållSkalningsTak = plocka("hållSkalningsTak");
+
+test("KA10: taket följer scale.md — storlek, personläge och mognad", () => {
+  assert.equal(skalningsTak({ size: "solo" }), 4);
+  assert.equal(skalningsTak({ size: "mikro" }), 4);
+  assert.equal(skalningsTak({ size: "litet" }), 7);
+  assert.equal(skalningsTak({ size: "medelstort" }), 10);
+  assert.equal(skalningsTak({ size: "stort" }), 14);
+  // Personläget skalas som solo, oavsett arbetsplatsens storlek.
+  assert.equal(skalningsTak({ audience: "person", size: "medelstort" }), 4);
+  // Konsultläget: mognaden är ett hårt tak.
+  assert.equal(skalningsTak({ mode: "ai-consultant", size: "litet", maturity: "nybörjare" }), 3);
+  assert.equal(skalningsTak({ mode: "ai-consultant", size: "medelstort", maturity: "van" }), 5);
+  assert.equal(skalningsTak({ mode: "ai-consultant", size: "litet", maturity: "byggare" }), 7);
+});
+
+test("KA10: ett beslut över taket skrivs om — uppmätt fall: läraren fick 6", () => {
+  const ut = hållSkalningsTak("Skalningsbeslut: 6 agenter (VD + VD-assistent + 4 specialister)\nMotivering: x", 4);
+  assert.match(ut, /^Skalningsbeslut: 4 agenter/);
+  assert.match(ut, /föreslog 6/);
+});
+
+test("KA10: inget beslut alls (tomt steg) ger taket, inte ett tomt underlag", () => {
+  assert.match(hållSkalningsTak("", 5), /^Skalningsbeslut: 5 agenter/);
+});
+
+test("KA10: ett beslut inom taket lämnas orört", () => {
+  const rent = "Skalningsbeslut: 3 agenter (VD + VD-assistent + 1 specialist)\nMotivering: y";
+  assert.equal(hållSkalningsTak(rent, 4), rent);
+});
+
+test("KA10: bygget anropar taket i skalningssteget", () => {
+  assert.ok(KÄLLA.includes("acc = hållSkalningsTak(acc, skalningsTak(intake));"), "runBuild använder inte taket");
+});

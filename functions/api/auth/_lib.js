@@ -263,6 +263,19 @@ function readCookie(request, name) {
 // delar allt utom orden: kontrollen av att en avsändare alls är konfigurerad,
 // Resend-anropet och felhanteringen. Görs de i varje funktion hamnar nästa
 // ändring — ett omförsök, ett byte av leverantör — bara i det ena.
+// DR6: ett misslyckat utskick bokförs i ai_errors med koden "mail", och
+// /api/health går röd på det. Utan det här var mejlvägen — enda vägen in i
+// portalen — den enda felkällan som ingen vakt kunde se. Innehåll och adress
+// bokförs aldrig, bara att det hände.
+async function bokförMejlfel(env) {
+  if (!env.DB) return;
+  const nu = Date.now();
+  await env.DB.prepare(
+    "INSERT INTO ai_errors (day, code, count, last_at) VALUES (?, ?, 1, ?) " +
+    "ON CONFLICT(day, code) DO UPDATE SET count = count + 1, last_at = excluded.last_at"
+  ).bind(new Date(nu).toISOString().slice(0, 10), "mail", nu).run().catch(() => {});
+}
+
 async function sendMail(env, { to, subject, text, consoleLine }) {
   const provider = env.MAIL_PROVIDER || "resend";
 
@@ -275,6 +288,7 @@ async function sendMail(env, { to, subject, text, consoleLine }) {
   }
 
   if (!env.MAIL_API_KEY || !env.MAIL_FROM) {
+    await bokförMejlfel(env);
     throw new Error("MAIL_API_KEY och MAIL_FROM saknas — utskick är inte konfigurerat");
   }
 
@@ -291,6 +305,7 @@ async function sendMail(env, { to, subject, text, consoleLine }) {
     // Detaljen loggas för felsökning men returneras aldrig till klienten:
     // avsändarens felmeddelanden kan avslöja om adressen finns.
     console.error("[mail] utskick misslyckades", res.status, await res.text().catch(() => ""));
+    await bokförMejlfel(env);
     throw new Error("utskick misslyckades");
   }
   return true;

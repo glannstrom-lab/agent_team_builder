@@ -26,6 +26,7 @@
 //      hälsokontroll ingen vakt kan använda.
 
 import { json } from "./auth/_lib.js";
+import { kronorFör, KOSTNAD } from "./ai.js";
 
 // Hur länge ett kreditfel håller rutten röd. Kort nog att en påfylld kredit
 // syns snabbt, långt nog att felet inte hinner blinka förbi mellan två pollar
@@ -75,6 +76,49 @@ export async function onRequestGet(context) {
       // gå röd av att migrationen inte körts, men det ska framgå.
       kontroller.ai_kredit = null;
       console.error("[health] kunde inte läsa ai_errors (migration 0006 körd?)", String(e).slice(0, 200));
+    }
+  }
+
+  // 4) Driftens övriga hemligheter (DR6). Fram till 2026-09-26 kontrollerades
+  // bara OPENROUTER_KEY — för 7 av 10 värden i CLAUDE.md-tabellen gick det
+  // inte att upptäcka att de saknades. Namnen är inte hemliga; värdena visas
+  // aldrig, bara om de finns.
+  const HEMLIGHETER = {
+    MAIL_API_KEY: "inga inloggningskoder skickas", MAIL_FROM: "inga inloggningskoder skickas",
+    STRIPE_SECRET_KEY: "kassan fungerar inte", STRIPE_WEBHOOK_SECRET: "köp levereras inte",
+    STRIPE_PRICE_TRIAL: "provmånaden går inte att köpa", STRIPE_PRICE_STANDARD: "standard går inte att köpa",
+    DIGEST_SECRET: "veckobrevet skickas inte",
+  };
+  const saknas = Object.keys(HEMLIGHETER).filter((k) => !env[k]);
+  kontroller.hemligheter = saknas.length === 0;
+  for (const k of saknas) problem.push(`${k} saknas — ${HEMLIGHETER[k]}`);
+
+  // 5) Färska mejlfel (DR6). Inloggningen sker med engångskod till mejlen,
+  // så ett dött utskick stänger ute ALLA nya inloggningar — medan resten av
+  // tjänsten ser frisk ut. sendMail bokför felet i ai_errors med koden "mail".
+  // 6) Dygnets AI-kostnad (DR9). Kostnaden syntes förut först när krediten
+  // var slut, alltså som driftstopp. Över larmnivån går rutten röd, så att
+  // vakten ser en rusning innan den blir ett stopp. Bara en boolean — siffran
+  // stannar hos oss.
+  if (dbSvarar) {
+    try {
+      const r = await env.DB
+        .prepare("SELECT last_at FROM ai_errors WHERE day IN (?, ?) AND code = 'mail' ORDER BY last_at DESC LIMIT 1")
+        .bind(utcDay(nu), utcDay(nu - 86400000))
+        .first();
+      const färskt = !!(r && r.last_at && nu - r.last_at < FÄRSKT_FEL_MS);
+      kontroller.mejl = !färskt;
+      if (färskt) problem.push("Mejlutskicket har misslyckats den senaste stunden — nya kunder kan inte logga in");
+    } catch (_) {
+      kontroller.mejl = null;
+    }
+    try {
+      const b = await env.DB.prepare("SELECT input_tok, output_tok FROM ai_budget WHERE day = ?").bind(utcDay(nu)).first();
+      const kr = kronorFör(b || {});
+      kontroller.ai_kostnad = kr < KOSTNAD.dygnLarmKr;
+      if (!kontroller.ai_kostnad) problem.push("Dygnets AI-kostnad är över larmnivån — titta i ai_budget och npm run kostnad");
+    } catch (_) {
+      kontroller.ai_kostnad = null;
     }
   }
 
