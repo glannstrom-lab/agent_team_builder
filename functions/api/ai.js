@@ -147,7 +147,6 @@ const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 // leverantör komma in. Alla fem är amerikanska bolag (datacenterregion ej kontrollerad).
 // Ändras listan måste integritet.html och villkor.html § 3 följa med.
 const PROVIDER_ONLY = ["deepinfra", "together", "fireworks", "parasail", "coreweave"];
-const JSON_PROVIDER_ORDER = ["deepinfra", "together", "fireworks", "parasail"];
 const JSON_PROVIDER_IGNORE = ["groq"];
 
 // ── tidsgränser ───────────────────────────────────────────────────────────
@@ -179,8 +178,11 @@ const JSON_PROVIDER_IGNORE = ["groq"];
 const CONNECT_TIMEOUT_MS = 30_000;
 const STALL_TIMEOUT_MS = 30_000;
 const STREAM_TIMEOUT_MS = 180_000;
-const JSON_ATTEMPT_MS = 60_000;
-const JSON_DEADLINE_MS = 110_000;
+// 2026-09-26, DeepSeek V4.1 Flash: sammanställningen föll på 60/110 s två
+// gånger av två. Underlaget är dubbelt så långt som med gpt-oss och modellen
+// skriver långsammare, så ett försök får ta nästan hela tiden.
+const JSON_ATTEMPT_MS = 150_000;
+const JSON_DEADLINE_MS = 170_000;
 const JSON_RETRY_MIN_MS = 20_000; // starta inget omförsök som ändå inte hinner klart
 
 // ── planer ────────────────────────────────────────────────────────────────
@@ -515,7 +517,10 @@ export async function onRequestPost(context) {
     // inget, för då litar koden på det.
     provider: wantsJson
       ? {
-          order: JSON_PROVIDER_ORDER,
+          // 2026-09-26: throughput i stället för en fast ordning. Med DeepSeek
+          // är det hastigheten som avgör om sammanställningen hinner klart;
+          // require_parameters sållar fortfarande bort de som saknar schema.
+          sort: "throughput",
           ignore: JSON_PROVIDER_IGNORE,
           allow_fallbacks: true,
           require_parameters: true,
