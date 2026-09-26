@@ -837,7 +837,18 @@ ny kund dyker upp i både galleri och portal automatiskt.
 > (kvittosidans döda hänvisning) och **DR7** (vakten är CI:t —
 > `.github/workflows/health.yml`).
 >
-> **Nästa pass enda uppgift:** ta **BF4** — villkoren visas aldrig före köpet,
+> **2026-09-26: simulering + modellbyte.** Fyra simulerade kunder använde teamet
+> en månad i drift på gpt-oss och alla sa upp (snitt 2,6/5, KA11–KA18, RE7,
+> PR7–PR8 i `ROADMAP.md`). Samma dag byttes modellen till
+> `deepseek/deepseek-v4.1-flash` (se *Driftsatt 2026-09-26*). Bygget går nu
+> igenom, men portalen svarar på 6–37 s.
+>
+> **Nästa pass enda uppgift:** avgör portalens resonemang (av = snabbt, på =
+> långsamt) genom att köra om månadssimuleringen med DeepSeek
+> (`testoutput/sim-2026-09/sim.mjs`, samma personor) och jämföra betygen mot
+> 2,6. PR7 (från team till uppdrag) väntar på det svaret.
+>
+> *Tidigare "nästa pass", står kvar:* ta **BF4** — villkoren visas aldrig före köpet,
 > och `villkor.html` §15 lovar ett samtycke ingen kod inhämtar. Kodfixen är
 > liten (`consent_collection[terms_of_service]=required` i båda
 > sessionsanropen i `functions/api/checkout.js`), men den kräver en villkors-URL

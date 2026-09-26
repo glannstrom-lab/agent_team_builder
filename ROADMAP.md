@@ -30,7 +30,7 @@ Från genomgången 2026-09-01 · sex parallella linser + egen verifiering.
 > primärkällor i `testoutput/sim-2026-09/granskning-tre.md`.
 
 - [ ] **KA11** **Bygget fungerar inte i drift: Builderns kontroll fäller varje sammanställning.** `kontrolleraSystemprompter` kräver rubriken `DITT PERSPEKTIV` ordagrant (`perspektivText`, `indexOf`). gpt-oss följer promptens numrerade lista men skriver om rubrikerna, till exempel `2. Perspektiv:` och `4. Leverans:`. Uppmätt: 9 av 9 sammanställningar fälldes, för fyra olika kunder. En riktig kund får "Agenternas systemprompter blev ofullständiga" varje gång hon försöker igen. Verifieringen 2026-09-06 körde steget skarpt men aldrig kontrollen, och därför syntes felet inte. Fix, strukturell: låt `TEAM_SCHEMA` ge `perspective` och `delivery` som egna fält och bygg systemprompten i kod, så att rubrikerna aldrig beror på modellen. Snabbfix: acceptera rubrikvarianterna. Lägg till ett test som kör kontrollen mot ett riktigt råsvar (`testoutput/sim-2026-09/bygg/structure-raw.json`) · `builder/builder.js:1128-1137`, `:1192`, `functions/api/_build.js:107-117`, `:202` · `mätt` · ~1 h snabbfix / ~3 h strukturellt
-- [ ] **KA12** **gpt-oss resonemang äter tokentaket, och tomma svar räknas som lyckade.** Det dolda resonemanget räknas mot `max_tokens`. Uppmätt: `clarify` (tak 300) gav 0 tecken i 4 av 13 körningar, och Buildern hoppade då tyst över följdfrågorna. `scale` (1 024) gav 0 tecken för redovisningsbyrån, så förslaget byggdes utan skalningsbeslut. Mötets perspektiv (600) gav 2 av 4 tomma och 2 avklippta på e-handelns möte (`reasoning_tokens` upp till 597 av 600), och mötesanteckningen (2 000) klipptes. Portalen räknar ett tomt eller vägrande perspektiv ("Jag kan inte hjälpa till med den begäran.") som lyckat. Fix: `reasoning: { effort: "low" }` eller tak med marginal för de fyra ställena i `ai.js`, och i portalen behandla tom text eller `finish: length` som misslyckat · `functions/api/_build.js:269-276`, `functions/api/ai.js:474`, `portal/app.js:5010-5030` · `mätt` · ~2 h
+- [x] **KA12** *(lagad 2026-09-26: resonemanget avstängt i bygget och under 2 500 tokens, se Driftsatt 2026-09-26)* **gpt-oss resonemang äter tokentaket, och tomma svar räknas som lyckade.** Det dolda resonemanget räknas mot `max_tokens`. Uppmätt: `clarify` (tak 300) gav 0 tecken i 4 av 13 körningar, och Buildern hoppade då tyst över följdfrågorna. `scale` (1 024) gav 0 tecken för redovisningsbyrån, så förslaget byggdes utan skalningsbeslut. Mötets perspektiv (600) gav 2 av 4 tomma och 2 avklippta på e-handelns möte (`reasoning_tokens` upp till 597 av 600), och mötesanteckningen (2 000) klipptes. Portalen räknar ett tomt eller vägrande perspektiv ("Jag kan inte hjälpa till med den begäran.") som lyckat. Fix: `reasoning: { effort: "low" }` eller tak med marginal för de fyra ställena i `ai.js`, och i portalen behandla tom text eller `finish: length` som misslyckat · `functions/api/_build.js:269-276`, `functions/api/ai.js:474`, `portal/app.js:5010-5030` · `mätt` · ~2 h
 - [ ] **KA13** **Bygget avvisar just det kunden säger att det klämmer mest på.** Läraren skrev att rättningen tar hennes helger. Agenterna "Bedömning & återkoppling" och "Utvecklingssamtal" avvisades, troligen på avgränsningen "AI ska inte sätta betyg". E-handelns första mål är att sänka returgraden, men ingen agent äger den, och kampanjplaneringen inför Black Week avvisades. Regeln om att minst en agent ska avvisas är rätt, men den träffar fel agent. Fix: i `proposal.md` får ett moment som står under "Var det klämmer" eller "Mål" inte avvisas. En avgränsning blir då ett villkor i agentens "Rör inte", inte ett skäl att stryka agenten. Lägg till ett test på `examples/` · `prompts/shared/proposal.md`, `testoutput/sim-2026-09/larare/team.json`, `ehandel/team.json` · `mätt` · ~2 h + ny simulering
 - [ ] **KA14** **Varje team fick en separat VD-agent, även där ingen VD finns.** Alla fyra team hade både VD-assistent och VD. Hos e-handeln heter VD-agenten "Maria" och hos byrån "Karin", alltså kunden själv. Läraren i personläget fick en VD. VD-agenten användes knappt. Det bryter mot designprincip 3 (operativt jobb) och mot skalningsreglerna för solo och mikro. Fix: i `scale.md`/`proposal.md` ska solo, mikro och personläget inte ha en separat VD-agent, och ingen agent får bära kundens namn. Kontrolleras i kod, i samma block som KA11 · `prompts/shared/scale.md`, `proposal.md`, `docs/team-roles.md` · `mätt` · ~1–2 h
 
@@ -45,7 +45,7 @@ Från genomgången 2026-09-01 · sex parallella linser + egen verifiering.
 - [ ] **KA17** **Agenterna lovar förmågor de inte har, och löftena står redan i systemprompterna.** Word-dokument och PDF, "redo att laddas upp i Fortnox", en PowerPoint-slide, Outlook-regler som skickar på ett datum, "leverans inom 24 timmar", granskning enligt GDPR. Sammanställningen skriver in dem. Fix: en rad i `PORTAL_RULES` om vad agenten kan (text i chatten, inga filer, inga integrationer, inget minne mellan agenter), och en kontroll som letar efter löftesord · `functions/api/_build.js:107-117`, `testoutput/sim-2026-09/bygg/structure-raw.json` · `mätt` · ~1 h
 - [ ] **KA18** **Följdfrågorna blir nästan aldrig ställda.** Även när taket räckte svarade `clarify` "OK" i 7 av 13 körningar, och riktiga frågor kom 2 gånger. Hybridintaget är i praktiken ett formulär. Rätta taket först (**KA12**) och mät sedan om. Blir det fortfarande "OK" behöver `CLARIFY_BAS` en lägre tröskel för att fråga · `functions/api/_build.js:86-101` · `mätt` · ~1 h efter KA12
 - [ ] **RE7** **Veckostarten är samma tabell varje vecka.** Alla fyra kunder rapporterade i stort sett identiska veckostarter fyra måndagar i rad. Momsdagen hos byrån och utvecklingssamtalsveckan hos läraren missades, fast båda stod i företagsminnet, som låg i systemprompten. Samma sjukdom som **RE4** (veckobrevet), men i portalen. Fix: skicka med förra veckans veckostart och en uttrycklig instruktion att inte upprepa den, plus veckans deadlines ur `portal/deadlines-se.js` och säsongen · `portal/app.js:4242-4254` · `mätt` · ~2 h
-- [ ] **DR14** **gpt-oss kostar fyra gånger mer än sajten och villkoren säger.** OpenRouter listar i dag $0,15/$0,60 per miljon tokens. `index.html:505` och `:542`, `villkor.html` §3–4 och `CLAUDE.md:365` räknar med $0,037/$0,170, och `index.html:542` säger dessutom att "modellpriser har hittills bara sjunkit". Kostnaden är fortfarande liten (uppmätt ≈ 0,25 kr per kund och månad i simuleringen), men texten kunden läser stämmer inte. Rättas i samma pass som ett eventuellt modellbyte (**PR8**), som påverkar samma siffror · `index.html:505`, `:542`, `villkor.html` §3–4, `CLAUDE.md:365` · `mätt` · ~30 min
+- [x] **DR14** *(stängd 2026-09-26 med modellbytet: nya siffror i index.html och villkor.html)* **gpt-oss kostar fyra gånger mer än sajten och villkoren säger.** OpenRouter listar i dag $0,15/$0,60 per miljon tokens. `index.html:505` och `:542`, `villkor.html` §3–4 och `CLAUDE.md:365` räknar med $0,037/$0,170, och `index.html:542` säger dessutom att "modellpriser har hittills bara sjunkit". Kostnaden är fortfarande liten (uppmätt ≈ 0,25 kr per kund och månad i simuleringen), men texten kunden läser stämmer inte. Rättas i samma pass som ett eventuellt modellbyte (**PR8**), som påverkar samma siffror · `index.html:505`, `:542`, `villkor.html` §3–4, `CLAUDE.md:365` · `mätt` · ~30 min
 - [ ] **DR15** **Svar som slutar mitt i ett ord utan att ha slagit i taket.** Redovisningsbyråns påminnelsesvar 2026-09-28 tog slut mitt i ett ord med `finish: stop`. Orsaken är inte undersökt. Kan vara strömningens avslut i `ai.js` eller leverantören (Cerebras) · `testoutput/sim-2026-09/redovisning/anrop.jsonl`, `functions/api/ai.js` · `mätt` (en gång) · ~1 h utredning
 - [ ] **DR17** **Kontrollskriptet i skillen kundresa rapporterar KR6 som öppen fast den är lagad.** `kopresan.mjs` matchar ordet `kvittomejlet` i en kodkommentar i `portal/aktivera.html`. Det är samma fälla som det första KR3-testet gick i. Skriptet visar därför sex brott när de verkliga är fem. Fix: rensa bort kommentarer före matchningen (`utanKommentarer()` finns i `test/portal.mjs`) · `.claude/skills/kundresa/kopresan.mjs:94` · `mätt` · ~10 min
 - [ ] **DR16** **Simuleringens fyra testteam ligger i den skarpa databasen.** Rader i `teams`, `users`, `team_access` och `sessions` med slug som börjar på `sim` och e-postadresser `sim-*@simulering.invalid`. De stör ingen kund men räknas i `ai_usage`. Ta bort dem, eller behåll dem som fixtur för nästa simulering. Säkerhetskopia före simuleringen: `backup/d1-remote-2026-09-26T10-56-00.sql` · `mätt` · beslut, ~10 min
@@ -104,6 +104,64 @@ Från genomgången 2026-09-01 · sex parallella linser + egen verifiering.
 - [ ] **OM4** Integrationsspåret är varken valt eller bortvalt. Alla konkurrenter har verktygsåtkomst (Lindy 5 000+, Vorker Fortnox/Visma, Marblism Gmail/WordPress) — våra agenter kan tala, deras kan göra. Antingen **en** integration väl gjord (kalender eller Gmail; Fortnox är Vorkers hemmaplan), eller sälj bortvalet explicit: "vi kopplas inte in i era system." Att inte välja är det enda som är fel · `docs/omvarldsresearch-2026-08-18.md` · `mätt` · beslut först
 - [ ] **P2** Gratisbygget fångar ingen e-post — övergiven körning är borta för alltid · `builder/builder.js:1432-1493` · `läst i koden` · ~4 h
 - [ ] **P3** Provmånaden har ingen utgående livlina utanför portalen · `functions/api/_plan.js:65-86` · `mätt` · ~6 h
+
+## Driftsatt 2026-09-26
+
+**Modellbytet till `deepseek/deepseek-v4.1-flash`** (Mikaels beslut efter
+simuleringen). Tre deployer samma dag: `085277b3` (commit `fd26ddf`, bytet,
+leverantörslistan och kundtexterna), `98a3de72` (`272d4ad`, inget resonemang i
+bygget) och `4f1e651f` (`6feb242`, JSON-läget väljer snabbaste leverantör, 150/170 s).
+Taggen `deploy-2026-09-26`. Inga migrationer, inga nya secrets. 286 gröna.
+
+- **PROVIDER_ONLY:** fem amerikanska leverantörer (DeepInfra, Together, Fireworks,
+  Parasail, CoreWeave) med `data_collection: "deny"`. Modellen erbjuds även av
+  DeepSeek själv, Alibaba, SiliconFlow och StreamLake i Kina; med den gamla
+  `sort: "throughput"` utan lista hade kundfrågor kunnat gå dit. `integritet.html`
+  namnger de fem. **Integritetspolicyn lovar att underbiträdesbyten meddelas i
+  förväg.** Inga betalande kunder finns (Stripe i testläge), så löftet bryts inte
+  i dag, men det gäller nästa byte.
+- **Resonemanget:** avstängt i bygget och för anrop under 2 500 tokens
+  (följdfrågor, skalning, mötesperspektiv, veckobrev). Detta lagar **KA12** för
+  alla fyra ställena. Portalens långa svar körs på `effort: "low"`.
+- **Kundtexterna:** `index.html#forbrukning` (nya kostnadssiffror, ≈ 2 öre per
+  svar, under 4 kr i månaden normalt) och `villkor.html` §2–3. Detta stänger
+  **DR14**. `test/klient.mjs` vaktar nu modellraden på tre ställen plus att
+  villkoren, integritetspolicyn och startsidan namnger samma modell. Testet är
+  mutationsprovat: fel modell i veckobrevet fäller det.
+
+Verifierat i drift efteråt:
+
+- `/api/health` 200 friskt. Hub, portal och builder 200. Okänd adress 404. Fria
+  rutten utan `step` ger 400. `mätt`
+- Ett portalsvar kom från `deepseek/deepseek-v4.1-flash` via **Together**, alltså
+  inom listan. `mätt`
+- **Ett helt bygge i drift gick igenom Builderns kontroll på första försöket**
+  (`testoutput/sim-2026-09/bygg-ds/`): research 45 s, skalning 2 s, förslag 41 s,
+  sammanställning 33 s, alltså cirka 2 minuter mot 28 s med gpt-oss.
+  Systemprompterna blev 2 088–3 377 tecken (gpt-oss 928–1 477, handkurerade
+  2 453–4 931). DeepSeek skriver rubriken `DITT PERSPEKTIV`, så **KA11 slår inte
+  till med den här modellen**, men kontrollen är lika skör som förut. Laga den
+  ändå. `mätt`
+- Teamet för samma byggfirma blev märkbart skarpare: en egen BKR-våtrumsagent,
+  en VD-agent med operativt jobb (KA14 mildrad men inte löst: VD-agenten finns
+  fortfarande) och sex avvisade förslag med motivering. `mätt` (ett bygge)
+
+**Fynd under deployen:**
+
+- Första försöket, med resonemanget på för bygget: research och förslag slog i
+  8 192 tokens (`finish: length`) efter 45–50 s, och sammanställningen gav 408
+  på 60/110 s. Samma mönster som när DeepSeek V4 Flash valdes bort 2026-08-06.
+- **Portalens svarstid är 6–37 s** med `effort: "low"` (tre omspelade anrop ur
+  simuleringen, 483–3 001 resonemangstokens). gpt-oss låg på 1,2 s i median.
+  Veckostarten tog 37 s innan första tecknet. **Ett beslut kvar:** stäng av
+  resonemanget helt även i portalen (snabbt, okänd kvalitet) eller behåll det
+  (långsamt). Mät med `jamfor.mjs` när en nyckel finns (**PR8**).
+- Ett faktasvar i sak är fortfarande fel. På frågan om ROT för en BRF svarade
+  modellen att föreningen kan få ROT för gemensamma utrymmen, vilket inte
+  stämmer. **KA15** (faktabasen) gäller oavsett modell.
+
+Kvar: simuleringens fyra testteam i skarpa D1 (**DR16**), och en ny
+månadssimulering med DeepSeek för att se om betygen rör sig.
 
 ## Driftsatt 2026-09-06
 
