@@ -499,8 +499,14 @@ export async function onRequestPost(context) {
     // KA12 (simuleringen 2026-09-26): en resonerande modells dolda resonemang
     // räknas mot max_tokens. Med gpt-oss gav taken 300 (följdfrågor), 600
     // (mötesperspektiv) och 1 024 (skalning) tomma svar, som koden tog för
-    // lyckade. Korta anrop får därför inget resonemang alls; långa behåller det.
-    ...(maxTokens < REASONING_MIN_TOKENS ? { reasoning: { enabled: false } } : {}),
+    // lyckade. Korta anrop får därför inget resonemang alls.
+    //
+    // Bygget får inget resonemang alls (uppmätt 2026-09-26 med DeepSeek V4.1
+    // Flash: research och förslag slog i 8 192 tokens efter 45–50 s, och
+    // sammanställningen passerade JSON_DEADLINE_MS). Byggstegens prompter är
+    // detaljerade nog att bära utan det. Portalens långa svar får "low" —
+    // med standardnivån tog ett tvåmeningssvar 11,5 s.
+    reasoning: (!portal || maxTokens < REASONING_MIN_TOKENS) ? { enabled: false } : { effort: "low" },
     stream: true,
     stream_options: { include_usage: true },
     // Se leverantörsvalet högst upp. require_parameters sållar bort de
