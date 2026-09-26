@@ -36,7 +36,7 @@
 | **Personuppgiftsbiträde** ("Leverantören") | [FIRMANAMN — beror på beslutet enskild firma/AB], org.nr [NR], [ADRESS] |
 
 Kontaktperson hos Kunden: [NAMN, E-POST]
-Kontaktperson hos Leverantören: Mikael Glänne, info@mittaiteam.se
+Kontaktperson hos Leverantören: Mikael Glännström, info@mittaiteam.se
 
 Avtalet gäller från [DATUM] och så länge huvudavtalet mellan parterna gäller.
 Vid motstridighet mellan detta avtal och huvudavtalet har detta avtal företräde
@@ -237,7 +237,7 @@ Leverantören ska på begäran skriftligen bekräfta att radering har skett.
 |---|---|
 | Ort och datum: | Ort och datum: |
 | Underskrift: | Underskrift: |
-| Namnförtydligande: | Namnförtydligande: Mikael Glänne |
+| Namnförtydligande: | Namnförtydligande: Mikael Glännström |
 
 ---
 

@@ -56,7 +56,7 @@ const B = new Function(
   klipp("function parseTeamJson", "async function retryStructure") + "\n" +
   klipp("function rensaSkalning", "\n}\n") + "\n}\n" +
   klipp("function skalningsTak", "// Sammanställningssteget är långt") +
-  "return { kontrolleraSystemprompter, parseTeamJson, rensaSkalning, skalningsTak, hållSkalningsTak };"
+  "return { kontrolleraSystemprompter, parseTeamJson, rensaSkalning, skalningsTak, hållSkalningsTak, stegBrister, teamBrister, skalningsAntal };"
 )();
 
 // ── portalens egna funktioner (systemFor + contextFor), ur källan ──────────
@@ -133,11 +133,24 @@ async function steg(step, user) {
   const t0 = Date.now();
   const r = await anropa({ step, ...stepOpts(), messages: [{ role: "user", content: user }] });
   console.error(`  ${step}: ${((Date.now() - t0) / 1000).toFixed(1)} s, ${r.text.length} tecken, finish=${r.finish}`);
-  return r.text;
+  return r;
+}
+
+// Samma stegkontroll som Buildern (stegBrister ur DELAD-blocket, kravSlut ur
+// atb-claude.js): ett avbrutet svar eller ett svar med brister görs om, högst
+// tre gånger. Simuleringen ska bygga som kunden bygger.
+async function stegMedKontroll(step, user, n) {
+  for (let f = 1; f <= 3; f++) {
+    const r = await steg(step, user);
+    const brister = r.finish !== "stop" ? ["svaret bröts (finish=" + r.finish + ")"] : B.stegBrister(step, r.text, n);
+    if (!brister.length) return r.text;
+    console.error(`  ${step} underkänt (försök ${f}): ${brister.join("; ")}`);
+  }
+  throw new Error(step + " blev inte komplett efter tre försök");
 }
 
 async function clarify() {
-  const ut = await steg("clarify", intakeBlock());
+  const ut = (await steg("clarify", intakeBlock())).text;
   writeFileSync(join(KDIR, "clarify-fragor.md"), ut, "utf8");
   console.log(ut);
 }
@@ -147,25 +160,30 @@ async function build() {
   const r = läsJson(rFil, {});
   const ib = intakeBlock();
   const spara = () => skrivJson(rFil, r);
-  if (!r.research) { r.research = await steg("research", ib); spara(); }
+  if (!r.research) { r.research = await stegMedKontroll("research", ib); spara(); }
   if (!r.scaling) {
-    const s = await steg("scale", `INTAKE:\n${ib}\n\nRESEARCH-DOKUMENT:\n${r.research}`);
+    const s = await stegMedKontroll("scale", `INTAKE:\n${ib}\n\nRESEARCH-DOKUMENT:\n${r.research}`);
     r.scaling_raw = s; r.scaling = B.hållSkalningsTak(B.rensaSkalning(s) || s, B.skalningsTak(skalIntake())); spara();
   }
-  if (!r.proposal) { r.proposal = await steg("proposal", `INTAKE:\n${ib}\n\nRESEARCH-DOKUMENT:\n${r.research}\n\nSKALNINGSBESLUT:\n${r.scaling}`); spara(); }
+  const n = B.skalningsAntal(r.scaling);
+  if (!r.proposal) { r.proposal = await stegMedKontroll("proposal", `INTAKE:\n${ib}\n\nRESEARCH-DOKUMENT:\n${r.research}\n\nSKALNINGSBESLUT:\n${r.scaling}`, n); spara(); }
   if (meta.mode === "ai-consultant" && !r.firstproject) {
-    r.firstproject = await steg("firstproject", `INTAKE:\n${ib}\n\nRESEARCH-DOKUMENT:\n${r.research}\n\nFÖRSLAG:\n${r.proposal}`); spara();
+    r.firstproject = await stegMedKontroll("firstproject", `INTAKE:\n${ib}\n\nRESEARCH-DOKUMENT:\n${r.research}\n\nFÖRSLAG:\n${r.proposal}`); spara();
   }
   const fp = r.firstproject ? `\n\nFÖRSTA PROJEKTET:\n${r.firstproject}` : "";
   const user = `RESEARCH-DOKUMENT:\n${r.research}\n\nSKALNINGSBESLUT:\n${r.scaling}\n\nFÖRSLAG (agenterna):\n${r.proposal}${fp}\n\nSammanställ som JSON.`;
   r.structureForsok = r.structureForsok || [];
   const TILLÅT = process.argv.includes("--tillat");
   for (let i = 0; i < (TILLÅT ? 1 : 3); i++) {
-    const raw = await steg("structure", user);
+    const svar = await steg("structure", user);
+    const raw = svar.text;
     let team, fel = null;
     try {
+      if (svar.finish !== "stop") throw new Error("svaret bröts (finish=" + svar.finish + ")");
       team = B.parseTeamJson(raw);
       if (!team || !Array.isArray(team.agents) || !team.agents.length) throw new Error("saknar agenter");
+      const tb = B.teamBrister(team, n);
+      if (tb.length) throw new Error(tb.join("; "));
       B.kontrolleraSystemprompter(team);
     } catch (e) { fel = e.message; }
     r.structureForsok.push({ ok: !fel, fel, tecken: raw.length, raw });
@@ -219,11 +237,11 @@ const team = läsJson(join(KDIR, "team.json"), null);
 const agentById = (id) => team && team.agents.find((a) => a.id === id);
 const logg = (rubrik, text) => appendFileSync(join(KDIR, "transkript.md"), `\n\n## ${rubrik}\n\n${text}\n`, "utf8");
 
-async function portal(system, messages, maxTokens) {
+async function portal(system, messages, maxTokens, webb = false) {
   const s = läsJson(sessionFil);
   if (!s) throw new Error("provisionera först");
   const t0 = Date.now();
-  const r = await anropa({ system, messages, maxTokens, json: false, schema: null, team: s.slug }, { cookie: s.token });
+  const r = await anropa({ system, messages, maxTokens, json: false, schema: null, team: s.slug, ...(webb ? { webb: true } : {}) }, { cookie: s.token });
   const sek = (Date.now() - t0) / 1000;
   st.calls = (st.calls || []);
   st.calls.push({ at: st.datum || null, sek, finish: r.finish, in: r.usage?.prompt_tokens, out: r.usage?.completion_tokens, tecken: r.text.length });
@@ -231,14 +249,14 @@ async function portal(system, messages, maxTokens) {
   return r;
 }
 
-async function chat(agentId, text, rubrik) {
+async function chat(agentId, text, rubrik, webb = false) {
   const a = agentById(agentId);
   if (!a) throw new Error("okänd agent " + agentId + " — finns: " + team.agents.map((x) => x.id).join(", "));
   const { systemFor, contextFor } = P(st);
   const hist = st.history[agentId] = st.history[agentId] || [];
-  hist.push({ role: "user", content: text });
-  const r = await portal(systemFor(a), contextFor(hist), 4096);
-  hist.push({ role: "assistant", content: r.text });
+  hist.push({ role: "user", content: text, at: Date.now(), datum: st.datum });
+  const r = await portal(systemFor(a), contextFor(hist), 4096, webb);
+  hist.push({ role: "assistant", content: r.text, datum: st.datum });
   skrivJson(stFil, st);
   logg(`${st.datum || ""} · ${rubrik || "Fråga"} → ${a.name} (${agentId})`, `**Kunden:**\n\n${text}\n\n**${a.name}:**\n\n${r.text}${r.finish === "length" ? "\n\n[AVKLIPPT — maxTokens]" : ""}`);
   console.log(r.text);
@@ -247,13 +265,67 @@ async function chat(agentId, text, rubrik) {
 
 const DAGAR = ["söndag", "måndag", "tisdag", "onsdag", "torsdag", "fredag", "lördag"];
 const dayName = (d) => DAGAR[d % 7];
+// Speglar startWeek() i portal/app.js sedan RE7 (2026-09-26): förra veckans
+// veckostart och årshjulets datum de närmaste tre veckorna följer med.
+// (Myndighetsdatumen tas inte med — ingen simulerad kund har slagit på dem.)
+function veckostartFörra() {
+  const h = st.history[team.entryAgent] || [];
+  for (let i = h.length - 2; i >= 0; i--) {
+    const q = h[i], a = h[i + 1];
+    if (q && q.role === "user" && /^Veckostart!/.test(q.content || "") && a && a.role === "assistant" && a.content) {
+      return { när: a.datum || "förra gången", text: a.content.replace(/\s+/g, " ").slice(0, 700) + (a.content.length > 700 ? "…" : "") };
+    }
+  }
+  return null;
+}
+function kommandeDatum(now, dagar) {
+  const ut = [];
+  (team.seasons || []).forEach((s) => {
+    if (!s || !s.label || !s.month) return;
+    let when = new Date(now.getFullYear(), s.month - 1, s.day || 1);
+    if (when < now && (now - when) / 86400000 > 1) when = new Date(now.getFullYear() + 1, s.month - 1, s.day || 1);
+    const d = Math.ceil((when - now) / 86400000);
+    if (d >= 0 && d <= dagar) ut.push({ d, t: `${s.label} (${when.toLocaleDateString("sv-SE")}, om ${d} dagar)` });
+  });
+  return ut.sort((a, b) => a.d - b.d).map((x) => x.t);
+}
 async function veckostart() {
   const now = st.datum ? new Date(st.datum + "T08:00:00") : new Date();
   const rlist = (team.routines || []).map((r) => `- ${r.label}${r.day ? ` (${dayName(r.day)})` : ""}`).join("\n");
+  const förra = veckostartFörra();
+  const datum = kommandeDatum(now, 21);
   const text = `Veckostart! Det är ${DAGAR[now.getDay()]} den ${now.toLocaleDateString("sv-SE")}.` +
     (rlist ? `\nVåra stående rutiner:\n${rlist}` : "") +
-    `\n\nGe mig en kort veckostart: 1) de tre viktigaste sakerna att fokusera på, med motivering, 2) vilken agent i teamet som hjälper mig med varje, 3) vad du behöver veta från mig. Kort och konkret.`;
+    (datum.length ? `\nDatum som närmar sig (nästa tre veckor):\n${datum.map((d) => `- ${d}`).join("\n")}` : "") +
+    (förra ? `\n\nFörra veckostarten (${förra.när}) sa i korthet:\n${förra.text}` : "") +
+    `\n\nGe mig en kort veckostart: 1) de tre viktigaste sakerna att fokusera på den här veckan, med motivering, 2) vilken agent i teamet som hjälper mig med varje, 3) vad du behöver veta från mig. ` +
+    `Utgå från företagsminnet och datumen ovan.` +
+    (förra ? ` Upprepa inte förra veckans lista: säg kort vad som borde ha hänt sedan dess och vad som är nytt den här veckan.` : "") +
+    ` Kort och konkret.`;
   await chat(team.entryAgent, text, "⭐ Veckostart");
+}
+
+// Knappen "🔎 Kontrollera mot källan" — samma text som portal/app.js skickar.
+async function kontroll(agentId) {
+  const h = st.history[agentId] || [];
+  const sista = [...h].reverse().find((m) => m.role === "assistant");
+  if (!sista) throw new Error("inget svar att kontrollera hos " + agentId);
+  const text = "Kontrollera sakuppgifterna i ditt förra svar mot officiella svenska källor. För varje uppgift som går att kontrollera: " +
+    "säg om den stämmer, vad som i så fall är fel och vad som gäller, och länka till källan. " +
+    "Hittar du ingen källa för en uppgift, säg det rakt ut i stället för att gissa. Kort.\n\n" +
+    "Svaret som ska kontrolleras:\n" + sista.content.slice(0, 1500);
+  await chat(agentId, text, "🔎 Kontrollera mot källan", true);
+}
+
+// Knappen "✗ Blev det fel?" — rättelsen blir en rad i företagsminnet och ett nytt svar begärs.
+async function rättelse(agentId, fel) {
+  const a = agentById(agentId);
+  const t = String(fel || "").replace(/\s+/g, " ").trim().slice(0, 400);
+  if (!t) throw new Error("tom rättelse");
+  st.memory = (st.memory.trim() ? st.memory.trim() + "\n" : "") + `- Rättelse ${st.datum || ""} (${a ? a.name : agentId}): ${t}`;
+  skrivJson(stFil, st);
+  logg(`${st.datum || ""} · ✗ Rättelse sparad i minnet (${agentId})`, t);
+  await chat(agentId, `Ditt förra svar blev fel. Rättelse: ${String(fel).trim()}\n\nGör om svaret med rättelsen. Rättelsen står nu också i företagsminnet.`, "✗ Rättat — nytt svar");
 }
 
 const MÖTEN = {
@@ -302,6 +374,8 @@ try {
   else if (cmd === "datum") { st.datum = rest[0]; skrivJson(stFil, st); console.log("datum: " + st.datum); }
   else if (cmd === "chat") await chat(rest[0], textArg(rest[1]));
   else if (cmd === "veckostart") await veckostart();
+  else if (cmd === "kontroll") await kontroll(rest[0]);
+  else if (cmd === "rattelse") await rättelse(rest[0], textArg(rest[1]));
   else if (cmd === "mote") await möte(rest[0], rest[1].split(","), textArg(rest[2]));
   else if (cmd === "minne") { st.memory = textArg(rest[0]); skrivJson(stFil, st); logg(`${st.datum || ""} · 🧠 Företagsminnet uppdaterat`, st.memory); console.log("minnet sparat (" + st.memory.length + " tecken)"); }
   else if (cmd === "underlag") { st.docs.push({ title: rest[0], text: textArg(rest[1]), on: true }); skrivJson(stFil, st); logg(`${st.datum || ""} · 📎 Underlag: ${rest[0]}`, "(" + st.docs.at(-1).text.length + " tecken)"); console.log("underlag tillagt"); }

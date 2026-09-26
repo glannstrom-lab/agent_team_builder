@@ -194,3 +194,24 @@ test("DR11: varje ATBClaude- och ATBAvatars-medlem som används finns i exporten
   }
   assert.deepEqual([...new Set(saknas)], [], "används men exporteras inte");
 });
+
+// ── kravSlut: ett avbrutet svar är ett fel, inte halv text (2026-09-26) ─────
+const ström = (rader) => new Response(rader.map((r) => "data: " + JSON.stringify(r) + "\n\n").join("") + "data: [DONE]\n\n",
+  { status: 200, headers: { "content-type": "text/event-stream" } });
+
+test("kravSlut: en ström utan finish_reason kastar ett fel som går att försöka om", async () => {
+  const { atb } = ladda(ström([{ choices: [{ delta: { content: "Halv resea" } }] }]));
+  await assert.rejects(() => atb.collect({ messages: [], kravSlut: true }), (e) => e.försökIgen === true && e.kod === "avbrutet");
+});
+
+test("kravSlut: ett avkapat svar (length) kastar också", async () => {
+  const { atb } = ladda(ström([{ choices: [{ delta: { content: "x" }, finish_reason: "length" }] }]));
+  await assert.rejects(() => atb.collect({ messages: [], kravSlut: true }), (e) => e.kod === "length");
+});
+
+test("kravSlut: ett helt svar går igenom, och utan flaggan är portalen oförändrad", async () => {
+  const hel = ladda(ström([{ choices: [{ delta: { content: "Klart." }, finish_reason: "stop" }] }]));
+  assert.equal(await hel.atb.collect({ messages: [], kravSlut: true }), "Klart.");
+  const utan = ladda(ström([{ choices: [{ delta: { content: "Halv" } }] }]));
+  assert.equal(await utan.atb.collect({ messages: [] }), "Halv");
+});

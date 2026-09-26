@@ -959,13 +959,23 @@ async function runBuild(intake, prevR) {
       // första tecknet — det är den enda signal vi har på att tankepausen är slut.
       const onDelta = (d) => { acc += d; panel.textContent = acc; panel.scrollTop = panel.scrollHeight; clockWriting(acc.length); };
       if (stg.stream) {
-        await streamSteg(stg.step, [{ role: "user", content: stg.user() }], onDelta);
+        // Stegkontrollen (2026-09-26): ett avbrutet, avkapat eller trasigt steg
+        // görs om automatiskt innan nästa steg får bygga på det.
+        const n = skalningsAntal(r.scaling);
+        await medOmförsök(stg.label, async () => {
+          acc = "";
+          await streamSteg(stg.step, [{ role: "user", content: stg.user() }], onDelta);
+          return stegBrister(stg.step, acc, n);
+        }, (försök) => { panel.textContent = `Steget blev inte komplett — gör om det automatiskt (försök ${försök} av ${STEG_FÖRSÖK}).`; });
       } else {
         // Enda icke-strömmande steget i loopen är skalningen (sammanställningen
         // tas om hand ovan). Panelen ska ändå säga vad som pågår.
         panel.textContent = (stg.key === "scale" ? "Väger underlaget mot skalningsreglerna." : "Arbetar med steget.")
           + "\n\nDet här steget strömmar inte — svaret kommer i ett stycke när det är klart.";
-        acc = await callSteg(stg.step, [{ role: "user", content: stg.user() }]);
+        await medOmförsök(stg.label, async () => {
+          acc = await callSteg(stg.step, [{ role: "user", content: stg.user() }]);
+          return [];
+        });
         if (stg.key === "scale") {
           // Visa och spara bara beslutet, inte vägen dit. Nästa steg
           // (proposal) ska se vad som beslutats — inte modellens tvekan.
@@ -1087,21 +1097,25 @@ async function structureTeam(intake, r) {
   // Steget är det enda i pipelinen som måste ge maskinläsbart svar, och det var
   // det som föll. Schemat sätts av servern (strict-läge, se _build.js) — det är
   // skillnaden mot json_object, som bara garanterar syntax.
-  const raw = await callSteg("structure", [{ role: "user", content: user }], { mode: intake.mode, workstyle: intake.workstyle });
-  let team;
+  // Stegkontrollen (2026-09-26): ogiltig JSON, en underkänd systemprompt eller
+  // fel antal agenter görs om automatiskt — förut fick kunden ett
+  // felmeddelande och en knapp, och ett team på två agenter gick rakt igenom.
+  const n = skalningsAntal(r.scaling);
+  let team = null;
   try {
-    team = parseTeamJson(raw);
+    await medOmförsök("Sammanställningen", async () => {
+      const raw = await callSteg("structure", [{ role: "user", content: user }], { mode: intake.mode, workstyle: intake.workstyle });
+      try { team = parseTeamJson(raw); } catch (_) { return ["ogiltig JSON"]; }
+      if (!team || !Array.isArray(team.agents) || team.agents.length === 0) return ["inga agenter"];
+      const brister = teamBrister(team, n);
+      try { kontrolleraSystemprompter(team); } catch (e) { brister.push(e.message.split("\n")[0]); }
+      return brister;
+    });
   } catch (e) {
-    const err = new Error("Modellen returnerade ogiltig JSON i sammanställningen. Research och förslag finns kvar — försök sammanställa igen.");
+    const err = new Error("Sammanställningen blev inte komplett efter flera försök. Research och förslag finns kvar — försök sammanställa igen om en stund.");
     err.stage = "structure";
     throw err;
   }
-  if (!team || !Array.isArray(team.agents) || team.agents.length === 0) {
-    const err = new Error("Sammanställningen saknar agenter. Försök sammanställa igen.");
-    err.stage = "structure";
-    throw err;
-  }
-  kontrolleraSystemprompter(team);
   team.slug = slugify(team.slug || intake.company);
   // Inget `language`-fält. Det stod hårdkodat till "sv" och lästes inte av en
   // enda rad kod någonstans — ett påstått val som varken var ett val eller
@@ -1273,6 +1287,52 @@ function perspektivBrister(agenter) {
     }
   }
   return brister;
+}
+
+// ── STEGKONTROLLEN (2026-09-26) ────────────────────────────────────────────
+//
+// Varje steg kontrolleras INNAN nästa bygger på det, och görs om automatiskt
+// (se medOmförsök). Uppmätt i drift samma dag: research på 719 tecken, ett
+// förslag på 23 och ett "team" av två agenter godtogs utan protest, och ett
+// team fick fem agenter när skalningen beslutat fyra. Kunden ska aldrig få
+// ett trasigt team, och aldrig behöva trycka "försök igen" för något koden
+// kan upptäcka själv.
+//
+// Golven är satta långt under normala steg (research 10–18 k tecken, förslag
+// 8–19 k, första projektet 3–8 k i mätningarna) — de fäller trasiga svar, inte
+// korta bra svar.
+var STEG_GOLV = { research: 3000, proposal: 2000, firstproject: 800 };
+
+function skalningsAntal(text) {
+  var m = String(text || "").match(/Skalningsbeslut\s*:\s*\**\s*(\d+)/i);
+  return m ? Number(m[1]) : null;
+}
+
+// Agentrubrikerna i förslaget (### Namn) före avsnittet med avvisade.
+function förslagsAntal(text) {
+  var s = String(text || "");
+  var i = s.search(/^#{1,3}\s*Avvisade/mi);
+  var del = i >= 0 ? s.slice(0, i) : s;
+  return (del.match(/^###\s+\S/gm) || []).length;
+}
+
+function stegBrister(steg, text, n) {
+  var t = String(text || ""), b = [];
+  if (STEG_GOLV[steg] && t.length < STEG_GOLV[steg]) b.push(steg + " blev bara " + t.length + " tecken");
+  if (steg === "proposal" && n) {
+    var k = förslagsAntal(t);
+    // 0 = okänt format; då avgör sammanställningens kontroll i stället.
+    if (k && (k > n || k < n - 1)) b.push("förslaget har " + k + " agenter, skalningsbeslutet är " + n);
+  }
+  return b;
+}
+
+function teamBrister(team, n) {
+  var a = (team && team.agents) || [], b = [];
+  var min = Math.min(3, n || 3);
+  if (a.length < min) b.push("teamet har bara " + a.length + " agenter");
+  if (n && a.length > n) b.push("teamet har " + a.length + " agenter, skalningsbeslutet är " + n);
+  return b;
 }
 // ── ⟦DELAD-SLUT⟧ ──────────────────────────────────────────────────────────
 
@@ -2048,17 +2108,49 @@ function renderError(msg, canRetryStructure, canResume) {
 // rutten inte längre går att använda som gratis chatt eller som väg tillbaka
 // för en uppsagd kund — det finns ingen systemprompt att skicka in.
 // `stepOpts` är stegets booleaner och lägen, aldrig kundtext.
+// kravSlut (2026-09-26): ett steg som inte avslutats normalt är ett fel, inte
+// ett svar — se stream() i atb-claude.js.
 async function callSteg(step, messages, stepOpts) {
   return window.ATBClaude.collect({
-    apiKey: state.apiKey, model: state.model, step, stepOpts, messages,
+    apiKey: state.apiKey, model: state.model, step, stepOpts, messages, kravSlut: true,
     signal: state.abort ? state.abort.signal : undefined,
   });
 }
 async function streamSteg(step, messages, onDelta, stepOpts) {
   await window.ATBClaude.stream({
-    apiKey: state.apiKey, model: state.model, step, stepOpts, messages, onDelta,
+    apiKey: state.apiKey, model: state.model, step, stepOpts, messages, onDelta, kravSlut: true,
     signal: state.abort ? state.abort.signal : undefined,
   });
+}
+
+// ── Automatiskt omförsök per steg (2026-09-26) ─────────────────────────────
+//
+// `kör` gör steget och returnerar en lista med brister (tom = godkänt). Ett
+// avbrutet eller avkapat svar (err.försökIgen, se atb-claude.js) och ett svar
+// med brister görs om, högst STEG_FÖRSÖK gånger. Kunden ser en rad om att
+// steget görs om — aldrig ett trasigt resultat, och aldrig en knapp att trycka
+// för något koden själv kan upptäcka. Avbrott (AbortError) och fel som inte
+// blir bättre av ett nytt försök (spärr, tak, betalvägg) släpps igenom direkt.
+const STEG_FÖRSÖK = 3;
+async function medOmförsök(namn, kör, visa) {
+  let sista = null;
+  for (let försök = 1; försök <= STEG_FÖRSÖK; försök++) {
+    if (försök > 1 && visa) visa(försök);
+    try {
+      const brister = await kör();
+      if (!brister || !brister.length) return;
+      sista = new Error(`${namn}: ${brister.join("; ")}`);
+      console.warn("[builder] steget underkändes, försöker igen", brister);
+    } catch (e) {
+      if (e && e.name === "AbortError") throw e;
+      if (!(e && e.försökIgen)) throw e;
+      sista = e;
+      console.warn("[builder] steget bröts, försöker igen", e.message);
+    }
+  }
+  const e = new Error(`${namn} blev inte komplett efter ${STEG_FÖRSÖK} försök. Det som redan är klart finns kvar — försök igen om en stund.`);
+  e.orsak = sista;
+  throw e;
 }
 
 boot();

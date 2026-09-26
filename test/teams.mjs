@@ -373,3 +373,52 @@ test("KR5: kvittosidan markerar köpet, och Buildern läser markeringen på alla
   const bygg = b.slice(b.indexOf("async function runBuild("), b.indexOf("async function runBuild(") + 800);
   assert.ok(bygg.includes("if (!prevR) glömKöp();"), "ett nytt bygge ärver förra teamets köpmarkering");
 });
+
+// ── Stegkontrollen: ett trasigt bygge levereras aldrig (2026-09-26) ────────
+//
+// Fixturerna är riktiga trasiga byggen ur drift samma dag, inte påhittade.
+const STEGKONTROLL = (() => {
+  const src = readFileSync("builder/builder.js", "utf8");
+  const i = src.indexOf("⟦DELAD-START⟧"), j = src.indexOf("⟦DELAD-SLUT⟧");
+  const kropp = src.slice(src.indexOf("\n", i) + 1, src.lastIndexOf("\n", j) + 1);
+  return new Function(kropp + "; return { stegBrister, teamBrister, skalningsAntal, förslagsAntal };")();
+})();
+
+test("stegkontrollen: en avbruten research (719 tecken ur drift) underkänns", () => {
+  const r = JSON.parse(readFileSync(`${SIM}/larare2/bygge-trasigt.json`, "utf8"));
+  assert.ok(r.research.length < 1000, "fixturen ska vara den trasiga researchen");
+  assert.ok(STEGKONTROLL.stegBrister("research", r.research, 4).length > 0);
+});
+
+test("stegkontrollen: ett team på två agenter (ur drift) underkänns mot beslutet fyra", () => {
+  const team = JSON.parse(readFileSync(`${SIM}/larare2/team-trasigt.json`, "utf8"));
+  assert.equal(team.agents.length, 2);
+  assert.match(STEGKONTROLL.teamBrister(team, 4).join(" "), /bara 2 agenter/);
+});
+
+test("stegkontrollen: fler agenter än skalningsbeslutet underkänns (byggfirman fick 5 mot 4)", () => {
+  const team = JSON.parse(readFileSync(`${SIM}/bygg2/team.json`, "utf8"));
+  const r = JSON.parse(readFileSync(`${SIM}/bygg2/bygge.json`, "utf8"));
+  const n = STEGKONTROLL.skalningsAntal(r.scaling);
+  assert.equal(n, 4);
+  assert.match(STEGKONTROLL.teamBrister(team, n).join(" "), /5 agenter, skalningsbeslutet är 4/);
+});
+
+test("stegkontrollen: hela, riktiga byggen godkänns — golven fäller inte bra svar", () => {
+  for (const k of ["bygg-ds", "larare-ds", "ehandel2"]) {
+    const r = JSON.parse(readFileSync(`${SIM}/${k}/bygge.json`, "utf8"));
+    assert.deepEqual(STEGKONTROLL.stegBrister("research", r.research, 4), [], k + " research");
+  }
+  const team = JSON.parse(readFileSync(`${SIM}/ehandel2/team.json`, "utf8"));
+  assert.deepEqual(STEGKONTROLL.teamBrister(team, 7), []);
+});
+
+test("stegkontrollen: bygget kör varje steg genom medOmförsök och sammanställningen genom teamBrister", () => {
+  const src = readFileSync("builder/builder.js", "utf8");
+  const bygg = src.slice(src.indexOf("async function runBuild("), src.indexOf("function rensaSkalning("));
+  assert.ok((bygg.match(/await medOmförsök\(/g) || []).length >= 2, "de strömmande och icke-strömmande stegen ska båda göras om");
+  assert.ok(bygg.includes("return stegBrister(stg.step, acc, n);"));
+  const sam = src.slice(src.indexOf("async function structureTeam("), src.indexOf("async function structureTeam(") + 3000);
+  assert.ok(sam.includes("teamBrister(team, n)") && sam.includes("await medOmförsök("), "sammanställningen ska kontrollera antalet och göras om");
+  assert.ok(/kravSlut: true/.test(src.slice(src.indexOf("async function callSteg("))), "stegen ska kräva ett helt svar");
+});

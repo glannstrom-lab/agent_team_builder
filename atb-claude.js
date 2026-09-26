@@ -208,6 +208,19 @@
     if (finishReason === "length" && opts.onTruncated) {
       try { opts.onTruncated(); } catch (_) { /* en varning får aldrig fälla ett levererat svar */ }
     }
+    // Bygget kräver ett HELT svar (2026-09-26). Uppmätt i drift samma dag: en
+    // ström som bröts mitt i (ingen finish_reason alls) gav research på 719
+    // tecken och ett förslag på 23 — och sammanställningen byggde ett "team"
+    // av två agenter på det. Med kravSlut blir ett avbrutet eller avkapat svar
+    // ett fel som Buildern kan försöka om, i stället för halv text som godtas.
+    if (opts.kravSlut && finishReason !== "stop") {
+      const e = new Error(finishReason === "length"
+        ? "Steget slog i sin längdgräns innan det var klart."
+        : "Svaret bröts innan det var klart.");
+      e.kod = finishReason === "length" ? "length" : "avbrutet";
+      e.försökIgen = true;
+      throw e;
+    }
     return { used, finishReason };
   }
 
