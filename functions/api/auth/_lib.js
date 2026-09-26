@@ -344,7 +344,13 @@ export async function sendTeamInvite(env, email, { company, invitedBy }) {
       `Det finns inget lösenord att hitta på eller tappa bort. En ny kod går ` +
       `alltid att begära.\n\n` +
       `Var det här oväntat? Strunta då i mejlet. Ingen kommer in på kontot ` +
-      `utan tillgång till din e-post.\n\n— Mitt AI-team\nmittaiteam.se`,
+      `utan tillgång till din e-post.\n\n` +
+      // BF8: GDPR art. 14 — adressen är sparad på någon annans uppgift, och
+      // det här mejlet är första kontakten. Då ska det stå här.
+      `Om din e-postadress: ${invitedBy} har lämnat den till oss, och vi har ` +
+      `sparat den för att du ska kunna logga in. Så behandlar vi den: ` +
+      `https://mittaiteam.se/integritet. Vill du att den tas bort, mejla ` +
+      `info@mittaiteam.se.\n\n— Mitt AI-team\nmittaiteam.se`,
     consoleLine: `[team] inbjudan till ${email} för "${name}" (av ${invitedBy})`,
   });
 }

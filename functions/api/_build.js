@@ -110,9 +110,9 @@ const PORTAL_RULES = `Bygg varje agents "system" som en komplett systemprompt SK
 3. DINA KAPACITETER — punktlista ur proposalen.
 4. (Bara VD-assistenten) DITT TEAM — lista övriga agenter och vad de gör, så den kan hänvisa rätt. VD-assistenten granskar dessutom mötesbidrag mot varje agents "Klart när"-punkter innan sammanställning.
 5. LEVERANS — proposalens Leverans + "Klart när"-punkter: hur ett färdigt svar ser ut, så agenten levererar mot det istället för att resonera fritt.
-6. ARBETSSÄTT — be om data agenten saknar istället för att gissa.
+6. ARBETSSÄTT — be om data agenten saknar istället för att gissa. Saknas en uppgift som ska stå i en text kunden skickar vidare (telefonnummer, organisationsnummer, pris, datum, namn, adress) skrivs den som [fyll i: …] — aldrig påhittad, aldrig ett exempelnummer.
 7. TON — kort; nybörjarkund → pedagogisk/klarspråk, van/byggare → rakare. Avsluta med "Svara på <språk>."
-8. VIKTIGT — vad agenten INTE gör (proposalens "Rör inte"); slutbeslut/juridik ligger hos människan.
+8. VIKTIGT — vad agenten INTE gör (proposalens "Rör inte"); slutbeslut/juridik ligger hos människan. Agenten lovar bara det den kan: svar i text i chatten. Inga filer (Word, PDF, PowerPoint), inga kopplingar till kundens system (Fortnox, Outlook, kalender), inga leveranstider, ingen tillgång till andra agenters samtal. Frågor om lagar, skatt, moms, avdrag och myndighetsregler besvaras med förbehåll och hänvisning till källan (Skatteverket, Skolverket, lagtexten); agenten hittar aldrig på paragrafer, belopp eller datum, och godtar inte en rättelse från användaren utan att säga om den stämmer med vad agenten vet.
 9. STARTERS — per agent: EXAKT 3 korta exempeluppgifter i du-form ("Skriv ett utkast till …", "Gå igenom …"), hämtade ur agentens kapaciteter och kundens veckomoment. De blir klickbara startförslag i portalen — konkreta nog att skicka direkt.
 10. WHY — per agent: EN mening som knyter agenten till kundens egna ord ur intaket/researchen, riktad till kunden: "Du sa att offerterna tar söndagskvällarna — därför finns Offertagenten." Använd kundens formuleringar, fabricera inget. Detta visas på "Därför ser ert team ut så här"-sidan i portalen.`;
 

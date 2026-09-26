@@ -311,3 +311,51 @@ test("inget agentpar i repot närmar sig taket", () => {
     `men långt över allt annat i repot (max var 0,42 när måttet skrevs). Skriv om det ena ` +
     `perspektivet, eller mät om fördelningen och flytta gränsen medvetet.`);
 });
+
+// ── KA11: rubrikläsaren tål de rubriker modellerna faktiskt skriver ────────
+//
+// 2026-09-26 fällde kontrollen 9 av 9 byggen i drift: gpt-oss skrev
+// "2. Perspektiv:" där kontrollen letade efter strängen "DITT PERSPEKTIV".
+// Testet kör KONTROLLEN (inte bara rubrikläsaren) ur källan mot riktiga råsvar
+// från simuleringen, så att en återgång till indexOf fäller bygget.
+const KONTROLLEN = (() => {
+  const src = readFileSync("builder/builder.js", "utf8");
+  const i = src.indexOf("⟦DELAD-START⟧"), j = src.indexOf("⟦DELAD-SLUT⟧");
+  const kropp = src.slice(src.indexOf("\n", i) + 1, src.lastIndexOf("\n", j) + 1);
+  const k1 = src.indexOf("const OBLIGATORISKA_SEKTIONER"), k2 = src.indexOf("// TEAM_SCHEMA bor i");
+  assert.ok(k1 > 0 && k2 > k1, "hittade inte kontrolleraSystemprompter i builder/builder.js");
+  const kontroll = src.slice(k1, k2).replace(/console\.warn\([^;]*;/, "");
+  return new Function(kropp + kontroll +
+    "; return { kontrolleraSystemprompter, sektionText, PERSPEKTIV_RUBRIK, LEVERANS_RUBRIK };")();
+})();
+const SIM = "testoutput/sim-2026-09";
+
+test("KA11: gpt-oss numrerade rubriker ('2. Perspektiv:') godtas av kontrollen", () => {
+  const team = JSON.parse(readFileSync(`${SIM}/bygg/structure-raw.json`, "utf8"));
+  assert.doesNotThrow(() => KONTROLLEN.kontrolleraSystemprompter(team));
+});
+
+test("KA11: engelska rubriker ('Perspective:', 'Delivery:') godtas och avgränsas vid nästa rubrik", () => {
+  const team = JSON.parse(readFileSync(`${SIM}/redovisning/team.json`, "utf8"));
+  assert.doesNotThrow(() => KONTROLLEN.kontrolleraSystemprompter(team));
+  const p = KONTROLLEN.sektionText(team.agents[0].system, KONTROLLEN.PERSPEKTIV_RUBRIK);
+  assert.ok(p && !/Capabilities/.test(p), "perspektivet ska sluta vid 'Capabilities:', inte löpa vidare");
+});
+
+test("KA11: ett riktigt fel fälls fortfarande — samma perspektiv två gånger", () => {
+  // Lärarens team: VD-assistent och kommunikationsagenten överlappar 87 %.
+  const team = JSON.parse(readFileSync(`${SIM}/larare/team.json`, "utf8"));
+  assert.throws(() => KONTROLLEN.kontrolleraSystemprompter(team), /samma perspektiv/);
+});
+
+test("KA11: rubriken måste stå vid radbörjan — ordet i löpande text räknas inte", () => {
+  const sys = "Du hjälper till. Ditt perspektiv är viktigt och din leverans ska vara bra.\n\nKAPACITETER:\n- saker";
+  assert.equal(KONTROLLEN.sektionText(sys, KONTROLLEN.PERSPEKTIV_RUBRIK), null);
+  assert.throws(() => KONTROLLEN.kontrolleraSystemprompter({ agents: [{ name: "A", system: sys }] }), /saknar DITT PERSPEKTIV/);
+});
+
+test("KA8: en LEVERANS-rubrik utan innehåll fälls", () => {
+  const sys = "DITT PERSPEKTIV:\n" + "Du letar alltid efter det som gör offerten begriplig för en privatkund. ".repeat(2) +
+    "\nLEVERANS:\n\nTON:\nKort.";
+  assert.throws(() => KONTROLLEN.kontrolleraSystemprompter({ agents: [{ name: "A", system: sys }] }), /LEVERANS är tom/);
+});

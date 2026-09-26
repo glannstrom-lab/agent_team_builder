@@ -1123,17 +1123,52 @@ var PERSPEKTIV_STOPPORD = new Set(
   ).split(/\s+/)
 );
 
-// Texten under DITT PERSPEKTIV, fram till nästa versalrubrik. Returnerar tom
-// sträng när rubriken saknas — anropande kod skiljer på "saknas" och "tom".
-function perspektivText(sys) {
+// ── RUBRIKLÄSAREN (KA11, 2026-09-26) ────────────────────────────────────────
+//
+// Fram till 2026-09-26 letade kontrollen efter strängen "DITT PERSPEKTIV" med
+// indexOf. gpt-oss följer promptens numrerade lista men skriver om rubrikerna
+// ("2. Perspektiv: Du ser …"), och kontrollen fällde då 9 av 9 byggen i drift.
+// En kund fick ett felmeddelande varje gång hon försökte igen. Uppmätt i
+// simuleringen, testoutput/sim-2026-09/bygg/structure-raw.json.
+//
+// Rubriken känns nu igen i de former modellerna faktiskt skriver: VERSALER,
+// Versal-inledd, numrerad ("2. Perspektiv:"), markdown ("## Ditt perspektiv",
+// "**Perspektiv:**"), med eller utan "Ditt". Den måste stå vid RADENS BÖRJAN:
+// indexOf klippte annars ut fel stycke när ordet stod i löpande text (uppmätt
+// för LEVERANS på studio.js 2026-09-06).
+//
+// Sektionen slutar vid nästa rubrik i SAMMA stil. En numrerad rubrik avslutas
+// av nästa numrerade rad med kolon; en versalrubrik av nästa versalrad. Annars
+// hade en numrerad punktlista inuti sektionen klippt av den.
+var RUBRIK_PREFIX = "^[ \\t]*(?:#{1,4}[ \\t]*)?(?:\\*\\*)?[ \\t]*";
+function sektionText(sys, rubrikMönster) {
   var s = String(sys || "");
-  var i = s.toUpperCase().indexOf("DITT PERSPEKTIV");
-  if (i < 0) return "";
-  var efter = s.slice(i + "DITT PERSPEKTIV".length);
-  // Nästa rubrik = en rad som börjar med minst fyra versaler i rad, med eller
-  // utan numrering. Hittas ingen är resten av prompten perspektivet.
-  var m = efter.match(/\n\s*(?:\d+\.\s*)?[A-ZÅÄÖ][A-ZÅÄÖ\s]{3,}[:\n]/);
+  var re = new RegExp(RUBRIK_PREFIX + "(\\d+[.)][ \\t]*)?(?:\\*\\*)?[ \\t]*(" + rubrikMönster +
+    ")(?:\\*\\*)?[ \\t]*(?:[:—–-][ \\t]*(?:\\*\\*)?|(?=\\n)|$)", "mi");
+  var m0 = re.exec(s);
+  if (!m0) return null;
+  var numrerad = !!m0[1];
+  var versaler = m0[2] === m0[2].toUpperCase();
+  var efter = s.slice(m0.index + m0[0].length);
+  // Tre stilar: "2. Rubrik:" · "RUBRIK" · "Rubrik:" (den sista skrev gpt-oss,
+  // ibland på engelska: "Perspective:", "Capabilities:").
+  var nästa = numrerad
+    ? /\n[ \t]*(?:#{1,4}[ \t]*)?(?:\*\*)?\d+[.)][ \t]*[A-ZÅÄÖa-zåäö][^\n:]{0,40}:/
+    : versaler
+    ? /\n[ \t]*(?:#{1,4}[ \t]*)?(?:\*\*)?(?:\d+[.)][ \t]*)?[A-ZÅÄÖ][A-ZÅÄÖ \t]{3,}(?:\*\*)?[ \t]*[:\n—–-]/
+    : /\n[ \t]*(?:#{1,4}[ \t]*)?(?:\*\*)?[A-ZÅÄÖ][A-Za-zÅÄÖåäö‑ \t-]{2,30}(?:\*\*)?:/;
+  var m = efter.match(nästa);
   return (m ? efter.slice(0, m.index) : efter).trim();
+}
+// Engelska varianter godtas: gpt-oss skrev "Perspective:" och "Delivery:" i ett
+// av fyra byggen. Innehållet fanns — det var rubriken som var på fel språk.
+var PERSPEKTIV_RUBRIK = "(?:ditt[ \\t]+)?perspektiv|(?:your[ \\t]+)?perspective";
+var LEVERANS_RUBRIK = "(?:din[ \\t]+)?leverans|delivery|deliverables?";
+
+// Texten under DITT PERSPEKTIV. Returnerar tom sträng när rubriken saknas —
+// anropande kod skiljer på "saknas" (sektionText ger null) och "tom".
+function perspektivText(sys) {
+  return sektionText(sys, PERSPEKTIV_RUBRIK) || "";
 }
 
 function perspektivOrd(text) {
@@ -1185,19 +1220,25 @@ function perspektivBrister(agenter) {
 // ── ⟦DELAD-SLUT⟧ ──────────────────────────────────────────────────────────
 
 const OBLIGATORISKA_SEKTIONER = [
-  { namn: "DITT PERSPEKTIV", varför: "utan den blir agenten utbytbar mot de andra" },
-  { namn: "LEVERANS", varför: "utan den finns inga \"Klart när\"-punkter att leverera mot" },
+  { namn: "DITT PERSPEKTIV", mönster: PERSPEKTIV_RUBRIK, varför: "utan den blir agenten utbytbar mot de andra" },
+  { namn: "LEVERANS", mönster: LEVERANS_RUBRIK, varför: "utan den finns inga \"Klart när\"-punkter att leverera mot" },
 ];
 
 function kontrolleraSystemprompter(team) {
   const brister = [];
   for (const a of team.agents) {
     const sys = String((a && a.system) || "");
+    const namn = a.name || a.id || "en agent";
     for (const s of OBLIGATORISKA_SEKTIONER) {
-      // Skiftlägesokänsligt: modellen skriver ibland "Ditt perspektiv".
-      // Rubriken måste finnas, men får se ut hur som helst runtomkring.
-      if (!sys.toUpperCase().includes(s.namn)) {
-        brister.push(`${a.name || a.id || "en agent"}: saknar ${s.namn} — ${s.varför}`);
+      // Rubriken läses av sektionText (KA11): varianterna modellerna faktiskt
+      // skriver godtas, men den måste stå som rubrik, inte i löpande text.
+      const text = sektionText(sys, s.mönster);
+      if (text === null) {
+        brister.push(`${namn}: saknar ${s.namn} — ${s.varför}`);
+      } else if (s.namn === "LEVERANS" && text.length < PERSPEKTIV_GOLV) {
+        // KA8: rubriken utan innehåll var godkänd. Perspektivets golv kontrolleras
+        // i perspektivBrister nedan; här får leveransen samma golv.
+        brister.push(`${namn}: LEVERANS är tom eller nästan tom (${text.length} tecken) — ${s.varför}`);
       }
     }
   }

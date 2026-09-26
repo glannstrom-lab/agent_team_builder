@@ -35,7 +35,7 @@ function laddaAuto({ demo = false, slug = "kund" } = {}) {
     removeItem: (k) => lager.delete(k),
   };
   const api = new Function("state", "localStorage", kropp +
-    "; return { autoLoad, autoSave, autoDeliveredPush, autoMarkRead, AUTO_MAX_ÅLDER };"
+    "; return { autoLoad, autoSave, autoDeliveredPush, autoMarkRead, AUTO_MAX_ÅLDER, ärTomtEllerVägran };"
   )({ demo, slug }, localStorage);
   return { ...api, lager };
 }
@@ -560,7 +560,7 @@ test("pulskortet möter kunden med förra veckans siffra, inte en tyst nolla", (
   const kropp = KÄLLA.slice(i, KÄLLA.indexOf("\n  }", i));
   assert.match(kropp, /tidForVecka\(isoWeekFörra\(\)\)/,
     "kortet läser inte förra veckan — då är siffran tom precis när kunden tittar");
-  assert.match(kropp, /förra veckan gjorde teamet/,
+  assert.match(kropp, /förra veckans avklarade rutiner/,
     "etiketten säger inte vilken vecka siffran gäller");
 });
 
@@ -600,4 +600,17 @@ test("kortet är idempotent, så omritningen inte kan ge två kort", () => {
   const j = KÄLLA.indexOf("async function checkTrialNotice");
   assert.ok(j > 0, "hittade inte checkTrialNotice");
   assert.match(KÄLLA.slice(j, KÄLLA.indexOf("\n}", j)), /renderTrialCard\(info, today\)/);
+});
+
+test("KA12: mötet räknar inte ett tomt svar eller en vägran som ett perspektiv", () => {
+  const { ärTomtEllerVägran } = laddaAuto();
+  assert.equal(ärTomtEllerVägran(""), true);
+  assert.equal(ärTomtEllerVägran("   "), true);
+  assert.equal(ärTomtEllerVägran("Jag kan inte hjälpa till med den begäran."), true);
+  assert.equal(ärTomtEllerVägran("Viktigast nu är att få ÄTA-bekräftelsen skriftlig innan vi kaklar, annars står vi utan underlag vid slutfakturan."), false);
+  // Ett riktigt svar som börjar likt en vägran men fortsätter är inte en vägran.
+  assert.equal(ärTomtEllerVägran("Jag kan inte hjälpa till med själva betygssättningen, men här är tre sätt att korta rättningen: " + "x".repeat(200)), false);
+  // Anropet finns i mötet — annars är funktionen en skenkontroll.
+  const kod = KÄLLA.slice(KÄLLA.indexOf("async function runMeeting"));
+  assert.ok(kod.slice(0, 6000).includes("if (ärTomtEllerVägran(p))"), "runMeeting anropar inte ärTomtEllerVägran");
 });

@@ -37,6 +37,16 @@ Antal agenter (inklusive VD och VD-assistent) får inte överstiga
 skalningsbeslutet. Om research har fler kluster över ribban än vad
 skalningen tillåter — slå ihop de minst distinkta.
 
+**Det kunden säger klämmer mest får aldrig avvisas.** Ett moment som
+står under "Var det klämmer" eller "Mål och ambition" i intaget ska ha en
+ägare i teamet: en egen agent, eller en uttalad del av en annan agents jobb.
+Krockar det med en avgränsning ("AI ska inte sätta betyg", "inga kunddata i
+AI") är avgränsningen ett villkor för agenten — den hamnar under **Rör
+inte** — inte ett skäl att stryka agenten. En lärare som säger att rättningen
+tar helgerna ska få hjälp med återkopplingen, med betygssättningen utanför.
+(Uppmätt i simuleringen 2026-09-26: just de moment två av fyra kunder lyfte
+först avvisades, och båda sa upp.)
+
 ### 2. VD och VD-assistent
 
 VD och VD-assistent formuleras alltid, baserat på:
@@ -63,6 +73,17 @@ VD och VD-assistent formuleras alltid, baserat på:
 - **VD-assistent:** Alltid operativ arbetspartner. Specificera vilka
   av teamets agenter den ska kunna hänvisa till. Använd
   `chief-of-staff.md` som mall.
+
+**Namnen.** Ingen agent får heta som kunden eller någon i kundens
+verksamhet. VD-agenten är inte ägaren; den hjälper ägaren att prioritera.
+En agent som heter "Maria" hos Maria är förvirrande i varje svar (uppmätt
+2026-09-26). Namnge efter jobbet.
+
+**När teamet byggs för en enskild person** (intaget säger "en enskild
+person i sitt jobb") finns ingen VD att stötta. VD-rollen blir då personens
+*prioriterare*: den som hjälper hen välja vad veckan ska räcka till och vad
+som får vänta. Behåll funktionen men kalla den vid det namnet ("Veckans
+prioriteringar", "Planeraren" eller liknande), aldrig "VD".
 
 ### 3. Matcha skills
 

@@ -2602,6 +2602,15 @@ function autoMarkRead(agentId) {
   autoSave(kvar);
   return true;
 }
+
+// KA12: ett svar som inte är ett svar. Tomt (resonemanget åt taket) eller en
+// ren vägran i en mening. Används av mötet, som annars räknade båda som
+// lyckade perspektiv. Ligger i blocket så att testet kör samma kod.
+function ärTomtEllerVägran(text) {
+  const t = String(text || "").trim();
+  if (t.length < 20) return true;
+  return t.length < 160 && /^(jag kan (tyvärr )?inte hjälpa|tyvärr kan jag inte|i can(no|')t help|i('| a)m sorry)/i.test(t);
+}
 // ⟦AUTO-SLUT⟧
 
 
@@ -2760,7 +2769,7 @@ function renderPulse() {
   // kunden måste öppna själv — alltså osynlig för den som betalar.
   const tidVeckan = sparadTid(team.routines, routLoad().done).minuter;
   if (tidVeckan) {
-    cards.push({ icon: "⏱", label: `Teamet har gjort ${tidFormat(tidVeckan)} manuellt arbete i veckan — se vad`,
+    cards.push({ icon: "⏱", label: `Avklarade rutiner i veckan motsvarar ${tidFormat(tidVeckan)} manuellt arbete — se vad`,
       act: openWeekWork });
   }
   if (pulseNewWeek) {
@@ -2771,7 +2780,7 @@ function renderPulse() {
     const förraTid = tidForVecka(isoWeekFörra()) ||
       sparadTid(team.routines, routVeckanSomGick().done).minuter;
     const etikett = förraTid
-      ? `Ny vecka — förra veckan gjorde teamet ${tidFormat(förraTid)} manuellt arbete. Se veckan som gick`
+      ? `Ny vecka — förra veckans avklarade rutiner motsvarade ${tidFormat(förraTid)} manuellt arbete. Se veckan som gick`
       : "Ny vecka — få \"Veckan som gick\" + förslag på veckans fokus";
     cards.push({ icon: "☀️", label: etikett, act: () => { pulseNewWeek = false; weekReview(); } });
   }
@@ -3941,7 +3950,7 @@ function openQuarter() {
     // Talet i .q-num och enheten i etiketten, som de andra rutorna. "2,5 timmar"
     // i 28 px fetstil spränger en 140 px kolumn.
     const [tal, ...enhet] = kvartalTid.replace("≈ ", "").split(" ");
-    grid.appendChild(stat(tal, enhet.join(" ") + " manuellt arbete teamet gjort"));
+    grid.appendChild(stat(tal, enhet.join(" ") + " manuellt arbete i avklarade rutiner"));
   }
   if (facts) grid.appendChild(stat(facts, "saker teamet lärt sig om er"));
   if (streak >= 2) grid.appendChild(stat(streak, "veckor i rad"));
@@ -4237,6 +4246,49 @@ function runRoutine(rt) {
   }
 }
 
+// Förra veckostartens svar, avkortat. Hittas via frågan, som alltid börjar
+// med "Veckostart!" — svaret är nästa meddelande i ingångsagentens historik.
+function veckostartFörra() {
+  const h = (state.history && state.history[team.entryAgent]) || [];
+  for (let i = h.length - 2; i >= 0; i--) {
+    const q = h[i], a = h[i + 1];
+    if (q && q.role === "user" && /^Veckostart!/.test(q.content || "") && a && a.role === "assistant" && a.content) {
+      const när = a.at ? new Date(a.at).toLocaleDateString("sv-SE") : "förra gången";
+      return { när, text: a.content.replace(/\s+/g, " ").slice(0, 700) + (a.content.length > 700 ? "…" : "") };
+    }
+  }
+  return null;
+}
+
+// Årshjulets händelser och de svenska myndighetsdatum kunden valt, inom
+// `dagar` dagar. Samma regler som puls-korten ovan, men alla — inte bara närmast.
+function kommandeDatum(now, dagar) {
+  const ut = [];
+  const dagarTill = (when) => Math.ceil((when - now) / 86400000);
+  (Array.isArray(team.seasons) ? team.seasons : []).forEach((s) => {
+    if (!s || !s.label || !s.month) return;
+    let when = new Date(now.getFullYear(), s.month - 1, s.day || 1);
+    if (when < now && (now - when) / 86400000 > 1) when = new Date(now.getFullYear() + 1, s.month - 1, s.day || 1);
+    const d = dagarTill(when);
+    if (d >= 0 && d <= dagar) ut.push({ d, t: `${s.label} (${when.toLocaleDateString("sv-SE")}, om ${d} dagar)` });
+  });
+  let dlForm = null;
+  try { dlForm = localStorage.getItem("atb_dlform_" + state.slug); } catch (_) { /* läsfel */ }
+  if (dlForm && dlForm !== "off" && Array.isArray(window.ATB_DEADLINES_SE)) {
+    const base = dlForm.split("-")[0], emp = dlForm.includes("anstallda");
+    window.ATB_DEADLINES_SE.forEach((x) => {
+      if (!(x.forms.includes("alla") || x.forms.includes(base) || (emp && x.forms.includes("anstallda")))) return;
+      let when = x.monthly ? new Date(now.getFullYear(), now.getMonth(), x.day)
+        : new Date(now.getFullYear(), (x.month || 1) - 1, x.day || 1);
+      if (when < now) when = x.monthly ? new Date(now.getFullYear(), now.getMonth() + 1, x.day)
+        : new Date(now.getFullYear() + 1, (x.month || 1) - 1, x.day || 1);
+      const d = dagarTill(when);
+      if (d >= 0 && d <= dagar) ut.push({ d, t: `${x.label} (om ${d} dagar — kontrollera exakt datum hos Skatteverket)` });
+    });
+  }
+  return ut.sort((a, b) => a.d - b.d).map((x) => x.t);
+}
+
 // Veckostart: ett klick → ingångsagenten föreslår veckans fokus. Skickas
 // direkt (ingen förifyllning) — hela poängen är noll friktion på måndagsmorgonen.
 function startWeek() {
@@ -4245,9 +4297,21 @@ function startWeek() {
   const now = new Date();
   const days = ["söndag", "måndag", "tisdag", "onsdag", "torsdag", "fredag", "lördag"];
   const rlist = (team.routines || []).map((r) => `- ${r.label}${r.day ? ` (${dayName(r.day)})` : ""}`).join("\n");
+  // RE7 (simuleringen 2026-09-26): alla fyra kunder fick i stort sett samma
+  // veckostart fyra måndagar i rad, och den missade momsdagen och
+  // utvecklingssamtalsveckan trots att båda stod i minnet. Modellen fick
+  // samma fråga varje vecka och svarade därför likadant. Nu får den förra
+  // veckans veckostart och de datum som faktiskt närmar sig.
+  const förra = veckostartFörra();
+  const datum = kommandeDatum(now, 21);
   const text = `Veckostart! Det är ${days[now.getDay()]} den ${now.toLocaleDateString("sv-SE")}.` +
     (rlist ? `\nVåra stående rutiner:\n${rlist}` : "") +
-    `\n\nGe mig en kort veckostart: 1) de tre viktigaste sakerna att fokusera på, med motivering, 2) vilken agent i teamet som hjälper mig med varje, 3) vad du behöver veta från mig. Kort och konkret.`;
+    (datum.length ? `\nDatum som närmar sig (nästa tre veckor):\n${datum.map((d) => `- ${d}`).join("\n")}` : "") +
+    (förra ? `\n\nFörra veckostarten (${förra.när}) sa i korthet:\n${förra.text}` : "") +
+    `\n\nGe mig en kort veckostart: 1) de tre viktigaste sakerna att fokusera på den här veckan, med motivering, 2) vilken agent i teamet som hjälper mig med varje, 3) vad du behöver veta från mig. ` +
+    `Utgå från företagsminnet och datumen ovan.` +
+    (förra ? ` Upprepa inte förra veckans lista: säg kort vad som borde ha hänt sedan dess och vad som är nytt den här veckan.` : "") +
+    ` Kort och konkret.`;
   introMark("week");
   touchStreak();
   submitMessage(text, `⭐ Veckostart — ${days[now.getDay()]} ${now.toLocaleDateString("sv-SE")}`);
@@ -5013,6 +5077,11 @@ async function runMeeting(type, focus, ids) {
           messages: [{ role: "user", content: `MÖTE — ${type.label}.\nFråga/fokus: ${focus}\n\nGe DITT perspektiv utifrån din roll. Max 120 ord. Var konkret och våga ha en åsikt — vad är viktigast och varför, och vad kan vänta? Ingen artighetsprosa.` }],
           maxTokens: 600, signal,
         });
+        // KA12: ett tomt svar eller en ren vägran är inget perspektiv. Uppmätt
+        // 2026-09-26: två av fyra perspektiv på ett möte var tomma (resonemanget
+        // åt taket) och ett var "Jag kan inte hjälpa till med den begäran." —
+        // alla räknades som lyckade och gick in i mötesanteckningen.
+        if (ärTomtEllerVägran(p)) { failed.push(a.name); continue; }
         perspectives.push({ name: a.name, tagline: a.tagline || "", text: p });
       } catch (e) {
         if (e && e.name === "AbortError") throw e;

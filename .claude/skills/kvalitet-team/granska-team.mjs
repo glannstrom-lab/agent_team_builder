@@ -38,26 +38,13 @@ const MÅTTET = (() => {
     process.exit(2);
   }
   const kropp = src.slice(src.indexOf("\n", i) + 1, src.lastIndexOf("\n", j) + 1);
-  return new Function(kropp + "; return { perspektivText, perspektivLikhet, perspektivBrister, PERSPEKTIV_TAK, PERSPEKTIV_GOLV };")();
+  return new Function(kropp + "; return { perspektivText, perspektivLikhet, perspektivBrister, PERSPEKTIV_TAK, PERSPEKTIV_GOLV, sektionText };")();
 })();
 
-// Samma rubrikmönster som perspektivText, för valfri rubrik. Mätning, inte grind.
-//
-// Skillnaden mot det delade blocket: rubriken måste stå vid RADENS BÖRJAN.
-// Det delade `perspektivText` använder indexOf, vilket duger för
-// "DITT PERSPEKTIV" men inte för "LEVERANS" — ordet står i löpande text
-// ("...leveranser och design systems-produkten...") i flera av de kurerade
-// teamen, och en indexOf-sökning klipper då ut fel stycke och rapporterar en
-// LEVERANS-sektion som inte finns. Uppmätt på studio.js 2026-09-06.
-function sektionText(sys, rubrik) {
-  const s = String(sys || "");
-  const m0 = new RegExp("^[ \\t]*(?:\\d+\\.\\s*)?" + rubrik + "\\b", "mi").exec(s);
-  if (!m0) return null;
-  const i = m0.index + m0[0].length - rubrik.length;
-  const efter = s.slice(i + rubrik.length);
-  const m = efter.match(/\n\s*(?:\d+\.\s*)?[A-ZÅÄÖ][A-ZÅÄÖ\s]{3,}[:\n]/);
-  return (m ? efter.slice(0, m.index) : efter).trim();
-}
+// Rubrikläsaren är den DELADE ur builder.js sedan KA11 (2026-09-26). Här fanns
+// förut en egen kopia som krävde radbörjan medan builderns använde indexOf —
+// två läsare som kunde säga olika saker om samma prompt. Nu finns en.
+const sektionText = (sys, rubrik) => MÅTTET.sektionText(sys, rubrik);
 
 // ── inläsning ─────────────────────────────────────────────────────────────
 function läsTeamfil(sökväg) {

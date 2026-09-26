@@ -31,7 +31,13 @@ const steg = (n, t) => console.log(`\n${C.fet}${n}. ${t}${C.av}`);
 const builder = läs("builder/builder.js");
 const checkout = läs("functions/api/checkout.js");
 const webhook = läs("functions/api/stripe-webhook.js");
-const aktivera = läs("portal/aktivera.html");
+// Kommentarer rensas bort (DR17): KR6-kontrollen hittade ordet "kvittomejlet" i
+// kodkommentaren som förklarar varför det är borta, och rapporterade den lagade
+// punkten som öppen. Samma fälla som det första KR3-testet gick i.
+const aktivera = läs("portal/aktivera.html")
+  .replace(/<!--[\s\S]*?-->/g, "")
+  .replace(/\/\*[\s\S]*?\*\//g, "")
+  .replace(/(^|[^:])\/\/.*$/gm, "$1");
 const villkor = läs("villkor.html");
 const authLib = läs("functions/api/auth/_lib.js");
 const app = läs("portal/app.js");

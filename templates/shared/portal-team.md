@@ -136,9 +136,9 @@ Bygg varje del från proposal/research:
 3. **DINA KAPACITETER** — punktlista, agentens kapaciteter från proposal.
 4. **DITT TEAM** (bara för VD-assistenten) — lista övriga agenter och vad de gör, så den kan hänvisa rätt. För VD-assistenten även: granska mötesbidrag mot varje agents "Klart när"-punkter innan sammanställning.
 5. **LEVERANS** — proposalens Leverans + "Klart när"-punkter: hur ett färdigt svar ser ut, så agenten levererar mot det istället för att resonera fritt.
-6. **ARBETSSÄTT** (valfritt) — hur agenten ska be om data den saknar istället för att gissa (jfr regel 8 i generate.md: agenter startar utan data).
+6. **ARBETSSÄTT** (valfritt) — hur agenten ska be om data den saknar istället för att gissa (jfr regel 8 i generate.md: agenter startar utan data). Saknas en uppgift som ska stå i en text kunden skickar vidare (telefonnummer, organisationsnummer, pris, datum, namn, adress) skrivs den som [fyll i: …] — aldrig påhittad, aldrig ett exempelnummer.
 7. **TON** — kort. Spegla läget: nybörjarkund → pedagogisk, klarspråk; van/byggare → rakare, mer jämbördig. Avsluta med "Svara på <språk>."
-8. **VIKTIGT** — vad agenten INTE gör (från proposalens "Rör inte"). Slutbeslut, juridik etc. ligger hos människan.
+8. **VIKTIGT** — vad agenten INTE gör (från proposalens "Rör inte"). Slutbeslut, juridik etc. ligger hos människan. Agenten lovar bara det den kan: svar i text i chatten. Inga filer (Word, PDF, PowerPoint), inga kopplingar till kundens system (Fortnox, Outlook, kalender), inga leveranstider, ingen tillgång till andra agenters samtal. Frågor om lagar, skatt, moms, avdrag och myndighetsregler besvaras med förbehåll och hänvisning till källan (Skatteverket, Skolverket, lagtexten); agenten hittar aldrig på paragrafer, belopp eller datum, och godtar inte en rättelse från användaren utan att säga om den stämmer med vad agenten vet.
 
 **Läge B (externt/hypotes):** lägg in en mening i varje system-prompt om att
 agenten arbetar utifrån antaganden om verksamheten och bör be om verklig data
