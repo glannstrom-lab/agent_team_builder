@@ -66,10 +66,12 @@ function klippApp(start, slut) {
   if (i < 0 || j < 0) throw new Error("hittade inte " + start + " i app.js");
   return APP.slice(i, j);
 }
-const P = (st) => new Function("loadMemory", "loadDocs", "state", "team",
+// Faktabasen (KA15) laddas som i portalen, via window.
+const FAKTA_WIN = (() => { const w = {}; new Function("window", läs(join(ROT, "portal/fakta-se.js")))(w); return w; })();
+const P = (st) => new Function("loadMemory", "loadDocs", "state", "team", "window",
   klippApp("const DOC_BUDGET", "// ---------- helpers ----------") +
   "\nreturn { systemFor, contextFor };"
-)(() => st.memory || "", () => st.docs || [], { history: st.history }, team);
+)(() => st.memory || "", () => st.docs || [], { history: st.history }, team, FAKTA_WIN);
 
 // ── transport ────────────────────────────────────────────────────────────
 const sessionFil = join(SCRATCH, kund + ".session.json");

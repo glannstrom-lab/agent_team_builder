@@ -616,6 +616,12 @@ function systemFor(agent) {
     }
     sys += `\n\nUNDERLAG (material användaren lagt in — använd som källa när det är relevant):\n${parts.join("\n\n")}`;
   }
+  // KA15 (2026-09-26): båda modellerna föll på svenska regler — gpt-oss
+  // godtog felaktiga rättelser, DeepSeek vägrade korrekta. De vanligaste
+  // reglerna står nu kontrollerade mot primärkälla i portal/fakta-se.js och
+  // följer med i varje instruktion, med källan.
+  const fakta = faktaBlock();
+  if (fakta) sys += `\n\n${fakta}`;
   // RE8 (2026-09-26): varje agent såg bara sitt eget samtal. I simuleringen
   // trodde VD-assistenten att nyhetsbrevet var oskrivet när skribenten redan
   // gjort det, och att "inga offerter har gått ut" efter två. Teamloggen är de
@@ -628,6 +634,18 @@ function systemFor(agent) {
     sys += `\n\nNär du använder företagsminnet eller ett underlag i ett svar: hänvisa kort till källan vid namn (t.ex. "enligt er prislista"). Påstå aldrig att ett underlag innehåller något det inte gör — saknas uppgiften, säg det och be om den.`;
   }
   return sys;
+}
+
+// Faktabasen (KA15). Kontrollerad mot primärkälla — se portal/fakta-se.js.
+// Tom sträng om filen inte laddats; då gäller bara knappen 🔎.
+function faktaBlock() {
+  const f = typeof window !== "undefined" && window.ATB_FAKTA_SE;
+  if (!f || !Array.isArray(f.regler) || !f.regler.length) return "";
+  const rader = f.regler.map((r) => `- ${r.amne}: ${r.text} (källa: ${r.kalla})`).join("\n");
+  return `VERIFIERADE REGLER (kontrollerade ${f.kontrollerad || ""} mot Skatteverket, lagtexten m.fl.):\n${rader}\n` +
+    "Använd dessa exakt och ange källan när du använder dem. En rättelse från användaren som strider mot listan godtar du inte — " +
+    "säg vad listan och källan säger. En rättelse som stämmer med listan avvisar du aldrig. Gäller frågan en regel som INTE står här: " +
+    "säg att du inte är säker och föreslå knappen 🔎 Kontrollera mot källan under svaret.";
 }
 
 // Teamloggen (RE8). De andra agenternas senaste svar, nyast först: datum,

@@ -1,0 +1,62 @@
+/* ============================================================
+   Svenska regler för småföretag — kurerad, KONTROLLERAD faktabas.
+   Varje uppgift är belagd mot primärkällan i `kalla` (Skatteverket,
+   riksdagen.se, Kronofogden, Konsumentverket) och kontrollerades
+   2026-09-26. Beloppen gäller 2026. Bara det källan säger — inga
+   tolkningar. Saknas en uppgift här är den inte belagd; gissa inte.
+   UPPDATERA VARJE ÅR (belopp ändras vid årsskiftet, ibland mitt i
+   året) och sätt nytt datum i `kontrollerad`. Ingen kod behöver röras.
+   ============================================================ */
+window.ATB_FAKTA_SE = {
+  kontrollerad: "2026-09-26",
+  regler: [
+    { amne: "ROT-avdrag",
+      text: "Från 2026 får företaget dra av högst 30 procent av arbetskostnaden på fakturan. Rot och rut är sammanlagt högst 75 000 kr per person och år, varav högst 50 000 kr rotavdrag. Material och resekostnader ger inte avdrag; det är företaget som ansöker om utbetalningen, senast 31 januari året efter betalningen.",
+      kalla: "https://www.skatteverket.se/privat/fastigheterochbostad/rotarbeteochrutarbete/safungerarrotavdraget.4.5947400c11f47f7f9dd80004014.html" },
+    { amne: "ROT-avdrag i bostadsrätt",
+      text: "Arbetet ska utföras i bostaden och bostadsrättshavaren ska ha underhållsansvar för det enligt föreningens stadgar. Arbete på gemensamma ytor, till exempel tak, fasader, trapphus och entréer, samt balkonger ger inte rotavdrag.",
+      kalla: "https://www.skatteverket.se/foretag/skatterochavdrag/rotochrut/gerarbetetratttillrotavdrag.4.5c1163881590be297b5173bf.html" },
+    { amne: "RUT-avdrag",
+      text: "Högst 50 procent av arbetskostnaden får dras av som rutavdrag. Rot och rut är sammanlagt högst 75 000 kr per person och år; hela summan får användas för rut, men högst 50 000 kr får vara rotavdrag. Företagaren ansöker om rutavdraget åt kunden när arbetet är utfört och betalt.",
+      kalla: "https://www.skatteverket.se/foretag/skatterochavdrag/rotochrut/safungerarrutavdraget.4.64a656d113f4c7597011e41.html" },
+    { amne: "Representation — moms",
+      text: "Vid representation med mat och dryck får du göra avdrag för moms på ett underlag på högst 300 kr exklusive moms per person och tillfälle. Från 1 april 2026 är momsen på livsmedel 6 procent, vilket påverkar beräkningen. I inkomstdeklarationen får du bara dra av enklare förtäring och förfriskningar — inte lunch, middag eller alkohol.",
+      kalla: "https://www.skatteverket.se/foretag/moms/kopavarorochtjanster/representation.4.15532c7b1442f256baec84b.html" },
+    { amne: "Representation — inkomstskatt",
+      text: "Avdragslexikonet anger högst 0 kr för måltider som frukost, lunch eller middag, högst 60 kr per person för förtäring och högst 180 kr för underhållning. Enligt inkomstskattelagen 16 kap. 2 § (lag 2016:1055) får förtäring bara dras av om det är förfriskningar och annan enklare förtäring som inte kan anses som en måltid och som är av mindre värde.",
+      kalla: "https://www.skatteverket.se/foretag/skatterochavdrag/avdragforforetag/avdragslexikonforetag.4.3684199413c956649b550c8.html" },
+    { amne: "Påminnelseavgift",
+      text: "Ersättning för skriftlig betalningspåminnelse får tas ut bara om avtal om det har träffats senast när skulden uppkom (lag 1981:739, 2 §), med högst 60 kr (4 §).",
+      kalla: "https://www.riksdagen.se/sv/dokument-och-lagar/dokument/svensk-forfattningssamling/lag-1981739-om-ersattning-for-inkassokostnader_sfs-1981-739/" },
+    { amne: "Förseningsersättning (B2B)",
+      text: "Förseningsersättning ska betalas med 450 kr (lag 1981:739, 4 a §). Rätten finns mellan näringsidkare i yrkesmässig verksamhet (och när en näringsidkare säljer till en myndighet) om borgenären har rätt till dröjsmålsränta för en obetald vara eller tjänst.",
+      kalla: "https://www.riksdagen.se/sv/dokument-och-lagar/dokument/svensk-forfattningssamling/lag-1981739-om-ersattning-for-inkassokostnader_sfs-1981-739/" },
+    { amne: "Dröjsmålsränta",
+      text: "Enligt räntelagen 6 § är dröjsmålsräntan referensräntan med ett tillägg av åtta procentenheter.",
+      kalla: "https://www.riksdagen.se/sv/dokument-och-lagar/dokument/svensk-forfattningssamling/rantelag-1975635_sfs-1975-635/" },
+    { amne: "Julgåva till anställda",
+      text: "En julgåva är skattefri upp till 600 kr inklusive moms för inkomstår 2026 (550 kr för 2025). Presentkort som inte kan bytas mot pengar kan vara en skattefri gåva; gåvor i pengar är inte skattefria.",
+      kalla: "https://www.skatteverket.se/privat/skatter/arbeteochinkomst/formaner/gavor.4.7459477810df5bccdd4800014379.html" },
+    { amne: "Friskvårdsbidrag",
+      text: "Arbetsgivaren får betala ut högst 5 000 kr per år och anställd för att bidraget ska räknas som av mindre värde och vara skattefritt. Alla i personalen ska få samma belopp och villkor. Betalas mer än 5 000 kr ut beskattas den anställda för hela bidraget.",
+      kalla: "https://www.skatteverket.se/foretag/arbetsgivare/lonochersattning/formaner/personalvardsformanmotionochfriskvard.4.3016b5d91791bf546791431.html" },
+    { amne: "Momsdeklaration — deadlines",
+      text: "Månadsmoms, beskattningsunderlag högst 40 Mkr: den 12:e i andra månaden efter perioden (den 17:e i januari och augusti). Över 40 Mkr: den 26:e i månaden efter perioden (den 27:e i december). Kvartalsmoms: den 12:e i andra månaden efter kvartalet (den 17:e i augusti).",
+      kalla: "https://www.skatteverket.se/foretag/moms/deklareramoms/narskajagdeklareramoms.4.6d02084411db6e252fe80008988.html" },
+    { amne: "Mobiltelefon från arbetsgivaren",
+      text: "Den anställda behöver inte betala skatt för att använda arbetsgivarens mobiltelefon om utrustningen är nödvändig för arbetet. Får den anställda ta med utrustningen utanför arbetsplatsen utan att den har väsentlig betydelse för arbetsuppgifterna blir det en skattepliktig förmån.",
+      kalla: "https://www.skatteverket.se/privat/skatter/arbeteochinkomst/formaner/arbetsredskap.4.3016b5d91791bf54679426.html" },
+    { amne: "Fast telefon i bostaden (egen företagare)",
+      text: "Abonnemangsavgiften för en fast ansluten telefon i bostaden är inte avdragsgill, men rörliga utgifter för samtal i verksamheten får dras av.",
+      kalla: "https://www.skatteverket.se/foretag/skatterochavdrag/avdragforforetag/avdragslexikonforetag.4.3684199413c956649b550c8.html" },
+    { amne: "Betalningsföreläggande",
+      text: "Det kostar 300 kr att ansöka om betalningsföreläggande hos Kronofogden.",
+      kalla: "https://kronofogden.se/kontakta-oss/avgifter-och-kostnader" },
+    { amne: "Gymnasieskolan — utvecklingssamtal och risk för F",
+      text: "Minst en gång varje termin ska rektorn se till att eleven får samlad information om sin kunskapsutveckling och studiesituation (utvecklingssamtal); vårdnadshavare ska få samma information (skollagen 15 kap. 20 §). Kan det befaras att en elev inte når betygskriterierna ska eleven skyndsamt ges extra anpassningar (3 kap. 5 §), och räcker inte det ska det anmälas till rektorn (3 kap. 7 §). Någon särskild \"F-varning\" står inte i lagen.",
+      kalla: "https://www.riksdagen.se/sv/dokument-och-lagar/dokument/svensk-forfattningssamling/skollag-2010800_sfs-2010-800/" },
+    { amne: "Betygsskalan i gymnasieskolan",
+      text: "Godkända betyg är A, B, C, D och E, där A är högst och E lägst; icke godkänt betecknas F (skollagen 15 kap. 24 §). För betyget E ska samtliga kriterier för E vara uppfyllda.",
+      kalla: "https://www.riksdagen.se/sv/dokument-och-lagar/dokument/svensk-forfattningssamling/skollag-2010800_sfs-2010-800/" },
+  ],
+};

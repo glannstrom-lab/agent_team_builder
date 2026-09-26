@@ -723,3 +723,34 @@ test("RE5: rapporten, leveranslistan, kvartalet och veckobrevet nås från Vecka
   const sidopanel = KÄLLA.slice(KÄLLA.indexOf("const tools = state.demo ? [] : ["), KÄLLA.indexOf("const tools = state.demo ? [] : [") + 400);
   assert.ok(!sidopanel.includes("statusReport") && !sidopanel.includes("deliveredList"), "rapporten och leveranslistan står fortfarande som egna rader");
 });
+
+// ── KA15: faktabasen följer med i varje instruktion ────────────────────────
+test("KA15: de verifierade reglerna står i agentens instruktion, med källa och regeln för rättelser", () => {
+  const w = {}; new Function("window", readFileSync("portal/fakta-se.js", "utf8"))(w);
+  const i = KÄLLA.indexOf("const DOC_BUDGET"), j = KÄLLA.indexOf("// ---------- helpers ----------");
+  const { systemFor } = new Function("loadMemory", "loadDocs", "state", "team", "window", KÄLLA.slice(i, j) + "\nreturn { systemFor };")(
+    () => "", () => [], { history: {} }, { agents: [] }, w);
+  const sys = systemFor({ id: "a", name: "A", system: "Bas." });
+  assert.match(sys, /VERIFIERADE REGLER \(kontrollerade 2026-/);
+  assert.match(sys, /Påminnelseavgift: .*60 kr/);
+  assert.match(sys, /källa: https:\/\/www\.riksdagen\.se/);
+  assert.match(sys, /En rättelse från användaren som strider mot listan godtar du inte/);
+  assert.match(sys, /En rättelse som stämmer med listan avvisar du aldrig/);
+});
+
+test("KA15: varje regel har ämne, text och en https-källa hos en myndighet eller riksdagen", () => {
+  const w = {}; new Function("window", readFileSync("portal/fakta-se.js", "utf8"))(w);
+  const f = w.ATB_FAKTA_SE;
+  assert.ok(f.regler.length >= 10);
+  for (const r of f.regler) {
+    assert.ok(r.amne && r.text && r.text.length > 20, "tom regel: " + JSON.stringify(r));
+    assert.match(r.kalla, /^https:\/\/(www\.)?(skatteverket|riksdagen|kronofogden|verksamt|konsumentverket|skolverket)\.se\//, r.amne);
+  }
+  assert.match(f.kontrollerad, /^\d{4}-\d{2}-\d{2}$/);
+});
+
+test("KA15: faktabasen är kontrollerad inom 13 månader — belopp och gränser ändras varje år", () => {
+  const w = {}; new Function("window", readFileSync("portal/fakta-se.js", "utf8"))(w);
+  const ålder = (Date.now() - Date.parse(w.ATB_FAKTA_SE.kontrollerad)) / 86400000;
+  assert.ok(ålder < 396, `portal/fakta-se.js kontrollerades för ${Math.round(ålder)} dagar sedan. Kontrollera varje regel mot källan igen (julgåva, ROT/RUT, friskvård och momsdatum ändras) och uppdatera "kontrollerad".`);
+});
