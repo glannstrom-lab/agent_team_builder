@@ -23,7 +23,8 @@
 //      utan inloggning.
 
 import { gallra } from "../_gallring.js";
-import { json, sendWeeklyDigest } from "../auth/_lib.js";
+import { json, sendWeeklyDigest, sendTrialEnding } from "../auth/_lib.js";
+import { provmånadsPåminnelser } from "../_provmanad.js";
 import { planState } from "../_plan.js";
 
 const MODEL_ID = "deepseek/deepseek-v4.1-flash"; // samma som functions/api/ai.js
@@ -223,6 +224,16 @@ export async function onRequestPost(context) {
   const timme = new Date(nu).getUTCHours();
   if (timme < TIDIGAST_TIMME_UTC) {
     return json({ ok: true, dag, veckodag, skickade: 0, hoppade: 0, fel: 0, orsak: "för tidigt på dygnet" });
+  }
+
+  // Provmånadens påminnelse (P3) — samma klocka, men EFTER timgolvet: ett
+  // mejl klockan ett på natten är fel sätt att påminna. Gallringen ovan får
+  // köra på natten; den skickar inget. Ett fel här stoppar inte breven.
+  try {
+    const n = await provmånadsPåminnelser(db, env, nu, sendTrialEnding);
+    if (n) console.log("[provmånad] påminnelser skickade:", n);
+  } catch (e) {
+    console.error("[provmånad] misslyckades", String(e).slice(0, 200));
   }
 
   // ── vilka ska ha brev i dag ──────────────────────────────────────────────

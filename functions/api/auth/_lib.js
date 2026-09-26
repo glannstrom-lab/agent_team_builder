@@ -398,6 +398,26 @@ export async function sendWeeklyDigest(env, email, { company, body, unsubUrl }) 
   });
 }
 
+// P3 (2026-09-26): provmånaden tar slut — mejlet fem dagar före. Portalens
+// kort säger det bara till den som loggar in, och vecka tre är just när kunden
+// slutat logga in. Inget säljs i mejlet utöver vad som faktiskt gäller:
+// ingenting dras automatiskt, och vägen vidare finns i portalen.
+export async function sendTrialEnding(env, email, { company, dagar, slutdatum, slug }) {
+  const name = String(company || "ert team").replace(/[\r\n]+/g, " ").trim().slice(0, 80) || "ert team";
+  return sendMail(env, {
+    to: email,
+    subject: `Provmånaden för ${name} slutar om ${dagar} dagar`,
+    text:
+      `Hej!\n\nProvmånaden för ${name} på Mitt AI-team slutar ${slutdatum}.\n\n` +
+      `Ingenting dras automatiskt. Vill ni fortsätta väljer ni det själva i portalen — ` +
+      `samma team, samma samtal och samma företagsminne, 290 kr i månaden, uppsägningsbart när som helst.\n\n` +
+      `Fortsätt här: ${PORTAL_URL}?team=${encodeURIComponent(slug)}\n\n` +
+      `Vill ni inte fortsätta behöver ni inte göra något. Era samtal och underlag ligger kvar i er webbläsare ` +
+      `eller i er kopplade mapp, och går att ladda ner under "Ladda ner allt" i portalen.\n\n— Mitt AI-team\nmittaiteam.se`,
+    consoleLine: `[provmånad] påminnelse till ${email} för "${name}" (${dagar} dagar kvar)`,
+  });
+}
+
 // Ångerrätten. Två mejl med samma innehåll — ett till kunden som kvitto, ett
 // till oss som arbetsorder — eftersom lagen kräver att vi *bekräftar* att
 // anmälan tagits emot, och pengarna behöver flyttas för hand.
