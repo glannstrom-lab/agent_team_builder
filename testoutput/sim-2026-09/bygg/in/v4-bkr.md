@@ -1,0 +1,1 @@
+karlsson badrum klart på torsdag. behöver göra våtrumsdokumentationen för bkr-intyget. vilka foton och vilken info måste jag ha med? ge mig en checklista jag kan bocka av på telefonen, kort. och samla ÄTA:n (fukt bjälklag 18 tkr, godkänd på sms 29 sep) i en rad jag kan ha med i slutdokumentationen.

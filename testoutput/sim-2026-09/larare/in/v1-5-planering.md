@@ -1,0 +1,3 @@
+Skapa en lektionsplan för nästa vecka med mål, aktiviteter och uppgiftsbeskrivningar, samt inkludera placeholders för anpassningar ([Anpassning]).
+
+Gäller SA1b (Svenska 1), vecka 41: tre lektioner à 70 min. De har precis lämnat in en argumenterande text (fredag). Ämneslaget vill att vi provar "feedback i två steg": först kamratrespons, sedan min respons. Så jag tänker att de första lektionerna är kamratrespons på varandras texter (i par, anonymt?) och sedan bearbetning. Några elever har anpassningar (lässvårigheter, koncentration, en med ångest för att visa sina texter).

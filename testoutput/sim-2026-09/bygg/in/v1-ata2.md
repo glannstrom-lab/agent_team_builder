@@ -1,0 +1,1 @@
+för långt för sms. och 18 tkr är inkl moms före rot, dom får rot på arbetsdelen. ungefär 12 tkr av det är arbete. skriv om kortare och säg vad dom betalar efter rot. heter jonas bergström btw. ska också stå att det blir 2 dagar extra typ

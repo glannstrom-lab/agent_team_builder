@@ -25,7 +25,7 @@
 import { json, sendWeeklyDigest } from "../auth/_lib.js";
 import { planState } from "../_plan.js";
 
-const MODEL_ID = "openai/gpt-oss-120b";
+const MODEL_ID = "deepseek/deepseek-v4.1-flash"; // samma som functions/api/ai.js
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 
 // Tak per körning. Skyddar mot att en enda körning drar iväg om något går fel i
@@ -241,6 +241,10 @@ export async function onRequestPost(context) {
         body: JSON.stringify({
           model: MODEL_ID,
           max_tokens: MAX_TOKENS,
+          // Samma tillåtelselista som PROVIDER_ONLY i ai.js: fem amerikanska leverantörer, ingen som sparar indata.
+          // Ett brev på 700 tokens har inte råd med dolt resonemang (KA12).
+          reasoning: { enabled: false },
+          provider: { only: ["deepinfra", "together", "fireworks", "parasail", "coreweave"], data_collection: "deny" },
           messages: [{ role: "system", content: system }, { role: "user", content: user }],
         }),
       });

@@ -1,0 +1,1 @@
+hej. badrum hos karlssons på adolfsberg, rivning klar. hittade fuktskada i golvbjälklaget runt golvbrunnen, måste bytas typ en halv kvm bjälklag + nytt golvbrunnsfundament. kostar ca 18 tkr extra. inte skrivit nåt med dom än och dom är lite sura. behöver en ÄTA text jag kan sms:a eller maila dom i kväll så dom godkänner innan vi fortsätter. kort.

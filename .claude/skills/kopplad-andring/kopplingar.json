@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "kontrollerad": "2026-09-06",
+  "kontrollerad": "2026-09-26",
   "kommentar": "Registret över filer som måste ändras samma dag. Varje ankare är kontrollerat den dag som står i kontrollerad — kör `node .claude/skills/kopplad-andring/kontrollera.mjs --revidera` för att se att de fortfarande finns. Ett ankare som ruttnat gör registret farligare än inget register, för det ser ut att vakta något.",
   "kopplingar": [
     {
@@ -37,34 +37,41 @@
     {
       "id": "modell-id",
       "rubrik": "Modellen och de kostnadssiffror som motiverar priset",
-      "varfor": "Modellraden står på tre ställen och ingen delas. Byts en av dem kör bygget, portalen och veckobrevet olika modeller — och kostnadskalkylen som säljer att AI:n ingår bygger på den gamla prislappen. OVAKTAD: ingen test läser MODEL_ID.",
-      "vaktas_av": [],
+      "varfor": "Modellraden står på tre ställen och ingen delas. Byts en av dem kör bygget, portalen och veckobrevet olika modeller — och kostnadskalkylen som säljer att AI:n ingår bygger på den gamla prislappen. Vaktad sedan 2026-09-26 (bytet till DeepSeek V4.1 Flash). Leverantörslistan PROVIDER_ONLY hör också hit: integritet.html namnger de fem.",
+      "vaktas_av": [
+        "test/klient.mjs — modell-id: samma modell i klienten, proxyn och veckobrevet — och i villkoren"
+      ],
       "foreslagen_vakt": "test/klient.mjs — läs MODEL_ID ur alla tre filerna med regex och assert.equal dem mot varandra; assert att index.html nämner samma modellnamn.",
       "delar": [
         {
           "fil": "atb-claude.js",
-          "ankare": "openai/gpt-oss-120b",
+          "ankare": "deepseek/deepseek-v4.1-flash",
           "roll": "builder + portal"
         },
         {
           "fil": "functions/api/ai.js",
-          "ankare": "openai/gpt-oss-120b",
+          "ankare": "deepseek/deepseek-v4.1-flash",
           "roll": "proxyn (stream() ignorerar klientens modell)"
         },
         {
           "fil": "functions/api/digest/run.js",
-          "ankare": "openai/gpt-oss-120b",
+          "ankare": "deepseek/deepseek-v4.1-flash",
           "roll": "veckobrevet — går aldrig genom ai.js"
         },
         {
           "fil": "index.html",
-          "ankare": "$0,037",
+          "ankare": "$0,30",
           "roll": "#forbrukning — kalkylen som säger att AI:n kan ingå"
         },
         {
           "fil": "villkor.html",
-          "ankare": "openai/gpt-oss-120b",
+          "ankare": "DeepSeek V4.1 Flash",
           "roll": "avsnitt 3-4 — modellnamnet är avtalat mot kunden"
+        },
+        {
+          "fil": "integritet.html",
+          "ankare": "DeepInfra, Together AI, Fireworks AI, Parasail",
+          "roll": "tredjeland och \"Om modellen\" — namnger leverantörerna i PROVIDER_ONLY"
         }
       ]
     },

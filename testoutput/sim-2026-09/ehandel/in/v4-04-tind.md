@@ -1,0 +1,2 @@
+Samma sak som hoodien, nu Skaljacka Tind (27 % retur, "ärmarna korta"). Passformsblock, max 50 ord.
+Fakta: normal passform över kroppen, ärmarna ca 2 cm kortare än Fjällrävens motsvarande jacka. Modellen är 178 cm, armar normala, bär L. Plaggmått finns nu: ärmlängd från axelsöm, M = 63 cm, L = 65 cm, XL = 67 cm.

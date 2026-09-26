@@ -116,6 +116,10 @@ Pages-secrets — `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_TR
 `STRIPE_PRICE_STANDARD`. Live-lägets webhook-endpoint behöver samma fem
 händelsetyper som testlägets nu har.
 
+### 0b. Bygget fungerar inte i drift · NYTT 2026-09-26
+
+Mätt i simuleringen 2026-09-26: Builderns kontroll (`kontrolleraSystemprompter`) fäller 9 av 9 sammanställningar från gpt-oss, eftersom modellen skriver `2. Perspektiv:` där kontrollen kräver `DITT PERSPEKTIV`. En kund som bygger i dag får ett felmeddelande varje gång hon försöker. Det är gratisbygget, alltså säljargumentet, som är stumt. Arbetet står som **KA11** i `ROADMAP.md`, tillsammans med de övriga fynden från simuleringen (KA12–KA18, RE7, PR7, PR8).
+
 ### ~~1. Nyckelkravet lever kvar i portalen~~ — STÄNGT 2026-08-06 (kväll)
 
 Hålet stängdes först i Buildern och köppanelen, men omläggningen "kunden har

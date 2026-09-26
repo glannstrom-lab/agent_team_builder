@@ -1,0 +1,3 @@
+Historia 1b, SA1c (27 elever). Nästa område: industrialiseringen, 3 veckor (v43, sen lov v44, sen v45–46), två lektioner à 80 min i veckan. Jag vill ha en grovplanering för området: vad varje lektion handlar om, kopplat till det centrala innehållet i Historia 1b, och en examinationsuppgift i slutet.
+
+Anpassningar som måste finnas med från början (inte läggas på efteråt): två elever med dyslexi, en med ADHD som behöver korta moment, en nyanländ elev med svenska som andraspråk (ca 2 år i Sverige). Ge anpassningarna per lektion, kort.

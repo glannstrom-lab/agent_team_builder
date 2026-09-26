@@ -11,7 +11,9 @@
   // vart eget lager ager valet av leverantor och modell.
 
   // ── EN MODELL, INGA ALTERNATIV (beslutat 2026-08-05, bytt 2026-08-06) ──
-  // Hela produkten kör GPT-OSS 120B via OpenRouter ($0,037/$0,170 per miljon
+  // BYTT IGEN 2026-09-26: deepseek/deepseek-v4.1-flash, se functions/api/ai.js.
+  // Historiken nedan gäller bytet 2026-08-06.
+  // Hela produkten körde GPT-OSS 120B via OpenRouter ($0,037/$0,170 per miljon
   // tokens). Bytet från DeepSeek V4 Flash gjordes efter mätning över hela
   // pipelinen: 9,1 s mot 241 s och 0,025 kr mot 0,076 kr per bygge — och
   // DeepSeek klarade inte sammanställningsstegets stora JSON alls.
@@ -23,8 +25,8 @@
   //    villkor.html — de bygger på den här kostnadsnivån.
   //  - villkor.html § 3 och integritet.html § 3 beskriver vilken
   //    leverantör kundens data går till. Ändras raden nedan måste de med.
-  const MODEL_ID = "openai/gpt-oss-120b"; // stabilt id: varken tilde-alias (~...-latest, uppdateras utan forvarning) eller datumsuffix (-0731, ruttnar)
-  const MODEL_LABEL = "GPT-OSS 120B";
+  const MODEL_ID = "deepseek/deepseek-v4.1-flash"; // stabilt id: varken tilde-alias (~...-latest, uppdateras utan forvarning) eller datumsuffix (-0731, ruttnar)
+  const MODEL_LABEL = "DeepSeek V4.1 Flash";
 
   // Vilket team anropen gäller. Portalen sätter den när ett team laddats;
   // Buildern rör den aldrig. Den skiljer ett portalsvar (kräver köpt team och

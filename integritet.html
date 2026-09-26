@@ -37,7 +37,12 @@
     leverantör som kör modellen. Vi är därmed ALLTID personuppgiftsbiträde för
     innehållet i frågorna. Skriv aldrig in text om att kunden lägger in en egen
     nyckel, eller att inget passerar oss — den produkten finns inte längre.
-  - MODELLEN är openai/gpt-oss-120b, bytt och verifierad i drift 2026-08-06.
+  - MODELLEN är deepseek/deepseek-v4.1-flash sedan 2026-09-26, körd ENBART hos
+    leverantörerna i PROVIDER_ONLY i functions/api/ai.js (fem amerikanska bolag,
+    data_collection: "deny"). Aldrig hos DeepSeek själv eller andra leverantörer
+    i Kina — det är tillåtelselistan som gör det sant, inte en förhoppning.
+    Ändras listan ändras avsnitten "Om modellen" och "tredjeland" samma dag.
+  - FÖRRA MODELLEN (historik): openai/gpt-oss-120b, bytt och verifierad i drift 2026-08-06.
     Sanningen står i MODEL_ID i functions/api/ai.js (och MODEL_ID/MODEL_LABEL i
     atb-claude.js) — läs den raden innan modellnamnet ändras här. Öppna vikter
     från OpenAI (USA); OpenAI kör den INTE åt oss. Körningen sker hos den
@@ -248,7 +253,7 @@
     <p>Portalen är en webbsida som körs i din webbläsare. När du ställer en fråga
     skickas den till en funktion på vår server hos Cloudflare, som skickar den
     vidare till tjänsten OpenRouter på vårt konto. OpenRouter dirigerar anropet
-    till den leverantör som kör språkmodellen GPT-OSS 120B, och svaret tar
+    till en av de leverantörer som kör språkmodellen DeepSeek V4.1 Flash åt oss, och svaret tar
     samma väg tillbaka till din skärm. Med frågan följer det du har lagt in som
     företagsminne och de underlag du har slagit på.</p>
     <p>Du behöver alltså inget eget konto och ingen egen API-nyckel hos någon
@@ -311,22 +316,25 @@
 
     <div class="varning">
       <h4>Om modellen och var den körs</h4>
-      <p style="margin-bottom:10px">Modellen heter GPT-OSS 120B och är en
-      öppenviktsmodell från OpenAI, ett amerikanskt bolag. Att den kommer från
-      OpenAI betyder inte att OpenAI kör den åt oss — vikterna är öppna, och
-      beräkningen utförs av den leverantör OpenRouter dirigerar anropet till. Vid
-      våra mätningar har det varit Cerebras, i USA, men vilka leverantörer som är
-      aktuella kan variera över tid. <b>Beräkningen kan alltså ske utanför EU och
+      <p style="margin-bottom:10px">Modellen heter DeepSeek V4.1 Flash och är en
+      öppenviktsmodell från DeepSeek, ett kinesiskt bolag. Att den kommer från
+      DeepSeek betyder inte att DeepSeek kör den åt oss. Vikterna är öppna, och
+      beräkningen utförs av en av fem amerikanska leverantörer som vi har valt ut:
+      DeepInfra, Together AI, Fireworks AI, Parasail och CoreWeave. <b>Dina frågor
+      skickas aldrig till DeepSeek eller till leverantörer i Kina</b>, och andra
+      leverantörer än de fem används inte. <b>Beräkningen sker alltså utanför EU och
       EES.</b> Vi når modellen via OpenRouter, som också är ett amerikanskt bolag,
       och vår egen funktion körs i Cloudflares nät, som når hela världen.</p>
-      <!-- SANNINGSKRAV: koden (functions/api/ai.js) skickar provider:
-           { sort: "throughput" } — alltså INGEN vitlista. Skriv inte att urvalet
-           är begränsat förrän koden begränsar det. Att anrop inte får sparas för
+      <!-- SANNINGSKRAV (2026-09-26): koden (functions/api/ai.js) skickar
+           provider: { only: PROVIDER_ONLY, data_collection: "deny" } — alltså EN
+           VITLISTA med fem leverantörer. Stryks den i koden ska meningen om de
+           fem strykas här samma dag. Att anrop inte får sparas för
            modellträning är en inställning på OpenRouter-kontot; kontrollera att
            den faktiskt är satt innan den här meningen får stå kvar. -->
-      <p style="margin-bottom:10px">Vi styr anropet till den leverantör som svarar
-      snabbast, och begränsar i dag inte urvalet till någon viss lista. Hos
-      OpenRouter har vi valt bort att anrop får sparas för modellträning. Behöver
+      <p style="margin-bottom:10px">Inom de fem styr vi anropet till den som svarar
+      snabbast. Vi kräver dessutom, anrop för anrop, att leverantören inte sparar
+      eller tränar på innehållet. Hos OpenRouter har vi valt bort att anrop får
+      sparas för modellträning. Behöver
       din verksamhet att bara vissa leverantörer, eller bara leverantörer inom EU,
       används — säg till innan du beställer, så svarar vi skriftligt om vi kan
       lösa det och vad det i så fall innebär.</p>
@@ -463,11 +471,11 @@
     <p>Det här avsnittet är det som brukar avgöra om en byrå eller mottagning kan
     använda tjänsten, så det står rakt.</p>
     <p><b>Dina frågor behandlas i dag utanför EU och EES.</b> Vi skickar dem via
-    OpenRouter, ett amerikanskt bolag, till den leverantör som kör språkmodellen
-    GPT-OSS 120B. Vid våra mätningar har den leverantören varit Cerebras, i USA.
-    Eftersom vi styr anropet efter vilken leverantör som svarar snabbast kan det
-    bli en annan leverantör, i USA eller i ett annat land, och vi kan alltså inte
-    lova att all behandling sker inom EU. Behöver din verksamhet den garantin ska
+    OpenRouter, ett amerikanskt bolag, till en av fem amerikanska
+    leverantörer som kör språkmodellen DeepSeek V4.1 Flash åt oss (DeepInfra,
+    Together AI, Fireworks AI, Parasail och CoreWeave). Frågorna skickas aldrig
+    till DeepSeek eller till leverantörer i Kina. Vi kan inte lova att all
+    behandling sker inom EU. Behöver din verksamhet den garantin ska
     du inte mata in materialet i portalen — hör av dig i stället, så säger vi rakt
     ut om vi kan lösa det eller inte.</p>
     <p>Cloudflare och Google är amerikanska bolag, och deras behandling kan innebära

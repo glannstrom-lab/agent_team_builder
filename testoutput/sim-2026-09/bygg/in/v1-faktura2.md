@@ -1,0 +1,1 @@
+det står ju i minnet. petersson 47 tkr, 23 dagar sen. bara den. vänlig men tydlig, han är en ok kund egentligen

@@ -1,0 +1,3 @@
+Hej! Okej, nu provar jag det här på riktigt. Mitt största problem är rättningen. SA1b (svenska 1, 31 elever) lämnar in en argumenterande text på fredag, ca 2 sidor var. Jag brukar sitta en hel helg med dem och ändå kommer kommentarerna för sent.
+
+Kan du hjälpa mig med en snabbare metod att rätta dem? Jag vill inte att du rättar åt mig (får inte klistra in elevtexterna ändå), men typ ett upplägg, en kommentarsbank eller något som gör att jag inte skriver samma sak 31 gånger. Det ska hänga ihop med betygskriterierna i Svenska 1.

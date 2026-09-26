@@ -1,0 +1,1 @@
+för många frågor asså. timpris o sånt ligger i minnet nu. räkna med ca 110 tim för mig och ali tillsammans (typ hälften var), material ca 45 tkr inköp, el ca 14 tkr och vvs ca 22 tkr inkl moms från underentreprenörerna. golvvärme el. kakel i mellanprisklass, kunden väljer själv. kund: familjen Nyström, brickebacken. gör ett utkast med totalen och vad dom betalar efter rot. kort.

@@ -1,0 +1,3 @@
+Generera ett svar på kundens fråga: "Jag köpte en ny mobil för 12 000 kr i förra veckan. Jag använder den till bokningar i salongen men också privat. Kan jag dra av den?"
+
+Kunden är frisör med enskild firma. Kort utkast, konsulten kontrollerar.

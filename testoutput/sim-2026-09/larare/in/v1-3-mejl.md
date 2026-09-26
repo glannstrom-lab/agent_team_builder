@@ -1,0 +1,3 @@
+Jag behöver skriva till en förälder. Eleven (i min mentorsklass, åk 2) har över 20 % frånvaro den här terminen, mest ströfrånvaro på morgonlektionerna, och har fått en varning från CSN. Jag vill inte låta anklagande, föräldern har varit lite defensiv förut. Jag vill föreslå ett möte (eleven, förälder, jag, ev. elevhälsan) och att vi hörs inom en vecka.
+
+Kort, varmt men tydligt. Jag skriver in namnen själv.

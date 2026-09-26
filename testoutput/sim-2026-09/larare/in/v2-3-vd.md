@@ -1,0 +1,3 @@
+Okej, läget. På fredag kommer SA3c:s vetenskapliga essäer in (24 st, ca 4 sidor). Nästa vecka är det utvecklingssamtal för SA2b, 29 samtal à 20 min, mest eftermiddagar. SA1b:s argumenterande texter har jag rättat ungefär hälften av (15 av 31). Plus vanlig undervisning, ca 16 lektioner i veckan. Och jag vill inte jobba helgen efter.
+
+Hur lägger jag upp de kommande två veckorna så att SA1b får tillbaka sina texter och essäerna blir rättade inom två veckor? Var realistisk, jag har kanske 1,5 h planeringstid per dag utöver lektionerna.

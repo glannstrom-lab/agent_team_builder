@@ -1,0 +1,2 @@
+- Vilken specifik tid på dagen/för veckan spenderas på att skriva offerter och hur många timmar skulle du vilja avsätta för detta?  
+- Hur ser ditt nuvarande flöde ut för att samla in och dokumentera ÄTA‑information (t.ex. var och när noteras de)?

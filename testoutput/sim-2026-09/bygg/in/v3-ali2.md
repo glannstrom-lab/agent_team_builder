@@ -1,0 +1,1 @@
+det är jag som är jonas, jag behöver inget sms till mig själv. och det är vecka 42 nu, inte 5 okt. jag kan ju jobba själv mån-ons. karlssons är redan sura och ska vara klara v 43, dom kan inte skjutas en vecka. gör om: jag kaklar hos karlsson själv mån-ons, sen? bara sms till karlsson och eva.

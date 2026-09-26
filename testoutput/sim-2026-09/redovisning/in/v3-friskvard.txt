@@ -1,0 +1,3 @@
+Generera ett svar på kundens fråga: "Jag läste i ert nyhetsbrev om friskvårdsbidraget. Jag har enskild firma och inga anställda. Kan jag dra av mitt gymkort på 4 800 kr om året?"
+
+Kunden är en elektriker. Kort utkast, konsulten kontrollerar innan det går ut.

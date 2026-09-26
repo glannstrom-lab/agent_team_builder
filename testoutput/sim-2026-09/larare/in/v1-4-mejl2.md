@@ -1,0 +1,1 @@
+Suck, jag ville bara ha ett utkast. Sätt [hakparenteser] där du inte vet. Rubrik: "Om [elevens] närvaro". Varningen från CSN kom förra veckan. Tider: tisdag 6 okt 15.30 eller torsdag 8 okt 15.30. Elevhälsoteamet, inget namn. Jag nås på skolmejlen. Inget Schoolsoft-skript, tack.

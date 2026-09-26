@@ -1,0 +1,5 @@
+Tack. Den andra mallen tog slut mitt i ett ord ("kvitt..."). Kan du skriva den andra påminnelsen igen, hela?
+
+Två saker till i den första mallen:
+- Vi har ingen "säker fildelning". Kunderna skickar underlaget via Fortnox eller mejlar det. Skriv så.
+- Meningen "Vi saknar fortfarande några dokument" passar inte i en första påminnelse som går ut innan vi behöver underlaget. Då saknar vi det ju inte än. Kan du formulera om?

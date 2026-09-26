@@ -1,0 +1,3 @@
+Generera ett svar på kundens fråga: "Jag bjöd två leverantörer på lunch förra veckan, det kostade 1 450 kr inklusive moms för oss tre. Får jag dra av det? Och momsen?"
+
+Kunden är en restaurangägare med aktiebolag. Svaret ska vara ett utkast som en av våra konsulter kontrollerar innan det skickas. Skriv kort och begripligt, kunden är ingen ekonom.

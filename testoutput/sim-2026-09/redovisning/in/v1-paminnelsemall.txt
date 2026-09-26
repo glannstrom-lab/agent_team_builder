@@ -1,0 +1,12 @@
+Hej,
+
+Jag skulle vilja ha en mall för påminnelser om underlag som vår administratör Sanna kan kopiera in i Outlook. I dag skriver hon varje mejl själv och tonen blir olika från gång till gång.
+
+Jag tänker mig två versioner:
+1. Första påminnelsen, vänlig. Skickas några dagar innan vi behöver underlaget.
+2. Andra påminnelsen, något fastare, till dem som inte svarat. Den ska fortfarande vara artig — det är våra kunder.
+
+Det som oftast saknas är kvitton, kontoutdrag och leverantörsfakturor. Underlaget behöver vara hos oss senast den 5:e så att vi hinner med momsen den 12:e. Kunderna är mest hantverkare, frisörer och restauranger, så håll det enkelt och kort.
+
+Vänliga hälsningar
+Karin

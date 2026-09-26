@@ -96,7 +96,12 @@ const MAX_INPUT_CHARS = 200000;
 // ett tiotal megabyte. Portalens längsta historik ligger runt 40 turer.
 const MAX_MESSAGES = 200;
 
-const MODEL_ID = "openai/gpt-oss-120b";
+// Bytt 2026-09-26 från openai/gpt-oss-120b efter simuleringen i
+// testoutput/sim-2026-09/ (fyra kunder, snitt 2,6/5). Samma id står i
+// atb-claude.js och functions/api/digest/run.js.
+const MODEL_ID = "deepseek/deepseek-v4.1-flash";
+// Under det här taket stängs resonemanget av (se payload nedan).
+const REASONING_MIN_TOKENS = 2500;
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 
 // ── leverantörsval ────────────────────────────────────────────────────────
@@ -127,7 +132,22 @@ const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 //
 // Slugarna är basnamn utan kvantiseringsvariant ("cerebras", inte
 // "cerebras/fp16") — så följer vi med när en leverantör byter variant.
-const JSON_PROVIDER_ORDER = ["cerebras", "baseten", "deepinfra", "together"];
+//
+// 2026-09-26, DeepSeek v4.1 flash: Cerebras och Groq kör inte modellen. Listan
+// nedan är leverantörer som deklarerar structured_outputs för den (OpenRouters
+// endpoints-lista samma dag).
+//
+// SPÄRRADE I BÅDA LÄGENA: leverantörer som kör i Kina. DeepSeek-modellen
+// erbjuds av bl.a. DeepSeek själv, Alibaba, SiliconFlow och StreamLake, och
+// "throughput" hade kunnat skicka kundens fråga dit. integritet.html lovar
+// USA/EU-leverantörer, inte Kina. data_collection: "deny" utesluter dessutom
+// leverantörer som sparar eller tränar på indata.
+// Därför en TILLÅTELSELISTA (only), inte en spärrlista: integritet.html måste
+// kunna säga exakt var körningen sker, och en spärrlista låter varje ny okänd
+// leverantör komma in. Alla fem är amerikanska bolag (datacenterregion ej kontrollerad).
+// Ändras listan måste integritet.html och villkor.html § 3 följa med.
+const PROVIDER_ONLY = ["deepinfra", "together", "fireworks", "parasail", "coreweave"];
+const JSON_PROVIDER_ORDER = ["deepinfra", "together", "fireworks", "parasail"];
 const JSON_PROVIDER_IGNORE = ["groq"];
 
 // ── tidsgränser ───────────────────────────────────────────────────────────
@@ -476,6 +496,11 @@ export async function onRequestPost(context) {
     // Portalen klampas mot MAX_OUTPUT_TOKENS ovan; bygget får steget eget tak
     // ur BUILD_STEPS, alltså det tal steget faktiskt behöver.
     max_tokens: maxTokens,
+    // KA12 (simuleringen 2026-09-26): en resonerande modells dolda resonemang
+    // räknas mot max_tokens. Med gpt-oss gav taken 300 (följdfrågor), 600
+    // (mötesperspektiv) och 1 024 (skalning) tomma svar, som koden tog för
+    // lyckade. Korta anrop får därför inget resonemang alls; långa behåller det.
+    ...(maxTokens < REASONING_MIN_TOKENS ? { reasoning: { enabled: false } } : {}),
     stream: true,
     stream_options: { include_usage: true },
     // Se leverantörsvalet högst upp. require_parameters sållar bort de
@@ -488,8 +513,10 @@ export async function onRequestPost(context) {
           ignore: JSON_PROVIDER_IGNORE,
           allow_fallbacks: true,
           require_parameters: true,
+          only: PROVIDER_ONLY,
+          data_collection: "deny",
         }
-      : { sort: "throughput" },
+      : { sort: "throughput", only: PROVIDER_ONLY, data_collection: "deny" },
     // Äkta strukturerad utdata när anroparen skickar ett schema. Skillnaden
     // mot json_object är avgörande och kostade ett halvt dygn att lära sig:
     // json_object garanterar bara SYNTAX. Innehållet är fortfarande en

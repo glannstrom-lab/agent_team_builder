@@ -1,0 +1,1 @@
+petersson har fortfarande inte betalat, nu 30 dagar sen. skickade påminnelsen förra veckan, inget svar. vad gör jag nu? inkasso direkt eller en till påminnelse? kan jag ta påminnelseavgift och ränta? han är privatperson.

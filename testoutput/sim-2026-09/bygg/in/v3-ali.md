@@ -1,0 +1,1 @@
+ali sjuk mån-ons. denna veckan skulle vi: karlsson kakla väggar (ca 3 dagar för en), eva lund sockel + bänkskiva (1 dag), hembesök torsdag kl 16 i hovsta. vad ska jag prioritera och vem måste jag meddela? skriv sms:en.

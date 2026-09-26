@@ -1,0 +1,10 @@
+Tack, det finns mycket bra här — särskilt enkla checklistan i punkt 5 (generisk eller specifik uppgift) och punkten om vad man gör om någon råkar skriva in något känsligt. Men det är tre sidor, inte en, och några saker stämmer inte:
+
+- Det är bara jag som är auktoriserad redovisningskonsult. Johan och Birgitta är inte det. Vi har heller ingen "FAR-behörighet" för andra än mig.
+- Datainspektionen heter väl något annat numera?
+- Vi har ingen VPN.
+- Om policyn säger att bara Microsoft 365 är godkänt, får vi då inte använda det här verktyget heller? Det måste policyn säga något om.
+- Tabellerna med "Otillåtet: Ja – förbjudet" är förvirrande. Skriv hellre två enkla listor: "Det här får du" och "Det här får du inte".
+- Birgitta undrar framför allt var uppgifterna tar vägen. Kan policyn säga något enkelt och ärligt om det?
+
+Kan du korta ner den till en sida, med vanliga ord, och rätta ovanstående?

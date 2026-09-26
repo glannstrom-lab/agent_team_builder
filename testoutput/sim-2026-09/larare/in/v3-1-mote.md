@@ -1,0 +1,3 @@
+Jag är helt slut. Den här veckan: 29 utvecklingssamtal (tis–tors eftermiddagar, redan bokade), 24 essäer från SA3c som ligger orättade sedan fredag, historia 1b (SA1c) ska börja med industrialiseringen nästa vecka och inget är planerat, och F-varningarna ska in 30 okt. Veckan efter nästa är höstlov.
+
+Vad släpper jag, vad skjuter jag upp, och vad måste göras den här veckan? Jag vill ha ett ärligt förslag, inte ett schema med varje kvart ifyllt.

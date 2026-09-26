@@ -1,0 +1,226 @@
+<title>Månaden med teamet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=Karla:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --sand:#F1ECE3; --papper:#FCFAF6; --blak:#1E1913; --dim:#5E554A; --linje:#DCD3C4;
+  --ockra:#A9741F; --ockra2:#8A5C14;
+  --krit:#A8321E; --krit-bg:#F6E3DD; --allv:#9A6A12; --allv-bg:#F5EBD6; --skav:#5B6B55; --skav-bg:#E6EBE2;
+  --ok:#3F6B45;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --sand:#17140F; --papper:#211D17; --blak:#EFE8DC; --dim:#B3A896; --linje:#3A332A;
+    --ockra:#D9A24A; --ockra2:#E3B566;
+    --krit:#F08A72; --krit-bg:#3A1F18; --allv:#E4B75C; --allv-bg:#352A15; --skav:#A9BCA2; --skav-bg:#232B20;
+    --ok:#8FC095;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"]{
+  --sand:#17140F; --papper:#211D17; --blak:#EFE8DC; --dim:#B3A896; --linje:#3A332A;
+  --ockra:#D9A24A; --ockra2:#E3B566;
+  --krit:#F08A72; --krit-bg:#3A1F18; --allv:#E4B75C; --allv-bg:#352A15; --skav:#A9BCA2; --skav-bg:#232B20;
+  --ok:#8FC095;
+  color-scheme: dark;
+}
+*{box-sizing:border-box}
+body{background:var(--sand);color:var(--blak);font:16px/1.6 Karla,"Segoe UI",system-ui,sans-serif;margin:0;padding-inline:16px;padding-block:32px 64px}
+.wrap{max-width:980px;margin:0 auto;display:grid;gap:40px}
+h1,h2,h3{font-family:Archivo,"Arial Narrow",sans-serif;text-wrap:balance;margin:0;line-height:1.15}
+h1{font-size:clamp(2rem,5vw,3rem);font-weight:800;letter-spacing:-.01em}
+h2{font-size:1.5rem;font-weight:700;margin-bottom:14px}
+h3{font-size:1.08rem;font-weight:700}
+p{margin:0;max-width:68ch}
+.mono,.eyebrow,.lbl{font-family:"IBM Plex Mono",ui-monospace,monospace}
+.eyebrow{font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ockra2)}
+header{display:grid;gap:12px}
+.lead{font-size:1.12rem;color:var(--dim)}
+.status{display:inline-block;font:500 .75rem "IBM Plex Mono",monospace;letter-spacing:.06em;border:1px solid var(--ockra);color:var(--ockra2);padding:3px 8px;border-radius:6px}
+.tal{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:1px;background:var(--linje);border:1px solid var(--linje);border-radius:6px;overflow:hidden}
+.tal div{background:var(--papper);padding:16px;display:grid;gap:4px;align-content:start}
+.tal b{font:800 2rem/1 Archivo,sans-serif;font-variant-numeric:tabular-nums}
+.tal span{font-size:.9rem;color:var(--dim)}
+.tal .roed b{color:var(--krit)}
+.borja{background:var(--papper);border:1px solid var(--linje);border-radius:6px;padding:20px;display:grid;gap:12px}
+.borja ol{margin:0;padding-left:1.3em;display:grid;gap:8px}
+.tabwrap{overflow-x:auto;border:1px solid var(--linje);border-radius:6px;background:var(--papper)}
+table{border-collapse:collapse;width:100%;min-width:640px;font-size:.93rem}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--linje);vertical-align:top}
+th{font:500 .72rem "IBM Plex Mono",monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);background:var(--sand)}
+tr:last-child td{border-bottom:0}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.nej{color:var(--krit);font-weight:600}
+s{color:var(--dim)}
+.nivaer{display:grid;gap:28px}
+.niva{display:grid;gap:12px}
+.niva-h{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.pill{font:500 .72rem "IBM Plex Mono",monospace;letter-spacing:.08em;text-transform:uppercase;padding:3px 9px;border-radius:6px}
+.p-krit{background:var(--krit-bg);color:var(--krit)}
+.p-allv{background:var(--allv-bg);color:var(--allv)}
+.p-skav{background:var(--skav-bg);color:var(--skav)}
+.fynd{display:grid;gap:10px}
+.f{background:var(--papper);border:1px solid var(--linje);border-left:4px solid var(--linje);border-radius:6px;padding:14px 16px;display:grid;gap:6px}
+.f.krit{border-left-color:var(--krit)} .f.allv{border-left-color:var(--allv)} .f.skav{border-left-color:var(--skav)}
+.f .meta{font:400 .78rem "IBM Plex Mono",monospace;color:var(--dim)}
+.f p{font-size:.96rem}
+code{font:400 .86em "IBM Plex Mono",monospace;background:var(--sand);padding:1px 4px;border-radius:4px;word-break:break-word}
+.tva{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+.ruta{background:var(--papper);border:1px solid var(--linje);border-radius:6px;padding:18px;display:grid;gap:10px;align-content:start}
+.ruta ul{margin:0;padding-left:1.1em;display:grid;gap:6px}
+.plus{color:var(--ok);font-weight:600}
+.minus{color:var(--krit);font-weight:600}
+.forbehall{font-size:.9rem;color:var(--dim);border-top:1px solid var(--linje);padding-top:16px;display:grid;gap:8px}
+a{color:var(--ockra2)}
+</style>
+
+<div class="wrap">
+
+<header>
+  <span class="eyebrow">Mitt AI-team · simulering 2026-09-26 · produktionen, gpt-oss-120b</span>
+  <h1>Månaden med teamet</h1>
+  <p class="lead">Fyra simulerade kunder byggde ett team i drift och använde det fyra veckor i den riktiga portalen, med samma prompter, kontextfönster, möten och veckostarter som en betalande kund får. Alla fyra sade upp.</p>
+  <span class="status">FAKTAGRANSKAD · bygg, redovisning och lärare kontrollerade mot transkript och primärkällor</span>
+</header>
+
+<section class="tal" aria-label="Nyckeltal">
+  <div class="roed"><b>4 av 4</b><span>säger upp efter månaden</span></div>
+  <div><b>2,6</b><span>snittbetyg av 5 över 89 interaktioner</span></div>
+  <div><b>≈ 12 h</b><span>sparad tid totalt, fyra kunder, fyra veckor</span></div>
+  <div class="roed"><b>0 av 9</b><span>byggen som klarar Builderns egen kontroll</span></div>
+  <div><b>1,2 s</b><span>mediansvarstid i portalen</span></div>
+  <div><b>≈ 0,25 kr</b><span>AI-kostnad per kund och månad (93 anrop totalt)</span></div>
+</section>
+
+<section class="borja">
+  <span class="eyebrow">Börja här</span>
+  <ol>
+    <li><strong>Bygget fungerar inte i drift i dag.</strong> Builderns kontroll kräver rubriken <code>DITT PERSPEKTIV</code> ordagrant, och gpt-oss skriver <code>2. Perspektiv:</code>. Nio sammanställningar av nio fälldes. En riktig kund får ett felmeddelande och ett nytt misslyckande varje gång hon försöker igen.</li>
+    <li><strong>Resonemanget äter tokentaket.</strong> Följdfrågorna, skalningen och mötet ger tomma eller avklippta svar, eftersom gpt-oss dolda resonemang räknas mot samma tak. Samma åtgärd på servern rättar troligen alla fyra ställena.</li>
+    <li><strong>Teamen missar kundens huvudproblem.</strong> Läraren fick sin rättning avvisad och e-handeln sin returgrad och kampanjplanering. Varje team fick dessutom en egen VD-agent, i två fall med kundens eget namn.</li>
+  </ol>
+</section>
+
+<section>
+  <h2>Kunderna</h2>
+  <div class="tabwrap">
+  <table>
+    <thead><tr><th>Kund</th><th>Teamet</th><th>Betyg</th><th>Sparad tid</th><th>Dom</th><th>Viktigaste skälet</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Bergströms Bygg</strong><br>mikro, 2 pers, Örebro</td><td>VD-assistent · VD · Offert &amp; ROT · Leads<br><s>Materialbeställning</s> <s>Bokning av UE</s></td><td class="num">2,6</td><td class="num">2 h 10 min</td><td class="nej">Säger upp</td><td>Siffror och regler går inte att lita på: ROT utlovat till en BRF, ett påhittat telefonnummer i kundmejl, pris angivet trots uttryckligt nej.</td></tr>
+      <tr><td><strong>Fjällvik Outdoor</strong><br>e-handel, 12 pers</td><td>Anna · Maria · Content · Support · Analytics<br><s>Kampanjplanering &amp; inköp</s></td><td class="num">2,6</td><td class="num">2 h 10 min</td><td class="nej">Säger upp</td><td>Black Week-kalkylen fel i två omgångar, norskan fel på plaggnivå, ingen agent äger returgraden. Hon jämför med ChatGPT Plus, som hon redan har.</td></tr>
+      <tr><td><strong>Lindqvist Redovisning</strong><br>6 pers, konsultläget, AI-nybörjare</td><td>Chief of Staff · Karin · Underlag · Kundfrågor · Nyhetsbrev<br><s>Bokslutsassistans</s></td><td class="num">2,7</td><td class="num">4 h 30 min</td><td class="nej">Säger upp</td><td>Kundfrågeagenten svarade fel på två av tre kontrollfrågor om avdrag, med påhittade regler. Hon kan inte släppa in personalen.</td></tr>
+      <tr><td><strong>Anna Ek</strong><br>gymnasielärare, personläget</td><td>VD · VD-assistent · Planering &amp; anpassning · Kommunikation<br><s>Bedömning &amp; återkoppling</s> <s>Utvecklingssamtal</s></td><td class="num">2,4</td><td class="num">3 h 20 min</td><td class="nej">Säger upp</td><td>Rättningen, hennes största tidstjuv, avvisades redan i bygget. Ett föräldramejl sa motsatsen till det hon skrev om frånvaron.</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section class="nivaer">
+  <h2>Fynden</h2>
+
+  <div class="niva">
+    <div class="niva-h"><span class="pill p-krit">Kritiskt</span><h3>Stoppar försäljningen eller skadar kunden</h3></div>
+    <div class="fynd">
+      <div class="f krit"><h3>Builderns kontroll fäller varje bygge</h3>
+        <p><code>kontrolleraSystemprompter</code> söker <code>DITT PERSPEKTIV</code> med <code>indexOf</code>. gpt-oss följer promptens numrerade lista men skriver om rubrikerna (<code>2. Perspektiv:</code>, <code>4. Leverans:</code>). Verifieringen den 6 september körde sammanställningen skarpt men aldrig kontrollen, så felet syntes inte.</p>
+        <p class="meta">mätt · 9/9 försök, 4 kunder · builder/builder.js:1130, functions/api/_build.js:107–117</p></div>
+      <div class="f krit"><h3>Resonemanget förbrukar tokentaket</h3>
+        <p>Följdfrågor (tak 300): tomma i 4 av 13 körningar. Skalning (1 024): tom för redovisningsbyrån, så förslaget byggdes utan skalningsbeslut. Mötets perspektiv (600): 2 av 4 tomma och 2 avklippta på e-handelns Black Week-möte. Mötets anteckning (2 000): avklippt. Portalen räknar ett tomt perspektiv som lyckat.</p>
+        <p class="meta">mätt · reasoning_tokens upp till 597 av 600 · functions/api/_build.js:269–276, portal/app.js:5010–5030</p></div>
+      <div class="f krit"><h3>Sakfel i regelfrågor, utan förbehåll</h3>
+        <p>ROT utlovat till en bostadsrättsförening. Påminnelseavgiften kallad "lagstadgad, 100 kr". 50 % avdrag på representationslunch. En påhittad paragraf om momsavdrag på mobiltelefoner. Betygsstegen "C-" och "E-" i Svenska 1. Kunderna i regelbranscher (byrå, lärare) tappar förtroendet vid första felet.</p>
+        <p>Ytterligare två svagheter kom fram i granskningen. Modellen <strong>godtar kundens felaktiga rättelser</strong>: presentkort kan vara skattefria julgåvor, och gränsen är 600 kr för 2026, men båda felen hamnade i nyhetsbrevet utan invändning. Den <strong>känner inte till aktuella regler</strong>: årskurs 1–2 läser enligt Gy25 sedan juli 2025, och ingen i samtalet visste det.</p>
+        <p class="meta">verifierat · citat och källor i testoutput/sim-2026-09/granskning-tre.md</p></div>
+      <div class="f krit"><h3>Bygget avvisar det kunden sa att det klämmer mest på</h3>
+        <p>Läraren skrev att rättningen tar hennes helger. Bedömnings- och återkopplingsagenten avvisades, troligen på avgränsningen "AI ska inte sätta betyg". E-handelns första mål är att sänka returgraden, men ingen agent äger den, och kampanjplaneringen inför Black Week avvisades. Rätt tanke med avvisade agenter, men fel agenter avvisades.</p>
+        <p class="meta">mätt · larare/team.json, ehandel/team.json · prompts/shared/proposal.md</p></div>
+    </div>
+  </div>
+
+  <div class="niva">
+    <div class="niva-h"><span class="pill p-allv">Allvarligt</span><h3>Kostar förtroende och förnyelser</h3></div>
+    <div class="fynd">
+      <div class="f allv"><h3>En VD-agent i varje team, även där ingen VD finns</h3>
+        <p>Alla fyra team har både VD-assistent och en separat VD. Hos e-handeln heter VD-agenten "Maria" och hos byrån "Karin", alltså kunden själv. Läraren fick en VD. VD-agenten användes knappt. Designprincip 3 kräver ett operativt jobb, och här har den inget.</p>
+        <p class="meta">mätt · alla fyra team.json</p></div>
+      <div class="f allv"><h3>Veckostarten är samma tabell varje vecka</h3>
+        <p>Alla fyra kunder rapporterar i stort sett identiska veckostarter. Den missade momsdagen 12 oktober hos byrån och utvecklingssamtalsveckan hos läraren trots att båda stod i minnet. Det är portalens viktigaste vanefunktion.</p>
+        <p class="meta">verifierat · företagsminnet låg i systemprompten, så upprepningen beror inte på att minnet saknades · portal/app.js:4242</p></div>
+      <div class="f allv"><h3>Påhittade uppgifter i text avsedd att skickas</h3>
+        <p>Telefonnummer, organisationsnummer, e-postadresser, erbjudanden ("10 % på nästa köp") och kundworkshops som ingen bestämt. Platshållare i hakparentes används ojämnt.</p>
+        <p class="meta">enligt dagböckerna</p></div>
+      <div class="f allv"><h3>Agenter lovar förmågor de inte har</h3>
+        <p>Word-dokument, PDF, uppladdning till Fortnox, en PowerPoint-slide, Outlook-regler som skickar på datum, "leverans inom 24 timmar", granskning enligt GDPR. Det står redan i systemprompterna från sammanställningen.</p>
+        <p class="meta">mätt i bygg/structure-raw.json + dagböckerna</p></div>
+      <div class="f allv"><h3>Systemprompterna är tunna</h3>
+        <p>930–1 680 tecken per agent, mot 2 450–4 930 i de handkurerade teamen i <code>portal/teams/</code>. Det stämmer med KA8.</p>
+        <p class="meta">mätt · 18 agenter</p></div>
+      <div class="f allv"><h3>gpt-oss kostar fyra gånger mer än sajten säger</h3>
+        <p>OpenRouter listar i dag $0,15/$0,60 per miljon tokens. CLAUDE.md, <code>index.html#forbrukning</code> och villkoren räknar med $0,037/$0,170. Kostnaden är fortfarande låg (≈ 0,25 kr per kund och månad i simuleringen), men siffrorna kunden läser stämmer inte.</p>
+        <p class="meta">mätt mot openrouter.ai/api/v1/models 2026-09-26</p></div>
+    </div>
+  </div>
+
+  <div class="niva">
+    <div class="niva-h"><span class="pill p-skav">Skav</span><h3>Rätta när något ändå görs där</h3></div>
+    <div class="fynd">
+      <div class="f skav"><h3>Följdfrågorna svarar "OK" nästan alltid</h3>
+        <p>Även med fungerande tak kom riktiga frågor i 2 av 13 körningar. Hybridintaget är i praktiken ett formulär.</p>
+        <p class="meta">mätt · steget clarify</p></div>
+      <div class="f skav"><h3>En vägran mitt i ett möte</h3>
+        <p>Påminnelseagenten svarade bara "Jag kan inte hjälpa till med den begäran." Den räknades som ett perspektiv.</p>
+        <p class="meta">mätt · redovisning/anrop.jsonl</p></div>
+      <div class="f skav"><h3>Taket per IP slog till i simuleringen</h3>
+        <p>Fyra kunder från samma IP delade på 90 anrop per kvart, och väntan blev upp till tio minuter. Det drabbar inte riktiga kunder på egna uppkopplingar, men det drabbar ett kontor där sex kollegor använder samma team samtidigt.</p>
+        <p class="meta">mätt · functions/api/ai.js:56</p></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Svaren på frågorna</h2>
+  <div class="tva">
+    <div class="ruta">
+      <h3>Finns det en nytta med teamet?</h3>
+      <p>Inte tillräcklig i dag. Ingen av de fyra skulle förnya. Nyttan kom när kunden själv gav siffrorna och bad om en avgränsad text: påminnelsemallar, en AI-policy, ett uppföljningsmejl och en historieplanering. Mallarbete är alltså värdefullt. Det som bär produkten, att teamet känner kunden och tar initiativ, syntes inte: veckostarten upprepade sig och agenterna tappade företagsminnet.</p>
+      <ul>
+        <li><span class="plus">+</span> Konkreta mallar och utkast när underlaget är givet</li>
+        <li><span class="plus">+</span> Svenskt, snabbt och billigt</li>
+        <li><span class="minus">−</span> Teamens sammansättning missar kärnan</li>
+        <li><span class="minus">−</span> Regel- och räknefel utan förbehåll</li>
+        <li><span class="minus">−</span> Veckostart och möte levererar inte</li>
+      </ul>
+    </div>
+    <div class="ruta">
+      <h3>Räcker gpt-oss-120b?</h3>
+      <p>För fart och kostnad, ja. För regelfrågor och räkning, nej, åtminstone inte utan ett faktagolv. Fyra av de kritiska fynden är produktfel som en bättre modell inte skulle rätta: kontrollen, tokentaken, vad bygget avvisar och VD-agenten. Därför går det inte att avgöra modellfrågan förrän de är lagade. Därefter svarar samma frågor mot en annan modell, spelade om ur <code>anrop.jsonl</code>, på frågan rent.</p>
+      <ul>
+        <li><span class="plus">+</span> 1,2 s median, ≈ 0,25 kr per kund och månad</li>
+        <li><span class="minus">−</span> Hittar på regler, paragrafer och kontaktuppgifter</li>
+        <li><span class="minus">−</span> Räknefel i kalkyler, fel ord i norska</li>
+        <li><span class="minus">−</span> Resonemanget kräver större tak än koden ger</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="ruta">
+  <h3>Föreslaget nästa pass</h3>
+  <ol>
+    <li>Laga kontrollen: acceptera rubrikerna som modellen faktiskt skriver, eller låt schemat ge <code>perspective</code> och <code>delivery</code> som egna fält och sätt ihop systemprompten i kod. Det andra är den strukturella lösningen.</li>
+    <li>Ge resonemanget eget utrymme: <code>reasoning.effort: "low"</code> eller högre <code>max_tokens</code> för clarify, scale och mötet, och räkna ett tomt perspektiv som misslyckat.</li>
+    <li>Förbjud en separat VD-agent för solo- och mikroteam och för personläget, och låt aldrig en agent bära kundens eget namn.</li>
+    <li>Ändra avvisningsregeln: ett moment som kunden nämner under "Var det klämmer" får inte avvisas. Då är avgränsningen ett villkor för agenten, inte ett skäl att stryka den.</li>
+    <li>Kör om samma fyra kunder. Jämför sedan modellen mot DeepSeek med samma frågor.</li>
+  </ol>
+</section>
+
+<footer class="forbehall">
+  <p><strong>Så gick det till.</strong> Varje kund byggdes via den fria rutten i drift och lades upp som ett betalt team i den skarpa databasen (fyra rader med prefixet <code>sim</code>, e-post <code>sim-*@simulering.invalid</code>). Kunderna spelades av fyra separata Claude-agenter med dolda personor och fyra veckors händelser. Portalanropen gick till <code>/api/ai</code> i drift, med prompterna hämtade ur <code>portal/app.js</code> själv.</p>
+  <p><strong>Förbehåll.</strong> Betygen sätts av Claude-agenter som spelar kunder, inte av människor. Sakfelen i dagböckerna är kontrollerade mot transkripten och primärkällor för tre av fyra kunder, och modellens fel stämmer. Kundagenterna hade själva fel på julgåvans gräns, presentkort och ett momsdatum. De rättelserna räknas inte som modellfel. E-handelns fel är inte faktagranskade; mötesfelet där är mätt i anropsloggen. Kontrollen, tokentaken, teamens sammansättning och kostnaden är däremot mätta direkt.</p>
+  <p><strong>Källmaterial.</strong> <code>testoutput/sim-2026-09/</code>: <code>&lt;kund&gt;/transkript.md</code>, <code>dagbok.md</code>, <code>anrop.jsonl</code>, <code>team.json</code>, <code>bygge.json</code> samt skripten <code>sim.mjs</code> och <code>jamfor.mjs</code>.</p>
+</footer>
+
+</div>

@@ -1,0 +1,1 @@
+ärlig fråga. jag har betalat 290 kr i månaden för er. har ni varit värda det? vad har ni gjort för mig den här månaden, och vad borde jag använda er till som jag inte gjort? kort, inget säljsnack.

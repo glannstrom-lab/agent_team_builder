@@ -1,0 +1,1 @@
+offert badrum brickebacken. kund: familj i radhus, var där i lördags. ca 5 kvm badrum, allt ska rivas, nytt tätskikt, kakel vägg klinker golv, ny wc, handfat med kommod, duschväggar, golvvärme. el och vvs hyr jag in. dom vill börja i november. kan du göra ett offertutkast jag kan skicka? ha med rot.

@@ -431,7 +431,7 @@ if (location.hostname === 'agent-team-builder-2xy.pages.dev') location.replace('
   inte innan.
 
   NYCKELN: ingen kund har någonsin en egen API-nyckel. Vi kör AI:n på vår nyckel
-  (openai/gpt-oss-120b via OpenRouter) på alla tre nivåerna, med ett fair use-tak på
+  (deepseek/deepseek-v4.1-flash via OpenRouter, bytt 2026-09-26) på alla tre nivåerna, med ett fair use-tak på
   1 000 svar per konto och månad. Det finns inget lokalt läge att sälja. Ändras
   taket ska det ändras här, i avsnitt 3 i villkor.html och i #forbrukning nedan
   samma dag.
@@ -499,7 +499,14 @@ if (location.hostname === 'agent-team-builder-2xy.pages.dev') location.replace('
   Id:t heter fortfarande "forbrukning" med flit: villkor.html, branschsidorna
   och portalen länkar hit. Byt det inte utan att söka igenom repot först.
 
-  MODELLBYTE 2026-08-06: openai/gpt-oss-120b via OpenRouter ersatte
+  MODELLBYTE 2026-09-26: deepseek/deepseek-v4.1-flash ersatte gpt-oss-120b efter
+  simuleringen i testoutput/sim-2026-09/. Siffrorna nedan är omräknade på
+  $0,30 in / $1,20 ut per miljon tokens — det HÖGSTA priset bland de fem
+  leverantörer PROVIDER_ONLY i functions/api/ai.js tillåter — och 10,50 kr per
+  dollar. gpt-oss hade dessutom gått upp till $0,15/$0,60 (mätt samma dag), så
+  talen som stod här tidigare var fel redan innan bytet.
+
+  MODELLBYTE 2026-08-06 (historik): openai/gpt-oss-120b via OpenRouter ersatte
   deepseek/deepseek-v4-flash, med snabbaste leverantör (i mätningarna Cerebras,
   USA). Ett helt teambygge tar 28 sekunder mot fyra minuter förut.
   Siffrorna nedan bygger på $0,037 in / $0,170 ut per miljon tokens och
@@ -524,22 +531,22 @@ if (location.hostname === 'agent-team-builder-2xy.pages.dev') location.replace('
     </div>
 
     <div class="reveal" style="background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 26px 28px">
-      <p style="margin: 0 0 18px"><b>Kort svar: några tioöringar i månaden per kund.</b> Vi kör gpt-oss-120b, OpenAI:s öppenviktsmodell, hos den leverantör som svarar snabbast. Den kostar ungefär en fyrahundradel av vad de dyraste modellerna gör, och ett svar landar på en fjärdedels öre — vår kostnad, inte er.</p>
+      <p style="margin: 0 0 18px"><b>Kort svar: några tioöringar i månaden per kund.</b> Vi kör DeepSeek V4.1 Flash, en öppenviktsmodell, hos amerikanska leverantörer. Den kostar ungefär en fyrtiondel av vad de dyraste modellerna gör, och ett svar landar på ett par öre — vår kostnad, inte er.</p>
 
       <div style="display: grid; gap: 12px; border-top: 1px solid var(--border); padding-top: 18px">
-        <div style="display: flex; justify-content: space-between; gap: 18px"><span>En fråga till en agent</span><b style="white-space: nowrap">≈ 0,25 öre</b></div>
-        <div style="display: flex; justify-content: space-between; gap: 18px"><span>En lång tråd med era egna underlag inlästa</span><b style="white-space: nowrap">≈ 0,75 öre</b></div>
-        <div style="display: flex; justify-content: space-between; gap: 18px"><span>Ett möte där fem agenter tycker till</span><b style="white-space: nowrap">≈ 2 öre</b></div>
-        <div style="display: flex; justify-content: space-between; gap: 18px"><span>Att bygga ett helt nytt team</span><b style="white-space: nowrap">≈ 2,5 öre</b></div>
+        <div style="display: flex; justify-content: space-between; gap: 18px"><span>En fråga till en agent</span><b style="white-space: nowrap">≈ 2 öre</b></div>
+        <div style="display: flex; justify-content: space-between; gap: 18px"><span>En lång tråd med era egna underlag inlästa</span><b style="white-space: nowrap">≈ 6 öre</b></div>
+        <div style="display: flex; justify-content: space-between; gap: 18px"><span>Ett möte där fem agenter tycker till</span><b style="white-space: nowrap">≈ 15 öre</b></div>
+        <div style="display: flex; justify-content: space-between; gap: 18px"><span>Att bygga ett helt nytt team</span><b style="white-space: nowrap">≈ 20 öre</b></div>
       </div>
 
       <div style="display: grid; gap: 12px; border-top: 1px solid var(--border); margin-top: 18px; padding-top: 18px">
-        <div style="display: flex; justify-content: space-between; gap: 18px"><span><b>Lugn månad</b> — någon fråga om dagen</span><b style="white-space: nowrap">under 10 öre</b></div>
-        <div style="display: flex; justify-content: space-between; gap: 18px"><span><b>Normal månad</b> — fem frågor om dagen och ett möte i veckan</span><b style="white-space: nowrap">under 50 öre</b></div>
-        <div style="display: flex; justify-content: space-between; gap: 18px"><span><b>Intensiv månad</b> — tjugo frågor om dagen, dagliga rutiner</span><b style="white-space: nowrap">cirka 2 kr</b></div>
+        <div style="display: flex; justify-content: space-between; gap: 18px"><span><b>Lugn månad</b> — någon fråga om dagen</span><b style="white-space: nowrap">under 1 kr</b></div>
+        <div style="display: flex; justify-content: space-between; gap: 18px"><span><b>Normal månad</b> — fem frågor om dagen och ett möte i veckan</span><b style="white-space: nowrap">under 4 kr</b></div>
+        <div style="display: flex; justify-content: space-between; gap: 18px"><span><b>Intensiv månad</b> — tjugo frågor om dagen, dagliga rutiner</span><b style="white-space: nowrap">cirka 15 kr</b></div>
       </div>
 
-      <p style="color: var(--text-dim); font-size: 14.5px; margin: 18px 0 0; line-height: 1.6">Det är alltså vad en aktiv kund kostar oss i AI: under femtio öre i månaden mot en månadsavgift på 290 kronor. Marginalen ligger i månadsavgiften, inte i att ni ska hålla igen på frågorna, och det är därför vi kan säga att användningen ingår utan att sedan börja räkna. Siffrorna är räknade på $0,037 in och $0,170 ut per miljon tokens och 10,50 kr per dollar, och gäller i skrivande stund — modellpriser har hittills bara sjunkit. När vi bytte modell i augusti föll kostnaden till en fjärdedel över en natt.</p>
+      <p style="color: var(--text-dim); font-size: 14.5px; margin: 18px 0 0; line-height: 1.6">Det är alltså vad en aktiv kund kostar oss i AI: några kronor i månaden mot en månadsavgift på 290 kronor. Marginalen ligger i månadsavgiften, inte i att ni ska hålla igen på frågorna, och det är därför vi kan säga att användningen ingår utan att sedan börja räkna. Siffrorna är räknade på $0,30 in och $1,20 ut per miljon tokens, det högsta priset bland de leverantörer vi använder, och 10,50 kr per dollar. De gäller i skrivande stund. I september bytte vi till en modell som kostar mer per svar, eftersom svaren blev bättre. Marginalen räcker gott ändå.</p>
     </div>
 
     <div class="section-head center" style="margin-top: 56px">
@@ -578,7 +585,7 @@ if (location.hostname === 'agent-team-builder-2xy.pages.dev') location.replace('
         <div class="opt-icon">⚙️</div>
         <h3>Det vi sköter</h3>
         <div class="opt-tag">Ingenting att skaffa</div>
-        <p>AI-motorn är vår att hålla i. Ni skapar inget konto hos någon AI-leverantör, lägger inte in någon nyckel och får ingen räkning för användningen. Vi kör gpt-oss-120b — OpenAI:s öppenviktsmodell — hos den leverantör som svarar snabbast. Den är vald för att den är snabb och kostar bråkdelar av ett öre per svar, och det är därför användningen kan ingå i priset utan påslag.</p>
+        <p>AI-motorn är vår att hålla i. Ni skapar inget konto hos någon AI-leverantör, lägger inte in någon nyckel och får ingen räkning för användningen. Vi kör DeepSeek V4.1 Flash, en öppenviktsmodell, hos ett fåtal amerikanska leverantörer. Den kostar ett par öre per svar, och därför kan användningen ingå i priset utan påslag.</p>
         <ul>
           <li>Drift, modellval och uppdateringar av portalen ligger hos oss</li>
           <li>Byter vi modell säger vi till i förväg om det märks i hur teamet svarar</li>
@@ -659,7 +666,7 @@ if (location.hostname === 'agent-team-builder-2xy.pages.dev') location.replace('
       </details>
       <details class="reveal">
         <summary>Är vår data säker? Hur funkar det med GDPR?</summary>
-        <div class="fa">Det korta svaret: era frågor passerar oss, vi sparar dem inte, och vi är ert personuppgiftsbiträde för den överföringen — ett biträdesavtal tecknas innan ni börjar använda tjänsten. <strong>Rakt på sak om motorn:</strong> vi kör gpt-oss-120b, OpenAI:s öppenviktsmodell, via OpenRouter. Själva körningen sker hos den datacenterleverantör OpenRouter dirigerar anropet till — i våra mätningar är det Cerebras i USA, alltså utanför EU och EES. Det är ingen detalj vi gömmer i en fotnot: hanterar ni sekretessbelagt klientmaterial, känsliga personuppgifter eller omfattas ni av tystnadsplikt, ta beslutet medvetet tillsammans med den som ansvarar för informationssäkerheten hos er. <a href="integritet.html#proxy">Hela resonemanget, uppgift för uppgift, står i integritetspolicyn.</a> Det som däremot aldrig lämnar er dator är arkivet: samtal, företagsminne och underlag ligger i er webbläsare eller i en mapp ni äger, som vanliga markdown-filer — läsbara i vilket program som helst, den dag ni vill sluta.</div>
+        <div class="fa">Det korta svaret: era frågor passerar oss, vi sparar dem inte, och vi är ert personuppgiftsbiträde för den överföringen — ett biträdesavtal tecknas innan ni börjar använda tjänsten. <strong>Rakt på sak om motorn:</strong> vi kör DeepSeek V4.1 Flash via OpenRouter. Modellen är utvecklad av kinesiska DeepSeek, men den är en öppenviktsmodell som vi kör hos fem namngivna amerikanska leverantörer (DeepInfra, Together, Fireworks, Parasail och CoreWeave), med villkoret att de inte sparar eller tränar på era frågor. Era frågor skickas aldrig till DeepSeek eller till leverantörer i Kina. Leverantörerna är amerikanska bolag, så behandlingen sker utanför EU och EES. Det är ingen detalj vi gömmer i en fotnot: hanterar ni sekretessbelagt klientmaterial, känsliga personuppgifter eller omfattas ni av tystnadsplikt, ta beslutet medvetet tillsammans med den som ansvarar för informationssäkerheten hos er. <a href="integritet.html#proxy">Hela resonemanget, uppgift för uppgift, står i integritetspolicyn.</a> Det som däremot aldrig lämnar er dator är arkivet: samtal, företagsminne och underlag ligger i er webbläsare eller i en mapp ni äger, som vanliga markdown-filer — läsbara i vilket program som helst, den dag ni vill sluta.</div>
       </details>
       <details class="reveal">
         <summary>Varför kan jag inte bara göra det här själv gratis i ChatGPT?</summary>

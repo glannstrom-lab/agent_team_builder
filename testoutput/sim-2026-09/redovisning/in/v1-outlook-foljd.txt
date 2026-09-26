@@ -1,0 +1,5 @@
+Jag visade planen för Johan, som kan mer om datorer än jag. Han säger att Outlook-regler inte kan skicka ett mejl på ett visst datum till en lista med kunder och fylla i förnamnet själv. Regler reagerar bara när mejl kommer in eller går ut, säger han. Vi har heller ingen IT-ansvarig — vi har en konsultfirma som vi ringer när skrivaren krånglar.
+
+Stämmer det han säger? Vad kan vi i så fall göra i stället, enkelt, med det vi har?
+
+Jag vill också påpeka att vi inte ska arbeta på helgerna. Det är en av anledningarna till att vi skaffade det här.

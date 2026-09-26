@@ -1,0 +1,1 @@
+Kort meddelande till SA3c i Google Classroom (till eleverna, inte föräldrar): jag hinner inte rätta essäerna så snabbt som jag lovat pga utvecklingssamtalen. De får skriftlig återkoppling måndag v45 (efter lovet), och vi ägnar första lektionen efter lovet åt att jobba med återkopplingen. Ärligt, kort, inte ursäktande i tre stycken. Max 5 meningar.

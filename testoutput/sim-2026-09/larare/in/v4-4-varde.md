@@ -1,0 +1,1 @@
+Ärlig fråga. Jag betalar 290 kr i månaden av min egen lön för er. Jag har ChatGPT gratis. Efter en månad: vad har ni gjort för mig som ChatGPT inte hade gjort? Och vad borde jag använda er till under november (betygsperioden närmar sig) för att det ska vara värt pengarna? Konkret, kort.

@@ -1,0 +1,3 @@
+F-varningar. Jag har (än så länge) fyra elever i mina kurser som riskerar F, två i SA1b och två i SA1c. Rektor vill ha listan, och eleverna + vårdnadshavare (för de som är under 18) ska få skriftlig information.
+
+Gör ett utkast till det skriftliga meddelandet, med [hakparenteser]. Det ska säga vilken kurs, vad eleven hittills inte visat (jag fyller i det konkret), vad eleven behöver göra och till när, och vilket stöd som finns. Det ska vara tydligt men inte hotfullt — det är en varning mitt i kursen, inte ett betyg. Kort.

@@ -1,0 +1,1 @@
+ny på facebook idag: "Hej! Vi har köpt ett hus i Mosås från 70-talet och vill byta kök, ca 12 kvm, IKEA-kök som vi köper själva. Kan ni montera och vad kostar det ungefär? Vill göra det i januari. /Sara". svar jag kan skicka idag, kort, utan att lova pris.

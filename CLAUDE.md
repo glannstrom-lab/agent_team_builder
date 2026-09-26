@@ -324,8 +324,16 @@ nivåerna 190/490 är strukna — ingen molnstruktur för underhåll finns, och
 `functions/api/_stripe.js` måste alltid ändras samma dag** (ett test i
 `test/stripe.mjs` fäller bygget om nivålistan växer).
 
-**En modell, inga alternativ (bytt 2026-08-06):** hela produkten kör
-`openai/gpt-oss-120b` via OpenRouter. Valet bor i `atb-claude.js` och i
+**En modell, inga alternativ (bytt igen 2026-09-26):** hela produkten kör
+`deepseek/deepseek-v4.1-flash` via OpenRouter, **enbart** hos de fem amerikanska
+leverantörerna i `PROVIDER_ONLY` (`functions/api/ai.js`) med
+`data_collection: "deny"`. Den körs aldrig hos DeepSeek själv eller i Kina, och
+`integritet.html` namnger de fem. Anrop under 2 500 tokens körs utan resonemang
+(`REASONING_MIN_TOKENS`, KA12). Bytet från gpt-oss gjordes på Mikaels beslut
+efter simuleringen i `testoutput/sim-2026-09/` (fyra kunder, snitt 2,6/5).
+`test/klient.mjs` fäller bygget om modellraden skiljer mellan de tre filerna.
+
+*Historik, 2026-08-06:* hela produkten körde `openai/gpt-oss-120b` via OpenRouter. Valet bor i `atb-claude.js` och i
 `functions/api/ai.js`, och `stream()` ignorerar vilken modell anropet än
 skickar med.
 
@@ -362,9 +370,9 @@ fällatyp som `starters`-fyndet; den slog till två gånger medan de två halvor
 låg i olika filer, vilket är skälet till att de nu ligger bredvid varandra.
 
 Ändras modellraden måste kostnadssiffrorna i `index.html` (`#forbrukning`)
-och avsnitt 3–4 i `villkor.html` följa med. Nuvarande nivå: $0,037/$0,170 per
-miljon tokens, vilket ger cirka 0,25 öre per svar och under 50 öre i månaden
-för en normalanvändande kund.
+och avsnitt 3–4 i `villkor.html` följa med. Nuvarande nivå (2026-09-26): högst $0,30/$1,20 per
+miljon tokens bland de tillåtna leverantörerna, vilket ger cirka 2 öre per svar
+och under 4 kr i månaden för en normalanvändande kund.
 
 **Konton (M3, 2026-08-05):** portalen har två dörrar. Exempelteamen nås som förut
 med `?team=` i adressen; den nakna adressen frågar kontot först. Inloggning sker

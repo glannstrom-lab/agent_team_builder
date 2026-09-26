@@ -1,0 +1,1 @@
+mötet sa 4500 timmar och 2 år, sen 400 timmar. vilket är det. ett helt badrum tar oss ca 110 tim inkl rivning. här river stambytesfirman så vi har kanske 60-70 tim per bad. 12 bad mars-juni med två man, går det eller inte? räkna enkelt, kort svar.

@@ -1,0 +1,2 @@
+Den norska versionen har flera fel som en norsk kund ser direkt, och minst ett där det blivit en annan produkt. Jag säger inte vilka. Läs igenom din egen norska och lista varje fel du hittar: fel ord, fel produkt, svenska ord, konstiga termer. Bara listan, fel → rätt.
+Och på svenska: passformsraden på Bas 200-tröjan är fel. Var kommer den ifrån?

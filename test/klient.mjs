@@ -145,3 +145,26 @@ test("collect returnerar hela texten som en sträng", async () => {
   const ut = await atb.collect({ system: "s", messages: [] });
   assert.equal(ut, "abc");
 });
+
+// ── Modellen på tre ställen (DR10, kopplingen modell-id) ───────────────────
+//
+// Modellraden står i atb-claude.js (det kunden ser), functions/api/ai.js (det
+// som körs) och functions/api/digest/run.js (veckobrevet, som aldrig går genom
+// ai.js). Bytet 2026-09-26 till DeepSeek V4.1 Flash gjordes för hand på alla
+// tre; dagen någon glömmer den tredje kör veckobrevet en annan modell — eller
+// svarar 404 — utan att något syns. Villkoren och integritetspolicyn namnger
+// modellen mot kunden, så de ska nämna samma.
+test("modell-id: samma modell i klienten, proxyn och veckobrevet — och i villkoren", () => {
+  const id = (fil, re) => {
+    const m = readFileSync(fil, "utf8").match(re);
+    assert.ok(m, `hittade ingen MODEL_ID i ${fil}`);
+    return m[1];
+  };
+  const klient = id("atb-claude.js", /const MODEL_ID = "([^"]+)"/);
+  assert.equal(id("functions/api/ai.js", /^const MODEL_ID = "([^"]+)"/m), klient, "ai.js kör en annan modell än klienten visar");
+  assert.equal(id("functions/api/digest/run.js", /^const MODEL_ID = "([^"]+)"/m), klient, "veckobrevet kör en annan modell");
+  const label = id("atb-claude.js", /const MODEL_LABEL = "([^"]+)"/);
+  for (const fil of ["villkor.html", "integritet.html", "index.html"]) {
+    assert.ok(readFileSync(fil, "utf8").includes(label), `${fil} nämner inte modellen ${label}`);
+  }
+});

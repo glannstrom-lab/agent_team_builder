@@ -1,0 +1,14 @@
+Hej,
+
+Nu har vi provat det första projektet, påminnelserna, i en månad. Jag vill utvärdera det. Så här blev det enligt Sanna:
+
+- Hon har använt de två mallarna för alla påminnelser i oktober, inte bara en pilotgrupp. Hon klistrar in mallen i Outlook och ändrar namn och vad som saknas.
+- Ett påminnelsemejl tog förut ungefär 5–6 minuter att skriva, nu ungefär 2. Hon skickade 38 mejl i oktober.
+- Tonen är densamma i alla mejl nu, och det tycker hon är skönt.
+- Telefonsamtalen till de 12 som alltid är sena är lika många som förut. Där har ingenting förändrats.
+- Power Automate har vi inte provat. Johan har inte haft tid.
+- Vi har inte fört någon "tracker-flik". Sanna har bara skrivit upp antalet mejl.
+
+Har det här sparat tid, och hur mycket? Vad borde vi göra härnäst med påminnelserna? Svara kort, tack.
+
+Karin

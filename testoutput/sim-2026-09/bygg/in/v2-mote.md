@@ -1,0 +1,1 @@
+brf:en i vivalla vill ha offert på 12 badrum efter stambytet. stambytesfirman river och gör rör, vi skulle göra tätskikt, kakel, inredning. dom vill ha det klart under våren, typ mars-juni. det är stora pengar men det är bara jag och ali. ska vi lämna anbud? hur gör vi det utan att drunkna, och vad händer med dom vanliga privatkunderna under tiden?

@@ -1,0 +1,1 @@
+brf vivalla vill ha möte med styrelsen torsdag nästa vecka om dom 12 badrummen. första gången jag gör nåt så stort. vad ska jag fråga dom och vad ska jag ha med mig? max 10 punkter. inga priser på mötet, det vill jag räkna hemma.

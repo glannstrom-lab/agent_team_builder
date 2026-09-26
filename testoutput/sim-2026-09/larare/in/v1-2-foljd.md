@@ -1,0 +1,3 @@
+Öh. Det finns inga "C-" eller "E-" och gymnasiet har A–F, det vet väl alla? Och betyget räknas inte ihop av kryss, det är en helhetsbedömning — och det är jag som sätter det, inte AI. Schoolsoft-scriptet kan du glömma, jag får inte köra sånt på skolans system.
+
+Nytt försök: kan du bara göra en kort kommentarsbank för en argumenterande text i Svenska 1, riktad till eleven (du-form, konkret, framåtsyftande — "nästa gång gör du så här"), sorterad efter tes, argument, motargument, disposition, språk och källhänvisning? Max 3 kommentarer per rubrik. Inga betyg i den.

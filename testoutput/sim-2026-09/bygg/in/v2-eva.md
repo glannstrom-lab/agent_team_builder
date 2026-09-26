@@ -1,0 +1,1 @@
+eva lund (72) ringer för tredje gången om köksluckorna. leverantören har skjutit leveransen 2 veckor, nu v 43 istället för v 41. inte vårt fel men hon är orolig. skriv ett sms till henne, lugnt och enkelt, hon är inte så van vid mobilen. vi kan montera sockel och bänkskiva under tiden så köket går att använda.

@@ -1,0 +1,1 @@
+funderar på att höja mitt timpris från 595 till 625 från nyår. ali från 545 till 575. är det dumt? och hur säger jag det till kunder som redan fått offert, typ nyström som vill börja i november och kanske drar över nyår? kort.

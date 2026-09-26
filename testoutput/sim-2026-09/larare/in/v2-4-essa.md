@@ -1,0 +1,3 @@
+Fredag kväll, essäerna från SA3c har kommit in. Vetenskaplig essä i Svenska 3, de har skrivit om språksociologiska ämnen (t.ex. ungdomsspråk, genus och språk, flerspråkighet), ca 4 sidor med källor.
+
+Jag vill göra en läsmall för mig själv så att jag läser alla 24 på samma sätt och snabbare. Vilka delar ska jag titta efter, kopplat till vad betygskriterierna i Svenska 3 faktiskt säger om vetenskapligt skrivande? Och ge mig 2–3 typiska framåtsyftande kommentarer per del. Inga betyg.

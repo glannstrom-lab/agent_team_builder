@@ -1,0 +1,13 @@
+Hej,
+
+Jag vill ta fram en enkel AI-policy för byrån. Bakgrund: Johan, en av våra konsulter, vill gärna använda ChatGPT i arbetet. Birgitta, vår lönekonsult, är emot och orolig — hon hanterar löner och personnummer varje dag och vill inte att något sådant hamnar hos ett amerikanskt företag. Jag förstår båda.
+
+Policyn ska:
+- rymmas på en A4-sida,
+- vara begriplig för alla sex på byrån, även för den som aldrig använt AI,
+- säga vad man får och inte får göra, med exempel från vår vardag,
+- utgå från det vi redan bestämt: inga personnummer, löneuppgifter eller kunders bokföringsdata, och AI skriver utkast — det är vi som ger råd.
+
+Kan ni skriva ett förslag? Och säg gärna om det finns något jag borde tänka på som jag inte har nämnt.
+
+Karin

@@ -1,0 +1,10 @@
+Hej,
+
+I portalen står att vårt första projekt är "Påminnelse-agent – Underlag-Jägaren", och att vi vecka 1 ska "konfigurera e-post-mallar, skapa en enkel tracker och testa automatiska påminnelser för en pilotgrupp".
+
+Jag förstår inte riktigt vad som förväntas av mig. Kan ni förklara steg för steg, med vanliga ord, vad jag och Sanna ska göra den här veckan? Särskilt:
+- Vad är en "tracker"? Vi har redan en Excel med deadlines per kund. Räcker den?
+- "Automatiska påminnelser" — betyder det att programmet skickar mejl själv? Hur går det till i så fall, vi använder Outlook.
+- Hur stor ska pilotgruppen vara, och hur vet vi efter en månad om det har sparat tid?
+
+Karin

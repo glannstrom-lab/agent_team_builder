@@ -1,0 +1,3 @@
+Generera ett mejlutkast för Uppföljning efter utvecklingssamtalet till vårdnadshavare med placeholders för [Elevnamn], [Datum] och relevant information.
+
+Relevant information: på samtalet (tors 15 okt) kom vi överens om att eleven checkar in med mig måndagar kl 8.10 i fyra veckor, att elevhälsan (kuratorn) kontaktar familjen, och att vi stämmer av igen fredag 20 november. Morgonfrånvaron har redan blivit lite bättre sedan samtalet. Kort och uppmuntrande.

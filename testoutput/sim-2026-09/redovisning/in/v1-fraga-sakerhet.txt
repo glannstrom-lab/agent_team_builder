@@ -1,0 +1,12 @@
+Hej,
+
+Jag heter Karin Lindqvist och äger byrån. Jag är helt ny på det här med AI, så jag ber om ursäkt om frågorna är enkla.
+
+Innan vi sätter igång vill jag förstå två saker:
+
+1. Vad gör de olika medarbetarna i teamet, med vanliga ord? Jag ser att det finns en "vd-assistent", en "vd", en påminnelseagent, en FAQ-agent och en nyhetsbrevsagent. Vem vänder jag mig till för vad?
+
+2. Hur ska jag tänka kring säkerhet och kunddata? I veckostarten bad ni om kundnamn, e-postadresser och kund-ID. Vi har bestämt att inga personnummer, löneuppgifter eller kunders bokföringsdata får läggas in här. Är det ens lämpligt att jag skriver in kundnamn och e-postadresser? Vart tar uppgifterna vägen?
+
+Vänliga hälsningar
+Karin

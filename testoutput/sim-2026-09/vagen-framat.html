@@ -1,0 +1,123 @@
+<title>Från team till uppdrag</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800&family=Karla:wght@400;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{--sand:#F1ECE3;--papper:#FCFAF6;--blak:#1E1913;--dim:#5E554A;--linje:#DCD3C4;--ockra:#A9741F;--ockra2:#8A5C14;--ok:#3F6B45;--krit:#A8321E;color-scheme:light}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--sand:#17140F;--papper:#211D17;--blak:#EFE8DC;--dim:#B3A896;--linje:#3A332A;--ockra:#D9A24A;--ockra2:#E3B566;--ok:#8FC095;--krit:#F08A72;color-scheme:dark}}
+:root[data-theme="dark"]{--sand:#17140F;--papper:#211D17;--blak:#EFE8DC;--dim:#B3A896;--linje:#3A332A;--ockra:#D9A24A;--ockra2:#E3B566;--ok:#8FC095;--krit:#F08A72;color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--sand);color:var(--blak);font:16px/1.6 Karla,"Segoe UI",system-ui,sans-serif;margin:0;padding-inline:16px;padding-block:32px 64px}
+.wrap{max-width:900px;margin:0 auto;display:grid;gap:36px}
+h1,h2,h3{font-family:Archivo,"Arial Narrow",sans-serif;margin:0;line-height:1.15;text-wrap:balance}
+h1{font-size:clamp(2rem,5vw,2.8rem);font-weight:800}
+h2{font-size:1.4rem;margin-bottom:12px}
+h3{font-size:1.05rem}
+p{margin:0;max-width:68ch}
+.eyebrow{font:500 .75rem "IBM Plex Mono",monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--ockra2)}
+.lead{font-size:1.12rem;color:var(--dim)}
+header{display:grid;gap:12px}
+.tabwrap{overflow-x:auto;border:1px solid var(--linje);border-radius:6px;background:var(--papper)}
+table{border-collapse:collapse;width:100%;min-width:560px;font-size:.94rem}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--linje)}
+th{font:500 .72rem "IBM Plex Mono",monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);background:var(--sand)}
+td.n{font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+tr.nu td{font-weight:600}
+tr:last-child td{border-bottom:0}
+.not{font-size:.88rem;color:var(--dim);margin-top:8px}
+.jmf{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.ruta{background:var(--papper);border:1px solid var(--linje);border-radius:6px;padding:18px;display:grid;gap:10px;align-content:start}
+.ruta ul,.ruta ol{margin:0;padding-left:1.2em;display:grid;gap:6px}
+.nej h3{color:var(--krit)} .ja h3{color:var(--ok)}
+.steg{display:grid;gap:12px;counter-reset:s}
+.steg li{list-style:none;background:var(--papper);border:1px solid var(--linje);border-radius:6px;padding:14px 16px;display:grid;grid-template-columns:auto 1fr;gap:4px 14px}
+.steg li::before{counter-increment:s;content:counter(s);font:800 1.4rem/1 Archivo,sans-serif;color:var(--ockra);grid-row:span 2}
+.steg ol{padding:0;margin:0}
+.kort{background:var(--papper);border:1px solid var(--linje);border-radius:6px;padding:16px;display:grid;gap:10px;max-width:420px}
+.kort .fält{display:grid;gap:2px}
+.kort label{font:500 .72rem "IBM Plex Mono",monospace;letter-spacing:.06em;text-transform:uppercase;color:var(--dim)}
+.kort .in{border:1px solid var(--linje);border-radius:6px;padding:6px 10px;background:var(--sand)}
+.kort .knapp{background:var(--blak);color:var(--papper);border-radius:6px;padding:8px 12px;font-weight:600;justify-self:start}
+.kort .ut{font-size:.93rem;border-left:3px solid var(--ockra);padding-left:10px;color:var(--dim)}
+.fas{display:grid;gap:10px}
+.fas .rad{display:grid;grid-template-columns:130px 1fr;gap:12px;border-top:1px solid var(--linje);padding-top:10px}
+.fas .rad b{font:500 .8rem "IBM Plex Mono",monospace;color:var(--ockra2)}
+@media (max-width:520px){.fas .rad{grid-template-columns:1fr}}
+code{font:.86em "IBM Plex Mono",monospace;background:var(--papper);padding:1px 4px;border-radius:4px}
+a{color:var(--ockra2)}
+footer{font-size:.9rem;color:var(--dim);border-top:1px solid var(--linje);padding-top:14px}
+</style>
+<div class="wrap">
+<header>
+  <span class="eyebrow">Mitt AI-team · förslag 2026-09-26</span>
+  <h1>Från team till uppdrag</h1>
+  <p class="lead">Simuleringen gav alla fyra kunder skäl att säga upp. Det går att vända, men inte genom att bara byta modell. Kunderna vill ha en assistent som inte kräver att de vet vad de ska fråga. Så ska produkten byggas.</p>
+</header>
+
+<section>
+  <h2>Kostnaden är inte hindret</h2>
+  <div class="tabwrap"><table>
+    <thead><tr><th>Modell</th><th>Pris per miljon tokens (in/ut)</th><th class="n">Simuleringens kund</th><th class="n">Tio gånger mer</th></tr></thead>
+    <tbody>
+      <tr class="nu"><td>gpt-oss-120b (i dag)</td><td>$0,15 / $0,60</td><td class="n">0,25 kr/mån</td><td class="n">2,5 kr/mån</td></tr>
+      <tr><td>Gemini 3 Flash</td><td>$0,50 / $3,00</td><td class="n">1,1 kr/mån</td><td class="n">11 kr/mån</td></tr>
+      <tr><td>GPT-5.4 mini</td><td>$0,75 / $4,50</td><td class="n">1,6 kr/mån</td><td class="n">16 kr/mån</td></tr>
+      <tr><td>Claude Haiku 4.5</td><td>$1,00 / $5,00</td><td class="n">1,9 kr/mån</td><td class="n">19 kr/mån</td></tr>
+      <tr><td>Claude Sonnet 5</td><td>$2,00 / $10,00</td><td class="n">3,8 kr/mån</td><td class="n">38 kr/mån</td></tr>
+    </tbody>
+  </table></div>
+  <p class="not">OpenRouters priser 2026-09-26. Simuleringens kund förbrukade ungefär 70 000 tokens in och 22 000 ut per månad, räknat till 10,50 kr per dollar. Priset till kunden är 290 kr/mån, och fair use-taket på 1 000 svar begränsar värsta fallet. En kund som säger upp kostar 290 kr i månaden, en bättre modell några kronor.</p>
+</section>
+
+<section class="jmf">
+  <div class="ruta ja"><h3>Där nyttan kom</h3><ul>
+    <li>Kunden gav underlaget och bad om en avgränsad text</li>
+    <li>Påminnelsemallar, en AI-policy, ett uppföljningsmejl, en historieplanering</li>
+    <li>Alla betyg på 4 i byggfirmans dagbok</li></ul></div>
+  <div class="ruta nej"><h3>Där den föll</h3><ul>
+    <li>Öppna frågor utan underlag: generiska svar</li>
+    <li>Regler ur minnet: ROT, representation, betygssteg</li>
+    <li>Initiativ: samma veckostart fyra veckor i rad</li>
+    <li>Teater: VD-agenter med kundens namn, tomma möten</li></ul></div>
+</section>
+
+<section>
+  <h2>Förslaget</h2>
+  <ol class="steg">
+    <li><h3>En assistent i gränssnittet</h3><p>Teamet finns kvar i bygget, där skräddarsömmen görs, men kunden möter en assistent i stället för fem namn att välja mellan.</p></li>
+    <li><h3>Uppdrag i stället för en tom ruta</h3><p>Bygget tar fram 6–10 uppdrag ur kundens egen vecka. Varje uppdrag är några fält och en färdig text. Kunden skriver aldrig en prompt.</p></li>
+    <li><h3>Företagsfakta fylls i en gång</h3><p>Timpris, prislista, organisationsnummer och signatur. Saknas något blir det en markerad lucka, aldrig en gissning.</p></li>
+    <li><h3>Regelfrågor ur en kontrollerad faktabas</h3><p>Svaret ges med länk till Skatteverket, annars står det "det här vet jag inte säkert". Faktabasen är dessutom något konkurrenterna saknar.</p></li>
+    <li><h3>Rätt modell per steg</h3><p>Den bästa modellen för bygget, som körs en gång (några kronor), en mellanklassmodell för uppdragen och en billig för det triviala.</p></li>
+    <li><h3>Initiativet går via veckobrevet</h3><p>Med dagens datum och branschens deadlines, i stället för en veckostart som upprepar sig.</p></li>
+  </ol>
+</section>
+
+<section class="jmf">
+  <div class="kort" aria-label="Exempel på ett uppdrag">
+    <span class="eyebrow">Så kan ett uppdrag se ut</span>
+    <h3>ÄTA-bekräftelse till kund</h3>
+    <div class="fält"><label>Kund</label><div class="in">Familjen Karlsson, Adolfsberg</div></div>
+    <div class="fält"><label>Vad hittade ni?</label><div class="in">Fuktskada i bjälklaget vid golvbrunnen</div></div>
+    <div class="fält"><label>Extra kostnad</label><div class="in">ca 18 000 kr inkl. moms, före ROT</div></div>
+    <span class="knapp">Skriv sms:et</span>
+    <p class="ut">Ett färdigt sms med timpriset ur profilen, ROT-raden räknad och en rad där kunden svarar "OK" för att godkänna skriftligt.</p>
+  </div>
+  <div class="ruta"><h3>Börja med en bransch: hantverkare</h3>
+    <ul><li>Byggfirman fick mätbart mest nytta i simuleringen</li>
+    <li>Reglerna (ROT, ÄTA, påminnelseavgift, BKR) är få nog att kontrollera för hand</li>
+    <li>Smärtan är konkret: offerten klockan 21</li>
+    <li>Nästa bransch läggs till när den första håller</li></ul></div>
+</section>
+
+<section>
+  <h2>Så prövar vi det, billigast först</h2>
+  <div class="fas">
+    <div class="rad"><b>Denna vecka</b><p>Spela om simuleringens 93 anrop mot Haiku 4.5 och en Gemini Flash med <code>jamfor.mjs</code>. Det visar hur långt en ren modelluppgradering räcker. Kostnad: några kronor, och det kräver en OpenRouter-nyckel i <code>.dev.vars</code>.</p></div>
+    <div class="rad"><b>Pass 1</b><p>Laga de fyra produktfelen från rapporten: Builderns kontroll, tokentaken, VD-agenten och att bygget avvisar kundens huvudproblem.</p></div>
+    <div class="rad"><b>Pass 2–3</b><p>Uppdragsvyn och faktaprofilen för hantverkare. Sedan en ny simulering med fyra hantverkare. Målet är ett snitt på minst 4 och att minst två av fyra stannar.</p></div>
+  </div>
+</section>
+
+<footer>
+  <p>Underlag: <a href="https://claude.ai/artifact/8j1KdRrSj2wRGYHogjMUFe">Månaden med teamet</a>, simuleringen 2026-09-26 i <code>testoutput/sim-2026-09/</code>. Två beslut är dina: om namnet "Mitt AI-team" ska vara kvar när teamet inte syns i gränssnittet (förslaget är att behålla det, eftersom teamet är det som bygger uppdragen), och om hantverkare ska vara den första branschen.</p>
+</footer>
+</div>

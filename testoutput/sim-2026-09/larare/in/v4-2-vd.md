@@ -1,0 +1,3 @@
+Sista veckan före lovet (19–23 okt). Måste bli klart: F-varningarna (4 st, info till elever/vårdnadshavare + lista till rektor) före fredag. Historia 1b-lektionerna v43 är planerade. Essäerna (24 st) har jag lovat återkoppling på måndag 2 nov — det betyder att jag rättar under lovet om jag inte gör något smart nu.
+
+Jag har 1,5 h om dagen. Ge mig en enkel lista per dag, måndag–fredag den här veckan. Rätt veckodagar och datum den här gången, tack. Och säg ärligt om det inte går ihop.
