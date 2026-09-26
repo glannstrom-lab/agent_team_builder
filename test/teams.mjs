@@ -381,7 +381,7 @@ const STEGKONTROLL = (() => {
   const src = readFileSync("builder/builder.js", "utf8");
   const i = src.indexOf("⟦DELAD-START⟧"), j = src.indexOf("⟦DELAD-SLUT⟧");
   const kropp = src.slice(src.indexOf("\n", i) + 1, src.lastIndexOf("\n", j) + 1);
-  return new Function(kropp + "; return { stegBrister, teamBrister, skalningsAntal, förslagsAntal };")();
+  return new Function(kropp + "; return { stegBrister, teamBrister, skalningsAntal, förslagsAntal, trimmaTeam };")();
 })();
 
 test("stegkontrollen: en avbruten research (719 tecken ur drift) underkänns", () => {
@@ -397,7 +397,7 @@ test("stegkontrollen: ett team på två agenter (ur drift) underkänns mot beslu
 });
 
 test("stegkontrollen: fler agenter än skalningsbeslutet underkänns (byggfirman fick 5 mot 4)", () => {
-  const team = JSON.parse(readFileSync(`${SIM}/bygg2/team.json`, "utf8"));
+  const team = JSON.parse(readFileSync(`${SIM}/bygg2/team-5-agenter.json`, "utf8"));
   const r = JSON.parse(readFileSync(`${SIM}/bygg2/bygge.json`, "utf8"));
   const n = STEGKONTROLL.skalningsAntal(r.scaling);
   assert.equal(n, 4);
@@ -421,4 +421,25 @@ test("stegkontrollen: bygget kör varje steg genom medOmförsök och sammanstäl
   const sam = src.slice(src.indexOf("async function structureTeam("), src.indexOf("async function structureTeam(") + 3000);
   assert.ok(sam.includes("teamBrister(team, n)") && sam.includes("await medOmförsök("), "sammanställningen ska kontrollera antalet och göras om");
   assert.ok(/kravSlut: true/.test(src.slice(src.indexOf("async function callSteg("))), "stegen ska kräva ett helt svar");
+});
+
+test("trimmaTeam: femagentsteamet ur drift trimmas till beslutet fyra — kärnan och de högst prioriterade behålls", () => {
+  const team = JSON.parse(readFileSync(`${SIM}/bygg2/team-5-agenter.json`, "utf8"));
+  const före = team.agents.map((a) => a.id);
+  const flyttade = STEGKONTROLL.trimmaTeam(team, 4);
+  assert.equal(team.agents.length, 4);
+  assert.equal(flyttade.length, 1);
+  assert.ok(team.agents.some((a) => a.id === "vd") && team.agents.some((a) => a.id === "vd-assistent"), "VD och VD-assistent behålls alltid");
+  const specialister = före.filter((id) => id !== "vd" && id !== "vd-assistent");
+  assert.equal(flyttade[0], JSON.parse(readFileSync(`${SIM}/bygg2/team-5-agenter.json`, "utf8")).agents.find((a) => a.id === specialister.at(-1)).name, "den lägst prioriterade flyttas");
+  assert.ok(team.rejected.some((r) => r.name === flyttade[0] && /skalningsbeslutet/.test(r.why)), "den flyttade ska stå bland de avvisade med skäl");
+  assert.ok(team.routines.every((r) => team.agents.some((a) => a.id === r.agentId)), "ingen rutin får peka på en borttagen agent");
+  assert.deepEqual(STEGKONTROLL.teamBrister(team, 4), []);
+});
+
+test("trimmaTeam: ett team inom beslutet rörs inte", () => {
+  const team = JSON.parse(readFileSync(`${SIM}/bygg-ds/team.json`, "utf8"));
+  const före = JSON.stringify(team);
+  assert.deepEqual(STEGKONTROLL.trimmaTeam(team, 4), []);
+  assert.equal(JSON.stringify(team), före);
 });

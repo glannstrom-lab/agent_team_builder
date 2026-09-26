@@ -1092,7 +1092,12 @@ async function structureWithStatus(intake, r) {
 // en känd uppsättning.
 async function structureTeam(intake, r) {
   const fpBlock = r.firstproject ? `\n\nFÖRSTA PROJEKTET:\n${r.firstproject}` : "";
-  const user = `RESEARCH-DOKUMENT:\n${r.research}\n\nSKALNINGSBESLUT:\n${r.scaling}\n\nFÖRSLAG (agenterna):\n${r.proposal}${fpBlock}\n\nSammanställ som JSON.`;
+  // Antalet står uttryckligen sist (KA19): skalningsbeslutet i löptext räckte
+  // inte — ett förslag på fem agenter gav fem tre gånger av tre mot beslutet fyra.
+  const nBeslut = skalningsAntal(r.scaling);
+  const user = `RESEARCH-DOKUMENT:\n${r.research}\n\nSKALNINGSBESLUT:\n${r.scaling}\n\nFÖRSLAG (agenterna):\n${r.proposal}${fpBlock}\n\n` +
+    (nBeslut ? `ANTAL: teamet ska ha exakt ${nBeslut} agenter, VD och VD-assistent inräknade. Har förslaget fler: slå ihop de minst distinkta eller flytta dem till rejected med skäl.\n\n` : "") +
+    `Sammanställ som JSON.`;
 
   // Steget är det enda i pipelinen som måste ge maskinläsbart svar, och det var
   // det som föll. Schemat sätts av servern (strict-läge, se _build.js) — det är
@@ -1107,6 +1112,9 @@ async function structureTeam(intake, r) {
       const raw = await callSteg("structure", [{ role: "user", content: user }], { mode: intake.mode, workstyle: intake.workstyle });
       try { team = parseTeamJson(raw); } catch (_) { return ["ogiltig JSON"]; }
       if (!team || !Array.isArray(team.agents) || team.agents.length === 0) return ["inga agenter"];
+      // För många agenter rättas i kod, inte med ett nytt försök (se trimmaTeam).
+      const flyttade = trimmaTeam(team, n);
+      if (flyttade.length) console.warn("[builder] teamet trimmat till skalningsbeslutet", flyttade);
       const brister = teamBrister(team, n);
       try { kontrolleraSystemprompter(team); } catch (e) { brister.push(e.message.split("\n")[0]); }
       return brister;
@@ -1321,10 +1329,35 @@ function stegBrister(steg, text, n) {
   if (STEG_GOLV[steg] && t.length < STEG_GOLV[steg]) b.push(steg + " blev bara " + t.length + " tecken");
   if (steg === "proposal" && n) {
     var k = förslagsAntal(t);
-    // 0 = okänt format; då avgör sammanställningens kontroll i stället.
-    if (k && (k > n || k < n - 1)) b.push("förslaget har " + k + " agenter, skalningsbeslutet är " + n);
+    // 0 = okänt format; då avgör sammanställningens kontroll i stället. För
+    // MÅNGA agenter är inget skäl att göra om förslaget — modellen står fast
+    // vid samma antal (uppmätt: 5 mot 4, tre gånger av tre); trimmaTeam()
+    // rättar det deterministiskt i sammanställningen.
+    if (k && k < Math.min(3, n)) b.push("förslaget har bara " + k + " agenter, skalningsbeslutet är " + n);
   }
   return b;
+}
+
+// Ett team större än skalningsbeslutet trimmas i kod i stället för att göras
+// om: VD, VD-assistent och de första specialisterna behålls (proposal.md
+// skriver specialisterna i prioritetsordning), resten flyttas till de
+// avvisade med skälet utskrivet. Deterministiskt — samma indata ger samma team.
+function trimmaTeam(team, n) {
+  var a = (team && team.agents) || [];
+  if (!n || a.length <= n) return [];
+  var kärna = a.filter(function (x) { return x.id === "vd" || x.id === "vd-assistent"; });
+  var övriga = a.filter(function (x) { return x.id !== "vd" && x.id !== "vd-assistent"; });
+  var plats = Math.max(0, n - kärna.length);
+  var behåll = övriga.slice(0, plats), flytta = övriga.slice(plats);
+  team.agents = a.filter(function (x) { return kärna.indexOf(x) >= 0 || behåll.indexOf(x) >= 0; });
+  var flyttadeId = flytta.map(function (x) { return x.id; });
+  team.routines = (team.routines || []).map(function (r) {
+    return flyttadeId.indexOf(r.agentId) >= 0 ? Object.assign({}, r, { agentId: (kärna[0] || team.agents[0]).id }) : r;
+  });
+  team.rejected = (team.rejected || []).concat(flytta.map(function (x) {
+    return { name: x.name, why: "Rymdes inte i skalningsbeslutet på " + n + " agenter — lägre prioritet än de som blev kvar. Kan läggas till senare under Utveckla teamet." };
+  }));
+  return flytta.map(function (x) { return x.name; });
 }
 
 function teamBrister(team, n) {

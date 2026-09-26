@@ -56,7 +56,7 @@ const B = new Function(
   klipp("function parseTeamJson", "async function retryStructure") + "\n" +
   klipp("function rensaSkalning", "\n}\n") + "\n}\n" +
   klipp("function skalningsTak", "// Sammanställningssteget är långt") +
-  "return { kontrolleraSystemprompter, parseTeamJson, rensaSkalning, skalningsTak, hållSkalningsTak, stegBrister, teamBrister, skalningsAntal };"
+  "return { kontrolleraSystemprompter, parseTeamJson, rensaSkalning, skalningsTak, hållSkalningsTak, stegBrister, teamBrister, skalningsAntal, trimmaTeam };"
 )();
 
 // ── portalens egna funktioner (systemFor + contextFor), ur källan ──────────
@@ -171,7 +171,10 @@ async function build() {
     r.firstproject = await stegMedKontroll("firstproject", `INTAKE:\n${ib}\n\nRESEARCH-DOKUMENT:\n${r.research}\n\nFÖRSLAG:\n${r.proposal}`); spara();
   }
   const fp = r.firstproject ? `\n\nFÖRSTA PROJEKTET:\n${r.firstproject}` : "";
-  const user = `RESEARCH-DOKUMENT:\n${r.research}\n\nSKALNINGSBESLUT:\n${r.scaling}\n\nFÖRSLAG (agenterna):\n${r.proposal}${fp}\n\nSammanställ som JSON.`;
+  // Samma meddelande som structureTeam() i builder.js sedan KA19.
+  const user = `RESEARCH-DOKUMENT:\n${r.research}\n\nSKALNINGSBESLUT:\n${r.scaling}\n\nFÖRSLAG (agenterna):\n${r.proposal}${fp}\n\n` +
+    (n ? `ANTAL: teamet ska ha exakt ${n} agenter, VD och VD-assistent inräknade. Har förslaget fler: slå ihop de minst distinkta eller flytta dem till rejected med skäl.\n\n` : "") +
+    `Sammanställ som JSON.`;
   r.structureForsok = r.structureForsok || [];
   const TILLÅT = process.argv.includes("--tillat");
   for (let i = 0; i < (TILLÅT ? 1 : 3); i++) {
@@ -182,6 +185,8 @@ async function build() {
       if (svar.finish !== "stop") throw new Error("svaret bröts (finish=" + svar.finish + ")");
       team = B.parseTeamJson(raw);
       if (!team || !Array.isArray(team.agents) || !team.agents.length) throw new Error("saknar agenter");
+      const flyttade = B.trimmaTeam(team, n);
+      if (flyttade.length) console.error("  trimmat till skalningsbeslutet: " + flyttade.join(", "));
       const tb = B.teamBrister(team, n);
       if (tb.length) throw new Error(tb.join("; "));
       B.kontrolleraSystemprompter(team);
