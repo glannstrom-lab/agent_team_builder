@@ -1991,6 +1991,10 @@ function renderIntroCard() {
     { done: tourDone(), label: "Lär känna teamet — en agent i taget", act: openIntro },
     { done: anyChat, label: `Ställ en riktig fråga till ${entry.name}`, act: () => selectAgent(team.entryAgent) },
     { done: !!s.week, label: "Kör din första Veckostart", act: startWeek },
+    // RE3 (2026-09-26): veckobrevet är den enda beröringspunkten utanför
+    // portalen, och "vecka tre kommer hon inte ihåg att logga in". Förut låg
+    // det bara bland ~25 rader i arbetsytan — nu erbjuds det där nya kunder ser.
+    { done: !!s.digest, label: "Få veckostarten som mejl", act: openDigest },
     { done: hasMaterial, label: "Lägg in ett underlag eller minne", act: openMemory },
     { done: !!s.meeting, label: "Håll ditt första möte", act: openMeeting },
   ];
@@ -4550,6 +4554,9 @@ function openDigest() {
       }, 8000);
       if (!res.ok) throw new Error("Det gick inte att spara.");
       const d = await res.json();
+      // RE3: steget i kom igång-listan bockas av när kunden tagit ställning —
+      // påslaget eller avslaget, båda är ett aktivt val.
+      introMark("digest");
       // Bekräftelsen står kvar i rutan i stället för att blinka förbi. Portalen
       // har ingen toast-primitiv, och en inställning är just den sak man vill se
       // bekräftad med egna ögon innan man stänger.

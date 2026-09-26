@@ -656,3 +656,10 @@ test("svarsknapparna ritas UNDER det sparade svaret, inte ovanför", () => {
   const knappar = kropp.indexOf("addActions(row");
   assert.ok(bubblan > 0 && knappar > 0 && bubblan < knappar, "bubblan måste läggas i raden före knapparna");
 });
+
+test("RE3: veckobrevet erbjuds i kom igång-listan och bockas av när kunden valt", () => {
+  const lista = KÄLLA.slice(KÄLLA.indexOf("function renderIntroCard("), KÄLLA.indexOf("function renderIntroCard(") + 2500);
+  assert.ok(lista.includes('label: "Få veckostarten som mejl", act: openDigest'), "steget saknas i kom igång-listan");
+  const spara = KÄLLA.slice(KÄLLA.indexOf("function openDigest("));
+  assert.ok(spara.slice(0, 6000).includes('introMark("digest")'), "steget bockas aldrig av");
+});

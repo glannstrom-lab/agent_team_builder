@@ -22,6 +22,7 @@
 //   4. Skickas utan väg ut. Varje brev bär en avregistreringslänk som fungerar
 //      utan inloggning.
 
+import { gallra } from "../_gallring.js";
 import { json, sendWeeklyDigest } from "../auth/_lib.js";
 import { planState } from "../_plan.js";
 
@@ -206,6 +207,16 @@ export async function onRequestPost(context) {
   const db = env.DB;
   const dag = utcDay(nu);
   const veckodag = isoWeekday(nu);
+
+  // Gallringen (BF5) åker med samma klocka, varje timme — före timgolvet, så
+  // att utgångna koder och sessioner städas även på natten. Ett fel här får
+  // aldrig stoppa veckobreven; det loggas och körs om nästa timme.
+  try {
+    const gallrat = await gallra(db, nu);
+    if (Object.values(gallrat).some((n) => n > 0)) console.log("[gallring]", JSON.stringify(gallrat));
+  } catch (e) {
+    console.error("[gallring] misslyckades", String(e).slice(0, 200));
+  }
 
   // För tidigt på dygnet: svara ok och gör inget. Workern knackar varje timme
   // och den första knacken efter midnatt ska inte väcka någon.

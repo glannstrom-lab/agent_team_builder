@@ -115,7 +115,9 @@ test("före timgolvet skickas ingenting", async () => {
   const { kropp } = await kör(db, env(db), { tid: MÅNDAG_03 });
   assert.equal(kropp.skickade, 0);
   assert.match(String(kropp.orsak), /tidigt/);
-  assert.equal(db._skrivna.length, 0, "inget anrop, ingen bokföring");
+  // Gallringen (BF5) körs med flit varje timme, även före golvet — den räknas inte.
+  const utomGallring = db._skrivna.filter((s) => !/^(DELETE FROM|UPDATE team_access SET invited_by)/.test(String(s.sql)));
+  assert.equal(utomGallring.length, 0, "inget anrop, ingen bokföring");
 });
 
 test("en kund vars plan tagit slut får inget veckobrev", async () => {
