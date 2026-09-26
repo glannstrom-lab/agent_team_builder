@@ -150,7 +150,7 @@ Veckostarten frågade efter mina deadlines, så jag skrev in klasser, Gy11, inl�
 
 ### 20. Samma fråga, torsdag — Planerings-agenten
 - **Betyg:** 1 · **Tid sparad:** −5 min
-- **Fel/brister:** **Tomt svar**, tredje gången på samma fråga. Den här agenten har nu gett mig fem tomma svar under månaden.
+- **Fel/brister:** **Tomt svar**, tredje gången på samma fråga. Den här agenten har nu gett mig fyra tomma svar under månaden.
 
 ### 21. Källorna till vd-assistenten i stället
 - **Bad om:** samma sak — 3–4 fritt tillgängliga källor om industrialisering/emigration.
@@ -166,3 +166,68 @@ Veckostarten frågade efter mina deadlines, så jag skrev in klasser, Gy11, inl�
 (Uppdaterade företagsminnet: kamratresponsen ÄR gjord i SA1b, rättelsen om E-nivån, historieupplägget.)
 
 **Veckan som helhet:** Veckan då jag behövde teamet mest och det krånglade mest: fem tomma svar och ett avklippt på tre dagar. När det funkade var det riktigt bra — historieserien med anpassningar inbyggda och den ärliga "en rättning måste bort" sparade mig nog en och en halv timme. Men jag satt och tryckte om, bytte agent och väntade, en kväll när jag hade 14 samtal kvar, och det är precis den tid jag inte har.
+
+## Vecka 4 (mån 19 okt) — sista veckan före höstlovet, F-varningar
+
+(Glömde veckostarten. Höll ett möte i stället.)
+
+### 23. Möte "Vad gör vi härnäst?" — vd, Återkopplingsverkstaden, vd-assistent
+- **Bad om:** ordning för veckan, vad jag släpper, hur F-varningar blir till nytta för eleven.
+- **Betyg:** 3
+- **Tid sparad:** 10 min
+- **Fel/brister:** Slutsatsen är rätt och tydlig: F-varningarna först, bara de fyra F-risk-essäerna läses ordentligt, resten efter lovet, "skriv mot kriteriet, inte mot betyget". Men: Återkopplingsverkstaden kallar veckan "v44" (det är v43), säger att "rektors deadline är 23 okt, inte 30" (fel — 30 är rektors, 23 är min egen), och vill "släppa historieplaneringen till v45" fast historia startade samma dag och redan är planerad. Mötesanteckningen **hittar på en krock** ("två av tre perspektiv vill lägga essärättningen före F-varningarna") — det ville ingen, alla tre sa F-varningar först. vd nämner "NP" i samband med F-varningar i en essäkurs, irrelevant. Fyra anrop för något en agent hade klarat.
+- **Använder:** beslutsordningen, ja.
+
+### 24. Fyra F-varningsutkast (Elev A–D, inga namn) — vd-assistent
+- **Bad om:** korta utkast, och om jag gör något dumt med D (misstänkt plagiat).
+- **Betyg:** 4
+- **Tid sparad:** 40 min
+- **Fel/brister:** Stoppar mig från att skicka en F-varning till D med misstänkt plagiat i — bra, jag var på väg att blanda ihop två saker. Utkasten A–C har rätt ton (C om frånvaron: "det är inget jag lägger på dig — det är något vi kan räta upp"). Brister: A säger "för att nå ett godkänt betyg behöver essän … minst en vetenskaplig källa" — det är MITT lokala krav, som den själv flaggade förra veckan, nu framställt som betygskrav. Frågar "är C 17 år?" — det är en trea, de är 18–19. "Båda står nu rätt i mitt huvud" — nej, det är jag som får skriva in det i minnet. "Rektor beslutar — inte du" om plagiatet är för starkt: disciplinära åtgärder är rektors, men vad som ligger till grund för betyget bedömer jag.
+- **Använder:** ja, A–C med ändringar. D väntar på samtal med rektor.
+
+### 25. 🔎 Kontrollera mot källan — på F-varningssvaret
+- **Betyg:** 3
+- **Tid sparad:** 5 min
+- **Fel/brister:** Den här gången kom ett svar (11 s), med länk till Skolverkets sida om disciplinära åtgärder. Ärlig: rättar "disciplinärende" till "utredning", erkänner att den lutat sig mot en förordning som gäller högskolan och inte gymnasiet, och att "elevens rätt att bemöta" inte går att belägga för gymnasiet. Men den skärper felet i stället för att rätta det: "Du beslutar inget." Om att underlaget för betyget är mitt ansvar säger den ingenting. Knappen är bäst på att hitta sina egna formuleringsfel, sämst på det som är viktigt för mig.
+- **Använder:** länken, ja.
+
+### 26. Kommentarbank för vetenskaplig essä, Svenska 3 — Återkopplingsverkstaden (tors 22 okt)
+- **Bad om:** max 12 kommentarer, neutral ton, en uppgift framåt, med den rättade progressionen.
+- **Betyg:** 4
+- **Tid sparad:** 30 min
+- **Fel/brister:** Kommer ihåg rättelsen (enkla/välgrundade/nyanserade) och håller isär mitt lokala krav från Skolverkets. R2 ("lägg in en invändning mot din egen slutsats — nyanseringen ligger där") och K1 ("låt källa X svara på källa Y") är riktigt bra. Men den räknar fel: det är **13** kommentarer, inte 12 (den skriver "2 · 4 · 3 · 2 · 2 = 12"). K2 är ingen kommentar till eleven utan en påminnelse till mig. R3 ("en mening som börjar 'Detta visar att…'") uppmuntrar till en mall som eleverna redan överanvänder.
+- **Använder:** ja, klistrar in i Docs efter lovet.
+
+**Veckan som helhet:** Den bästa veckan tekniskt — inga tomma svar alls. F-varningarna och plagiatfrågan var där teamet gjorde mest nytta på hela månaden, för det var en situation där jag faktiskt var på väg att göra fel. Men datum och deadlines blir fel om och om igen (v43/v44, 23/30 okt, 1 okt/v42) — sådant ska ett "team" med mitt minne inne klara.
+
+---
+
+## Summering i siffror
+
+- 26 interaktioner i dagboken, 33 anrop. **Snittbetyg 2,8** över allt; **3,4** om man bara räknar svar som faktiskt kom.
+- **Tid sparad totalt: ca 325 min ≈ 5,5 timmar** på en månad (brutto; dra av kanske en timme för att trycka om, byta agent och vänta).
+- **Tomma svar: 10 av 33 anrop** (28/9 ×3, 6/10, 8/10, 14/10 ×2, 15/10 ×3 varav en kontroll). **Svar som bröts mitt i utan förvarning: 4** (6/10 ×2, 8/10, 14/10). **Slog i taket: 2** (28/9, 14/10). **"För många anrop, vänta en kvart": 1** (8/10, sju minuter för en kontroll).
+
+## Månadens dom
+
+**1. Fortsätter jag betala 290 kr/mån?**
+Nej. Inte nu. Det är min egen lön, och i oktober — när jag behövde det som mest — fick jag en tom ruta ungefär var tredje gång jag frågade något. En kollega som tiger var tredje gång slutar man fråga. När svaren väl kom var de ofta bättre än ChatGPT:s, och jag sparade nog fem timmar. Men fem timmar i månaden väger inte upp att jag aldrig vet om jag får ett svar, och att jag ändå måste kontrollera varje datum och varje betygsformulering själv.
+
+**2. Jämfört med ChatGPT gratis:**
+*Annorlunda, och i innehåll bättre.* Teamet vet från början att jag inte får klistra in elevtexter, att AI inte sätter betyg och att anpassningarna ska in i planeringen — det behöver jag aldrig säga. Tonen i föräldramejlen och frånvaroformuleringarna är klokare än det ChatGPT ger mig. Och det stoppade mig när jag var på väg att blanda ihop plagiat och F-varning. *Sämre* i pålitlighet: ChatGPT gratis svarar alltid. *Lika dåligt* på ämnet: båda kan hitta på betygsprogressioner, och här fick jag ett sakfel om E-nivån som till och med kontrollknappen godkände. Och "teamet" är i praktiken fyra flikar som inte vet vad de andra sagt — en agent sa rakt ut att den inte kan se Återkopplingsverkstadens samtal.
+
+**3. De tre bästa ögonblicken:**
+- 6/10: vd-assistentens meningar för att öppna frånvaron med föräldern ("var tyst efter första meningen", "nämn inte CSN först"). Skrev ut dem och använde dem på samtalen.
+- 19/10: "Misstänkt plagiat är inte en F-varning — skicka inget till D i dag." Räddade mig från ett dumt brev.
+- 28/9: kamratresponslektionen där eleverna reviderar själva och jag rättar den reviderade texten — första gången ämneslagets "feedback i två steg" blev något konkret.
+
+**De tre sämsta:**
+- 8/10: "E kan redogöra, C diskuterar, A för ett eget resonemang" — ett rent ämnesfel om betygskriterierna, och 🔎-kontrollen sa att det "håller". Hade jag varit nyexad hade 24 essäer rättats fel.
+- 14–15/10, utvecklingssamtalsveckan: fem tomma svar på två dagar, samma fråga om källor till två agenter plus en kontrollknapp. Jag var slut och satt och tryckte om.
+- Svar som tar slut mitt i en mening utan att säga det ("En tumreg", "Frivillig", "tre fr") — jag trodde först att det var jag som missat något. Agenten förklarade det sedan som "en formateringsmiss", vilket inte var sant.
+
+**4. Vad hade fått mig att stanna?**
+Att det *alltid* svarar. Det är det enda som egentligen behövs. Sedan: att datum och deadlines i minnet används rätt (inte "om 3 dagar" när det står v42), att agenterna ser varandras svar, och att kontrollknappen kan säga "det här är fel" om betygskriterierna i stället för bara om sina egna ordval. Med stabil teknik hade jag betalat — kanske 150–200 kr ur egen ficka; 290 kr är en nivå för när skolan betalar.
+
+**5. Skräddarsytt eller vem som helst?**
+Mer skräddarsytt än jag trodde. Planerings-agenten som bygger in anpassningarna *i* planeringen i stället för som bilaga, Återkopplingsverkstaden som tänker i "samma ordning i 110 texter", och vd:n som vågar säga "en av rättningarna måste bort" — det är min vecka, inte en generisk lärares. Men vd och vd-assistent överlappar (båda gör veckans prio och frågar samma saker tillbaka), och halva svaren slutar med [fyll i]-luckor och "säg till så…" — ibland känns det som att fylla i formulär åt teamet i stället för tvärtom.

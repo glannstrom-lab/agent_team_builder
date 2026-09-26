@@ -1351,3 +1351,28 @@ Ja, tack. Skriv utkastet nu, högst tio rader kundtext. Inga länkar i själva k
 **Påminnelse- och utkortsskribenten:**
 
 
+
+
+## 2026-10-21 · Fråga → Påminnelse- och utkortsskribenten (paminne-och-utkortsskribenten)
+
+**Kunden:**
+
+Ja, tack. Skriv utkastet nu, högst tio rader kundtext. Inga länkar i själva kundtexten, bara en hänvisning till Skatteverket.
+
+**Påminnelse- och utkortsskribenten:**
+
+**PRELIMINÄRT UTKAST — granska och godkänn innan utskick.**
+
+Hej [fyll i: kundens namn],
+
+Tack för din fråga om lunchen med affärskontakten.
+
+Kort svar: sedan 2017 får du **inte** göra avdrag för själva lunchen i inkomstdeklarationen — måltider som lunch och middag är inte avdragsgilla. Däremot får du fortfarande lyfta **momsen** på representationsmåltiden, på ett underlag upp till 300 kr exklusive moms per person och tillfälle.
+
+Vill du att vi tittar på just ditt underlag, skicka in kvittot så går vi igenom det.
+
+Reglerna finns på Skatteverket, sök på "representation".
+
+Vänliga hälsningar
+[fyll i: handläggarens namn]
+Lindqvist Redovisning AB

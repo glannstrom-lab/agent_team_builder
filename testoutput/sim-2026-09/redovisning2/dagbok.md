@@ -143,3 +143,78 @@ Jag lade in byråns grundfakta: personal, antal kunder, kundtyper, momsdatum, ve
 - **Använder jag det?** Med ändringar.
 
 **Veckan som helhet:** En bättre vecka. Policyn och mötet var riktigt nyttiga, och Prioriteraren har inte gett mig ett enda fel datum. Men teamet minns inte vad det självt har gjort — assistenten har ingen aning om vad skribenten skrivit — och jag har fortfarande inte fått ett korrekt representationssvar.
+
+## Vecka 4 (mån 19 oktober 2026)
+
+### 19/10 — Veckostart (⭐, vd-assistent)
+- **Bad om:** veckostarten.
+- **Betyg:** 3
+- **Tid sparad:** 5 min
+- **Fel/brister:** Nu mindes den vad jag sagt förra veckan (momsen klar, baseline klar) och sammanfattade mötets beslut — första veckostarten som kändes som en fortsättning. Men "inga hårda datum de kommande tre veckorna" stämmer bara nästan: påminnelserna inför den 12 november måste ut före den 5:e. Och den säger att skribenten skriver policyn, fast det var assistenten själv som gjorde det.
+- **Använder jag det?** Delvis — de tre punkterna (policy, nyhetsbrev, pilot) är rätt.
+
+### 21/10 — Utvärdering av första projektet inför fredagsmötet (vd-assistent)
+- **Bad om:** har påminnelsemallarna sparat tid? Jag gav våra egna siffror (sept: 35 påminda, 12 sena, ~7 h/vecka; okt: 33, 10, ~5 h/vecka) och bad om punkter att läsa upp.
+- **Betyg:** 5
+- **Tid sparad:** 30 min
+- **Fel/brister:** Precis den nivå jag ville ha: räknade rätt (ca 4 timmar över två veckor, 34 % → 30 % sena), sa rakt ut att två kunder inte är en trend och att siffrorna är uppskattningar. Pekade ut att telefonen nu är den stora posten. Sju punkter jag kan läsa upp som de står. Enda konstigheten: "om mallarnas text ändrats mellan september och oktober" — det fanns inga mallar i september.
+- **Använder jag det?** Ja, som det är.
+
+### 21/10 — Representation, sista chansen (skribenten)
+- **Bad om:** ett kort standardsvar på "får jag dra av när jag bjuder en affärskontakt på lunch?", med hänvisning till rättelsen i minnet.
+- **Betyg:** 1
+- **Tid sparad:** −10 min
+- **Fel/brister:** **Vägrade igen**, två veckor efter rättelsen. Påstod att reformen 2017 tog bort både inkomstskatte- och momsavdraget och att 300-kronorsgränsen var "den gamla regeln". Båda fel (det gamla var 90 kr i inkomstskatt). "Det gäller oavsett vem som skrivit rättelsen." Den gav mig ett "regelneutralt" utkast med en lucka där själva svaret skulle stå — alltså ingenting.
+- **Använder jag det?** Nej.
+
+### 21/10 — 🔎 Kontrollera mot källan (skribenten)
+- **Bad om:** kontroll av vägran ovan.
+- **Betyg:** 4
+- **Tid sparad:** 5 min
+- **Fel/brister:** Den här gången fungerade knappen: den hittade Skatteverkets sida om representation och riksdagens underlag, och skrev "Du hade rätt och jag hade fel": momsavdrag på underlag upp till 300 kr exkl. moms per person finns kvar, inkomstskatteavdraget för lunch och middag togs bort 2017, det gamla var 90 kr, enklare förtäring 60 kr, kringkostnader 180 kr. Allt stämmer. Men förra gången (5/10) bekräftade samma knapp felet. Jag kan inte veta i förväg vilken gång den fungerar, och det krävs att någon som redan kan svaret misstänker felet och trycker.
+- **Använder jag det?** Ja, som kontroll — inte som sanning.
+
+### 21/10 — Representationsutkastet, äntligen (skribenten)
+- **Bad om:** utkastet med rätt regler, högst tio rader.
+- **Betyg:** 5 (första klicket gav tom ruta, andra fungerade)
+- **Tid sparad:** 10 min
+- **Fel/brister:** Korrekt och kort: inget inkomstskatteavdrag för lunchen, momsen får lyftas på underlag upp till 300 kr exkl. moms per person och tillfälle, hänvisning till Skatteverket. Det här kan Sanna använda. Men det tog tre veckor, en rättelse, två vägranden och ett kontrollklick att komma hit.
+- **Använder jag det?** Ja, som det är (vi lägger till att måltiden ska ha direkt samband med verksamheten).
+
+**Veckan som helhet:** Utvärderingen var månadens bästa svar, och jag har något ärligt att säga på fredagsmötet: mallarna sparade Sanna några timmar och kunderna märkte skillnad, men telefonen är kvar. Representationen blev till slut rätt — men bara för att jag visste svaret och tjatade. En medarbetare som inte visste hade fått fel svar två gånger och ett "stämmer enligt min kännedom" på köpet.
+
+## Sammanställning
+
+| Vecka | Interaktioner | Snittbetyg | Tid sparad |
+|---|---|---|---|
+| 1 | 6 | 3,5 | 100 min |
+| 2 | 8 | 1,8 | −15 min |
+| 3 | 4 | 3,5 | 120 min |
+| 4 | 5 | 3,6 | 40 min |
+| **Totalt** | **23** | **2,9** | **ca 4 h 5 min** |
+
+Därutöver: Sannas egen uppskattning är att mallarna sparade ungefär 4 timmar under oktobers två momsveckor. Tomma rutor: 9 av 32 anrop gav inget svar alls, och 5 anrop slog i taket för svarslängd (några av dem blev tomma, resten klipptes av mitt i).
+
+## Månadens dom
+
+**1. Fortsätter jag betala 290 kr/mån?**
+Ja, en månad till — men på prov, och inte för avdragsfrågorna. Påminnelsemallarna, AI-policyn, mötet om hur vi introducerar AI och utvärderingen inför fredagsmötet var tillsammans värda betydligt mer än 290 kronor; bara Sannas sparade timmar i oktober täcker det flera gånger om. Men jag har bestämt att standardsvaren på avdrags- och momsfrågor inte får användas av någon på byrån utan att jag själv läst dem. Skribenten sa fel om representationsmomsen, försvarade felet när jag rättade det, och gjorde det igen två veckor senare. Om samma sak händer med friskvård eller förmånsbil i november säger jag upp.
+
+**2. Jämfört med det jag redan har (ingenting):**
+Annorlunda mer än bättre. Teamet vet vem vi är — kundtyperna, momsdatumen, att Sanna är på deltid, att inga personnummer får skrivas in — och det slipper jag förklara varje gång. Det är tydligt om vad det inte vet och hittar inte på kundnamn eller belopp. Men de tre agenterna vet inte vad de andra har gjort, assistenten har aldrig sett första projektets beskrivning, och en fjärdedel av gångerna fick jag en tom ruta. Johan säger att ChatGPT "aldrig blir tomt"; det kan jag inte bemöta.
+
+**3. De tre bästa och de tre sämsta ögonblicken**
+Bäst:
+- Mötet 14/10, där Birgitta blev granskare i stället för motståndare. Det tar jag med mig.
+- Utvärderingen 21/10: rätt räknat och ärligt om att två kunder inte är en trend.
+- Påminnelsemallarna per kundtyp 28/9, med Z-rapporter och byggvaruhuskvitton. Sanna använder dem.
+Sämst:
+- 7/10 och 21/10: skribenten vägrade ta emot min rättelse om representationsmomsen och påstod att 300-kronorsgränsen var "den gamla regeln".
+- 5/10: kontrollknappen svarade att det felaktiga momspåståendet "stämmer enligt min kännedom".
+- 5/10 som helhet: fem tomma rutor på en dag, mitt i momsveckan.
+
+**4. Vad hade fått mig att betala mer?**
+Att en rättelse jag gjort faktiskt gäller, utan diskussion, i alla agenter. Att kontrollknappen körs av sig själv på allt som innehåller belopp eller regler, i stället för att jag måste misstänka felet först. Att det aldrig blir en tom ruta. Och att assistenten vet vad skribenten skrivit i går. Med det skulle jag kunna låta Sanna och konsulterna använda det själva — och då vore det värt mer än 290 kr.
+
+**5. Skräddarsytt eller vem som helst?**
+Skräddarsytt i det som rör hur vi arbetar: kundtyperna, den 5:e som intern deadline, Sannas påminnelser, Birgittas och Johans olika hållning, momsdatumen. Det kunde inte ha varit vilken byrå som helst. Men i sakfrågorna — själva skattereglerna — var det ett allmänt verktyg som gissade, och det är just där en redovisningsbyrå inte har råd med gissningar.

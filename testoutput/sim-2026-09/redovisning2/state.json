@@ -271,6 +271,17 @@
         "role": "assistant",
         "content": "",
         "datum": "2026-10-21"
+      },
+      {
+        "role": "user",
+        "content": "Ja, tack. Skriv utkastet nu, högst tio rader kundtext. Inga länkar i själva kundtexten, bara en hänvisning till Skatteverket.",
+        "at": 1790446599801,
+        "datum": "2026-10-21"
+      },
+      {
+        "role": "assistant",
+        "content": "**PRELIMINÄRT UTKAST — granska och godkänn innan utskick.**\n\nHej [fyll i: kundens namn],\n\nTack för din fråga om lunchen med affärskontakten.\n\nKort svar: sedan 2017 får du **inte** göra avdrag för själva lunchen i inkomstdeklarationen — måltider som lunch och middag är inte avdragsgilla. Däremot får du fortfarande lyfta **momsen** på representationsmåltiden, på ett underlag upp till 300 kr exklusive moms per person och tillfälle.\n\nVill du att vi tittar på just ditt underlag, skicka in kvittot så går vi igenom det.\n\nReglerna finns på Skatteverket, sök på \"representation\".\n\nVänliga hälsningar\n[fyll i: handläggarens namn]\nLindqvist Redovisning AB",
+        "datum": "2026-10-21"
       }
     ],
     "vd": [
@@ -544,6 +555,14 @@
       "sek": 1.137,
       "finish": null,
       "tecken": 0
+    },
+    {
+      "at": "2026-10-21",
+      "sek": 1.955,
+      "finish": "stop",
+      "in": 6473,
+      "out": 217,
+      "tecken": 650
     }
   ]
 }

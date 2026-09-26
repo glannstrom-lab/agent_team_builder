@@ -1278,3 +1278,226 @@ Vill du ha samtalsstruktur för hur du öppnar med eleven?
 Jag kan skriva de fyra F-varningsutkasten nu — du ger mig bara *vilken* kriteriedel som saknas per elev (inga namn, ingen text). Och om du vill: samtalsstruktur för hur du öppnar med eleven, så varningen landar som ett åtagande och inte en stämpel.
 
 **En sak jag inte kan fylla i:** när de fyra F-risk-essäerna ska vara färdigrättade säger underlaget inget om — du nämnde själv "bara snabblästa". Vill du sätta ett datum, eller ska det vara "när varningarna är inne"?
+
+
+## 2026-10-19 · Fråga → VD-assistenten (vd-assistent)
+
+**Kunden:**
+
+Ja tack, skriv de fyra utkasten. Inga namn, Elev A–D. De skickas till eleven (och vårdnadshavare för den som är 17) via Schoolsoft. Det som saknas:
+
+A: essän redogör bara, inget eget resonemang, två källor varav ingen vetenskaplig
+B: bra resonemang men har inte lämnat in klart — bara 1,5 sida, slutsats saknas
+C: frånvaro ca 30 % i svenska, missade genomgångarna om vetenskapligt skrivande, texten saknar frågeställning
+D: misstänkt plagiat i ett stycke (kopierat från en webbsida utan källa) — resten är ok. Vet inte hur jag ska formulera det här.
+
+Kort, max 5–6 meningar per elev. Och säg om jag gör något dumt med D.
+
+(Och "rektor 23 okt" — nej, rektors deadline är 30 okt, det är JAG som vill vara klar 23 okt. Och den här veckan är v43, inte v44.)
+
+**VD-assistenten:**
+
+**Två rättelser tagna emot:** rektors deadline är 30 okt — 23 okt är *din* egen marginal. Jag skrev fel. Och det är v43, inte v44. Båda står nu rätt i mitt huvud.
+
+**Om D först — innan du skickar något:**
+
+Ja, du är på väg att göra något dumt, och det är inte formuleringen. **Misstänkt plagiat är inte en F-varning. Det är ett disciplinärende med egen process, och rektor beslutar — inte du.** Om du skickar det som en varning till elev och vårdnadshavare låser du berättelsen till "du är på väg att få F" *innan* något är utrett, och eleven har rätt att bemöta. Det är två olika brev, i två olika ordning.
+
+**Ordning:** dokumentera stycket och källan (var det finns, när) → anmäl enligt skolans rutin till rektor → utredning där eleven får svara → *därefter* bestäms om det är fusk och vad som händer. Skolverket har vägledning om fusk och disciplinåtgärder, men jag citerar den inte — kontrollera mot Skolverkets sida. **Inget av detta ska stå i ett F-varningsbrev. Skicka inget till D i dag.** Jag skriver gärna ett neutralt, sakligt brev när rutinen är klar och du vet vad rektor vill att det säger.
+
+---
+
+## F-varningar — tre utkast (A, B, C)
+
+**Ton: saklig och varsam.** Ingen betygsbokstav i texten, bara vad som saknas och vad som behövs. Fyll i [ ] själv. Du signerar bedömningen — jag formulerar bara.
+
+---
+
+**A** — *Ämne: [fyll i: t.ex. "Angående din essä i Svenska 3"]*
+
+Hej [elevens namn],
+Jag har läst din essä, och jag vill vara tydlig med var den står. Texten redogör för ämnet men innehåller inget eget resonemang, och de två källor du använder är båda beskrivande snarare än vetenskapliga. För att nå ett godkänt betyg behöver essän ha ett eget resonemang som förhåller sig till minst en vetenskaplig källa. [Fyll i: vad som gäller — komplettering? Vilket datum?] Jag hjälper dig gärna med vad "vetenskaplig källa" betyder i praktiken — säg till om du vill att vi går igenom det. [Fyll i: hur och när du kan nå mig]
+/Anna
+
+---
+
+**B** — *Ämne: [fyll i]*
+
+Hej [elevens namn],
+Där du resonerar gör du det bra — det är textens styrka. Men essän är inte färdig: den är [fyll i: antal sidor] och slutsatsen saknas. En essä utan slutsats kan inte bedömas mot kriterierna, hur starka de löpande delarna än är. [Fyll i: vad som gäller — lämna in resten till vilket datum?] Hör av dig om du fastnar — jag hjälper dig gärna att få ner slutsatsen.
+/Anna
+
+---
+
+**C** — *Ämne: [fyll i]*
+
+Hej [elevens namn],
+Din text saknar en frågeställning, och det gör att den inte går att bedöma mot kriterierna — allt annat vilar på den. Jag ser också att du varit borta en hel del i svenskan, bland annat genomgångarna om vetenskapligt skrivande, och det är troligen där det tappar. Det är inget jag lägger på dig — det är något vi kan räta upp. [Fyll i: erbjud stöd — tid, rum] och [fyll i: vad som gäller för inlämning]. Hör av dig.
+/Anna
+
+---
+
+## Innan du skickar
+
+- **Mottagare:** A–C till elev via Schoolsoft. Är C 17 år? Då går vårdnadshavarkopian med — kolla födelsedatum, jag vet det inte.
+- **Ett frågetecken jag inte kan fylla i:** i alla tre står "[Fyll i: vad som gäller]" — alltså om det är komplettering, ny inlämning eller bara NP som gäller. Det är skolans rutin, inte min. Bestäm formen först, då klistrar jag in den i alla tre så tonen blir jämn.
+
+Vill du ha samtalsstruktur för hur du öppnar med respektive elev, så varningen landar som åtagande och inte stämpel? Det är 5 minuter och görs gärna innan du skickar.
+
+
+## 2026-10-19 · 🔎 Kontrollera mot källan → VD-assistenten (vd-assistent)
+
+**Kunden:**
+
+Kontrollera sakuppgifterna i ditt förra svar mot officiella svenska källor. För varje uppgift som går att kontrollera: säg om den stämmer, vad som i så fall är fel och vad som gäller, och länka till källan. Hittar du ingen källa för en uppgift, säg det rakt ut i stället för att gissa. Kort.
+
+Svaret som ska kontrolleras:
+**Två rättelser tagna emot:** rektors deadline är 30 okt — 23 okt är *din* egen marginal. Jag skrev fel. Och det är v43, inte v44. Båda står nu rätt i mitt huvud.
+
+**Om D först — innan du skickar något:**
+
+Ja, du är på väg att göra något dumt, och det är inte formuleringen. **Misstänkt plagiat är inte en F-varning. Det är ett disciplinärende med egen process, och rektor beslutar — inte du.** Om du skickar det som en varning till elev och vårdnadshavare låser du berättelsen till "du är på väg att få F" *innan* något är utrett, och eleven har rätt att bemöta. Det är två olika brev, i två olika ordning.
+
+**Ordning:** dokumentera stycket och källan (var det finns, när) → anmäl enligt skolans rutin till rektor → utredning där eleven får svara → *därefter* bestäms om det är fusk och vad som händer. Skolverket har vägledning om fusk och disciplinåtgärder, men jag citerar den inte — kontrollera mot Skolverkets sida. **Inget av detta ska stå i ett F-varningsbrev. Skicka inget till D i dag.** Jag skriver gärna ett neutralt, sakligt brev när rutinen är klar och du vet vad rektor vill att det säger.
+
+---
+
+## F-varningar — tre utkast (A, B, C)
+
+**Ton: saklig och varsam.** Ingen betygsbokstav i texten, bara vad som saknas och vad som behövs. Fyll i [ ] själv. Du signerar bedömningen — jag formulerar bara.
+
+---
+
+**A** — *Ämne: [fyll i: t.ex. "Angående din essä i Svenska 3"]*
+
+Hej [elevens namn],
+Jag har läst din essä, och jag vill vara tydlig med var den står. Texten redogör för ämnet men i
+
+**VD-assistenten:**
+
+Kort genomgång, punkt för punkt. Sökningen gav mig Skolverket och riksdagen — inte Högskoleverket och inte gymnasieförordningen i sin helhet, så jag säger rakt ut var jag inte kan belägga.
+
+---
+
+**1. "Misstänkt plagiat är inte en F-varning. Det är ett disciplinärende med egen process, och rektor beslutar — inte du."**
+**Stämmer, med en nyans.** Skolverket: vid allvarligare förseelse *ska rektorn se till att saken utreds*, samråd ska ske med vårdnadshavare, och det är rektorn som får besluta om skriftlig varning. Läraren beslutar inte. Det jag sa stämmer.
+Nyansen: jag skrev "disciplinärende". Skolverkets term är *utredning* — "disciplinära åtgärder" är ett bredare begrepp. Rätt term: **utredning → rektors beslut**.
+[skolverket.se](https://www.skolverket.se/styrning-och-ansvar/regler-och-ansvar/ansvar-i-skolfragor/trygghet-studiero-och-disciplinara-atgarder)
+
+---
+
+**2. "Om du skickar det som en varning till elev och vårdnadshavare låser du berättelsen … innan något är utrett, och eleven har rätt att bemöta."**
+**Stämmer delvis.** Att utredning ska ske *innan* beslut är belagt. Att eleven "har rätt att bemöta" specifikt i gymnasieskolan — det hittar jag **ingen källa för** i det som gavs, utan bara för *högskolan* (där studenten ska beredas tillfälle att yttra sig). Säg det som "utredning sker och vårdnadshavare samråds", inte som en uttalad yttranderätt för eleven.
+[skolverket.se](https://www.skolverket.se/styrning-och-ansvar/regler-och-ansvar/ansvar-i-skolfragor/trygghet-studiero-och-disciplinara-atgarder) · [riksdagen.se](https://www.riksdagen.se/sv/dokument-och-lagar/dokument/svensk-forfattningssamling/forordning-1982976-om-disciplinara-atgarder_sfs-1982-976/) (den senare gäller högskola, inte gymnasium — jag använde den fel om jag lutade mig mot den)
+
+---
+
+**3. "Skolverket har vägledning om fusk och disciplinåtgärder."**
+**Stämmer.** Sidan finns och behandlar både disciplinära åtgärder och att eleven med otillåtna hjälpmedel "försöker vilseleda vid bedömningen" — vilket är den paragraf som är relevant för plagiat i gymnasiet.
+[skolverket.se](https://www.skolverket.se/styrning-och-ansvar/regler-och-ansvar/ansvar-i-skolfragor/trygghet-studiero-och-disciplinara-atgarder)
+
+---
+
+**4. Ordningen jag gav: "dokumentera → anmäl enligt skolans rutin till rektor → utredning där eleven får svara → därefter bestäms om det är fusk."**
+**Stämmer i sak, fel i ord.** Skolverket: utredning *ska* göras vid allvarligare förseelse, och det är rektorn som ser till att den sker — inte läraren som "anmäler och sedan utreder skolan". Jag formulerade det som om du driver processen. **Rätt: du dokumenterar och lämnar till rektor. Rektor utreder. Du beslutar inget.**
+[skolverket.se](https://www.skolverket.se/styrning-och-ansvar/regler-och-ansvar/ansvar-i-skolfragor/trygghet-studiero-och-disciplinara-atgarder)
+
+---
+
+**5. Rektors deadline 30 okt / 23 okt din marginal / v43 inte v44.**
+**Stämmer enligt företagsminnet** ("Betygsprognoser/F-varningar till rektor senast 30 okt"; "Höstlov vecka 44"). Ditt eget tillägg om 23 okt kommer från dig, inte från minnet — jag kan inte kontrollera det.
+
+---
+
+**6. F-varningsutkasten A–C: ingen betygsbokstav, vad som saknas och vad som behövs.**
+**Ingen källa att kontrollera** — det är formuleringsval, inte sakuppgifter. Ingenting i dem påstår något om lag eller rutin.
+
+---
+
+**7. Det du nu bad om — att jag skriver "ett neutralt, sakligt brev till D när rutinen är klar".**
+**Här är en varning mot mitt eget förra svar:** jag lovade att skriva ett brev till D när rektors rutin är klar. Det håller jag, men jag vill vara tydlig — jag skriver det som *informationsbrev*, inte som varning, och du får ordet "plagiat" **inte** från min hand i den texten. Det är rektors bedömning att sätta ord på, om den faller så.
+
+---
+
+**Sammanfattat: två saker i mitt förra svar var fel eller för starka** — (a) termen "disciplinärende" i stället för utredning, och (b) att *du* anmäler och driver processen, när det är rektor som utreder. Resten står. Källor: [skolverket.se](https://www.skolverket.se/styrning-och-ansvar/regler-och-ansvar/ansvar-i-skolfragor/trygghet-studiero-och-disciplinara-atgarder).
+
+Vill du att jag skriver om punkten "om D" i förra svaret med de två rättelserna inne, så du har en ren version att luta dig mot?
+
+
+## 2026-10-22 · Fråga → Återkopplingsverkstaden (aterkopplingsverkstaden)
+
+**Kunden:**
+
+Sista grejen före lovet. Efter lovet ska jag finrätta 20 vetenskapliga essäer i SA3c. Gör en kort kommentarbank (max 12 kommentarer) för vetenskaplig essä i Svenska 3: frågeställning, resonemang (enkla / välgrundade / nyanserade — kom ihåg rättelsen), källsamspel, slutsats, citat- och referatteknik. Neutral ton, en uppgift framåt i varje. Så att jag kan klistra in dem i Google Docs-kommentarer direkt.
+
+**Återkopplingsverkstaden:**
+
+# Kommentarbank — vetenskaplig essä, Svenska 3 (SA3c)
+
+12 kommentarer. Neutral ton. En uppgift framåt i varje. Klistra in som de är — fyll bara [platshållare].
+Källa för nivåorden: Skolverkets ämnesplan Svenska (Gy11). Tre källor + Harvard är ditt lokala krav, inte Skolverkets — står därför separat, inte som kriterienära.
+
+---
+
+## Frågeställning
+
+**F1.**
+> Frågeställningen är bred — den rymmer mer än 4 sidor. Prova att snäva in den till en avgränsad del av ämnet och se om du kan besvara den inom ramen.
+
+**F2.**
+> Frågeställningen går att besvara, men den är inte formulerad som en fråga i texten. Lyft fram den tydligt i inledningen så att läsaren vet vad du svarar på.
+
+---
+
+## Resonemang (enkla / välgrundade / nyanserade)
+
+**R1 — från enkelt mot välgrundat**
+> Du för ett resonemang här. För att det ska bli välgrundat behöver varje steg motiveras — visa *varför*, inte bara *att*. Välj ut ett ställe och bygg ut det.
+
+**R2 — mot nyanserat (C→A)**
+> Resonemanget är välgrundat men rakt — du driver en linje utan att pröva den. Lägg in en invändning mot din egen slutsats och svara på den. Nyanseringen ligger där.
+
+**R3 — egen röst**
+> Texten refererar men driver inte en egen linje. Kan du lägga till en mening i slutet av stycket som börjar "Detta visar att …" och knyter källan till din fråga?
+
+**R4 — struktur på resonemanget**
+> Resonemanget tappar tråden mellan [stycke/platshållare] och [stycke/platshållare]. Markera i marginalen var din poäng är — och bygg stycket kring den, i stället för kring källorna.
+
+---
+
+## Källsamspel
+
+**K1.**
+> Källorna är korrekt refererade men står sida vid sida — de samtalar inte. Låt [källa X] svara på [källa Y] i en mening, så att samspelet syns.
+
+**K2 — lokal krav (tre källor / Harvard)**
+> Kontrollera enligt uppgiftens krav: minst tre vetenskapliga källor och referens enligt Harvard. Detta är kursens/skolans krav, inte Skolverkets — utgå från uppgiftsbeskrivningen.
+
+**K3.**
+> Referensen står i slutet av stycket men påståendet görs tidigare. Flytta referensen till meningen där påståendet står.
+
+---
+
+## Slutsats
+
+**S1.**
+> Slutsatsen svarar på en annan fråga än den du ställde i inledningen. Gå tillbaka till frågeställningen och skriv ett avslut som besvarar den.
+
+**S2.**
+> Slutsatsen upprepar inledningen. Avsluta i stället med vad din undersökning har kommit fram till — och vad som fortfarande är öppet.
+
+---
+
+## Citat- och referatteknik
+
+**C1.**
+> Citatet är korrekt återgivet men inklistrat. Knyt det till din text med en egen mening före och en efter, så att läsaren ser varför citatet är där.
+
+**C2.**
+> Omskrivningen ligger för nära originalet. Skriv om med egna ord så att din röst bär meningen — och behåll referensen.
+
+---
+
+**Fördelning:** 2 frågeställning · 4 resonemang · 3 källsamspel · 2 slutsats · 2 citat/referat = 12.
+
+Vill du ha **uppmuntrande** eller **utmanande** variant på någon? Säg vilka, det är snabbjobb. Och lycka till med lovet.
