@@ -317,12 +317,34 @@
         "role": "assistant",
         "content": "**Plan – första två veckorna i november**  \nKällor: din beskrivning + företagsminnet (\"kvartalsmoms den 12:e i andra månaden efter kvartalet, i augusti och januari den 17:e\" och \"arbetsgivardeklarationer den 12:e\").\n\n- **Kvartalsmomsen för Q3 (juli–september):** enligt företagsminnet ska den in i andra månaden efter kvartalet, det vill säga i november. Ni har inte angett någon undantagsdag för november, så jag utgår från den tolfte. Bekräfta gärna mot Skatteverket, eftersom helgdag kan flytta datumet — jag hittar inte på paragrafer eller datum.\n- **Arbetsgivardeklarationen:** den tolfte enligt samma minne. Alltså samma dag som kvartalsmomsen.\n\n**Vecka 1 (före den 5:e)**\n- Sanna skickar påminnelse med mall till de cirka trettio kvartalskunderna i så god tid att kunden hinner skicka senast den 5:e. Ägare: Sanna.\n- Markera i Excel vilka som fått utskicket och när.\n\n**5:e–11:e**\n- Första uppföljning till dem som inte skickat. Ring de kunder som brukar vara sena. Ägare: Sanna, med eskalerering till ägande konsult eller dig.\n- Konsulterna registrerar inkomna underlag löpande så att inget ligger kvar till den tolfte.\n\n**Den 12:e**\n- Kvartalsmomsen och arbetsgivardeklarationen ska in. Ägare: berörd konsult, granskning av dig.\n\n**Krockar att bestämma om**\n- **Samma dag:** kvartalsmoms Q3 och AGI ligger båda den tolfte. Fråga: finns också månadsmoms för oktober med samma datum? Din bild nämner bara kvartalsmoms, men de cirka 140 kunderna har löpande moms enligt företagsminnet. Om ja blir det tre saker på samma dag.\n- **Sanna på deltid** enligt företagsminnet: cirka trettio påminnelser i november, fler än den vanliga månadsrundan med cirka 35 och 12 kroniskt sena. Saknas underlag: Sannas tillgängliga timmar i november.\n- **Risk att glömmas:** kunder som inte svarar på första utskicket, dokumentationen i Excel, och AGI om den hanteras som \"momsvecka\".\n\n**Fråga till dig, Karin**\nSka påminnelserna gå ut i början av vecka 1 med uppföljning direkt efter den 5:e — eller väntar vi till strax före den 5:e och lägger allt tryck där?  \nOm något måste väljas bort: låt eventuell oktobermoms hanteras av samma konsult som kvartalsmomsen och skjut annat bokföringsarbete, eftersom de två första veckorna annars samlar tre deadlines den tolfte. Beslutet är ditt.\n\n**Saknas underlag:** listan på de cirka trettio kvartalskunderna, vilka av dem som är återkommande sena, om oktobermoms ingår den tolfte, och Sannas timmar i november.",
         "datum": "2026-10-14"
+      },
+      {
+        "role": "user",
+        "content": "Stämmer det att momsen på representationsmåltider inte får dras av alls sedan 2017? Svara kort i två meningar, jag ska skriva det i nyhetsbrevet.",
+        "at": 1790454826828,
+        "datum": "2026-10-26"
+      },
+      {
+        "role": "assistant",
+        "content": "Nej, det stämmer inte. Det som togs bort 2017 var avdragsrätten för inkomstskatt på representationsmåltider, medan momsen fortfarande får lyftas på ett underlag på högst 300 kr exklusive moms per person och tillfälle.\n\nKontrollera mot Skatteverket innan det går i nyhetsbrevet — teamloggen 2026-10-05 visar att just den här formuleringen är känslig och lätt blir fel.",
+        "datum": "2026-10-26"
+      },
+      {
+        "role": "user",
+        "content": "Sökfråga: Skatteverket moms representation 300 kr per person\n\nKontrollera sakuppgifterna i ditt förra svar mot officiella svenska källor. För varje uppgift som går att kontrollera: säg om den stämmer, vad som i så fall är fel och vad som gäller, och länka till källan. Hittar du ingen källa för en uppgift, säg det rakt ut i stället för att gissa — och säg aldrig att något stämmer om källorna du hittade inte handlar om just den uppgiften. Kort.\n\nSvaret som ska kontrolleras:\nNej, det stämmer inte. Det som togs bort 2017 var avdragsrätten för inkomstskatt på representationsmåltider, medan momsen fortfarande får lyftas på ett underlag på högst 300 kr exklusive moms per person och tillfälle.\n\nKontrollera mot Skatteverket innan det går i nyhetsbrevet — teamloggen 2026-10-05 visar att just den här formuleringen är känslig och lätt blir fel.",
+        "at": 1790454832304,
+        "datum": "2026-10-26"
+      },
+      {
+        "role": "assistant",
+        "content": "**Kontroll av mitt förra svar**\n\n- **\"Momsen får fortfarande lyftas på ett underlag på högst 300 kr exklusive moms per person och tillfälle\"** — stämmer. Skatteverket: \"Om du har kostnader för mat och dryck i samband med representation får du göra avdrag för moms på ett underlag på högst 300 kronor exklusive moms per person och tillfälle.\" [skatteverket.se](https://www.skatteverket.se/foretagochorganisationer/moms/kopavarorochtjanster/representation.4.15532c7b1442f256baec84b.html)\n\n- **\"Det som togs bort 2017 var avdragsrätten för inkomstskatt på representationsmåltider\"** — delvis styrkt. Källorna bekräftar att avdragsrätten för representation vid inkomstbeskattning slopades (lunch, middag, supé eller annan förtäring), medan momstaket infördes i stället. [riksdagen.se](https://www.riksdagen.se/sv/dokument-och-lagar/dokument/interpellation/avdragsratten-for-representation_h310468/) [skatteverket.se](https://www.skatteverket.se/download/18.7be5268414bea064694307a/1426602112781/pm)\n\n- **Årtalet 2017** — hittar ingen källa i sökresultaten som anger just 2017. Interpellationen och promemorian talar om ikraftträdande 1 januari 2016. Jag kan alltså inte bekräfta årtalet mot dessa källor.\n\n- **Beloppet 300 kr** — stöds av flera källor, också på engelska. [skatteverket.se](https://skatteverket.se/servicelankar/otherlanguages/inenglishengelska/businessesandemployers/startingandrunningaswedishbusiness/declaringtaxesbusinesses/vat/vatdeductionsforbusinessentertainmentexpenses.4.676f4884175c97df419244f.html)\n\n**Rekommendation för nyhetsbrevet:** skriv inte ut årtalet utan att ha belagt det, och hänvisa i stället till Skatteverkets sida om avdrag för moms vid representation.",
+        "datum": "2026-10-26"
       }
     ]
   },
   "memory": "Lindqvist Redovisning AB, Jönköping. Auktoriserad redovisningsbyrå sedan 2003. Ägare: Karin Lindqvist, auktoriserad redovisningskonsult (FAR/Srf).\n\nPersonal (6): Karin (ägare), tre redovisningskonsulter (bl.a. Johan), en lönekonsult (Birgitta), en administratör på deltid (Sanna).\n\nCa 140 kunder med löpande bokföring, löner och bokslut. Främst hantverkare, frisörer och restauranger. Enskilda firmor och aktiebolag med 1–20 anställda. Inga kunder har omsättning över 40 miljoner kronor.\n\nPåminnelser om underlag: Sanna skickar i dag individuella mejl och ringer sedan. Ca 35 kunder behöver påminnas varje månad, ca 12 av dem är nästan alltid sena.\n\nMomsdatum för våra kunder: månadsmoms den 12:e. Kvartalsmoms den 12:e i andra månaden efter kvartalet (i augusti och januari den 17:e). Arbetsgivardeklarationer den 12:e.\n\nVerktyg: Fortnox byråpaket, Visma Lön, Outlook, Teams, en gemensam Excel med deadlines per kund.\n\nTon mot kund: vänlig, saklig och personlig. Vi skriver \"vi\" för byrån, du-tilltal till kunden, undertecknat med handläggarens namn.\n\nRegler som gäller alltid: Inga personnummer, löneuppgifter eller kunders bokföringsdata skrivs in här. AI skriver utkast, inte råd. Allt som går till kund granskas av en konsult först.\n\nByrån har ännu ingen AI-policy. Johan vill använda ChatGPT, Birgitta är tveksam.\n- Rättelse 2026-10-05 (Påminnelse- och utkortsskribenten): Det här är fel, och det är allvarligt. Det var inkomstskatteavdraget för måltidsrepresentation som togs bort 2017, inte momsavdraget. Momsen får fortfarande lyftas på ett underlag på högst 300 kr exklusive moms per person och tillfälle. Kontrollen bekräftade dessutom det felaktiga påståendet och tvivlade på det som var rätt. Skriv om utkastet.",
   "docs": [],
-  "datum": "2026-10-21",
+  "datum": "2026-10-26",
   "calls": [
     {
       "at": "2026-09-28",
@@ -563,6 +585,30 @@
       "in": 6473,
       "out": 217,
       "tecken": 650
+    },
+    {
+      "at": "2026-10-26",
+      "sek": 4.277,
+      "finish": "stop",
+      "in": 4062,
+      "out": 117,
+      "tecken": 367
+    },
+    {
+      "at": "2026-10-26",
+      "sek": 1.11,
+      "finish": "stop",
+      "in": 222,
+      "out": 13,
+      "tecken": 50
+    },
+    {
+      "at": "2026-10-26",
+      "sek": 15.328,
+      "finish": "stop",
+      "in": 7800,
+      "out": 553,
+      "tecken": 1690
     }
   ]
 }

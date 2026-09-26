@@ -1376,3 +1376,44 @@ Reglerna finns på Skatteverket, sök på "representation".
 Vänliga hälsningar
 [fyll i: handläggarens namn]
 Lindqvist Redovisning AB
+
+
+## 2026-10-26 · Fråga → Prioriteraren (vd)
+
+**Kunden:**
+
+Stämmer det att momsen på representationsmåltider inte får dras av alls sedan 2017? Svara kort i två meningar, jag ska skriva det i nyhetsbrevet.
+
+**Prioriteraren:**
+
+Nej, det stämmer inte. Det som togs bort 2017 var avdragsrätten för inkomstskatt på representationsmåltider, medan momsen fortfarande får lyftas på ett underlag på högst 300 kr exklusive moms per person och tillfälle.
+
+Kontrollera mot Skatteverket innan det går i nyhetsbrevet — teamloggen 2026-10-05 visar att just den här formuleringen är känslig och lätt blir fel.
+
+
+## 2026-10-26 · 🔎 Kontrollera mot källan → Prioriteraren (vd)
+
+**Kunden:**
+
+Sökfråga: Skatteverket moms representation 300 kr per person
+
+Kontrollera sakuppgifterna i ditt förra svar mot officiella svenska källor. För varje uppgift som går att kontrollera: säg om den stämmer, vad som i så fall är fel och vad som gäller, och länka till källan. Hittar du ingen källa för en uppgift, säg det rakt ut i stället för att gissa — och säg aldrig att något stämmer om källorna du hittade inte handlar om just den uppgiften. Kort.
+
+Svaret som ska kontrolleras:
+Nej, det stämmer inte. Det som togs bort 2017 var avdragsrätten för inkomstskatt på representationsmåltider, medan momsen fortfarande får lyftas på ett underlag på högst 300 kr exklusive moms per person och tillfälle.
+
+Kontrollera mot Skatteverket innan det går i nyhetsbrevet — teamloggen 2026-10-05 visar att just den här formuleringen är känslig och lätt blir fel.
+
+**Prioriteraren:**
+
+**Kontroll av mitt förra svar**
+
+- **"Momsen får fortfarande lyftas på ett underlag på högst 300 kr exklusive moms per person och tillfälle"** — stämmer. Skatteverket: "Om du har kostnader för mat och dryck i samband med representation får du göra avdrag för moms på ett underlag på högst 300 kronor exklusive moms per person och tillfälle." [skatteverket.se](https://www.skatteverket.se/foretagochorganisationer/moms/kopavarorochtjanster/representation.4.15532c7b1442f256baec84b.html)
+
+- **"Det som togs bort 2017 var avdragsrätten för inkomstskatt på representationsmåltider"** — delvis styrkt. Källorna bekräftar att avdragsrätten för representation vid inkomstbeskattning slopades (lunch, middag, supé eller annan förtäring), medan momstaket infördes i stället. [riksdagen.se](https://www.riksdagen.se/sv/dokument-och-lagar/dokument/interpellation/avdragsratten-for-representation_h310468/) [skatteverket.se](https://www.skatteverket.se/download/18.7be5268414bea064694307a/1426602112781/pm)
+
+- **Årtalet 2017** — hittar ingen källa i sökresultaten som anger just 2017. Interpellationen och promemorian talar om ikraftträdande 1 januari 2016. Jag kan alltså inte bekräfta årtalet mot dessa källor.
+
+- **Beloppet 300 kr** — stöds av flera källor, också på engelska. [skatteverket.se](https://skatteverket.se/servicelankar/otherlanguages/inenglishengelska/businessesandemployers/startingandrunningaswedishbusiness/declaringtaxesbusinesses/vat/vatdeductionsforbusinessentertainmentexpenses.4.676f4884175c97df419244f.html)
+
+**Rekommendation för nyhetsbrevet:** skriv inte ut årtalet utan att ha belagt det, och hänvisa i stället till Skatteverkets sida om avdrag för moms vid representation.
