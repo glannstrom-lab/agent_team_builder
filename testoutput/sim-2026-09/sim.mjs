@@ -66,10 +66,10 @@ function klippApp(start, slut) {
   if (i < 0 || j < 0) throw new Error("hittade inte " + start + " i app.js");
   return APP.slice(i, j);
 }
-const P = (st) => new Function("loadMemory", "loadDocs",
+const P = (st) => new Function("loadMemory", "loadDocs", "state", "team",
   klippApp("const DOC_BUDGET", "// ---------- helpers ----------") +
   "\nreturn { systemFor, contextFor };"
-)(() => st.memory || "", () => st.docs || []);
+)(() => st.memory || "", () => st.docs || [], { history: st.history }, team);
 
 // ── transport ────────────────────────────────────────────────────────────
 const sessionFil = join(SCRATCH, kund + ".session.json");
@@ -315,11 +315,19 @@ async function kontroll(agentId) {
   const h = st.history[agentId] || [];
   const sista = [...h].reverse().find((m) => m.role === "assistant");
   if (!sista) throw new Error("inget svar att kontrollera hos " + agentId);
-  const text = "Kontrollera sakuppgifterna i ditt förra svar mot officiella svenska källor. För varje uppgift som går att kontrollera: " +
-    "säg om den stämmer, vad som i så fall är fel och vad som gäller, och länka till källan. " +
-    "Hittar du ingen källa för en uppgift, säg det rakt ut i stället för att gissa. Kort.\n\n" +
-    "Svaret som ska kontrolleras:\n" + sista.content.slice(0, 1500);
-  await chat(agentId, text, "🔎 Kontrollera mot källan", true);
+  // Samma två steg som knappen i portal/app.js sedan KA21: sökfrågan
+  // formuleras först (instruktionen läses ur källan), sedan kontrollText().
+  const src = (namn) => { const i = APP.indexOf(`function ${namn}(`); return APP.slice(i, APP.indexOf("\n}\n", i) + 2); };
+  const kontrollText = new Function(src("kontrollText") + "; return kontrollText;")();
+  const sökSystem = (APP.slice(APP.indexOf("async function sökfrågaFör(")).match(/system: ("[^"]+" \+\s*"[^"]+")/) || [])[1];
+  let fråga = sista.content.replace(/\s+/g, " ").slice(0, 160);
+  try {
+    const r = await portal(new Function("return " + sökSystem)(), [{ role: "user", content: sista.content.slice(0, 3000) }], 60);
+    const rad = (r.text || "").split("\n").map((s) => s.trim()).find(Boolean) || "";
+    if (rad.length >= 8) fråga = rad.replace(/^["'”]+|["'”]+$/g, "").slice(0, 160);
+  } catch (_) { /* reserv: svarets början, som i portalen */ }
+  console.error("  sökfråga: " + fråga);
+  await chat(agentId, kontrollText(fråga, sista.content), "🔎 Kontrollera mot källan", true);
 }
 
 // Knappen "✗ Blev det fel?" — rättelsen blir en rad i företagsminnet och ett nytt svar begärs.

@@ -616,12 +616,50 @@ function systemFor(agent) {
     }
     sys += `\n\nUNDERLAG (material användaren lagt in — använd som källa när det är relevant):\n${parts.join("\n\n")}`;
   }
+  // RE8 (2026-09-26): varje agent såg bara sitt eget samtal. I simuleringen
+  // trodde VD-assistenten att nyhetsbrevet var oskrivet när skribenten redan
+  // gjort det, och att "inga offerter har gått ut" efter två. Teamloggen är de
+  // andras senaste leveranser — datum och rubrik, inte hela texten.
+  const logg = teamLogg(agent && agent.id);
+  if (logg) sys += `\n\nTEAMLOGG (vad de andra i teamet nyligen levererat — utgå från det, och fråga inte efter sådant som redan är gjort):\n${logg}`;
   // Källhänvisning: när ett underlag används ska det synas varifrån uppgiften
   // kommer — det gör svaren granskningsbara och underlagen begripliga.
   if (mem || active.length) {
     sys += `\n\nNär du använder företagsminnet eller ett underlag i ett svar: hänvisa kort till källan vid namn (t.ex. "enligt er prislista"). Påstå aldrig att ett underlag innehåller något det inte gör — saknas uppgiften, säg det och be om den.`;
   }
   return sys;
+}
+
+// Teamloggen (RE8). De andra agenternas senaste svar, nyast först: datum,
+// agent och första rubriken eller inledningen. Kort med flit — det är ett
+// register över vad som finns, inte ett andra samtal att läsa.
+const TEAMLOGG_PER_AGENT = 3;
+const TEAMLOGG_BUDGET = 1500;
+function teamLogg(egenId) {
+  const hist = (state && state.history) || {};
+  const namn = (id) => { const a = (team && team.agents || []).find((x) => x.id === id); return a ? a.name : null; };
+  const rader = [];
+  for (const [id, msgs] of Object.entries(hist)) {
+    if (id === egenId || !namn(id) || !Array.isArray(msgs)) continue;
+    msgs.filter((m) => m && m.role === "assistant" && m.content && m.content.trim())
+      .slice(-TEAMLOGG_PER_AGENT)
+      .forEach((m) => {
+        const body = m.content.trim();
+        const rubrik = (body.split("\n").find((l) => /^#{1,4}\s+\S/.test(l.trim())) || "").replace(/^#+\s*/, "").trim();
+        const vad = (rubrik || body.replace(/\s+/g, " ")).slice(0, 110);
+        const när = m.at ? new Date(m.at).toISOString().slice(0, 10) : (m.datum || "");
+        rader.push({ t: m.at || 0, rad: `- ${när ? när + " " : ""}${namn(id)}: ${vad}${vad.length >= 110 ? "…" : ""}` });
+      });
+  }
+  rader.sort((a, b) => b.t - a.t);
+  const ut = [];
+  let used = 0;
+  for (const r of rader) {
+    if (used + r.rad.length > TEAMLOGG_BUDGET) break;
+    used += r.rad.length;
+    ut.push(r.rad);
+  }
+  return ut.join("\n");
 }
 
 // ---------- kontextbudget för samtalet ----------
@@ -4056,6 +4094,30 @@ function openWeekWork() {
 
 // Kopiera/ladda ner per svar — svaret ska vidare in i mail och dokument,
 // inte dö i chatten. Rå markdown kopieras (klistras fint i de flesta verktyg).
+// KA21: en kort sökfråga ur svaret. Faller tillbaka på svarets början om
+// anropet misslyckas — kontrollen ska gå att köra även då.
+async function sökfrågaFör(svar) {
+  try {
+    const q = await window.ATBClaude.collect({
+      system: "Du formulerar EN sökfråga på svenska för att kontrollera sakuppgifter mot svenska myndigheters webbplatser (Skatteverket, Skolverket, riksdagen.se m.fl.). " +
+        "Välj den regel, det belopp eller det datum i texten som är viktigast att kontrollera. Svara med enbart sökfrågan, högst tolv ord, utan citattecken.",
+      messages: [{ role: "user", content: String(svar || "").slice(0, 3000) }],
+      maxTokens: 60,
+    });
+    const rad = String(q || "").split("\n").map((s) => s.trim()).find(Boolean) || "";
+    if (rad.length >= 8) return rad.replace(/^["'”]+|["'”]+$/g, "").slice(0, 160);
+  } catch (_) { /* reserv nedan */ }
+  return String(svar || "").replace(/\s+/g, " ").slice(0, 160);
+}
+function kontrollText(fråga, svar) {
+  return `Sökfråga: ${fråga}\n\n` +
+    "Kontrollera sakuppgifterna i ditt förra svar mot officiella svenska källor. För varje uppgift som går att kontrollera: " +
+    "säg om den stämmer, vad som i så fall är fel och vad som gäller, och länka till källan. " +
+    "Hittar du ingen källa för en uppgift, säg det rakt ut i stället för att gissa — och säg aldrig att något stämmer " +
+    "om källorna du hittade inte handlar om just den uppgiften. Kort.\n\n" +
+    "Svaret som ska kontrolleras:\n" + String(svar || "").slice(0, 1500);
+}
+
 // Det som följer med till kundens eget ChatGPT eller Claude. Agentens egen
 // instruktion (inte systemFor(), som även bakar in alla underlag — de kan vara
 // stora och kunden ska inte skicka dem vidare utan att välja det själv), plus
@@ -4170,14 +4232,17 @@ function addActions(row, getText) {
     // functions/api/ai.js). Kundens val, per svar — den kostar några öre.
     const kb = el("button", "act-btn", "🔎 Kontrollera mot källan"); kb.type = "button";
     kb.title = "Låt agenten söka på Skatteverket, Skolverket, riksdagen.se m.fl. och kontrollera sakuppgifterna i svaret";
-    kb.onclick = () => submitMessage(
-      "Kontrollera sakuppgifterna i ditt förra svar mot officiella svenska källor. För varje uppgift som går att kontrollera: " +
-      "säg om den stämmer, vad som i så fall är fel och vad som gäller, och länka till källan. " +
-      "Hittar du ingen källa för en uppgift, säg det rakt ut i stället för att gissa. Kort.\n\n" +
-      // Webbsökningen bygger sin sökfråga ur det här meddelandet, så sakfrågan
-      // måste stå här — inte bara i historiken.
-      "Svaret som ska kontrolleras:\n" + getText().slice(0, 1500),
-      "🔎 Kontrollera mot källan", { webb: true });
+    kb.onclick = async () => {
+      if (state.streaming || kb.disabled) return;
+      kb.disabled = true; kb.textContent = "🔎 Formulerar sökningen…";
+      // KA21 (2026-09-26): webbsökningen bygger sin fråga ur meddelandet, och
+      // ett helt svar som sökfråga gav fel träffar (Skatteverkets sidor om
+      // privat deklaration när frågan gällde moms på representation). Först
+      // formuleras därför en kort, riktad sökfråga — ett litet anrop utan webb.
+      const fråga = await sökfrågaFör(getText());
+      kb.disabled = false; kb.textContent = "🔎 Kontrollera mot källan";
+      submitMessage(kontrollText(fråga, getText()), "🔎 Kontrollera mot källan", { webb: true });
+    };
     acts.appendChild(kb);
   }
   // Ta med till ChatGPT eller Claude (2026-09-26): tunga uppgifter — bilder,

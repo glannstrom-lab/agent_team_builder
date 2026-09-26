@@ -620,7 +620,7 @@ test("svarsknapparna: kontrollen skickar webb och sakfrågan, exporten bär agen
   const i = KÄLLA.indexOf("function addActions(");
   const kropp = KÄLLA.slice(i, KÄLLA.indexOf("\nfunction ", i + 10));
   assert.ok(kropp.includes("{ webb: true }"), "Kontrollera mot källan skickar inte webb-flaggan");
-  assert.ok(kropp.includes("getText().slice(0, 1500)"), "sökningen byggs ur meddelandet — svaret måste stå i det");
+  assert.ok(kropp.includes("kontrollText(fråga, getText())") && kropp.includes("await sökfrågaFör(getText())"), "kontrollen ska använda en formulerad sökfråga (KA21)");
   assert.ok(kropp.includes("https://chatgpt.com/?q=") && kropp.includes("https://claude.ai/new?q="), "exportlänkarna saknas");
   const p = KÄLLA.slice(KÄLLA.indexOf("function externtPaket("), KÄLLA.indexOf("function addActions("));
   assert.ok(p.includes("agent.system") && p.includes("loadMemory()"), "paketet ska bära instruktionen och företagsminnet");
@@ -670,4 +670,47 @@ test("ett tomt svar sparas aldrig — det går felvägen och frågan kan skickas
   const vakt = kropp.indexOf('if (!acc.trim()) throw new Error(');
   const spara = kropp.indexOf('pushHistory(agentId, { role: "assistant", content: acc');
   assert.ok(vakt > 0 && spara > vakt, "vakten måste ligga före sparandet");
+});
+
+// ── RE8: teamloggen — agenterna ser vad de andra levererat ──────────────────
+function laddaSystemFor({ history, agents, memory = "" }) {
+  const i = KÄLLA.indexOf("const DOC_BUDGET"), j = KÄLLA.indexOf("// ---------- helpers ----------");
+  return new Function("loadMemory", "loadDocs", "state", "team", KÄLLA.slice(i, j) + "\nreturn { systemFor, teamLogg };")(
+    () => memory, () => [], { history }, { agents });
+}
+
+test("RE8: agentens instruktion får de ANDRAS senaste leveranser, nyast först — inte sina egna", () => {
+  const agents = [{ id: "vd-assistent", name: "Assistenten", system: "Du är assistenten." },
+                  { id: "skribent", name: "Skribenten", system: "Du skriver." },
+                  { id: "offert", name: "Offertmakaren", system: "Du gör offerter." }];
+  const history = {
+    skribent: [{ role: "user", content: "Skriv nyhetsbrevet" }, { role: "assistant", content: "## Nyhetsbrev Q4\nText…", at: Date.UTC(2026, 9, 6) }],
+    offert: [{ role: "assistant", content: "Offert till Karlsson: badrum 5 m²…", at: Date.UTC(2026, 9, 8) }],
+    "vd-assistent": [{ role: "assistant", content: "## Min egen veckostart", at: Date.UTC(2026, 9, 9) }],
+  };
+  const { systemFor } = laddaSystemFor({ history, agents });
+  const sys = systemFor(agents[0]);
+  assert.match(sys, /TEAMLOGG/);
+  assert.match(sys, /2026-10-06 Skribenten: Nyhetsbrev Q4/, "rubriken ska användas när den finns");
+  assert.match(sys, /2026-10-08 Offertmakaren: Offert till Karlsson/);
+  assert.ok(sys.indexOf("Offertmakaren") < sys.indexOf("Skribenten: Nyhetsbrev"), "nyast först");
+  assert.doesNotMatch(sys, /Min egen veckostart/, "agentens egna svar finns redan i dess samtal");
+});
+
+test("RE8: utan andras leveranser blir instruktionen oförändrad, och loggen håller sin budget", () => {
+  const agents = [{ id: "a", name: "A", system: "Bas." }, { id: "b", name: "B", system: "Bas." }];
+  const { systemFor, teamLogg } = laddaSystemFor({ history: {}, agents });
+  assert.equal(systemFor(agents[0]), "Bas.");
+  const många = { b: Array.from({ length: 50 }, (_, i) => ({ role: "assistant", content: "x".repeat(300), at: i })) };
+  assert.ok(laddaSystemFor({ history: många, agents }).teamLogg("a").length <= 1500);
+});
+
+test("KA21: kontrollmeddelandet börjar med sökfrågan och förbjuder att bekräfta mot fel källa", () => {
+  const i = KÄLLA.indexOf("function kontrollText(");
+  const src = KÄLLA.slice(i, KÄLLA.indexOf("\n}\n", i) + 2);
+  const kontrollText = new Function(src + "; return kontrollText;")();
+  const t = kontrollText("moms representation 300 kr per person", "Momsen får inte dras av sedan 2017.");
+  assert.ok(t.startsWith("Sökfråga: moms representation 300 kr per person"), "webbsökningen läser meddelandets början");
+  assert.match(t, /säg aldrig att något stämmer om källorna du hittade inte handlar om just den uppgiften/);
+  assert.match(t, /Momsen får inte dras av/);
 });
