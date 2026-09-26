@@ -735,6 +735,8 @@ function buildIntakeBlock(intake) {
     "",
     "## Var det klämmer",
     pains,
+    // KA7: vid rent enkätintag är följdfrågornas svar kundens enda egna ord.
+    intake.extra && intake.extraIKlämmer ? "\nMed kundens egna ord (svar på följdfrågor):\n" + intake.extra : null,
     "",
     person ? "## Vad omgivningen förväntar sig" : null,
     person ? expectations : null,
@@ -748,7 +750,7 @@ function buildIntakeBlock(intake) {
     "## Avgränsningar",
     nogo,
     coach ? `\n## Arbetssätt (viktigt för förslaget)\n${person ? "Personen" : "Kunden"} vill fortsätta göra själva utförandet i sin egen AI${sv.ownai && !/^nej/i.test(sv.ownai) ? ` (${sv.ownai})` : " (t.ex. ChatGPT)"}. Teamets agenter ska därför ARBETSLEDA, inte utföra: varje agents Leverans blir ett arbetspaket — en kort brief, en FÄRDIG självbärande prompt att klistra in i ${person ? "personens" : "kundens"} AI, och en "Klart när"-checklista för att bedöma resultatet. Portalen förblir navet för rutiner, minne och uppföljning.` : null,
-    intake.extra ? "\n## Kompletterande svar (följdfrågor)\n" + intake.extra : null,
+    intake.extra && !intake.extraIKlämmer ? "\n## Kompletterande svar (följdfrågor)\n" + intake.extra : null,
     "```",
   ].filter((x) => x !== null).join("\n");
 }
@@ -859,16 +861,24 @@ function renderClarify(form, intake, qs, tvingande) {
   const fel = el("div", "setup-err"); fel.setAttribute("role", "alert"); fel.style.display = "none";
   const go = el("button", "btn-primary", "Fortsätt — bygg teamet"); go.type = "button";
   go.onclick = () => {
-    const svarade = inputs.map(({ t }) => t.value.trim()).filter((v) => v.length >= 15);
-    if (tvingande && !svarade.length) {
-      fel.textContent = "⚠️ Skriv ett svar på minst en av frågorna — en mening räcker.";
+    // KA7 (2026-09-26): vid ett rent enkätintag är de här svaren HELA
+    // skillnaden mot nästa kund i samma bransch. Förut räckte ETT svar på 15
+    // tecken — två salonger kunde skilja sig på ca 110 tecken av 1 250. Nu
+    // krävs båda (de mäter olika saker: veckan och skillnaden mot branschen),
+    // med minst 40 tecken, alltså en riktig mening.
+    const KRAV = tvingande ? 40 : 15;
+    const korta = inputs.filter(({ t }) => t.value.trim().length < KRAV);
+    if (tvingande && korta.length) {
+      fel.textContent = "⚠️ Svara på båda frågorna med en hel mening — det är de som gör teamet till ert.";
       fel.style.display = "block";
-      inputs[0]?.t.focus();
+      korta[0].t.focus();
       return;
     }
     fel.style.display = "none";
     const extra = inputs.map(({ q, t }) => `**${q}**\n${t.value.trim() || "(inget svar)"}`).join("\n\n");
-    runBuild(Object.assign({}, intake, { extra }));
+    // Enkätsvaren ekas in under "Var det klämmer" i intaget, där research läser
+    // det viktigaste — inte sist som ett tillägg (buildIntakeBlock).
+    runBuild(Object.assign({}, intake, { extra, extraIKlämmer: !!tvingande }));
   };
   row.appendChild(go);
   // "Hoppa över" finns bara när underlaget redan bär egna ord. Vid ett rent

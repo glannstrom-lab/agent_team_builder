@@ -27,6 +27,7 @@
 
 import { json } from "./auth/_lib.js";
 import { kronorFör, KOSTNAD } from "./ai.js";
+import { PLANS_WITHOUT_PORTAL } from "./_plan.js";
 
 // Hur länge ett kreditfel håller rutten röd. Kort nog att en påfylld kredit
 // syns snabbt, långt nog att felet inte hinner blinka förbi mellan två pollar
@@ -119,6 +120,28 @@ export async function onRequestGet(context) {
       if (!kontroller.ai_kostnad) problem.push("Dygnets AI-kostnad är över larmnivån — titta i ai_budget och npm run kostnad");
     } catch (_) {
       kontroller.ai_kostnad = null;
+    }
+  }
+
+  // 7) Kom veckobrevet fram? (DR10b). Workern är bara en klocka; dör den —
+  // eller svarar rutten fel — skrivs ingenting någonstans och breven slutar
+  // bara komma. En aktiv prenumeration på ett öppet team som funnits i över
+  // åtta dagar men inte fått något brev på åtta dagar betyder att kedjan står.
+  // Spärrade planer räknas inte: de får med flit inga brev (run.js).
+  if (dbSvarar) {
+    try {
+      const gräns = utcDay(nu - 8 * 86400000);
+      const spärrade = [...PLANS_WITHOUT_PORTAL];
+      const r = await env.DB.prepare(
+        "SELECT COUNT(*) AS n FROM weekly_digest w JOIN teams t ON t.slug = w.team_slug " +
+        "WHERE w.active = 1 AND w.created_at < ? AND (w.last_sent_day IS NULL OR w.last_sent_day < ?) " +
+        `AND t.plan NOT IN (${spärrade.map(() => "?").join(", ")})`
+      ).bind(nu - 8 * 86400000, gräns, ...spärrade).first();
+      const n = (r && r.n) || 0;
+      kontroller.veckobrev = n === 0;
+      if (n) problem.push(`${n} veckobrev har inte gått ut på över åtta dagar — kontrollera worker-veckobrev och DIGEST_SECRET`);
+    } catch (_) {
+      kontroller.veckobrev = null;
     }
   }
 

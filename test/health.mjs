@@ -168,3 +168,22 @@ test("DR9: en normal dag är grön", async () => {
   assert.equal(status, 200);
   assert.equal(kropp.checks.ai_kostnad, true);
 });
+
+// ── DR10b: kom veckobrevet fram? ───────────────────────────────────────────
+function dbVeckobrev(n) {
+  const bas = dbMed();
+  return { prepare: (sql) => (/FROM weekly_digest/.test(sql)
+    ? { bind: () => ({ first: async () => ({ n }) }) }
+    : bas.prepare(sql)) };
+}
+test("DR10b: veckobrev som inte gått ut på åtta dagar gör rutten röd", async () => {
+  const { status, kropp } = await kör({ DB: dbVeckobrev(2), OPENROUTER_KEY: "sk-or-test", ...ALLA });
+  assert.equal(status, 503);
+  assert.equal(kropp.checks.veckobrev, false);
+  assert.match(kropp.problem.join(" "), /2 veckobrev/);
+});
+test("DR10b: inga försenade brev är grönt", async () => {
+  const { status, kropp } = await kör({ DB: dbVeckobrev(0), OPENROUTER_KEY: "sk-or-test", ...ALLA });
+  assert.equal(status, 200);
+  assert.equal(kropp.checks.veckobrev, true);
+});

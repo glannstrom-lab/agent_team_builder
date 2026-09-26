@@ -105,3 +105,18 @@ test("personläget mäts på personens egna fält, inte verksamhetens", () => {
   // Verksamhetsfältet `what` finns inte i personläget och ska inte räknas.
   assert.equal(enkatBaradIntake(Object.assign({}, bas, { what: "En helt annan beskrivning här." })), true);
 });
+
+// ── KA7: enkätvägens skydd ─────────────────────────────────────────────────
+test("KA7: vid rent enkätintag hamnar följdsvaren under 'Var det klämmer', inte sist", () => {
+  const block = buildIntakeBlock({ ...baraKryss("Salong Ada"), extra: "**Förra veckan?**\nTre sjukanmälningar och bokningarna blev dubbla.", extraIKlämmer: true });
+  const klämmer = block.indexOf("## Var det klämmer"), nästa = block.indexOf("## ", klämmer + 5);
+  const avsnitt = block.slice(klämmer, nästa);
+  assert.ok(avsnitt.includes("Tre sjukanmälningar"), "svaren ska stå i klämmer-avsnittet");
+  assert.ok(!block.includes("## Kompletterande svar"), "svaren ska inte också stå sist");
+});
+
+test("KA7: båda följdsvaren krävs, med minst 40 tecken, när intaget bara är kryss", () => {
+  const src = readFileSync("builder/builder.js", "utf8");
+  assert.ok(src.includes("const KRAV = tvingande ? 40 : 15;"), "tröskeln för tvingande svar är inte 40");
+  assert.ok(src.includes("inputs.filter(({ t }) => t.value.trim().length < KRAV)"), "alla svar ska kontrolleras, inte bara ett");
+});
