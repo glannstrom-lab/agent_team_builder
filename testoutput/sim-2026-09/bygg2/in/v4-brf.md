@@ -1,0 +1,1 @@
+brf tallbacken vill ha möte torsdag med styrelsen. vad ska jag ha med mig och vad ska jag fråga dem. vi kan ta 3 lgh feb-mars och 3 april-maj. vad säger jag om de vill att vi tar alla 12. kort, punktlista.

@@ -1,0 +1,1 @@
+Black Week 2026: rabattstrategi. Emil vill köra 30 % på allt igen. Jag tror det är fel – vi sålde mycket 2025 men till 34 % rabatt, med 29 % retur, sen leverans och 3 dagars svarstid. Jag vill ha ett konkret alternativ jag kan lägga fram för Emil, med vad det gör med marginalen. Fjolårets siffror ligger som underlag. Hur ser ett bättre Black Week ut för oss?

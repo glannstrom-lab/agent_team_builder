@@ -1,0 +1,1 @@
+två saker. 1) skriv ett kort svar på offerta till han med altanen (Håkan, Mosås) att vi tackar nej, vi gör mest badrum och kök. vänligt, han kanske har ett badrum sen. 2) påminnelse till Petersson, faktura 47 tkr, förföll för 23 dagar sen. han är en ok kille men nu får det räcka. sms eller mejl.

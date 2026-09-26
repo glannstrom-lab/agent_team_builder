@@ -1,0 +1,1 @@
+det finns ingen Statusvakt i mitt team, sluta skicka saker dit, det är du som skriver sms och brev. fakturanumret till petersson är 1187 och förföll 5 sep, det står i minnet. högsäsong har jag svarat på, strunta i det. BRF: vi lämnar offert på 6 lgh i två etapper, klart.

@@ -1,0 +1,1 @@
+jag funderar på att höja timpriset från 595 till 625 ex moms från 1 januari. hur säger jag det till kunder som redan har fått offert, och på hemsidan? ska jag ens säga nåt? nyström har offert som gäller till 30 okt. kort.

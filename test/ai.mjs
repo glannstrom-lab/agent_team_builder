@@ -15,6 +15,13 @@ import { BUILD_STEPS, rensaPromptCache } from "../functions/api/_build.js";
 // Prompt-filerna läses av servern sedan K4. ASSETS-bindningen stubbas med en
 // text som är lång nog att passera golvet i läsPrompt — kortare än så ska
 // avvisas, och det testas för sig.
+// Ett riktigt (kort) svar från uppströms: ett tecken och en slutsignal. Sedan
+// 2026-09-26 räknas en ström utan ett enda tecken som tom och görs om.
+const SVAR_OK = `data: {"choices":[{"delta":{"content":"ok"},"finish_reason":"stop"}]}
+
+data: [DONE]
+
+`;
 const PROMPTTEXT = "PROMPT UR prompts/. ".repeat(40);
 const assetsStub = () => ({ fetch: async () => new Response(PROMPTTEXT, { status: 200 }) });
 
@@ -157,7 +164,7 @@ test("assistant-rollen bevaras — portalens historik måste överleva", async (
   let skickat = null;
   globalThis.fetch = async (url, init) => {
     skickat = JSON.parse(init.body);
-    return new Response(`data: [DONE]\n\n`, { status: 200, headers: { "content-type": "text/event-stream" } });
+    return new Response(SVAR_OK, { status: 200, headers: { "content-type": "text/event-stream" } });
   };
   try {
     const res = await anropMed(dbMed(rutin({ betaltTeam: true })), {
@@ -238,7 +245,7 @@ test("byggtrafik stoppas vid sitt EGET dygnstak, inte vid det globala", async ()
 
 test("byggtrafik släpps igenom strax under sitt tak", async () => {
   const original = globalThis.fetch;
-  globalThis.fetch = async () => new Response(`data: [DONE]\n\n`, { status: 200, headers: { "content-type": "text/event-stream" } });
+  globalThis.fetch = async () => new Response(SVAR_OK, { status: 200, headers: { "content-type": "text/event-stream" } });
   try {
     const db = dbMed(rutin({ byggDygn: 2499, globalDygn: 2499 }));
     const res = await anropMed(db, bygge({ messages: ETT }));
@@ -249,7 +256,7 @@ test("byggtrafik släpps igenom strax under sitt tak", async () => {
 
 test("en betalande kund når fram TROTS att byggets tak är fullt — hela poängen med K3", async () => {
   const original = globalThis.fetch;
-  globalThis.fetch = async () => new Response(`data: [DONE]\n\n`, { status: 200, headers: { "content-type": "text/event-stream" } });
+  globalThis.fetch = async () => new Response(SVAR_OK, { status: 200, headers: { "content-type": "text/event-stream" } });
   try {
     // Byggtrafiken har ätit upp sin andel; det globala taket är inte nått.
     const db = dbMed(rutin({ byggDygn: 2500, globalDygn: 3000, betaltTeam: true }));
@@ -365,7 +372,7 @@ test("räkningen är skriven innan uppströms anropas", async () => {
   const original = globalThis.fetch;
   globalThis.fetch = async () => {
     skrivnaVidUppström = skrivna.slice();
-    return new Response("data: [DONE]\n\n", { status: 200, headers: { "content-type": "text/event-stream" } });
+    return new Response(SVAR_OK, { status: 200, headers: { "content-type": "text/event-stream" } });
   };
   try {
     const res = await onRequestPost({
@@ -392,7 +399,7 @@ test("reservationen är fail-closed — kan vi inte räkna, spenderar vi inte", 
     batch: async () => { throw new Error("D1 nere"); },
   };
   const original = globalThis.fetch;
-  globalThis.fetch = async () => { uppströmsAnrop++; return new Response("data: [DONE]\n\n", { status: 200 }); };
+  globalThis.fetch = async () => { uppströmsAnrop++; return new Response(SVAR_OK, { status: 200 }); };
   try {
     const res = await onRequestPost({
       request: req(bygge({ messages: [{ role: "user", content: "hej" }] })),
@@ -474,7 +481,7 @@ async function uppström(body, extraEnv = {}) {
   let skickat = null;
   globalThis.fetch = async (url, init) => {
     skickat = JSON.parse(init.body);
-    return new Response("data: [DONE]\n\n", { status: 200, headers: { "content-type": "text/event-stream" } });
+    return new Response(SVAR_OK, { status: 200, headers: { "content-type": "text/event-stream" } });
   };
   try {
     const res = await onRequestPost({
@@ -665,7 +672,7 @@ test("portalen rörs inte av kravet — den gatas av slug och inloggning", async
   let skickat = null;
   globalThis.fetch = async (url, init) => {
     skickat = JSON.parse(init.body);
-    return new Response("data: [DONE]\n\n", { status: 200, headers: { "content-type": "text/event-stream" } });
+    return new Response(SVAR_OK, { status: 200, headers: { "content-type": "text/event-stream" } });
   };
   try {
     const res = await anropMed(dbMed(rutin({ betaltTeam: true })), {
@@ -739,7 +746,7 @@ async function portalAnrop(rader, extra = {}) {
   let skickat = null;
   globalThis.fetch = async (url, init) => {
     skickat = JSON.parse(init.body);
-    return new Response("data: [DONE]\n\n", { status: 200, headers: { "content-type": "text/event-stream" } });
+    return new Response(SVAR_OK, { status: 200, headers: { "content-type": "text/event-stream" } });
   };
   try {
     const db = dbMed(rader);
@@ -787,7 +794,49 @@ test("över kostnadstaket: inget resonemang, och kontrollen mot källan pausas �
   assert.equal((await medWebb.res.json()).code, "web_paused");
 });
 
-test("under taket får portalens långa svar resonemang på låg nivå", async () => {
+test("portalen kör utan resonemang — low gav tomma svar vid taket (2026-09-26)", async () => {
   const { skickat } = await portalAnrop(portalRader({ inTok: 1e6 }));
-  assert.deepEqual(skickat.reasoning, { effort: "low" });
+  assert.deepEqual(skickat.reasoning, { enabled: false });
+});
+
+// ── Tomma svar görs om innan kunden ser dem (2026-09-26) ───────────────────
+//
+// Uppmätt i simuleringens andra körning: ungefär vart femte portalsvar kom
+// tomt — strömmen stängdes efter en sekund utan ett tecken. Servern läser nu
+// i förväg till första tecknet och gör om anropet om det aldrig kommer.
+const TOM = `data: {"choices":[{"delta":{"role":"assistant","content":""}}]}\n\n`;
+async function portalMedUppström(svar) {
+  const original = globalThis.fetch;
+  let n = 0;
+  globalThis.fetch = async () => {
+    const s = svar[Math.min(n, svar.length - 1)]; n++;
+    return new Response(s, { status: 200, headers: { "content-type": "text/event-stream" } });
+  };
+  try {
+    const db = dbMed(portalRader());
+    const res = await anropMed(db, { system: "Du är en agent.", messages: ETT, maxTokens: 4096, team: SLUG_T }, { inloggad: true });
+    const text = res.status === 200 ? await res.text() : await res.text();
+    return { res, text, anrop: n, skrivna: db._skrivna };
+  } finally { globalThis.fetch = original; }
+}
+
+test("tomt svar: en ström utan ett tecken görs om, och kunden får det riktiga svaret", async () => {
+  const { res, text, anrop } = await portalMedUppström([TOM, SVAR_OK]);
+  assert.equal(res.status, 200);
+  assert.equal(anrop, 2, "den tomma strömmen skulle ha gjorts om en gång");
+  assert.match(text, /"content":"ok"/);
+});
+
+test("tomt svar: tre tomma i rad ger ett tydligt fel, aldrig en tom bubbla", async () => {
+  const { res, text, anrop, skrivna } = await portalMedUppström([TOM, TOM, TOM, SVAR_OK]);
+  assert.equal(res.status, 502);
+  assert.equal(anrop, 3);
+  assert.equal(JSON.parse(text).code, "empty");
+  assert.ok(skrivna.some((s) => s.args && s.args.includes("tomt_svar")), "de tomma svaren ska bokföras i ai_errors");
+});
+
+test("tomt svar: ett svar som börjat strömma släpps igenom direkt — inget omförsök", async () => {
+  const { res, anrop } = await portalMedUppström([SVAR_OK]);
+  assert.equal(res.status, 200);
+  assert.equal(anrop, 1);
 });

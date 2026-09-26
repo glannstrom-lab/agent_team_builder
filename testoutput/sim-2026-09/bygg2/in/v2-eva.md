@@ -1,0 +1,1 @@
+Eva Lund ringde igen, undrar om köksluckorna. leverantören har skjutit leveransen två veckor, kommer v43 istället för v41. skriv ett sms till henne som hon förstår, hon är 72 och lite orolig. inte för långt. sen: petersson har inte svarat på påminnelsen. vad gör jag nu, inkasso? kort.

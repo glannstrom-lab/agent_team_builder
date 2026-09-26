@@ -294,6 +294,7 @@ const FEL = {
   timeout: "Det tog för lång tid att få svar. Försök igen — händer det två gånger i rad, mejla info@mittaiteam.se så tittar vi på det.",
   strömTimeout: "Svaret tog för lång tid och avbröts. Försök igen.",
   strömBröts: "Svaret avbröts på vägen. Försök igen.",
+  tomt: "Svaret kom tomt tillbaka från AI-tjänsten, tre gånger i rad. Försök igen om en stund.",
   jsonFel:
     "AI-tjänsten lyckades inte sätta ihop teamet den här gången. Försök igen — det brukar gå på andra försöket. " +
     "Fortsätter det, mejla info@mittaiteam.se.",
@@ -572,10 +573,14 @@ export async function onRequestPost(context) {
     // Bygget får inget resonemang alls (uppmätt 2026-09-26 med DeepSeek V4.1
     // Flash: research och förslag slog i 8 192 tokens efter 45–50 s, och
     // sammanställningen passerade JSON_DEADLINE_MS). Byggstegens prompter är
-    // detaljerade nog att bära utan det. Portalens långa svar får "low" —
-    // med standardnivån tog ett tvåmeningssvar 11,5 s.
-    // Över kostnadstaket (sparläge) får portalen inget resonemang heller.
-    reasoning: (!portal || sparläge || maxTokens < REASONING_MIN_TOKENS) ? { enabled: false } : { effort: "low" },
+    // detaljerade nog att bära utan det.
+    //
+    // PORTALEN OCKSÅ (2026-09-26, simuleringens andra körning): med "low" slog
+    // DeepSeek ändå i taket på 4 096 med enbart resonemang — noll tecken svar,
+    // fem gånger på en byrå — och svarstiden var 6–37 s. Utan resonemang är
+    // bygget märkbart bättre än med gpt-oss, så portalen följer samma linje.
+    // REASONING_MIN_TOKENS och sparläget står kvar för den dag det slås på igen.
+    reasoning: { enabled: false },
     ...(webb ? { plugins: [{ id: "web", engine: "exa", max_results: 5, include_domains: WEBB_DOMÄNER }] } : {}),
     stream: true,
     stream_options: { include_usage: true },
@@ -830,37 +835,18 @@ async function strömSvar({ headers, payloadText, bokför, bokförFel, waitUntil
 
   armera(CONNECT_TIMEOUT_MS);
 
-  let upstream;
-  try {
-    upstream = await fetch(OPENROUTER_URL, { method: "POST", headers, body: payloadText, signal: ctrl.signal });
-  } catch (e) {
-    släck();
-    waitUntil(bokför(null));
-    if (löpteUt) {
-      console.error("[ai] uppströms svarade inte inom " + CONNECT_TIMEOUT_MS + " ms");
-      return json({ error: FEL.timeout, code: "timeout" }, 408);
-    }
-    console.error("[ai] nätfel mot uppströms", String(e).slice(0, 400));
-    waitUntil(bokförFel("network"));
-    return json({ error: FEL.uppström, code: "upstream" }, 502);
-  }
-
-  if (!upstream.ok || !upstream.body) {
-    släck();
-    const detalj = await upstream.text().catch(() => "");
-    waitUntil(bokför(null));
-    return httpFel(upstream.status, detalj, bokförFel, waitUntil);
-  }
-
-  // Räkna medan strömmen passerar. Alternativet — att låta klienten rapportera
-  // sin förbrukning — vore att låta den som ska begränsas skriva räkningen.
+  // ── FÖRHANDSLÄSNING MED OMFÖRSÖK (2026-09-26) ─────────────────────────────
   //
-  // Raderna parsas som SSE, inte med en regex över svansen. Första försöket
-  // gjorde det senare och räknade noll tokens i skarp drift: usage-objektet
-  // innehåller nästlade objekt (prompt_tokens_details, cost_details), så ett
-  // `[^}]*` slutar vid fel klammer. Felet syntes inte i något svar — bara som
-  // nollor i databasen, vilket är precis den sortens tystnad som gör att ett
-  // tak aldrig slår till när det behövs.
+  // Uppmätt i simuleringens andra körning: ungefär vart femte portalsvar kom
+  // tomt. Leverantören stängde strömmen efter en sekund utan ett enda tecken
+  // och utan finish_reason, och kunden fick en tom bubbla utan förklaring.
+  // Strömmen läses därför i förväg tills första tecknet (eller en slutsignal)
+  // har kommit. Stängs den innan dess har kunden inte fått något, och då går
+  // anropet att göra om helt osynligt — högst TOMT_FÖRSÖK gånger. Först när
+  // innehållet börjat flöda skickas bytes vidare; efter det gäller felramen.
+  const TOMT_FÖRSÖK = 3;
+  let upstream = null, reader = null, förläst = [], förlästFel = null;
+  let sågInnehåll = false, sågSlut = false;
   const decoder = new TextDecoder();
   let lineBuf = "";
   let used = null;
@@ -877,14 +863,15 @@ async function strömSvar({ headers, payloadText, bokför, bokförFel, waitUntil
         used = { input: evt.usage.prompt_tokens || 0, output: evt.usage.completion_tokens || 0 };
       }
       if (evt.error) felRad = (evt.error && evt.error.message) || "okänt uppströmsfel";
+      const c = evt.choices && evt.choices[0];
+      if (c && c.delta && typeof c.delta.content === "string" && c.delta.content) sågInnehåll = true;
+      if (c && c.finish_reason) sågSlut = true;
     } catch (_) { /* ofullständig rad — nästa chunk fyller på */ }
   };
 
   // Returnerar felmeddelandet om chunken innehöll en felram, annars null.
-  // Läsningen sker FÖRE vidarebefordran, till skillnad från tidigare: en
-  // felram får inte nå kunden, och när bytesen väl är utskickade går de inte
-  // att hämta tillbaka. Kostnaden är en JSON.parse per rad innan den skickas —
-  // omätbar mot en ström som ändå väntar på nätet.
+  // Läsningen sker FÖRE vidarebefordran: en felram får inte nå kunden, och när
+  // bytesen väl är utskickade går de inte att hämta tillbaka.
   const mät = (bytes) => {
     felRad = null;
     lineBuf += decoder.decode(bytes, { stream: true });
@@ -896,7 +883,67 @@ async function strömSvar({ headers, payloadText, bokför, bokförFel, waitUntil
     return felRad;
   };
 
-  const reader = upstream.body.getReader();
+  for (let försök = 1; försök <= TOMT_FÖRSÖK; försök++) {
+    sågInnehåll = false; sågSlut = false; förläst = []; förlästFel = null; lineBuf = ""; used = null;
+    armera(CONNECT_TIMEOUT_MS);
+    try {
+      upstream = await fetch(OPENROUTER_URL, { method: "POST", headers, body: payloadText, signal: ctrl.signal });
+    } catch (e) {
+      släck();
+      waitUntil(bokför(null));
+      if (löpteUt) {
+        console.error("[ai] uppströms svarade inte inom " + CONNECT_TIMEOUT_MS + " ms");
+        return json({ error: FEL.timeout, code: "timeout" }, 408);
+      }
+      console.error("[ai] nätfel mot uppströms", String(e).slice(0, 400));
+      waitUntil(bokförFel("network"));
+      return json({ error: FEL.uppström, code: "upstream" }, 502);
+    }
+
+    if (!upstream.ok || !upstream.body) {
+      släck();
+      const detalj = await upstream.text().catch(() => "");
+      waitUntil(bokför(null));
+      return httpFel(upstream.status, detalj, bokförFel, waitUntil);
+    }
+
+    reader = upstream.body.getReader();
+    let slut = false;
+    try {
+      while (!sågInnehåll && !sågSlut) {
+        const { done, value } = await reader.read();
+        if (done) { slut = true; break; }
+        förlästFel = mät(value);
+        förläst.push(value);
+        if (förlästFel) break;
+      }
+    } catch (e) {
+      if (löpteUt) {
+        släck();
+        waitUntil(bokför(null));
+        console.error("[ai] ingen början på svaret inom tidsgränsen");
+        return json({ error: FEL.timeout, code: "timeout" }, 408);
+      }
+      slut = true; // brutet nät före första tecknet — samma sak som en tom ström
+    }
+    if (sågInnehåll || sågSlut) break;
+
+    // Tomt: strömmen stängdes, eller bar bara en felram, innan något tecken.
+    await reader.cancel().catch(() => {});
+    console.warn("[ai] tomt svar från uppströms, försök", försök, "av", TOMT_FÖRSÖK, förlästFel ? String(förlästFel).slice(0, 200) : (slut ? "strömmen stängdes" : ""));
+    waitUntil(bokförFel("tomt_svar"));
+    if (försök === TOMT_FÖRSÖK) {
+      släck();
+      waitUntil(bokför(used));
+      return json({ error: FEL.tomt, code: "empty" }, 502);
+    }
+  }
+
+  // Räkna medan strömmen passerar. Alternativet — att låta klienten rapportera
+  // sin förbrukning — vore att låta den som ska begränsas skriva räkningen.
+  // Raderna parsas som SSE (läsRad ovan), inte med en regex över svansen:
+  // usage-objektet innehåller nästlade objekt, och en regex räknade noll
+  // tokens i skarp drift.
   let klar = false;
   const avsluta = () => {
     if (klar) return;
@@ -907,7 +954,23 @@ async function strömSvar({ headers, payloadText, bokför, bokförFel, waitUntil
   };
 
   const ström = new ReadableStream({
+    // Det förlästa skickas först. Innehöll förläsningen en felram efter att
+    // innehållet börjat (ovanligt) hanteras den som i pull().
+    start(controller) {
+      if (förlästFel && sågInnehåll) {
+        console.error("[ai] uppströmsfel i strömmen", String(förlästFel).slice(0, 400));
+        förläst.slice(0, -1).forEach((b) => controller.enqueue(b));
+        controller.enqueue(felRam(FEL.strömBröts));
+        reader.cancel().catch(() => {});
+        avsluta();
+        controller.close();
+        return;
+      }
+      förläst.forEach((b) => controller.enqueue(b));
+      armera(STALL_TIMEOUT_MS);
+    },
     async pull(controller) {
+      if (klar) return;
       try {
         const { done, value } = await reader.read();
         if (done) { avsluta(); controller.close(); return; }

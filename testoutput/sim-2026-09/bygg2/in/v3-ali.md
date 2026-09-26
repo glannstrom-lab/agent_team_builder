@@ -1,0 +1,1 @@
+Ali är sjuk mån-ons, feber. planen spricker. karlsson: tätskikt skulle göras mån-tis, sen torka, kakel från torsdag. eva lund: luckorna kommer nästa vecka, inget att göra där nu förutom att jag lovat titta på en läcka under diskbänken. nyström har inte svarat. vad gör jag med veckan, vad flyttar jag och vad säger jag till karlssons. kort.

@@ -1,0 +1,1 @@
+Ja, baklängestidslinjen. Black Week 2026 = fre 20 nov – fre 27 nov (Black Friday 27 nov). Utgå från alternativ B: 20 % eget märke, 15 % andra märken, plus "skickas inom 24 h". Med ägare (inköp, kundtjänst, lager, marknad/Emil, jag) och datum. Max 12 rader. Och tre meningar jag kan säga till Emil.

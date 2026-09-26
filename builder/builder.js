@@ -1354,6 +1354,18 @@ function trimmaTeam(team, n) {
   team.routines = (team.routines || []).map(function (r) {
     return flyttadeId.indexOf(r.agentId) >= 0 ? Object.assign({}, r, { agentId: (kärna[0] || team.agents[0]).id }) : r;
   });
+  // Den som flyttats får inte stå kvar i de andras systemprompter. Uppmätt i
+  // simuleringen: VD-assistenten hänvisade till den bortflyttade "Statusvakten"
+  // varje måndag, eftersom den stod kvar i DITT TEAM. Listrader som nämner en
+  // flyttad agent vid namn stryks.
+  var flyttadeNamn = flytta.map(function (x) { return String(x.name || "").trim(); }).filter(Boolean);
+  team.agents.forEach(function (ag) {
+    ag.system = String(ag.system || "").split("\n").filter(function (rad) {
+      var r = rad.trim();
+      if (!/^([-•*]|\d+[.)])\s/.test(r)) return true;
+      return !flyttadeNamn.some(function (nm) { return r.indexOf(nm) >= 0; });
+    }).join("\n");
+  });
   team.rejected = (team.rejected || []).concat(flytta.map(function (x) {
     return { name: x.name, why: "Rymdes inte i skalningsbeslutet på " + n + " agenter — lägre prioritet än de som blev kvar. Kan läggas till senare under Utveckla teamet." };
   }));

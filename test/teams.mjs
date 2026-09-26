@@ -443,3 +443,14 @@ test("trimmaTeam: ett team inom beslutet rörs inte", () => {
   assert.deepEqual(STEGKONTROLL.trimmaTeam(team, 4), []);
   assert.equal(JSON.stringify(team), före);
 });
+
+test("trimmaTeam: den bortflyttade agenten stryks ur de andras DITT TEAM (Statusvakten stod kvar)", () => {
+  const team = JSON.parse(readFileSync(`${SIM}/bygg2/team-5-agenter.json`, "utf8"));
+  const vda = () => team.agents.find((a) => a.id === "vd-assistent");
+  assert.ok(vda().system.includes("Statusvakten"), "fixturen ska nämna Statusvakten före trimningen");
+  const flyttade = STEGKONTROLL.trimmaTeam(team, 4);
+  assert.deepEqual(flyttade, ["Statusvakten"]);
+  const listrader = vda().system.split("\n").filter((r) => /^\s*[-•*]\s/.test(r) && r.includes("Statusvakten"));
+  assert.deepEqual(listrader, [], "VD-assistenten hänvisar fortfarande till en agent som inte finns");
+  assert.ok(vda().system.includes("Offertmakaren"), "de kvarvarande ska stå kvar i listan");
+});

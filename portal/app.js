@@ -5373,6 +5373,11 @@ async function submitMessage(text, display, opts = {}) {
     let truncated = false;
     if (state.demo) await streamDemo(agent, state.history[agentId], onDelta);
     else await streamClaude(systemFor(agent), state.history[agentId], onDelta, undefined, () => { truncated = true; }, !!opts.webb);
+    // Ett tomt svar är inget svar (2026-09-26): ungefär vart femte kom tomt i
+    // simuleringen och sparades som en tom bubbla. Servern gör nu om tomma
+    // strömmar själv; skulle ett ändå slinka igenom går det felvägen nedan —
+    // frågan står kvar att skicka igen, och historiken får ingen tom rad.
+    if (!acc.trim()) throw new Error("Svaret kom tomt tillbaka. Skicka frågan igen.");
     if (truncated) onDelta("\n\n> ⚠️ **Svaret klipptes av** när det nådde sin längdgräns. Skriv \"fortsätt\" för resten.");
     pushHistory(agentId, { role: "assistant", content: acc, at: Date.now() });
     saveHistory();

@@ -1,0 +1,1 @@
+fel om ROT: kunden ansöker inte själv, det är jag som drar av rot på fakturan och begär utbetalning hos skatteverket efter att kunden betalat. rätta raden i mallen, resten är ok. skicka bara den ändrade ROT-delen.

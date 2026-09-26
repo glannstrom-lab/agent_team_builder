@@ -1,0 +1,1 @@
+Det här är fel, och det är allvarligt. Det var inkomstskatteavdraget för måltidsrepresentation som togs bort 2017, inte momsavdraget. Momsen får fortfarande lyftas på ett underlag på högst 300 kr exklusive moms per person och tillfälle. Kontrollen bekräftade dessutom det felaktiga påståendet och tvivlade på det som var rätt. Skriv om utkastet.

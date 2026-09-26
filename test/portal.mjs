@@ -663,3 +663,11 @@ test("RE3: veckobrevet erbjuds i kom igång-listan och bockas av när kunden val
   const spara = KÄLLA.slice(KÄLLA.indexOf("function openDigest("));
   assert.ok(spara.slice(0, 6000).includes('introMark("digest")'), "steget bockas aldrig av");
 });
+
+test("ett tomt svar sparas aldrig — det går felvägen och frågan kan skickas igen", () => {
+  const i = KÄLLA.indexOf("async function submitMessage(");
+  const kropp = KÄLLA.slice(i, i + 6000);
+  const vakt = kropp.indexOf('if (!acc.trim()) throw new Error(');
+  const spara = kropp.indexOf('pushHistory(agentId, { role: "assistant", content: acc');
+  assert.ok(vakt > 0 && spara > vakt, "vakten måste ligga före sparandet");
+});

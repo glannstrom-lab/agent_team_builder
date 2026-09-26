@@ -1,0 +1,1 @@
+karlsson klart i fredags. två saker: 1) BKR-checklistan, vilka skeden ska jag ha foto och intyg på så jag inte missar nåt. jag har foton på tätskikt golv och vägg och golvbrunn. 2) slutfakturan med rot: offert 168 tkr ex moms varav arbete 72, plus ÄTA 18 tkr varav arbete 9. två ägare. inga delfakturor skickade. ge mig raderna jag lägger in i fortnox och vad de betalar. kort.

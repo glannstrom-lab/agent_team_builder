@@ -1,0 +1,1 @@
+Hur ska vi introducera AI för personalen på byrån under de kommande två månaderna, innan bokslutssäsongen börjar i januari? Vi är sex personer. Birgitta (61, lönekonsult) är emot, Johan (31) vill gärna använda ChatGPT, de andra två konsulterna och Sanna har inte provat. Vi har ett utkast till AI-policy. Vad ska vi börja med, vem gör vad, och hur vet vi om det fungerar?

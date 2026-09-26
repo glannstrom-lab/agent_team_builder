@@ -1,0 +1,1 @@
+Läget: BW-förslaget (20 % eget, 15 % andra, 24h-leverans) lägger jag fram för Emil på fredag. Marknad kör ChatGPT Plus för texter. Ska jag bjuda in Emil i det här teamet, eller blir det dubbelt? Vad vinner vi och vad riskerar vi? Tre punkter var, sedan din rekommendation.

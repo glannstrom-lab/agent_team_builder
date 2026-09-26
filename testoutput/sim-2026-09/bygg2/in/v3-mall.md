@@ -1,0 +1,1 @@
+min offertmall i word är rörig, en rad arbete, en rad material, en rad övrigt och fritext. aldrig betalningsplan eller vad som inte ingår. gör en mall jag kan återanvända för badrum till privatkund. med betalningsplan (delfakturor), vad som ingår och inte ingår, ÄTA-regel, ROT-rad, giltighet. så kort som möjligt, ska få plats på en-två sidor. lämna tomt där jag fyller i per kund.
