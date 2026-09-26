@@ -92,7 +92,32 @@ function rutinTimmar(routines) {
 // Prompten. Brevet ska vara kort och peka på veckan — inte en rapport, och
 // framför allt inte en påhittad lägesbeskrivning. Modellen vet ingenting om vad
 // kunden gjort sedan sist, och får därför uttryckligen inte låtsas att den gör.
-function digestPrompt(cfg) {
+// RE4 (2026-09-26): brevet fick samma indata varje vecka — agentlista,
+// rutinlista, årsrytm — och modellen visste inte ens vilken dag det var. Samma
+// brev varje måndag lär kunden att det är säkert att ignorera, vilket bränner
+// opt-in:en för gott. Nu får brevet datum och veckonummer, årshjulets händelser
+// med dagar kvar, och en fokusagent och fokusrutin som roterar med veckan.
+// Årsrytmen läste dessutom fälten note/what, som inte finns i TEAM_SCHEMA
+// (label, month, day, agentId, prompt) — datumen kom aldrig med.
+function isoVecka(ms) {
+  const d = new Date(ms); d.setUTCHours(0, 0, 0, 0);
+  d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+  const år = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  return Math.ceil(((d - år) / 86400000 + 1) / 7);
+}
+const MÅNAD = ["januari", "februari", "mars", "april", "maj", "juni", "juli", "augusti", "september", "oktober", "november", "december"];
+function kommande(seasons, nu, dagar) {
+  const idag = new Date(nu); idag.setUTCHours(0, 0, 0, 0);
+  return (seasons || []).map((s) => {
+    if (!s || !s.label || !s.month) return null;
+    let när = Date.UTC(idag.getUTCFullYear(), s.month - 1, s.day || 1);
+    if (när < idag.getTime()) när = Date.UTC(idag.getUTCFullYear() + 1, s.month - 1, s.day || 1);
+    const d = Math.round((när - idag.getTime()) / 86400000);
+    return d <= dagar ? { d, t: `${s.label} (${s.day || 1} ${MÅNAD[s.month - 1]}, om ${d} dagar)` } : null;
+  }).filter(Boolean).sort((a, b) => a.d - b.d).map((x) => x.t);
+}
+
+export function digestPrompt(cfg, nu = Date.now()) {
   const namn = String(cfg.company || "verksamheten");
   const entry = (cfg.agents || []).find((a) => a.id === cfg.entryAgent) || (cfg.agents || [])[0] || {};
   const agenter = (cfg.agents || [])
@@ -102,11 +127,18 @@ function digestPrompt(cfg) {
     .map((r) => `- ${r.label}${r.day ? ` (${r.day})` : ""}${r.timeEstimate ? ` — ca ${r.timeEstimate} min manuellt` : ""}`)
     .join("\n");
   const timmar = rutinTimmar(cfg.routines);
+  const vecka = isoVecka(nu);
+  const datum = new Date(nu).toISOString().slice(0, 10);
+  const specialister = (cfg.agents || []).filter((a) => a.id !== cfg.entryAgent);
+  const fokusAgent = specialister.length ? specialister[vecka % specialister.length] : null;
+  const fokusRutin = (cfg.routines || []).length ? cfg.routines[vecka % cfg.routines.length] : null;
+  const närmast = kommande(cfg.seasons, nu, 28);
 
   const system = [
     entry.system || `Du är ${entry.name || "VD-assistent"} i AI-teamet hos ${namn}.`,
     "",
     "DU SKRIVER NU ETT VECKOBREV som skickas som e-post till kunden på måndag morgon.",
+    `Det är vecka ${vecka}, ${datum}.`,
     "",
     "Format: ren text, inga rubriker med #, ingen markdown-fetstil. Max 200 ord.",
     "Börja direkt med hälsningen — ingen ämnesrad, den sätts av systemet.",
@@ -130,6 +162,10 @@ function digestPrompt(cfg) {
     "datum som inte står i underlaget nedan. Utgå från teamets uppdrag och",
     "verksamhetens rytm — inte från en påhittad lägesbild. Skriv förslag, inte",
     "rapport.",
+    "",
+    "VARIATION: brevet går ut varje vecka och får inte bli samma brev. Lyft den",
+    "här veckan särskilt fokusagenten och fokusrutinen i underlaget, och nämn",
+    "datum i årsrytmen som ligger nära med hur många dagar som är kvar.",
   ].join("\n");
 
   const user = [
@@ -139,9 +175,9 @@ function digestPrompt(cfg) {
     agenter || "(inga agenter i konfigurationen)",
     rutiner ? "\nSTÅENDE RUTINER:\n" + rutiner : "",
     timmar ? `\nRUTINERNAS VÄRDE: ca ${timmar} manuellt arbete i veckan om alla körs.` : "",
-    cfg.seasons && cfg.seasons.length
-      ? "\nÅRSRYTM:\n" + cfg.seasons.map((s) => `- ${s.label || s.name || ""}: ${s.note || s.what || ""}`).join("\n")
-      : "",
+    närmast.length ? "\nÅRSRYTM, DE NÄRMASTE FYRA VECKORNA:\n" + närmast.map((t) => "- " + t).join("\n") : "",
+    fokusAgent ? `\nFOKUSAGENT DENNA VECKA: ${fokusAgent.name}` : "",
+    fokusRutin ? `FOKUSRUTIN DENNA VECKA: ${fokusRutin.label}` : "",
     "",
     "Skriv veckobrevet.",
   ].filter(Boolean).join("\n");
@@ -229,7 +265,7 @@ export async function onRequestPost(context) {
     try { cfg = JSON.parse(rad.config); } catch (_) { hoppade++; continue; }
 
     try {
-      const { system, user } = digestPrompt(cfg);
+      const { system, user } = digestPrompt(cfg, nu);
       const svar = await fetch(OPENROUTER_URL, {
         method: "POST",
         headers: {

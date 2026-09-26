@@ -216,7 +216,18 @@ function renderForm() {
 
   // Sparad körning? Erbjud återupptagning — de klara stegen är redan betalda.
   const saved = state.demo ? null : loadRun();
-  if (saved && saved.intake && (saved.team || (saved.r && Object.keys(saved.r).length))) {
+  if (saved && saved.team && köptSlug()) {
+    // KR5: körningen är köpt. Då är den ingen oavslutad körning att återuppta,
+    // och "Visa teamet igen" hade lett tillbaka till en köpknapp.
+    const box = el("div", "resume-box");
+    box.appendChild(el("div", "clarify-title", `Teamet för ${saved.intake.company} är köpt och ligger i portalen.`));
+    const row = el("div", "clarify-actions");
+    const go = el("a", "btn-primary", "Öppna teamet i portalen"); go.href = "../portal/";
+    const ny = el("button", "link-btn", "Bygg ett nytt team"); ny.type = "button";
+    ny.onclick = () => { clearRun(); glömKöp(); box.remove(); };
+    row.append(go, ny); box.appendChild(row);
+    wrap.appendChild(box);
+  } else if (saved && saved.intake && (saved.team || (saved.r && Object.keys(saved.r).length))) {
     const box = el("div", "resume-box");
     box.appendChild(el("div", "clarify-title", saved.team
       ? `Din senaste körning (${saved.intake.company}) är klar och finns kvar.`
@@ -895,6 +906,8 @@ async function runBuild(intake, prevR) {
   state.abort = new AbortController();
   const intakeBlock = buildIntakeBlock(intake);
   const r = prevR || {};
+  // KR5: ett nytt bygge är ett nytt team — köpmarkeringen hörde till det förra.
+  if (!prevR) glömKöp();
   state.lastRun = { intake, intakeBlock, r };
 
   // `step` namnger prompten; filen läses av servern, inte här. Stegnamnen är
@@ -1750,7 +1763,10 @@ function closingBlock(team) {
   const nRoutines = Array.isArray(team.routines) ? team.routines.length : 0;
   const nRejected = Array.isArray(team.rejected) ? team.rejected.length : 0;
 
-  box.appendChild(el("div", "close-head", "Teamet finns bara i den här webbläsaren"));
+  // KR5: för ett köpt team är rubriken falsk — det ligger i molnet.
+  box.appendChild(el("div", "close-head", !state.demo && köptSlug()
+    ? "Teamet är köpt och sparat i molnet"
+    : "Teamet finns bara i den här webbläsaren"));
 
   // Vad kunden fick — räknat ur teamet självt, inte påstått.
   const got = [`${nAgents} agenter med varsin systemprompt`];
@@ -1865,6 +1881,15 @@ const PLANS = [
 ];
 
 
+// KR5 (2026-09-26): kvittosidan (portal/aktivera.html, samma origin) skriver
+// slugen hit när köpet är levererat. Utan den erbjöd Buildern teamet till köp
+// igen direkt efter köpet — dubbeldebitering, två team, manuell återbetalning
+// — och sa "finns bara i den här webbläsaren" till en kund vars team låg i
+// molnet. Rensas när ett NYTT bygge startar, eftersom det är ett annat team.
+const KÖPT_STORAGE = "atb_last_run_purchased";
+function köptSlug() { try { return localStorage.getItem(KÖPT_STORAGE) || null; } catch (_) { return null; } }
+function glömKöp() { try { localStorage.removeItem(KÖPT_STORAGE); } catch (_) { /* inget att göra */ } }
+
 function renderPurchase(team, hero, trigger) {
   if (hero.querySelector(".buy-panel")) return; // redan öppen
   trigger.disabled = true;
@@ -1873,6 +1898,16 @@ function renderPurchase(team, hero, trigger) {
   // surface-2, inte surface: panelen öppnas numera inuti avslutsblocket, som
   // självt ligger på surface. Samma ton två gånger hade sett ut som ingen ram alls.
   panel.style.cssText = "margin-top:20px;padding:18px;border:1px solid var(--border);border-radius:6px;background:var(--surface-2);text-align:left";
+
+  if (!state.demo && köptSlug()) {
+    panel.appendChild(el("div", "eyebrow", "Redan köpt"));
+    panel.appendChild(el("p", null, "Det här teamet är redan köpt och sparat i molnet, kopplat till er mejladress. Ni når det från vilken dator som helst."));
+    const öppna = el("a", "btn-primary", "Öppna teamet i portalen");
+    öppna.href = "../portal/";
+    panel.appendChild(öppna);
+    hero.appendChild(panel);
+    return;
+  }
 
   // Demoläget säljer inte demoteamet. Körningen är inspelad och gjord åt ett
   // påhittat företag — att ta betalt för den vore att sälja någon annans team

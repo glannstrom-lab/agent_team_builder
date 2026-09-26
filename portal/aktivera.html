@@ -90,6 +90,9 @@
   }
 
   function done(slug, email, plan) {
+    // KR5: säg till Buildern (samma origin) att körningen i den här
+    // webbläsaren nu är köpt — annars erbjuds den till köp igen.
+    try { localStorage.setItem("atb_last_run_purchased", slug); } catch (_) { /* privat läge: Buildern vet inte, men inget går sönder */ }
     show(
       '<div class="setup-badge">Klart</div>' +
       '<h1>Ert team är <span class="grad">redo</span></h1>' +

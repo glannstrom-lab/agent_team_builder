@@ -626,3 +626,10 @@ test("svarsknapparna: kontrollen skickar webb och sakfrågan, exporten bär agen
   assert.ok(p.includes("agent.system") && p.includes("loadMemory()"), "paketet ska bära instruktionen och företagsminnet");
   assert.ok(!p.includes("systemFor("), "paketet ska inte baka in alla underlag via systemFor()");
 });
+
+test("BF6: portalen ber om beständig lagring för ett köpt team", () => {
+  const i = KÄLLA.indexOf("navigator.storage.persist()");
+  assert.ok(i > 0, "ingen persist()-begäran i portalen");
+  const före = KÄLLA.slice(Math.max(0, i - 200), i);
+  assert.ok(före.includes("!state.demo"), "demoteam ska inte be om lagring");
+});

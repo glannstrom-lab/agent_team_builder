@@ -862,6 +862,15 @@ async function loadTeam(slug) {
   // Demoläget skickar ingen slug — där sker inga anrop alls, svaren är
   // förskrivna, och ett 402 mitt i en förhandsvisning vore obegripligt.
   try { window.ATBClaude.setTeam(state.demo ? null : slug); } catch (_) { /* äldre klient */ }
+  // BF6 (2026-09-26): kundens arbete — samtal, företagsminne, underlag,
+  // tidsliggaren — ligger i localStorage, som webbläsaren annars får rensa.
+  // Safari raderar skriptskriven lagring efter sju dagar utan besök, och
+  // vecka tre är precis när kunden uteblir. persist() ber om att den ska
+  // bevaras; ett nej är tyst och ändrar ingenting. Bara för köpta team: ett
+  // demoteam har inget att förlora.
+  if (!state.demo && navigator.storage && typeof navigator.storage.persist === "function") {
+    navigator.storage.persist().catch(() => {});
+  }
   state.history = loadHistory(slug);
   state.activeAgentId = agentById(team.entryAgent) ? team.entryAgent : team.agents[0].id;
   // team.defaultModel läses inte längre. Sedan 2026-08-05 kör hela produkten

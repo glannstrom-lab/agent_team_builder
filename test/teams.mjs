@@ -359,3 +359,17 @@ test("KA8: en LEVERANS-rubrik utan innehåll fälls", () => {
     "\nLEVERANS:\n\nTON:\nKort.";
   assert.throws(() => KONTROLLEN.kontrolleraSystemprompter({ agents: [{ name: "A", system: sys }] }), /LEVERANS är tom/);
 });
+
+// ── KR5: Buildern säljer inte ett redan köpt team igen ─────────────────────
+test("KR5: kvittosidan markerar köpet, och Buildern läser markeringen på alla tre ställena", () => {
+  const aktivera = readFileSync("portal/aktivera.html", "utf8");
+  const done = aktivera.slice(aktivera.indexOf("function done("), aktivera.indexOf("function stuck("));
+  assert.ok(done.includes('localStorage.setItem("atb_last_run_purchased", slug)'), "kvittosidan skriver inte köpmarkeringen");
+  const b = readFileSync("builder/builder.js", "utf8");
+  assert.ok(b.includes('const KÖPT_STORAGE = "atb_last_run_purchased"'), "Buildern läser en annan nyckel än kvittosidan skriver");
+  const köp = b.slice(b.indexOf("function renderPurchase("), b.indexOf("function renderPurchase(") + 1500);
+  assert.ok(köp.includes("köptSlug()"), "köppanelen säljer teamet igen");
+  assert.ok(/saved && saved\.team && köptSlug\(\)/.test(b), "återupptagningsrutan vet inte om köpet");
+  const bygg = b.slice(b.indexOf("async function runBuild("), b.indexOf("async function runBuild(") + 800);
+  assert.ok(bygg.includes("if (!prevR) glömKöp();"), "ett nytt bygge ärver förra teamets köpmarkering");
+});

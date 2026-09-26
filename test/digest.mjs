@@ -297,3 +297,24 @@ test("rutinlistan bär sina minuter, så att modellen kan peka på rätt rutin",
   const p = prompt(await körOchFånga(db, env(db)));
   assert.match(p, /Nyhetsbrev.*90 min manuellt/);
 });
+
+// ── RE4: samma team ger olika brev olika veckor ────────────────────────────
+import { digestPrompt } from "../functions/api/digest/run.js";
+
+test("RE4: veckobrevet får datum, roterande fokus och årshjulets datum med dagar kvar", () => {
+  const cfg = {
+    company: "Bergströms Bygg", entryAgent: "vd-assistent",
+    agents: [{ id: "vd-assistent", name: "VD-assistenten" }, { id: "offert", name: "Offertstödet" }, { id: "bkr", name: "BKR-kontrollen" }],
+    routines: [{ label: "Kvällens offerter" }, { label: "ÄTA-genomgång" }, { label: "Förfrågningskoll" }],
+    seasons: [{ label: "Momsdeklaration Q3", month: 11, day: 12, agentId: "vd-assistent", prompt: "x" }],
+  };
+  const v40 = digestPrompt(cfg, Date.UTC(2026, 8, 28, 6));  // måndag vecka 40
+  const v41 = digestPrompt(cfg, Date.UTC(2026, 9, 5, 6));   // måndag vecka 41
+  assert.match(v40.system, /vecka 40, 2026-09-28/);
+  assert.notEqual(v40.user, v41.user, "två veckor gav identiskt underlag — samma brev varje måndag");
+  assert.match(v40.user, /FOKUSAGENT DENNA VECKA: (Offertstödet|BKR-kontrollen)/, "ingångsagenten ska inte vara fokus, den skriver brevet");
+  // Momsen 12 nov ligger 45 dagar bort vecka 40 — utanför fyra veckor — men inom vecka 42+.
+  assert.doesNotMatch(v40.user, /Momsdeklaration/);
+  const v44 = digestPrompt(cfg, Date.UTC(2026, 9, 26, 6));
+  assert.match(v44.user, /Momsdeklaration Q3 \(12 november, om 17 dagar\)/);
+});
