@@ -160,6 +160,8 @@ Verifierat i drift efteråt:
   modellen att föreningen kan få ROT för gemensamma utrymmen, vilket inte
   stämmer. **KA15** (faktabasen) gäller oavsett modell.
 
+**Andra omgången samma dag** (`5306572b`, commit efter `6feb242`): KA11, KA8, KA13, KA14 (delvis), KA16 (regeln), KA17, RE7, RE6, KA12 i mötet, DR17, BF8. 292 gröna. Verifierat i drift med ett nytt bygge av lärarens team (`testoutput/sim-2026-09/larare-ds/`): **Rättningsmenyn** äger nu återkopplingen, med "Du läser aldrig elevtexter. Du sätter aldrig betyg." under VIKTIGT (KA13). VD-rollen heter **Veckans prioriteringar** (KA14, personläget), och löftesregeln står i systemprompten (KA17). `mätt`. **Nytt fynd:** teamet blev sex agenter för en person, medan skalningstabellen säger 2–4 för solo. Det är **KA10**: skalningsbeslutet läses aldrig av koden.
+
 Kvar: simuleringens fyra testteam i skarpa D1 (**DR16**), och en ny
 månadssimulering med DeepSeek för att se om betygen rör sig.
 
