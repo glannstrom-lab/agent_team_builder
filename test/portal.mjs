@@ -633,3 +633,18 @@ test("BF6: portalen ber om beständig lagring för ett köpt team", () => {
   const före = KÄLLA.slice(Math.max(0, i - 200), i);
   assert.ok(före.includes("!state.demo"), "demoteam ska inte be om lagring");
 });
+
+// ── RE2: "Blev det fel?" ───────────────────────────────────────────────────
+test("RE2: rättelsen blir en daterad rad i företagsminnet, och knappen finns under svaren", () => {
+  const i = KÄLLA.indexOf("function rättelseRad(");
+  const src = KÄLLA.slice(i, KÄLLA.indexOf("\n}\n", i) + 2);
+  const rättelseRad = new Function(src + "; return rättelseRad;")();
+  assert.equal(rättelseRad("Offertstödet", "  Timpriset är 595 kr\n ex moms  ", "2026-09-28"),
+    "- Rättelse 2026-09-28 (Offertstödet): Timpriset är 595 kr ex moms");
+  assert.equal(rättelseRad("A", "   ", "x"), "", "en tom rättelse ska inte skrivas till minnet");
+  assert.ok(rättelseRad("A", "x".repeat(900), "d").length < 460, "en rättelse får inte svälla minnet");
+  const acts = KÄLLA.slice(KÄLLA.indexOf("function addActions("));
+  assert.ok(acts.slice(0, 8000).includes("openFelRuta(agentById(state.activeAgentId), getText())"), "knappen saknas under svaren");
+  const ruta = KÄLLA.slice(KÄLLA.indexOf("function openFelRuta("), KÄLLA.indexOf("function addActions("));
+  assert.ok(ruta.includes("saveMemory(") && ruta.includes("openAgentEdit(agent)"), "rutan ska spara i minnet och leda till agentens instruktion");
+});

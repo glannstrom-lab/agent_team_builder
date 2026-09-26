@@ -774,7 +774,10 @@ a.link-btn { text-decoration: none; }
 .meet-part:hover { border-color: var(--accent-glow); }
 
 /* ===== Svarsknappar (kopiera / ladda ner) ===== */
-.msg-actions { display: flex; gap: 6px; margin-top: 5px; opacity: 0; transition: opacity 0.15s; }
+.msg-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 5px; opacity: 0; transition: opacity 0.15s; }
+/* "⋯ Mer" fäller ut de mindre använda knapparna på en egen rad. */
+.msg-mer { display: flex; flex-wrap: wrap; gap: 6px; flex-basis: 100%; }
+.msg-mer[hidden] { display: none; }
 .msg:hover .msg-actions, .msg:focus-within .msg-actions { opacity: 1; }
 /* Utan hovring (mobil/pekskärm) avslöjades knapparna aldrig — de låg kvar på
    opacity 0, dvs 1:1 i kontrast. På peksnurror visas de alltid. */

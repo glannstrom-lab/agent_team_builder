@@ -1,2 +1,1 @@
-- Kan du ge en typisk veckoplan med ungefärliga tidsangivelser för dina huvuduppgifter (t.ex. planering, rättning, mejl, mentorsarbete)?  
-- Vilka specifika funktioner i de befintliga verktygen (Schoolsoft, Google Docs osv.) använder du regelbundet i ditt arbete?
+OK

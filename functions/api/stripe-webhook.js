@@ -230,7 +230,21 @@ async function handleInvoicePaid(db, invoice, t) {
     subscription: subscriptionOf(invoice),
     customer: invoice.customer,
   });
-  const spärrade = rows.filter((r) => PLANS_WITHOUT_PORTAL.has(String(r.plan || "")));
+  // Två spärrar till (DR8, fynd 2026-09-26). Utan dem öppnade en faktura som
+  // Stripe skickade om efter ångerknappen ett ÅNGRAT köp som standard, gratis.
+  //  1. Bara past_due och cancelled öppnas — det är lägena en betalning kan
+  //     häva (en sen betalning efter att Stripe gett upp). refunded (ångrat
+  //     eller återbetalt) och expired (provmånad) öppnas aldrig av en faktura;
+  //     ett nytt köp går via kassan, som uppgraderar samma slug.
+  //  2. En faktura betald FÖRE planens senaste ändring öppnar ingenting — den
+  //     hör till tiden innan spärren.
+  const ÖPPNINGSBARA = new Set(["past_due", "cancelled"]);
+  const betaldMs = invoice.status_transitions && invoice.status_transitions.paid_at
+    ? invoice.status_transitions.paid_at * 1000 : null;
+  const spärrade = rows.filter((r) =>
+    PLANS_WITHOUT_PORTAL.has(String(r.plan || "")) &&
+    ÖPPNINGSBARA.has(String(r.plan || "")) &&
+    !(betaldMs && r.plan_changed_at && betaldMs < r.plan_changed_at));
   const n = await setPlan(db, spärrade.map((r) => r.slug), "standard", t);
   if (n) console.warn("[stripe] plan återöppnad efter betalning", invoice.id, n);
   return json({ received: true, reopened: n });
@@ -262,12 +276,12 @@ async function handleRefund(db, charge, t) {
 // vore att låsa ute någon som betalar.
 async function teamsByStripe(db, { subscription, customer }) {
   if (subscription) {
-    const r = await db.prepare("SELECT slug, plan FROM teams WHERE stripe_subscription = ?")
+    const r = await db.prepare("SELECT slug, plan, plan_changed_at FROM teams WHERE stripe_subscription = ?")
       .bind(subscription).all().catch(() => null);
     if (r && r.results && r.results.length) return r.results;
   }
   if (customer) {
-    const r = await db.prepare("SELECT slug, plan FROM teams WHERE stripe_customer = ?")
+    const r = await db.prepare("SELECT slug, plan, plan_changed_at FROM teams WHERE stripe_customer = ?")
       .bind(customer).all().catch(() => null);
     if (r && r.results) return r.results;
   }

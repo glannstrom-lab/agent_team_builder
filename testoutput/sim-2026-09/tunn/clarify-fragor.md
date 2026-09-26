@@ -1,0 +1,2 @@
+- Vilka dagar och tider klipper ni kunder, och hur många kunder per vecka?
+- Hur hanterar ni bokningar idag — via Bokadirekt, telefon eller Instagram?

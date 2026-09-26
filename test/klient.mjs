@@ -168,3 +168,29 @@ test("modell-id: samma modell i klienten, proxyn och veckobrevet — och i villk
     assert.ok(readFileSync(fil, "utf8").includes(label), `${fil} nämner inte modellen ${label}`);
   }
 });
+
+// ── DR11: delningsytan mellan klientfilerna ────────────────────────────────
+//
+// Allt som korsar filgränserna i webbläsaren går via window.ATBClaude och
+// window.ATBAvatars. Döper någon om eller stryker en export medan en konsument
+// står kvar blir det B1:s exakta form: felet finns bara i webbläsaren och syns
+// bara i konsolen. Testet läser varje `ATBClaude.x` och `ATBAvatars.x` ur
+// konsumenterna och kräver att x finns i det RIKTIGA exportobjektet.
+test("DR11: varje ATBClaude- och ATBAvatars-medlem som används finns i exporten", () => {
+  const { atb } = ladda(new Response(""));
+  const avWin = {};
+  new Function("window", "document", "location", readFileSync("avatars.js", "utf8"))(avWin, { createElement: () => ({}) }, { pathname: "/", href: "https://mittaiteam.se/", origin: "https://mittaiteam.se" });
+  const exporter = { ATBClaude: new Set(Object.keys(atb)), ATBAvatars: new Set(Object.keys(avWin.ATBAvatars || {})) };
+  assert.ok(exporter.ATBAvatars.size > 0, "avatars.js satte ingen window.ATBAvatars");
+  const konsumenter = ["builder/builder.js", "portal/app.js", "site/gallery.js", "verticals/app.js", "portal/index.html", "builder/index.html"];
+  const saknas = [];
+  for (const fil of konsumenter) {
+    let src; try { src = readFileSync(fil, "utf8"); } catch { continue; }
+    for (const [glob, set] of Object.entries(exporter)) {
+      for (const m of src.matchAll(new RegExp(glob + "\.(\w+)", "g"))) {
+        if (!set.has(m[1])) saknas.push(`${fil}: ${glob}.${m[1]}`);
+      }
+    }
+  }
+  assert.deepEqual([...new Set(saknas)], [], "används men exporteras inte");
+});

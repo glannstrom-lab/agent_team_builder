@@ -4064,6 +4064,54 @@ function externtPaket(agent, svar) {
   ].join("\n");
 }
 
+// RE2: "Blev det fel?" — tre vägar tillbaka från ett dåligt svar, på ett ställe.
+// Rättelsen sparas som en rad i företagsminnet, som alla agenter läser, så att
+// samma fel inte kommer tillbaka hos en annan agent nästa vecka.
+function rättelseRad(agentNamn, text, datum) {
+  const t = String(text || "").replace(/\s+/g, " ").trim().slice(0, 400);
+  return t ? `- Rättelse ${datum}${agentNamn ? ` (${agentNamn})` : ""}: ${t}` : "";
+}
+function openFelRuta(agent, svar) {
+  const box = openOverlay("✗ Blev det fel?");
+  box.appendChild(el("p", "ovl-lead",
+    "Skriv vad som blev fel eller saknades. Rättelsen sparas i företagsminnet, som hela teamet läser — då upprepas inte felet."));
+  const lab = el("label", "ovl-label", "Vad missade agenten?"); lab.setAttribute("for", "fel-text");
+  const ta = el("textarea", "ovl-ta"); ta.id = "fel-text"; ta.rows = 4;
+  ta.placeholder = "T.ex. \"Vårt timpris är 595 kr ex moms, inte 550\" eller \"Vi gör inte altaner\"";
+  box.append(lab, ta);
+  const fel = el("p", "ovl-note"); fel.setAttribute("role", "alert"); fel.hidden = true;
+  box.appendChild(fel);
+  const rad = el("div", "clarify-actions");
+  const spara = el("button", "btn-primary", "Spara rättelsen och be om ett nytt svar"); spara.type = "button";
+  spara.onclick = () => {
+    const r = rättelseRad(agent && agent.name, ta.value, isoDay());
+    if (!r) { fel.textContent = "Skriv vad som blev fel först."; fel.hidden = false; return; }
+    const minne = loadMemory().trim();
+    saveMemory((minne ? minne + "\n" : "") + r);
+    closeOverlay();
+    submitMessage(
+      `Ditt förra svar blev fel. Rättelse: ${ta.value.trim()}\n\nGör om svaret med rättelsen. Rättelsen står nu också i företagsminnet.`,
+      "✗ Rättat — nytt svar");
+  };
+  const bara = el("button", "link-btn", "Spara bara i minnet"); bara.type = "button";
+  bara.onclick = () => {
+    const r = rättelseRad(agent && agent.name, ta.value, isoDay());
+    if (!r) { fel.textContent = "Skriv vad som blev fel först."; fel.hidden = false; return; }
+    const minne = loadMemory().trim();
+    saveMemory((minne ? minne + "\n" : "") + r);
+    closeOverlay();
+  };
+  rad.append(spara, bara);
+  box.appendChild(rad);
+  if (agent) {
+    // Återkommande fel hos samma agent: då är det instruktionen som ska ändras.
+    const ändra = el("button", "link-btn", `Felet återkommer? Ändra ${agent.name}s instruktion`); ändra.type = "button";
+    ändra.onclick = () => { closeOverlay(); openAgentEdit(agent); };
+    box.appendChild(ändra);
+  }
+  if (!COARSE) ta.focus();
+}
+
 function addActions(row, getText) {
   if (row.querySelector(".msg-actions")) return;
   const acts = el("div", "msg-actions");
@@ -4072,13 +4120,13 @@ function addActions(row, getText) {
     try { await navigator.clipboard.writeText(getText()); copy.textContent = "Kopierat ✓"; setTimeout(() => (copy.textContent = "Kopiera"), 1400); }
     catch (_) { copy.textContent = "Kunde inte kopiera"; setTimeout(() => (copy.textContent = "Kopiera"), 1400); }
   };
-  const dl = el("button", "act-btn", "Ladda ner"); dl.type = "button"; dl.title = "Spara som markdown-fil";
+  const dl = el("button", "act-btn", "Ladda ner"); dl.type = "button"; dl.dataset.sek = "1"; dl.title = "Spara som markdown-fil";
   dl.onclick = () => downloadFile(`${state.slug || "team"}-${isoDay()}.md`, getText());
   acts.appendChild(copy); acts.appendChild(dl);
   if (!state.demo) {
     // Fork ("fortsätt härifrån"): räddar ett urspårat samtal utan att kunden
     // behöver förstå kontextfönster — allt efter det här svaret rensas.
-    const fk = el("button", "act-btn", "✂ Fortsätt härifrån"); fk.type = "button";
+    const fk = el("button", "act-btn", "✂ Fortsätt härifrån"); fk.type = "button"; fk.dataset.sek = "1";
     fk.title = "Ta bort allt som kommit efter det här svaret och fortsätt samtalet från den här punkten";
     fk.onclick = () => {
       const msgs = state.history[state.activeAgentId] || [];
@@ -4145,8 +4193,19 @@ function addActions(row, getText) {
     acts.appendChild(xb);
   });
   if (!state.demo) {
+    // RE2 (2026-09-26): när svaret blev fel fanns bara verktyg som förutsatte
+    // att det var bra. Reparationen — företagsminnet, "ändra agenten" — låg
+    // två klick bort i en annan panel utan skylt härifrån, och kunden drog
+    // slutsatsen "AI funkar inte för oss". Simuleringen visade att det är i det
+    // ögonblicket abonnemanget dör.
+    const fb = el("button", "act-btn", "✗ Blev det fel?"); fb.type = "button";
+    fb.title = "Berätta vad som blev fel — teamet kommer ihåg det";
+    fb.onclick = () => openFelRuta(agentById(state.activeAgentId), getText());
+    acts.appendChild(fb);
+  }
+  if (!state.demo) {
     // Minnesförslag med grind: agenten föreslår, användaren godkänner.
-    const mb = el("button", "act-btn", "🧠 Spara lärdomar"); mb.type = "button";
+    const mb = el("button", "act-btn", "🧠 Spara lärdomar"); mb.type = "button"; mb.dataset.sek = "1";
     mb.title = "Låt teamet föreslå rader till det delade minnet ur det här samtalet (ett litet anrop)";
     mb.onclick = () => suggestMemory(state.activeAgentId);
     acts.appendChild(mb);
@@ -4154,7 +4213,7 @@ function addActions(row, getText) {
   if (!state.demo && team.agents.length > 1) {
     // Synlig delegering: svaret blir en brief till en kollega i teamet —
     // researchen designar kedjorna ("X ger Y en brief"), här görs de i praktiken.
-    const hb = el("button", "act-btn", "→ Skicka vidare"); hb.type = "button";
+    const hb = el("button", "act-btn", "→ Skicka vidare"); hb.type = "button"; hb.dataset.sek = "1";
     hb.title = "Skicka svaret som brief till en annan agent i teamet";
     hb.onclick = () => {
       const openMenu = row.querySelector(".handoff-menu");
@@ -4177,7 +4236,7 @@ function addActions(row, getText) {
     acts.appendChild(hb);
   }
   if (!state.demo && FOLDER_SUPPORTED) {
-    const sf = el("button", "act-btn", "Spara i mappen"); sf.type = "button";
+    const sf = el("button", "act-btn", "Spara i mappen"); sf.type = "button"; sf.dataset.sek = "1";
     sf.title = "Sparar svaret som markdown-fil i från-teamet/ i er kopplade mapp";
     sf.onclick = async () => {
       if (!folderActive()) { openMemory(); return; } // ingen mapp än → visa panelen där man kopplar
@@ -4189,6 +4248,18 @@ function addActions(row, getText) {
       setTimeout(() => (sf.textContent = "Spara i mappen"), 2200);
     };
     acts.appendChild(sf);
+  }
+  // Tio knappar på en rad flödade ut på en telefon (uppmätt 2026-09-26, 390 px).
+  // De som används när ett svar är färdigt att använda eller rätta står kvar;
+  // resten ligger under "⋯ Mer".
+  const sekundära = [...acts.children].filter((b) => b.dataset && b.dataset.sek === "1");
+  if (sekundära.length > 1) {
+    const mer = el("div", "msg-mer"); mer.hidden = true;
+    sekundära.forEach((b) => mer.appendChild(b));
+    const mb2 = el("button", "act-btn", "⋯ Mer"); mb2.type = "button";
+    mb2.setAttribute("aria-expanded", "false");
+    mb2.onclick = () => { mer.hidden = !mer.hidden; mb2.setAttribute("aria-expanded", String(!mer.hidden)); };
+    acts.append(mb2, mer);
   }
   row.appendChild(acts);
 }

@@ -1,1 +1,2 @@
-OK
+- Hur ser en typisk vecka ut för er – vilka fasta moment återkommer och ungefär hur mycket tid tar de?
+- Arbetar ni i Fortnox byråpaket hela vägen (bokföring, moms, lön), eller sker något utanför systemet i Excel/mejl?
