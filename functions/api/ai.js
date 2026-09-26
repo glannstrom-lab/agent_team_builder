@@ -102,6 +102,48 @@ const MAX_MESSAGES = 200;
 const MODEL_ID = "deepseek/deepseek-v4.1-flash";
 // Under det här taket stängs resonemanget av (se payload nedan).
 const REASONING_MIN_TOKENS = 2500;
+
+// ── KRONMÄTAREN (2026-09-26, Mikaels beslut) ──────────────────────────────
+//
+// Priset till kunden är 290 kr/mån, alltså 232 kr exklusive moms. Taket för
+// vad AI:n får kosta oss per team och månad är 40 kr (17 %) — mer än tio
+// gånger vad en normal kund förbrukar (≈ 2–4 kr). Över taket STOPPAS inget:
+// kunden får fortfarande svar, men utan resonemang och utan webbsökning, de
+// två sakerna som kostar. Villkorens 1 000 svar (MAX_CALLS_PER_TEAM) är
+// fortfarande det avtalade taket; kronorna är vårt interna skydd.
+//
+// Priset är det HÖGSTA bland leverantörerna i PROVIDER_ONLY (Together,
+// Parasail: $0,30/$1,20, uppmätt 2026-09-26), så mätaren räknar hellre för
+// högt än för lågt. Tokens bokförs redan per team i ai_usage; webbsökningarna
+// räknas på en egen rad (subject "web:<slug>").
+export const KOSTNAD = {
+  inUsdPerMtok: 0.30,
+  utUsdPerMtok: 1.20,
+  sekPerUsd: 10.5,
+  // Exa via OpenRouter: $0,007 per sökning upp till tio träffar (2026-09-26).
+  // Avrundat uppåt till 10 öre för att täcka tokens som träffarna lägger till.
+  krPerWebbsökning: 0.10,
+  larmKr: 30,
+  takKr: 40,
+};
+export function kronorFör({ input_tok = 0, output_tok = 0 } = {}, webbsökningar = 0) {
+  const usd = (input_tok * KOSTNAD.inUsdPerMtok + output_tok * KOSTNAD.utUsdPerMtok) / 1e6;
+  return usd * KOSTNAD.sekPerUsd + webbsökningar * KOSTNAD.krPerWebbsökning;
+}
+
+// ── KONTROLLERA MOT KÄLLAN (2026-09-26) ───────────────────────────────────
+//
+// Simuleringen visade att modellen hittar på regler (ROT för BRF, 50 %
+// representationsavdrag, betygssteget "C-") och godtar kundens felaktiga
+// rättelser. En webbsökning låst till svenska myndigheters webbplatser ger
+// svaret en källa. Sökfrågan (inte hela samtalet) går till Exa via OpenRouter
+// — det står i integritet.html. Bara portalen, bara på kundens begäran
+// (body.webb), och aldrig över kostnadstaket.
+export const WEBB_DOMÄNER = [
+  "skatteverket.se", "riksdagen.se", "verksamt.se", "bolagsverket.se",
+  "skolverket.se", "forsakringskassan.se", "arbetsmiljoverket.se",
+  "konsumentverket.se", "boverket.se", "imy.se", "arbetsformedlingen.se",
+];
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 
 // ── leverantörsval ────────────────────────────────────────────────────────
@@ -332,6 +374,8 @@ export async function onRequestPost(context) {
   const user = await sessionUser(db, request).catch(() => null);
 
   let subject;
+  // Kronmätaren och kontrollen mot källan — sätts bara för portaltrafik.
+  let kronorIMånad = 0, sparläge = false, webb = false;
   if (slug) {
     if (!user) return json({ error: FEL.login, code: "login_required" }, 401);
 
@@ -453,7 +497,7 @@ export async function onRequestPost(context) {
       }, 429);
     }
   } else {
-    const row = await db.prepare("SELECT calls FROM ai_usage WHERE subject = ? AND period = ?")
+    const row = await db.prepare("SELECT calls, input_tok, output_tok FROM ai_usage WHERE subject = ? AND period = ?")
       .bind(subject, utcMonth(t)).first().catch(() => null);
     if (row && row.calls >= MAX_CALLS_PER_TEAM) {
       return json({
@@ -461,6 +505,24 @@ export async function onRequestPost(context) {
         code: "quota",
         quota: { used: row.calls, limit: MAX_CALLS_PER_TEAM },
       }, 429);
+    }
+    // Kronmätaren. Fel i läsningen ger 0 kr — mätaren ska aldrig stänga ute
+    // en betalande kund; taket på antal anrop ovan står kvar som skydd.
+    const webbRad = await db.prepare("SELECT calls FROM ai_usage WHERE subject = ? AND period = ?")
+      .bind("web:" + subject.slice(5), utcMonth(t)).first().catch(() => null);
+    kronorIMånad = kronorFör(row || {}, (webbRad && webbRad.calls) || 0);
+    sparläge = kronorIMånad >= KOSTNAD.takKr;
+    if (kronorIMånad >= KOSTNAD.larmKr) {
+      console.warn("[ai] kostnadslarm", subject, kronorIMånad.toFixed(2), "kr denna månad");
+    }
+    if (body.webb === true) {
+      if (sparläge) {
+        return json({
+          error: "Kontrollen mot källan är pausad för ert team resten av månaden. Vanliga frågor fungerar som vanligt.",
+          code: "web_paused",
+        }, 429);
+      }
+      webb = true;
     }
   }
 
@@ -508,7 +570,9 @@ export async function onRequestPost(context) {
     // sammanställningen passerade JSON_DEADLINE_MS). Byggstegens prompter är
     // detaljerade nog att bära utan det. Portalens långa svar får "low" —
     // med standardnivån tog ett tvåmeningssvar 11,5 s.
-    reasoning: (!portal || maxTokens < REASONING_MIN_TOKENS) ? { enabled: false } : { effort: "low" },
+    // Över kostnadstaket (sparläge) får portalen inget resonemang heller.
+    reasoning: (!portal || sparläge || maxTokens < REASONING_MIN_TOKENS) ? { enabled: false } : { effort: "low" },
+    ...(webb ? { plugins: [{ id: "web", engine: "exa", max_results: 5, include_domains: WEBB_DOMÄNER }] } : {}),
     stream: true,
     stream_options: { include_usage: true },
     // Se leverantörsvalet högst upp. require_parameters sållar bort de
@@ -605,6 +669,13 @@ export async function onRequestPost(context) {
         "ON CONFLICT(subject, period) DO UPDATE SET calls = calls + excluded.calls, input_tok = input_tok + excluded.input_tok, output_tok = output_tok + excluded.output_tok"
       ).bind(subject, utcMonth(t), callsDelta, inTok, outTok),
     ];
+    if (webb && callsDelta) {
+      // En webbsökning per anrop med webb — kronmätaren läser raden.
+      satser.push(db.prepare(
+        "INSERT INTO ai_usage (subject, period, calls, input_tok, output_tok) VALUES (?, ?, 1, 0, 0) " +
+        "ON CONFLICT(subject, period) DO UPDATE SET calls = calls + 1"
+      ).bind("web:" + subject.slice(5), utcMonth(t)));
+    }
     if (!portal) {
       // Dygnsraden för den fria rutten. Egen rad, eget subject — annars går
       // det inte att skilja "den här IP-adressen i dag" från månadssiffran.

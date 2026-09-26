@@ -4038,6 +4038,23 @@ function openWeekWork() {
 
 // Kopiera/ladda ner per svar — svaret ska vidare in i mail och dokument,
 // inte dö i chatten. Rå markdown kopieras (klistras fint i de flesta verktyg).
+// Det som följer med till kundens eget ChatGPT eller Claude. Agentens egen
+// instruktion (inte systemFor(), som även bakar in alla underlag — de kan vara
+// stora och kunden ska inte skicka dem vidare utan att välja det själv), plus
+// företagsminnet och svaret.
+function externtPaket(agent, svar) {
+  const minne = loadMemory().trim();
+  return [
+    `Du ska arbeta som ${agent ? agent.name : "en assistent"} åt mig. Här är din instruktion:`,
+    "",
+    (agent && agent.system) || "",
+    minne ? `\nFÖRETAGSMINNE (fakta om oss — följ det):\n${minne}` : "",
+    "\n---\nDet här svaret fick jag nyss. Vi fortsätter därifrån:\n",
+    svar,
+    "\n---\nMitt nästa steg: ",
+  ].join("\n");
+}
+
 function addActions(row, getText) {
   if (row.querySelector(".msg-actions")) return;
   const acts = el("div", "msg-actions");
@@ -4080,6 +4097,44 @@ function addActions(row, getText) {
     };
     acts.appendChild(pb);
   }
+  if (!state.demo) {
+    // Kontrollera mot källan (2026-09-26): simuleringen visade att agenterna
+    // hittar på regler och godtar felaktiga rättelser. Servern slår på en
+    // webbsökning låst till svenska myndigheters webbplatser (WEBB_DOMÄNER i
+    // functions/api/ai.js). Kundens val, per svar — den kostar några öre.
+    const kb = el("button", "act-btn", "🔎 Kontrollera mot källan"); kb.type = "button";
+    kb.title = "Låt agenten söka på Skatteverket, Skolverket, riksdagen.se m.fl. och kontrollera sakuppgifterna i svaret";
+    kb.onclick = () => submitMessage(
+      "Kontrollera sakuppgifterna i ditt förra svar mot officiella svenska källor. För varje uppgift som går att kontrollera: " +
+      "säg om den stämmer, vad som i så fall är fel och vad som gäller, och länka till källan. " +
+      "Hittar du ingen källa för en uppgift, säg det rakt ut i stället för att gissa. Kort.\n\n" +
+      // Webbsökningen bygger sin sökfråga ur det här meddelandet, så sakfrågan
+      // måste stå här — inte bara i historiken.
+      "Svaret som ska kontrolleras:\n" + getText().slice(0, 1500),
+      "🔎 Kontrollera mot källan", { webb: true });
+    acts.appendChild(kb);
+  }
+  // Ta med till ChatGPT eller Claude (2026-09-26): tunga uppgifter — bilder,
+  // långa dokument, frontiermodeller — görs bättre i kundens eget konto.
+  // Agentens instruktion, företagsminnet och svaret följer med, så att kunden
+  // inte börjar om från noll. Kostar oss ingenting.
+  [["ChatGPT", "https://chatgpt.com/", "https://chatgpt.com/?q="],
+   ["Claude", "https://claude.ai/new", "https://claude.ai/new?q="]].forEach(([namn, bas, prefix]) => {
+    const xb = el("button", "act-btn", "↗ " + namn); xb.type = "button";
+    xb.title = `Öppna i ditt eget ${namn}-konto med agentens instruktion, företagsminnet och det här svaret`;
+    xb.onclick = async () => {
+      const paket = externtPaket(agentById(state.activeAgentId), getText());
+      const url = prefix + encodeURIComponent(paket);
+      // Webbläsare och tjänsterna själva klipper långa adresser. Över gränsen
+      // kopieras texten i stället, och kunden klistrar in den.
+      if (url.length <= 7000) { window.open(url, "_blank", "noopener"); return; }
+      try { await navigator.clipboard.writeText(paket); xb.textContent = `Kopierat — klistra in i ${namn}`; }
+      catch (_) { xb.textContent = "Kunde inte kopiera"; }
+      window.open(bas, "_blank", "noopener");
+      setTimeout(() => (xb.textContent = "↗ " + namn), 4000);
+    };
+    acts.appendChild(xb);
+  });
   if (!state.demo) {
     // Minnesförslag med grind: agenten föreslår, användaren godkänner.
     const mb = el("button", "act-btn", "🧠 Spara lärdomar"); mb.type = "button";
@@ -5161,7 +5216,7 @@ async function sendMessage() {
 // för produkten. Modellen får fortfarande hela instruktionen (den ligger i
 // `content` och följer med i historik, kontext och export); det är bara
 // bubblan som visar den korta versionen.
-async function submitMessage(text, display) {
+async function submitMessage(text, display, opts = {}) {
   if (state.streaming) return;
   // Användaren går före: en auto-rutin i bakgrunden avbryts här, så att det
   // aldrig finns två betalda anrop i luften samtidigt.
@@ -5225,7 +5280,7 @@ async function submitMessage(text, display) {
     // att den följer med i historiken, kopieringen och nedladdningen.
     let truncated = false;
     if (state.demo) await streamDemo(agent, state.history[agentId], onDelta);
-    else await streamClaude(systemFor(agent), state.history[agentId], onDelta, undefined, () => { truncated = true; });
+    else await streamClaude(systemFor(agent), state.history[agentId], onDelta, undefined, () => { truncated = true; }, !!opts.webb);
     if (truncated) onDelta("\n\n> ⚠️ **Svaret klipptes av** när det nådde sin längdgräns. Skriv \"fortsätt\" för resten.");
     pushHistory(agentId, { role: "assistant", content: acc, at: Date.now() });
     saveHistory();
@@ -5333,7 +5388,7 @@ async function streamDemo(agent, messages, onDelta) {
 
 // Anropar Claude Messages API direkt från webbläsaren och strömmar svaret.
 // Själva strömningen + felhanteringen ligger i den delade klienten.
-async function streamClaude(system, messages, onDelta, onUsage, onTruncated) {
+async function streamClaude(system, messages, onDelta, onUsage, onTruncated, webb) {
   await window.ATBClaude.stream({
     apiKey: state.apiKey,
     model: state.model,
@@ -5343,6 +5398,7 @@ async function streamClaude(system, messages, onDelta, onUsage, onTruncated) {
     onDelta,
     onUsage,
     onTruncated,
+    webb: !!webb,
     signal: state.chatAbort ? state.chatAbort.signal : undefined,
   });
 }

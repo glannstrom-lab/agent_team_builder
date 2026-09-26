@@ -614,3 +614,15 @@ test("KA12: mötet räknar inte ett tomt svar eller en vägran som ett perspekti
   const kod = KÄLLA.slice(KÄLLA.indexOf("async function runMeeting"));
   assert.ok(kod.slice(0, 6000).includes("if (ärTomtEllerVägran(p))"), "runMeeting anropar inte ärTomtEllerVägran");
 });
+
+// ── Kontrollera mot källan + ta med till ChatGPT/Claude (2026-09-26) ───────
+test("svarsknapparna: kontrollen skickar webb och sakfrågan, exporten bär agentens instruktion", () => {
+  const i = KÄLLA.indexOf("function addActions(");
+  const kropp = KÄLLA.slice(i, KÄLLA.indexOf("\nfunction ", i + 10));
+  assert.ok(kropp.includes("{ webb: true }"), "Kontrollera mot källan skickar inte webb-flaggan");
+  assert.ok(kropp.includes("getText().slice(0, 1500)"), "sökningen byggs ur meddelandet — svaret måste stå i det");
+  assert.ok(kropp.includes("https://chatgpt.com/?q=") && kropp.includes("https://claude.ai/new?q="), "exportlänkarna saknas");
+  const p = KÄLLA.slice(KÄLLA.indexOf("function externtPaket("), KÄLLA.indexOf("function addActions("));
+  assert.ok(p.includes("agent.system") && p.includes("loadMemory()"), "paketet ska bära instruktionen och företagsminnet");
+  assert.ok(!p.includes("systemFor("), "paketet ska inte baka in alla underlag via systemFor()");
+});

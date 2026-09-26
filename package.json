@@ -16,7 +16,8 @@
     "db:migrate:local": "npx --yes wrangler@4.123.0 d1 migrations apply agent-team-builder --local",
     "db:migrate": "npx --yes wrangler@4.123.0 d1 migrations apply agent-team-builder --remote",
     "db:backup": "node scripts/db-backup.mjs",
-    "deploy": "npm test && node build-dist.mjs && node scripts/check-dist.mjs && npx --yes wrangler@4.123.0 pages deploy dist --project-name agent-team-builder"
+    "deploy": "npm test && node build-dist.mjs && node scripts/check-dist.mjs && npx --yes wrangler@4.123.0 pages deploy dist --project-name agent-team-builder",
+    "kostnad": "node scripts/kostnad.mjs"
   },
   "devDependencies": {
     "playwright": "^1.62.1"

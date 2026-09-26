@@ -125,6 +125,9 @@
       headers: { "content-type": "application/json" },
       body: JSON.stringify(Object.assign(
         { system, messages, maxTokens: maxTokens || 4096, json: !!json, schema: opts.schema || null, team: opts.team || currentTeam || undefined },
+        // "Kontrollera mot källan": servern slår på en webbsökning låst till
+        // svenska myndigheters webbplatser. Gäller bara betalda team (se ai.js).
+        opts.webb ? { webb: true } : null,
         // Byggets steg + dess booleaner (mode/workstyle/person/survey). De är
         // med flit BOOLEANER och uppräkningar, aldrig fri text: allt som får
         // vara text hos klienten kan hamna i en systemprompt vi inte skrivit.

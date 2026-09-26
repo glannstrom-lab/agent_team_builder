@@ -721,3 +721,73 @@ test("varje prompt ett byggsteg läser publiceras av build-dist.mjs", () => {
       `${relativ} står inte i PROMPT_FILES — steget "${namn}" skulle svara 503 i drift`);
   }
 });
+
+// ── Kronmätaren och kontrollen mot källan (2026-09-26) ─────────────────────
+import { kronorFör, KOSTNAD, WEBB_DOMÄNER } from "../functions/api/ai.js";
+
+const SLUG_T = "simTestSlugForKronmatarenXYZ";
+function portalRader({ inTok = 0, utTok = 0, webb = 0 } = {}) {
+  const bas = rutin({ betaltTeam: true });
+  return (sql, args) => {
+    if (sql.includes("FROM ai_usage") && args[0] === "team:" + SLUG_T) return { calls: 10, input_tok: inTok, output_tok: utTok };
+    if (sql.includes("FROM ai_usage") && args[0] === "web:" + SLUG_T) return { calls: webb };
+    return bas(sql, args);
+  };
+}
+async function portalAnrop(rader, extra = {}) {
+  const original = globalThis.fetch;
+  let skickat = null;
+  globalThis.fetch = async (url, init) => {
+    skickat = JSON.parse(init.body);
+    return new Response("data: [DONE]\n\n", { status: 200, headers: { "content-type": "text/event-stream" } });
+  };
+  try {
+    const db = dbMed(rader);
+    const res = await anropMed(db, { system: "Du är en agent.", messages: ETT, maxTokens: 4096, team: SLUG_T, ...extra }, { inloggad: true });
+    if (res.status === 200) await res.text();
+    return { res, skickat, skrivna: db._skrivna };
+  } finally { globalThis.fetch = original; }
+}
+
+test("kronmätaren: tokens och webbsökningar räknas om till kronor med det högsta priset", () => {
+  // 1 miljon in + 1 miljon ut = $1,50 = 15,75 kr; tio sökningar = 1 kr.
+  assert.equal(Math.round(kronorFör({ input_tok: 1e6, output_tok: 1e6 }, 10) * 100) / 100, 16.75);
+  assert.equal(kronorFör({}, 0), 0);
+  assert.ok(KOSTNAD.takKr === 40 && KOSTNAD.larmKr === 30, "taket är Mikaels beslut 2026-09-26: 40 kr, larm vid 30");
+});
+
+test("kontrollera mot källan: webbsökningen slås på, låst till myndighetsdomänerna", async () => {
+  const { res, skickat, skrivna } = await portalAnrop(portalRader(), { webb: true });
+  assert.equal(res.status, 200);
+  const p = skickat.plugins && skickat.plugins[0];
+  assert.ok(p && p.id === "web", "ingen webbsökning skickades uppströms");
+  assert.deepEqual(p.include_domains, WEBB_DOMÄNER);
+  assert.ok(WEBB_DOMÄNER.includes("skatteverket.se"));
+  assert.ok(skrivna.some((s) => s.args && s.args[0] === "web:" + SLUG_T), "sökningen bokfördes inte för kronmätaren");
+});
+
+test("utan webb: true skickas ingen webbsökning — den kostar och ska vara kundens val", async () => {
+  const { skickat } = await portalAnrop(portalRader());
+  assert.equal(skickat.plugins, undefined);
+});
+
+test("bygget kan inte slå på webbsökning, även om klienten ber om det", async () => {
+  const { skickat } = await uppström({ step: "research", messages: ETT, webb: true });
+  assert.equal(skickat.plugins, undefined);
+});
+
+test("över kostnadstaket: inget resonemang, och kontrollen mot källan pausas — men svaren fortsätter", async () => {
+  // 30 miljoner in-tokens = $9 = 94,5 kr, alltså över 40.
+  const över = portalRader({ inTok: 30e6 });
+  const vanlig = await portalAnrop(över);
+  assert.equal(vanlig.res.status, 200, "en vanlig fråga ska fortfarande besvaras över taket");
+  assert.deepEqual(vanlig.skickat.reasoning, { enabled: false });
+  const medWebb = await portalAnrop(över, { webb: true });
+  assert.equal(medWebb.res.status, 429);
+  assert.equal((await medWebb.res.json()).code, "web_paused");
+});
+
+test("under taket får portalens långa svar resonemang på låg nivå", async () => {
+  const { skickat } = await portalAnrop(portalRader({ inTok: 1e6 }));
+  assert.deepEqual(skickat.reasoning, { effort: "low" });
+});
