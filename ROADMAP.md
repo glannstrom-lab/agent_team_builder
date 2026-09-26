@@ -168,6 +168,13 @@ Verifierat i drift efteråt:
 - **↗ ChatGPT / ↗ Claude** under varje svar: agentens instruktion, företagsminnet och svaret följer med förifyllt (`chatgpt.com/?q=`, `claude.ai/new?q=`). Över 7 000 tecken kopieras texten i stället. **Inte provad i webbläsare**, och Claudes `?q=` är obekräftad.
 - Villkoren och integritetspolicyn nämner Exa som underbiträde när kunden väljer kontrollen. 299 gröna.
 
+**Fjärde till sjunde omgången** (sista deployen `204437be`, taggen `deploy-2026-09-26b`): KA10, DR6, DR9, KR5, BF6, RE4, DR11, KA18, RE2, DR8, BF3/PR3, KA7, DR10, RE3 och BF5. 362 gröna (från 286 på morgonen).
+- **Fynd som bara syntes i webbläsaren** (Playwright mot drift, inloggad simuleringskund): svarsknapparna ritades **ovanför** varje sparat svar. På dator doldes det, eftersom knapparna bara syns vid hovring, men på mobil har kunden sett dem så sedan länge. Lagat i `bubble()`; tio knappar på en rad fick samtidigt `⋯ Mer`. `mätt` (skärmbilder i `testoutput/sim-2026-09/skarmbilder/`)
+- **Fynd i DR8:** `invoice.paid` öppnade ett ångrat köp igen som gratis standard. Lagat och mutationsprovat.
+- **/api/health** har nu sju kontroller, alla gröna i drift: ai_nyckel, databas, ai_kredit, **hemligheter** (alla sju driftsecrets finns — det gick inte att se förut), **mejl**, **ai_kostnad** och **veckobrev**. `mätt`
+- **/prompts/** svarar 404 utåt, och bygget läser dem fortfarande (riktigt skalningssteg i drift). `mätt`
+- **Gallringen** torrkördes mot skarpa D1 innan den gick ut: 0 team och 0 konton gallras, 1 kod och 1 utkast. Säkerhetskopia `backup/` (80,4 kB). Första riktiga körningen sker vid nästa timslag. **Inte kontrollerad efteråt** — kör `SELECT COUNT(*) FROM login_codes WHERE expires_at < <nu>` om en timme; den ska vara 0.
+
 Kvar: simuleringens fyra testteam i skarpa D1 (**DR16**), och en ny
 månadssimulering med DeepSeek för att se om betygen rör sig.
 

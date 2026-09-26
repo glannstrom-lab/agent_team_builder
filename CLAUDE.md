@@ -843,10 +843,15 @@ ny kund dyker upp i både galleri och portal automatiskt.
 > `deepseek/deepseek-v4.1-flash` (se *Driftsatt 2026-09-26*). Bygget går nu
 > igenom, men portalen svarar på 6–37 s.
 >
-> **Nästa pass enda uppgift:** avgör portalens resonemang (av = snabbt, på =
-> långsamt) genom att köra om månadssimuleringen med DeepSeek
-> (`testoutput/sim-2026-09/sim.mjs`, samma personor) och jämföra betygen mot
-> 2,6. PR7 (från team till uppdrag) väntar på det svaret.
+> Samma dag betades 26 roadmappunkter av (286 → 362 tester) och tre funktioner
+> byggdes: **kronmätaren** (40 kr/team/mån, `npm run kostnad`), **Kontrollera
+> mot källan** (webbsökning låst till myndighetsdomäner) och **↗ ChatGPT/Claude**
+> under varje svar. Se *Driftsatt 2026-09-26* i `ROADMAP.md`.
+>
+> **Nästa pass enda uppgift:** kör om månadssimuleringen med DeepSeek och
+> dagens fixar (`testoutput/sim-2026-09/sim.mjs`, samma fyra personor, nya
+> byggen) och jämför betygen mot 2,6. Svaret avgör både portalens resonemang
+> (av = snabbt, på = långsamt) och om PR7 (från team till uppdrag) behövs.
 >
 > *Tidigare "nästa pass", står kvar:* ta **BF4** — villkoren visas aldrig före köpet,
 > och `villkor.html` §15 lovar ett samtycke ingen kod inhämtar. Kodfixen är
