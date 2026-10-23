@@ -63,6 +63,7 @@ const state = {
   pendingRoutine: null, // rutin-label som väntar på att dess prompt skickas (avbockning)
   streaming: false,
   chatAbort: null, // AbortController för pågående svar (stoppknappen)
+  firmanKop: null, // SP9: teams.created_at ur kontot — starten för dag 21-golvet
 };
 
 // ---------- lagringsfel ----------
@@ -384,9 +385,32 @@ async function syncStatusNow() {
         freezeQ: streakF.freezeQ || streakL.freezeQ || "",
       };
     }
-    await writeFolderFile("teamstatus.json", JSON.stringify({ rout: merged, streak, at: Date.now() }, null, 2));
+    // Firman (SP19): händelseloggen är firmans, inte personens — kollegorna ska
+    // stå på samma nivå. Union via slaIhopHandelser(), så att samma händelse
+    // från två datorer räknas en gång. Bara när någon sida har en logg: ett
+    // team utan plan får exakt samma fil som förut.
+    const firmanL = firmanLogg();
+    const firmanF = cur.firman && Array.isArray(cur.firman.handelser) ? cur.firman : null;
+    let firman = null;
+    if ((firmanL || firmanF) && window.ATBFirman) {
+      const starter = [firmanL && firmanL.start, firmanF && +firmanF.start].filter((x) => Number.isFinite(x) && x > 0);
+      firman = {
+        v: 1,
+        start: starter.length ? Math.min(...starter) : null,
+        handelser: window.ATBFirman.slaIhopHandelser(firmanL && firmanL.handelser, firmanF && firmanF.handelser),
+      };
+    }
+    const status = { rout: merged, streak, at: Date.now() };
+    if (firman) status.firman = firman;
+    await writeFolderFile("teamstatus.json", JSON.stringify(status, null, 2));
     // Spegla tillbaka det merge:ade läget lokalt.
     routSave(merged);
+    if (firman) {
+      const före = firmanL ? firmanL.handelser.length : 0;
+      firmanSpara(firman);
+      // En kollega har bokat något sedan sist: rita om nivån.
+      if (firman.handelser.length !== före && firmanAktiv()) firmanOmritning();
+    }
     if (streak) { try { localStorage.setItem("atb_streak_" + state.slug, JSON.stringify(streak)); } catch (e) { storeWarn("veckostreaken", e); } }
     // Måla om rutinbockar som kom in från en kollega.
     merged.done.forEach((d) => {
@@ -452,8 +476,26 @@ const EXT_SYSTEM_MIN = 40; // en systemprompt kortare än så är inte en agent
 // ska se. Muterar `team` (den är portalens levande objekt) men läser bara
 // `ext`. Körs vid varje laddning — därför måste den tåla ett tillägg som pekar
 // på agenter som inte längre finns i grundkonfigen.
-function applyTeamExt(team, ext) {
+function applyTeamExt(team, ext, opts) {
   ext = ext || {};
+  opts = opts || {};
+
+  // 0. Rekryteringsplanen (SP9) läggs om från grunden vid varje anrop: de som
+  //    väntade förra gången kommer tillbaka in i listan i byggets ordning, och
+  //    steg 3½ nedan plockar ut dem som fortfarande väntar. Utan det hade en
+  //    andra körning (mappsynken) sett ett team där de väntande redan saknades.
+  //    Team utan plan rörs inte här alls — inte ens med ett tomt fält.
+  if (Array.isArray(team.hiringPlan) && team.hiringPlan.length) {
+    if (Array.isArray(team.pending) && team.pending.length) {
+      team.pending.forEach((a) => { if (!team.agents.some((b) => b.id === a.id)) team.agents.push(a); });
+      const ordning = Array.isArray(team.baseOrder) ? team.baseOrder : [];
+      const plats = (id) => { const i = ordning.indexOf(id); return i < 0 ? ordning.length : i; };
+      team.agents = team.agents.map((a, i) => ({ a, i }))
+        .sort((x, y) => plats(x.a.id) - plats(y.a.id) || x.i - y.i).map((x) => x.a);
+    }
+    team.pending = [];
+    if (!Array.isArray(team.baseOrder)) team.baseOrder = team.agents.map((a) => a.id);
+  }
 
   // 1. Tillagda agenter och rutiner, som förut.
   (ext.agents || []).forEach((a) => {
@@ -489,6 +531,24 @@ function applyTeamExt(team, ext) {
     if (kvar.length) team.agents = kvar;
   }
 
+  // 3½. Anställ en i taget (SP9). Bara team vars bygge gav en rekryterings-
+  //    plan (`hiringPlan`); alla andra — varje team i portal/teams/ och varje
+  //    köpt team från före planen — har alla anställda, precis som förut.
+  //    Den som inte är anställd flyttas till `team.pending` i stället för att
+  //    försvinna: hen visas som "kommer enligt planen", och allt annat i
+  //    portalen (möten, skicka vidare, mobilväljaren) ser bara de anställda.
+  //    `ext.hired` saknas = ingen anställd än (ett nytt team börjar så).
+  const plan = hiringPlanIds(team, ext);
+  if (plan.length && !opts.allaAnstallda) {
+    const hired = ext.hired && typeof ext.hired === "object" && !Array.isArray(ext.hired) ? ext.hired : {};
+    const vantar = new Set(plan.filter((id) => !Object.prototype.hasOwnProperty.call(hired, id)));
+    const kvar = team.agents.filter((a) => !vantar.has(a.id));
+    if (kvar.length) {
+      team.pending = plan.filter((id) => vantar.has(id)).map((id) => team.agents.find((a) => a.id === id)).filter(Boolean);
+      team.agents = kvar;
+    }
+  }
+
   // 4. Ingångsagenten sist, när listan är färdig. Ordningen spelar roll:
   //    en entry som pekar på någon avslutad ska ersättas, inte behållas.
   const finns = (id) => !!id && team.agents.some((a) => a.id === id);
@@ -509,6 +569,33 @@ function extEntryEfter(team, id) {
   if (!kvar.length) return null;
   if (team.entryAgent !== id) return team.entryAgent;
   return (kvar.find((a) => a.always) || kvar[0]).id;
+}
+
+// Specialisterna i anställningsordning ur `team.hiringPlan`
+// ([{ agentId, order, reason }]). Ingångsagenten är aldrig med — hon är
+// anställd från dag ett — och inte heller id:n som inte finns i teamet, eller
+// som kunden avslutat. Tom lista = teamet har ingen plan, alla är anställda.
+function hiringPlanIds(team, ext) {
+  const rader = Array.isArray(team && team.hiringPlan) ? team.hiringPlan : [];
+  if (!rader.length) return [];
+  const ingång = new Set([team.entryAgent, ext && ext.entry].filter(Boolean));
+  const avslutade = new Set(Array.isArray(ext && ext.retired) ? ext.retired : []);
+  const finns = (id) => (team.agents || []).some((a) => a.id === id) || (team.pending || []).some((a) => a.id === id);
+  const ids = [];
+  rader.map((r, i) => ({ r, i }))
+    .filter((x) => x.r && typeof x.r.agentId === "string")
+    .sort((x, y) => ((+x.r.order || 0) - (+y.r.order || 0)) || x.i - y.i)
+    .forEach(({ r }) => {
+      const id = r.agentId;
+      if (ingång.has(id) || avslutade.has(id) || !finns(id) || ids.includes(id)) return;
+      ids.push(id);
+    });
+  return ids;
+}
+// Skälet ur planen ("ni lägger sex timmar i veckan på offerter").
+function hiringReason(team, id) {
+  const r = (Array.isArray(team && team.hiringPlan) ? team.hiringPlan : []).find((x) => x && x.agentId === id);
+  return r && typeof r.reason === "string" ? r.reason.trim() : "";
 }
 // ⟦EXT-SLUT⟧
 
@@ -539,6 +626,7 @@ async function mergeTeamExtFromFolder() {
   const routines = (cur.routines || []).slice();
   const retired = (cur.retired || []).slice();
   const edits = Object.assign({}, cur.edits || {});
+  const hired = Object.assign({}, cur.hired || {});
   let changed = false;
 
   (fromFile.agents || []).forEach((a) => {
@@ -558,9 +646,19 @@ async function mergeTeamExtFromFolder() {
     edits[id] = fromFile.edits[id]; changed = true;
   });
   if (!cur.entry && typeof fromFile.entry === "string") { cur.entry = fromFile.entry; changed = true; }
+  // hired (SP9) — union. En anställning gjord på kontorsdatorn gäller också
+  // hemma; den tidigaste tidpunkten vinner, för det är då kollegan började.
+  const filHired = fromFile.hired && typeof fromFile.hired === "object" && !Array.isArray(fromFile.hired) ? fromFile.hired : {};
+  Object.keys(filHired).forEach((id) => {
+    const t = filHired[id];
+    if (!Object.prototype.hasOwnProperty.call(hired, id)) { hired[id] = t; changed = true; }
+    else if (Number.isFinite(+t) && +t > 0 && (!Number.isFinite(+hired[id]) || +t < +hired[id])) { hired[id] = +t; changed = true; }
+  });
+  if (fromFile.visaAllt === true && !cur.visaAllt) { cur.visaAllt = true; changed = true; }
 
   if (!changed) return false;
   cur.agents = agents; cur.routines = routines; cur.retired = retired; cur.edits = edits;
+  if (Object.keys(hired).length) cur.hired = hired;
   try { localStorage.setItem(teamExtKey(), JSON.stringify(cur)); } catch (e) { storeWarn("teamets tillägg", e); }
   // Lägg in i det laddade teamet direkt, annars syns de först vid nästa F5.
   // Samma funktion som laddningsvägen använder, så att en agent som kommer hem
@@ -579,7 +677,8 @@ async function syncTeamExtWithFolder() {
   // Också avslut och ändringar, inte bara tillägg: annars skrivs filen utan
   // dem och nästa dator hämtar hem ett team där den avslutade agenten står kvar.
   if ((cur.agents || []).length || (cur.routines || []).length ||
-      (cur.retired || []).length || Object.keys(cur.edits || {}).length) {
+      (cur.retired || []).length || Object.keys(cur.edits || {}).length ||
+      Object.keys(cur.hired || {}).length || cur.visaAllt) {
     queueFolder(() => writeFolderFile(TEAMEXT_FILE, JSON.stringify(cur, null, 2)));
   }
   return changed;
@@ -628,12 +727,44 @@ function systemFor(agent) {
   // andras senaste leveranser — datum och rubrik, inte hela texten.
   const logg = teamLogg(agent && agent.id);
   if (logg) sys += `\n\nTEAMLOGG (vad de andra i teamet nyligen levererat — utgå från det, och fråga inte efter sådant som redan är gjort):\n${logg}`;
+  // SP9: anställ en i taget. Instruktionerna skrevs när hela teamet planerades,
+  // så de nämner kollegor som inte är anställda än. Utan det här hade
+  // VD-assistenten skickat kunden till någon som inte finns i portalen.
+  const plan = rekryteringsBlock(agent);
+  if (plan) sys += `\n\n${plan}`;
   // Källhänvisning: när ett underlag används ska det synas varifrån uppgiften
   // kommer — det gör svaren granskningsbara och underlagen begripliga.
   if (mem || active.length) {
     sys += `\n\nNär du använder företagsminnet eller ett underlag i ett svar: hänvisa kort till källan vid namn (t.ex. "enligt er prislista"). Påstå aldrig att ett underlag innehåller något det inte gör — saknas uppgiften, säg det och be om den.`;
   }
   return sys;
+}
+
+// Vilka som är anställda just nu och vilka som väntar (SP9). Tom sträng när
+// ingen väntar — ett team utan rekryteringsplan får alltså samma instruktion
+// som förut, tecken för tecken. Läser bara `team` (testet kör den ur källan).
+function rekryteringsBlock(agent) {
+  const vantar = (team && Array.isArray(team.pending)) ? team.pending : [];
+  if (!agent || !vantar.length) return "";
+  const skäl = (id) => {
+    const r = (Array.isArray(team.hiringPlan) ? team.hiringPlan : []).find((x) => x && x.agentId === id);
+    return r && typeof r.reason === "string" && r.reason.trim() ? r.reason.trim() : "";
+  };
+  const entry = (team.agents || []).find((a) => a.id === team.entryAgent);
+  const väntarRader = vantar.map((a) => `- ${a.name}${a.tagline ? ` (${a.tagline})` : ""}${skäl(a.id) ? ` — ${skäl(a.id)}` : ""}`).join("\n");
+  if (agent.id !== team.entryAgent) {
+    return `KOLLEGOR SOM INTE ÄR ANSTÄLLDA ÄN: ${vantar.map((a) => a.name).join(", ")}. ` +
+      `Hänvisa inte kunden till dem — det de ska göra tar ${entry ? entry.name : "VD-assistenten"} hand om tills de anställs.`;
+  }
+  const anställda = (team.agents || []).filter((a) => a.id !== agent.id)
+    .map((a) => `- ${a.name}${a.tagline ? ` (${a.tagline})` : ""}`).join("\n");
+  return "TEAMET JUST NU (rekryteringsplanen — kunden anställer en kollega i taget):\n" +
+    (anställda ? `Anställda: du själv och\n${anställda}\n` : "Anställda: bara du, än så länge.\n") +
+    `Väntar på att anställas, i turordning:\n${väntarRader}\n` +
+    "Tills en kollega är anställd gör DU hens moment själv, så gott det går, och säger det kort " +
+    "(\"det här tar jag tills X är på plats\"). Hänvisa aldrig kunden till någon som inte är anställd, " +
+    "och låtsas aldrig att en väntande kollega redan arbetar. När ett väntande moment tar mycket plats " +
+    "kan du föreslå att kunden anställer nästa i planen — det görs med ett klick i portalen.";
 }
 
 // Faktabasen (KA15). Kontrollerad mot primärkälla — se portal/fakta-se.js.
@@ -868,7 +999,7 @@ async function loadTeam(slug) {
     const prevOwner = localStorage.getItem(ownerKey);
     if (prevOwner !== null && prevOwner !== owner) {
       [HIST_PREFIX, MEM_PREFIX, DOCS_PREFIX, DOCSON_PREFIX,
-        "atb_hello_", "atb_intro_", "atb_tour_", "atb_wsmore_", "atb_rout_", "atb_streak_", "atb_visit_", "atb_fp_", "atb_cost_", "atb_pulse_snooze_", "atb_teamext_"]
+        "atb_hello_", "atb_intro_", "atb_tour_", "atb_wsmore_", "atb_rout_", "atb_streak_", "atb_visit_", "atb_fp_", "atb_cost_", "atb_pulse_snooze_", "atb_teamext_", "atb_firman_"]
         .forEach((p) => localStorage.removeItem(p + slug));
       // Mappkopplingen ligger i IndexedDB — utan detta återansluter förra
       // företagets mapp och dess minne/underlag läcker in i nya teamet.
@@ -908,9 +1039,18 @@ async function loadTeam(slug) {
   }
   // Lokala teamtillägg ("Utveckla teamet"): agenter/rutiner kunden godkänt
   // efter bygget läggs ovanpå grundkonfigen vid varje laddning.
+  //
+  // Ett team med rekryteringsplan (SP9) går alltid hit, även utan tillägg:
+  // planen är det som säger att bara VD-assistenten är anställd än. Avatarerna
+  // delas då ut FÖRE filtreringen, över hela teamet i byggets ordning — annars
+  // hade varje anställning flyttat porträtten mellan kollegorna.
+  const harPlan = Array.isArray(team.hiringPlan) && team.hiringPlan.length > 0;
+  if (harPlan) assignAvatars(team);
   try {
     const ext = JSON.parse(localStorage.getItem("atb_teamext_" + slug) || "null");
-    if (ext) applyTeamExt(team, ext);
+    // Demoläget visar hela teamet: det finns för att titta på, inte för att
+    // anställa i, och där bokförs ingenting som kunde flytta trappan.
+    if (ext || harPlan) applyTeamExt(team, ext || {}, { allaAnstallda: state.demo });
   } catch (_) { /* trasigt tillägg — kör grundkonfigen */ }
   assignAvatars(team); // ge varje agent en (stabil, slumpad) avatar om ingen är satt
   state.slug = slug;
@@ -1469,6 +1609,7 @@ function renderPicker(errMsg) {
 function renderPortal() {
   const root = $("#root");
   root.innerHTML = "";
+  if (firmanAktiv()) firmanStarta(); // före sidopanelen: golvet behöver en start
   const app = el("div", "app");
   app.appendChild(renderSidebar());
   app.appendChild(renderMain());
@@ -1482,6 +1623,19 @@ function renderPortal() {
   // auto-levererat svar hos ingångsagenten kvitterats som läst innan kunden
   // sett kortet, vilket är exakt buggen P6 handlade om — bara flyttad.
   selectAgent(state.activeAgentId, { boot: true });
+  if (firmanAktiv()) {
+    // Firman växer: köpdatumet ur kontot ersätter loggens start när det
+    // kommit — samma källa som provmånadskortet.
+    paintNastaStegMain();
+    if (!state.firmanKopHämtad && state.slug && !state.slug.startsWith("__")) {
+      state.firmanKopHämtad = true;
+      meOnce().then((me) => {
+        const t = me && Array.isArray(me.teams) ? me.teams.find((x) => x && x.slug === state.slug) : null;
+        const ms = t ? msFromStamp(t.createdAt) : 0;
+        if (ms) { state.firmanKop = ms; firmanOmritning(); }
+      }).catch(() => { /* utan konto gäller loggens start */ });
+    }
+  }
   renderPulse();       // lokala puls-kort — portalen har alltid något att säga
   checkTrialNotice();  // async: provmånadens slutdatum, om kontot säger att det är en provmånad
   runAutoRoutines();   // async: auto-rutiner som ska ligga klara idag
@@ -1526,8 +1680,14 @@ function renderSidebar() {
   brand.appendChild(bt);
   side.appendChild(brand);
 
+  // Firman växer (SP1/SP3/SP9) — bara för team med rekryteringsplan. För
+  // alla andra är `lage` null och resten av funktionen ritar som förut.
+  const lage = firmanAktiv() ? firmanLage() : null;
+
   // Kom igång-kortet (döljs när allt är gjort eller kunden klickat bort det).
-  const intro = renderIntroCard();
+  // Ett team med plan får "Ert nästa steg" i stället: en sak att göra, inte
+  // en lista med sju.
+  const intro = lage ? null : renderIntroCard();
   if (intro) side.appendChild(intro);
 
   const list = el("nav", "agent-list");
@@ -1544,12 +1704,18 @@ function renderSidebar() {
     item.onclick = () => selectAgent(a.id);
     list.appendChild(item);
   });
+  if (lage) { const plan = renderPlanList(lage); if (plan) list.appendChild(plan); }
   side.appendChild(list);
 
   // ---- Arbetsyta: det som gör portalen till mer än en chatt ----
   const ws = el("div", "ws");
+  if (lage) ws.appendChild(renderNastaSteg(lage, "ws"));
   ws.appendChild(el("div", "side-label ws-head", "Arbetsyta"));
-  const wsBtn = (icon, label, fn, title) => {
+  // SP3: en panel som inte är upplåst ritas inte som knapp utan samlas i
+  // listan "Kommer när firman växer" längre ner, med sitt villkor.
+  const låsta = [];
+  const wsBtn = (icon, label, fn, title, panel) => {
+    if (lage && panel && !panelOppen(lage, panel)) { låsta.push({ icon, label, villkor: lage.upp[panel].villkor }); return null; }
     const b = el("button", "ws-btn"); b.type = "button"; if (title) b.title = title;
     b.appendChild(el("span", "ws-ico", icon)); b.appendChild(el("span", "ws-txt", label));
     b.onclick = fn; ws.appendChild(b); return b;
@@ -1562,43 +1728,48 @@ function renderSidebar() {
   // Introduktionen står överst så länge den inte är gjord — det är det första
   // en ny kund ska göra. Är den avklarad flyttar den ner bland de andra
   // "läs om teamet"-knapparna, så att Veckostart behåller sin vana plats.
-  const introBtn = () => wsBtn("👋", "Lär känna teamet", openIntro, "Presentationen av teamet: en agent i taget, med en fråga tillbaka till dig");
+  const introBtn = () => wsBtn("👋", "Lär känna teamet", openIntro, "Presentationen av teamet: en agent i taget, med en fråga tillbaka till dig", "lar-kanna");
   const tourLeft = !tourDone();
   if (tourLeft) introBtn();
-  wsBtn("⭐", "Veckostart", startWeek, `${entryName} föreslår veckans fokus utifrån teamet och era rutiner`);
-  wsBtn("🤝", "Håll ett möte", openMeeting, "Samla flera agenters perspektiv och landa i ett beslut");
-  wsBtn("🧠", "Minne & underlag", openMemory, "Delade instruktioner och material som alla agenter ser");
+  wsBtn("⭐", "Veckostart", startWeek, `${entryName} föreslår veckans fokus utifrån teamet och era rutiner`, "veckostart");
+  wsBtn("🤝", "Håll ett möte", openMeeting, "Samla flera agenters perspektiv och landa i ett beslut", "mote");
+  wsBtn("🧠", "Minne & underlag", openMemory, "Delade instruktioner och material som alla agenter ser", "minne");
   // Ligger i huvudraden och inte bland extras: för den som redan skriver sina
   // egna mejl är det här den snabbaste vägen till ett första riktigt värde —
   // hon behöver inte lita på att agenten kan hennes jobb, bara att den kan läsa.
-  wsBtn("🔎", "Granska mitt utkast", openReview, "Klistra in ett mejl, en offert eller ett inlägg — teamet säger vad som saknas innan du skickar");
+  wsBtn("🔎", "Granska mitt utkast", openReview, "Klistra in ett mejl, en offert eller ett inlägg — teamet säger vad som saknas innan du skickar", "granska");
   if (!tourLeft) introBtn();
-  if (whyAvailable()) wsBtn("✨", "Därför detta team", openWhyTeam, "Varje agents koppling till er verksamhet — och det vi medvetet sa nej till");
-  if (team.firstProject) wsBtn("🎯", "Första projektet", openFirstProject, "Ert första AI-projekt — planen och första steget");
+  if (whyAvailable()) wsBtn("✨", "Därför detta team", openWhyTeam, "Varje agents koppling till er verksamhet — och det vi medvetet sa nej till", "darfor");
+  if (team.firstProject) wsBtn("🎯", "Första projektet", openFirstProject, "Ert första AI-projekt — planen och första steget", "forsta-projektet");
 
   // Resten av arbetsytan. Byggs som en lista i stället för direkta anrop, så
   // att den kan fällas ihop för en ny kund utan att raderna dubbleras i koden.
   // Se wsCollapsed(): allt visas permanent så fort det finns chatthistorik.
   const extras = [];
-  extras.push(["📈", "Veckans arbete", openWeekWork, "Vad du och teamet gjort den här veckan — och tid tillbaka"]);
+  extras.push(["📈", "Veckans arbete", openWeekWork, "Vad du och teamet gjort den här veckan — och tid tillbaka", "veckans-arbete"]);
   // Kvartalet nås från Veckans arbete sedan RE5; här bara när kvartalet slutar.
-  if (!state.demo && quarterEndsSoon()) extras.push(["🏆", "Kvartalet med teamet", openQuarter, "Kvartalets siffror — delbara med en kollega"]);
-  if (!state.demo) extras.push(["🔄", "Utveckla teamet", openGrow, "Lägg till en agent när verksamheten förändras — avvisade moment står först i kön"]);
-  if (!state.demo) extras.push(["🔍", "Sök i historiken", openSearch, "Sök i alla samtal och arkivet"]);
+  if (!state.demo && quarterEndsSoon()) extras.push(["🏆", "Kvartalet med teamet", openQuarter, "Kvartalets siffror — delbara med en kollega", "kvartal"]);
+  if (!state.demo) extras.push(["🔄", "Utveckla teamet", openGrow, "Lägg till en agent när verksamheten förändras — avvisade moment står först i kön", "utveckla"]);
+  if (!state.demo) extras.push(["🔍", "Sök i historiken", openSearch, "Sök i alla samtal och arkivet", "sok"]);
   // Veckobrevet ligger bland extras och inte i huvudraden: det är en
   // inställning man gör en gång, inte något man gör varje dag. Men det visas i
   // demoläget också — en funktion som inte syns i demon säljer ingenting.
-  extras.push(["✉️", "Veckobrev", openDigest, "Teamets veckostart som mejl på den dag du väljer"]);
-  const hideExtras = wsCollapsed();
-  if (!hideExtras) extras.forEach((e) => wsBtn(e[0], e[1], e[2], e[3]));
+  extras.push(["✉️", "Veckobrev", openDigest, "Teamets veckostart som mejl på den dag du väljer", "veckobrev"]);
+  // Med plan är det trappan som fäller ihop arbetsytan, inte chatthistoriken.
+  const hideExtras = lage ? false : wsCollapsed();
+  if (!hideExtras) extras.forEach((e) => wsBtn(e[0], e[1], e[2], e[3], e[4]));
 
   // Verktygen bygger alla på portalens egen logg och har ingenting att visa
   // förrän kunden använt teamet — de hör därför till det som fälls ut.
   // RE5: rapporten och leveranslistan bor i Veckans arbete sedan 2026-09-26 —
   // de var samma logg som den, i andra kostymer.
   const tools = state.demo ? [] : [
-    ["🎭", "Öva ett samtal", openPractice, "Rollspela ett svårt samtal — agenten spelar motparten och ger feedback"],
+    ["🎭", "Öva ett samtal", openPractice, "Rollspela ett svårt samtal — agenten spelar motparten och ger feedback", "ova"],
   ];
+  // Verktygen ritas längre ner, efter rubriken "Verktyg" — men vilka som är
+  // låsta avgörs här, så att rubriken inte står ensam över en tom lista.
+  const öppnaVerktyg = tools.filter((t) => !lage || panelOppen(lage, t[4]));
+  if (lage) tools.filter((t) => !panelOppen(lage, t[4])).forEach((t) => låsta.push({ icon: t[0], label: t[1], villkor: lage.upp[t[4]].villkor }));
   if (hideExtras) {
     const more = el("button", "ws-more", `＋ Visa hela arbetsytan (${extras.length + tools.length} till)`);
     more.type = "button";
@@ -1618,9 +1789,9 @@ function renderSidebar() {
   }
 
   // ---- Verktyg: engångshjälp som bygger på portalens egen logg ----
-  if (tools.length && !hideExtras) {
+  if (öppnaVerktyg.length && !hideExtras) {
     ws.appendChild(el("div", "side-label ws-head", "Verktyg"));
-    tools.forEach((t) => wsBtn(t[0], t[1], t[2], t[3]));
+    öppnaVerktyg.forEach((t) => wsBtn(t[0], t[1], t[2], t[3]));
   }
 
   // Tidig utveckling — säg det, dölj det inte. Kunderna är i praktiken
@@ -1629,7 +1800,9 @@ function renderSidebar() {
   // går att se vem som skrivit utan att fråga.
 
   const routines = Array.isArray(team.routines) ? team.routines : [];
-  if (routines.length) {
+  if (routines.length && lage && !panelOppen(lage, "rutiner")) {
+    låsta.push({ icon: "📌", label: `Veckans rutiner (${routines.length})`, villkor: lage.upp.rutiner.villkor });
+  } else if (routines.length) {
     ws.appendChild(el("div", "side-label ws-head", "Veckans rutiner"));
     const today = todayDayNo();
     routines.forEach((rt) => {
@@ -1643,6 +1816,34 @@ function renderSidebar() {
       b.onclick = () => runRoutine(rt);
       ws.appendChild(b);
     });
+  }
+
+  // SP3: det som inte är upplåst än, grupperat efter villkor — så att kunden
+  // ser att det finns och vad som krävs, utan en vägg av låsta knappar.
+  if (lage) {
+    if (låsta.length) {
+      ws.appendChild(el("div", "side-label ws-head", "Kommer när firman växer"));
+      const grupper = new Map();
+      låsta.forEach((p) => { const k = p.villkor || ""; if (!grupper.has(k)) grupper.set(k, []); grupper.get(k).push(p); });
+      grupper.forEach((ps, villkor) => {
+        const rad = el("div", "ws-locked");
+        rad.appendChild(el("div", "ws-locked-names", "🔒 " + ps.map((p) => p.label).join(" · ")));
+        if (villkor) rad.appendChild(el("div", "ws-locked-when", villkor));
+        ws.appendChild(rad);
+      });
+    }
+    if (låsta.length || lage.ext.visaAllt) {
+      const va = el("button", "link-btn ws-showall", lage.ext.visaAllt ? "Visa bara det som är upplåst" : "Visa allt nu");
+      va.type = "button";
+      va.title = lage.ext.visaAllt ? "Låt firmans nivå styra arbetsytan igen" : "Öppna hela arbetsytan direkt, oavsett var firman står";
+      va.onclick = () => {
+        const cur = loadTeamExt();
+        if (cur.visaAllt) delete cur.visaAllt; else cur.visaAllt = true;
+        saveTeamExt(cur);
+        firmanOmritning();
+      };
+      ws.appendChild(va);
+    }
   }
 
   ws.appendChild(el("div", "side-label ws-head", "Tyck till"));
@@ -1962,7 +2163,7 @@ function bubble(role, text, msg) {
     // på mobil stod knapparna ovanför varje sparat svar. Syntes först i en
     // skärmbild — inte vid läsning av koden.
     row.appendChild(b);
-    if (text) addActions(row, () => text); // färdiga svar får kopiera/ladda ner
+    if (text) addActions(row, () => text, msg); // färdiga svar får kopiera/ladda ner
     // Mötesanteckningar bär deltagarnas oberoende perspektiv — produktens
     // bevis för att mötet inte är en modell som lajvar roller. Visa dem.
     if (msg && Array.isArray(msg.perspectives) && msg.perspectives.length) row.appendChild(perspToggle(msg.perspectives));
@@ -2357,6 +2558,462 @@ function refreshSidebar() {
   // Funktionen är idempotent: den avbryter på `#trial-card`, respekterar
   // snooze och gör ett `/api/auth/me`-anrop som redan är cachat i meOnce().
   checkTrialNotice();
+}
+
+// ============================================================
+// FIRMAN VÄXER (SP1, SP3, SP9, SP10, SP19)
+//
+// Logiken — trappan, upplåsningen, rekryteringen, nästa steg — bor i
+// portal/firman.js (window.ATBFirman) och är testad där. Här finns bara det
+// som rör portalen: bokföringen av verkliga händelser, och var de syns.
+//
+// GÄLLER BARA TEAM MED REKRYTERINGSPLAN. Ett team utan `hiringPlan` — varje
+// team i portal/teams/ och varje köpt team från före planen — ser ut och
+// fungerar exakt som förut: alla anställda, inga låsta paneler, inget kort,
+// inga nya knappar under svaren. Det är kontraktet med byggsidan, och det
+// enda sättet att hålla löftet "ingen befintlig kund förlorar något" utan
+// att gissa vad en befintlig kund sett.
+// ============================================================
+const Firman = () => (typeof window !== "undefined" && window.ATBFirman) || null;
+function firmanAktiv() {
+  return !state.demo && !!team && Array.isArray(team.hiringPlan) && team.hiringPlan.length > 0 && !!Firman();
+}
+
+// ── bokföringen (SP19) ──────────────────────────────────────────────────
+// Fem uttryckliga handlingar, inget annat. En skickad fråga, ett svar, en
+// veckostart eller ett möte som inte ledde någonstans skriver ingenting hit —
+// samma ärlighetsregel som OM5. Formen är den firman.js läser:
+//   atb_firman_<slug> = { v: 1, start: ms, handelser: [{ typ, at, agentId? }] }
+// ⟦FIRMAN-START⟧
+const FIRMAN_HANDELSER = ["projekt_paborjat", "leverans_godkand", "rutin_klar", "mote_beslut", "rutin_ur_beslut"];
+function firmanLogg() {
+  try {
+    const l = JSON.parse(localStorage.getItem("atb_firman_" + state.slug) || "null");
+    if (l && typeof l === "object" && Array.isArray(l.handelser)) {
+      return { v: 1, start: Number.isFinite(+l.start) && +l.start > 0 ? +l.start : null, handelser: l.handelser };
+    }
+  } catch (_) { /* trasig post — börja om hellre än att kasta */ }
+  return null;
+}
+function firmanSpara(logg) {
+  try { localStorage.setItem("atb_firman_" + state.slug, JSON.stringify(logg)); return true; }
+  catch (_) { return false; }
+}
+// Loggen skapas vid första laddningen av ett team med plan, så att golvet
+// (dag 21) har en start att räkna från även innan något hänt.
+function firmanStarta(nu) {
+  if (state.demo || !state.slug) return null;
+  const l = firmanLogg();
+  if (l) return l;
+  const ny = { v: 1, start: Number.isFinite(+nu) ? +nu : Date.now(), handelser: [] };
+  return firmanSpara(ny) ? ny : null;
+}
+// Bokar EN händelse. Returnerar händelsen, eller null om den inte bokades
+// (demoläge, okänd typ, full lagring).
+function firmanBoka(typ, agentId, nu) {
+  if (state.demo || !state.slug || !FIRMAN_HANDELSER.includes(typ)) return null;
+  const at = Number.isFinite(+nu) ? +nu : Date.now();
+  const logg = firmanLogg() || { v: 1, start: at, handelser: [] };
+  const e = { typ, at };
+  if (typeof agentId === "string" && agentId) e.agentId = agentId;
+  logg.handelser.push(e);
+  return firmanSpara(logg) ? e : null;
+}
+// ⟦FIRMAN-SLUT⟧
+
+// Köpet (teams.created_at) är starten när kontot säger det; annars loggens
+// egen start. Samma källa som provmånadskortet använder.
+function firmanStart() {
+  if (Number.isFinite(state.firmanKop) && state.firmanKop > 0) return state.firmanKop;
+  const l = firmanLogg();
+  return l && l.start ? l.start : null;
+}
+
+// Allt firman.js behöver för att säga var firman står, ur portalens lagring.
+function firmanLage(nu) {
+  const F = Firman();
+  nu = Number.isFinite(+nu) ? +nu : Date.now();
+  const ext = loadTeamExt();
+  const start = firmanStart();
+  const hist = F.historikUr(localStorage, state.slug, team, { start });
+  const n = F.nivaFor(hist, nu);
+  // arv: false — ett team med plan är byggt efter planen, så det finns ingen
+  // äldre arbetsyta att ärva. Det kunden redan använt står ändå öppet (anvant).
+  const upp = F.upplast(n.niva, { anvant: hist.anvant, examen: n.examen, visaAllt: !!ext.visaAllt, arv: false });
+  const plan = hiringPlanIds(team, ext);
+  const hired = ext.hired && typeof ext.hired === "object" && !Array.isArray(ext.hired) ? ext.hired : {};
+  const rk = F.rekrytering(plan, hired, nu, start, { niva: n.niva });
+  return { hist, n, upp, rk, plan, ext, start };
+}
+const panelOppen = (lage, id) => !lage || !lage.upp[id] || lage.upp[id].upplast;
+
+// Efter en bokning, en anställning eller en synk: rita om det som visar
+// nivån. Inte renderPortal() — den kör auto-rutiner och kan öppna
+// presentationen ovanpå det kunden just gör.
+function firmanOmritning() {
+  if (!team || !document.querySelector(".app")) return;
+  refreshSidebar();
+  const msel = $("#mb-agent");
+  if (msel) {
+    msel.innerHTML = "";
+    team.agents.forEach((a) => { const o = el("option", null, `${a.icon} ${a.name}`); o.value = a.id; msel.appendChild(o); });
+    msel.value = state.activeAgentId;
+  }
+  paintNastaStegMain();
+}
+function firmanBokaOchRita(typ, agentId) {
+  const e = firmanBoka(typ, agentId);
+  if (!e) return null;
+  syncStatusToFolder(); // firman levlar, inte personen — kollegorna ska se samma nivå
+  firmanOmritning();
+  return e;
+}
+
+// Den här veckans veckostart, om den hållits (frågan börjar alltid med
+// "Veckostart!", se startWeek()).
+function veckostartDennaVecka() {
+  const h = (state.history && state.history[team.entryAgent]) || [];
+  const v = isoWeek();
+  return h.some((m) => m && m.role === "user" && /^Veckostart!/.test(m.content || "") && m.at && isoWeek(m.at) === v);
+}
+
+// ── anställningen (SP9, SP10) ───────────────────────────────────────────
+function anstall(ids) {
+  const cur = loadTeamExt();
+  const hired = Object.assign({}, cur.hired && typeof cur.hired === "object" && !Array.isArray(cur.hired) ? cur.hired : {});
+  const nu = Date.now();
+  ids.forEach((id) => { if (!Object.prototype.hasOwnProperty.call(hired, id)) hired[id] = nu; });
+  cur.hired = hired;
+  if (!saveTeamExt(cur)) return false;
+  applyTeamExt(team, cur);
+  assignAvatars(team);
+  return true;
+}
+
+function datumKort(ms) {
+  return new Date(ms).toLocaleDateString("sv-SE", { day: "numeric", month: "long" });
+}
+
+// VD-assistenten föreslår nästa anställning — och presenterar kollegan
+// direkt efteråt (SP10): vem, varför, och ett första uppdrag förifyllt.
+function openHire(id) {
+  const a = (team.pending || []).find((x) => x.id === id) || agentById(id);
+  if (!a) return;
+  const entry = agentById(team.entryAgent) || { name: "VD-assistenten" };
+  const box = openOverlay("Nästa anställning");
+  box.classList.add("tour-box");
+  const body = el("div", "tour-body");
+  box.appendChild(body);
+  const skäl = hiringReason(team, a.id);
+
+  const kort = () => {
+    const head = el("div", "tour-head");
+    head.appendChild(agentIcon(a, "tour-icon"));
+    const meta = el("div", "tour-meta");
+    meta.appendChild(el("div", "tour-name", a.name));
+    meta.appendChild(el("div", "tour-role", a.tagline || a.role || ""));
+    head.appendChild(meta);
+    return head;
+  };
+
+  // Introduktionen. Kunden lär känna kollegan genom att ge hen ett uppdrag,
+  // inte genom att läsa ett kort — därför slutar den i samtalsrutan.
+  const introduktion = () => {
+    body.innerHTML = "";
+    const t = $("#ovl-title"); if (t) t.textContent = `Välkommen, ${a.name}`;
+    body.appendChild(kort());
+    body.appendChild(el("p", "ovl-lead",
+      `${entry.name}: Det här är ${a.name}. Hen börjar i dag, och det hen ska ta hand om lämnar jag över från och med nu.`));
+    if (skäl || a.why) body.appendChild(el("p", "tour-p tour-why", skäl || a.why));
+    const uppdrag = (Array.isArray(a.starters) && a.starters.find((s) => typeof s === "string" && s.trim())) ||
+      "Presentera dig kort och föreslå det första du kan ta hand om åt oss den här veckan. Vad behöver du från mig?";
+    body.appendChild(el("div", "ovl-label", "Första uppdraget"));
+    body.appendChild(el("p", "tour-q", uppdrag));
+    const acts = el("div", "tour-acts tour-acts-col");
+    const go = el("button", "btn-primary ovl-save", `Ge ${a.name} första uppdraget`); go.type = "button";
+    go.onclick = () => {
+      closeOverlay();
+      selectAgent(a.id);
+      const ta = $("#composer-input");
+      if (ta) {
+        ta.value = uppdrag;
+        ta.style.height = "auto"; ta.style.height = Math.min(ta.scrollHeight, 200) + "px";
+        ta.focus();
+      }
+    };
+    acts.appendChild(go);
+    body.appendChild(el("p", "ovl-note", "Uppdraget hamnar i samtalsrutan — ändra det gärna innan du skickar."));
+    body.appendChild(acts);
+  };
+
+  body.appendChild(el("p", "ovl-lead", `${entry.name} föreslår att ni anställer ${a.name}.`));
+  body.appendChild(kort());
+  if (skäl || a.why) {
+    body.appendChild(el("div", "ovl-label", "Varför nu"));
+    body.appendChild(el("p", "tour-p tour-why", skäl || a.why));
+  }
+  if (a.job) {
+    body.appendChild(el("div", "ovl-label", "Det här tar hen hand om"));
+    body.appendChild(el("p", "tour-p", a.job));
+  }
+  const acts = el("div", "tour-acts");
+  const ja = el("button", "btn-primary ovl-save", `Anställ ${a.name}`); ja.type = "button";
+  ja.onclick = () => {
+    if (!anstall([a.id])) { alert("Anställningen kunde inte sparas — webbläsarens lagring är full."); return; }
+    introduktion();
+    firmanOmritning();
+  };
+  acts.appendChild(ja);
+  const nej = el("button", "tour-skip", "Inte än"); nej.type = "button";
+  nej.onclick = closeOverlay;
+  acts.appendChild(nej);
+  body.appendChild(acts);
+}
+
+function anstallAllaNu() {
+  const lage = firmanLage();
+  const kvar = lage.rk.kvar;
+  if (!kvar.length) return;
+  if (!confirm(`Anställa alla ${kvar.length} som står kvar i planen nu?\n\nPlanen finns för att ni ska hinna lära känna dem en i taget — men det är ert val.`)) return;
+  const cur = loadTeamExt();
+  cur.hired = Firman().anstallAlla(lage.plan, cur.hired || {}, Date.now());
+  if (!saveTeamExt(cur)) { alert("Anställningarna kunde inte sparas — webbläsarens lagring är full."); return; }
+  applyTeamExt(team, cur);
+  assignAvatars(team);
+  firmanOmritning();
+}
+
+// "Kommer enligt planen" i laget: de som inte är anställda, med skälet och
+// vad som krävs. Inte valbara — de finns inte i teamet än.
+function renderPlanList(lage) {
+  const pend = team.pending || [];
+  if (!pend.length) return null;
+  const wrap = el("div", "plan-list");
+  wrap.appendChild(el("div", "side-label plan-head", "Kommer enligt planen"));
+  const rk = lage.rk;
+  pend.forEach((a, i) => {
+    const row = el("div", "plan-item");
+    row.appendChild(agentIcon(a, "agent-icon plan-icon"));
+    const meta = el("div", "agent-meta");
+    meta.appendChild(el("span", "agent-name", a.name));
+    const skäl = hiringReason(team, a.id) || a.tagline || "";
+    if (skäl) meta.appendChild(el("span", "plan-why", skäl));
+    if (a.id === rk.nasta && rk.dags) {
+      const b = el("button", "plan-act", `Dags — träffa ${a.name}`); b.type = "button";
+      b.onclick = () => openHire(a.id);
+      meta.appendChild(b);
+    } else if (a.id === rk.nasta) {
+      // Nivån öppnar platserna en i taget (platserFor() i firman.js): den
+      // k:te anställningen kräver nivå k+1, de sista nivå 4.
+      const krävs = Math.min(rk.anstallda.length + 2, 4);
+      const krav = (Firman().TRAPPAN[krävs - 2] || {}).krav || "";
+      const senast = rk.golvDatum ? ` — senast ${datumKort(rk.golvDatum)}` : "";
+      meta.appendChild(el("span", "plan-when", `Kommer när: ${krav.charAt(0).toLowerCase() + krav.slice(1)}${senast}`));
+    } else {
+      meta.appendChild(el("span", "plan-when", `Efter ${(pend[i - 1] || {}).name || "nästa"}`));
+    }
+    row.appendChild(meta);
+    wrap.appendChild(row);
+  });
+  const alla = el("button", "link-btn plan-all", "Anställ alla nu"); alla.type = "button";
+  alla.title = "Hoppa över planen och anställ hela teamet direkt";
+  alla.onclick = anstallAllaNu;
+  wrap.appendChild(alla);
+  return wrap;
+}
+
+// ── nästa steg (SP1) ────────────────────────────────────────────────────
+// ETT kort, EN handling. Ordningen bestäms av nastaSteg() i firman.js.
+function nastaStegFor(lage) {
+  const namn = {};
+  team.agents.concat(team.pending || []).forEach((a) => { namn[a.id] = a.name; });
+  const t = {
+    niva: lage.n.niva, examen: lage.n.examen, anvant: lage.hist.anvant, visaAllt: !!lage.ext.visaAllt,
+    entryAgent: team.entryAgent, namn,
+    forstaProjektet: { namn: team.firstProject && team.firstProject.name, agentId: team.entryAgent, paborjat: lage.n.niva > 1 },
+    utkast: [],
+    rutiner: (team.routines || []).map((r) => ({ label: r.label, agentId: agentById(r.agentId) ? r.agentId : team.entryAgent, day: r.day, klar: routineDone(r.label) })),
+    mote: null,
+    rekrytering: lage.rk,
+    veckomoteHallet: veckostartDennaVecka(),
+  };
+  return Firman().nastaSteg(t, Date.now());
+}
+
+function nastaStegHandling(steg) {
+  const a = agentById(steg.agentId) || (team.pending || []).find((x) => x.id === steg.agentId);
+  const namn = a ? a.name : "teamet";
+  const prefill = (agentId, text) => {
+    selectAgent(agentId);
+    const ta = $("#composer-input");
+    if (ta && text) { ta.value = text; ta.style.height = "auto"; ta.style.height = Math.min(ta.scrollHeight, 200) + "px"; ta.focus(); }
+  };
+  switch (steg.typ) {
+    case "forsta-projektet":
+      return {
+        label: team.firstProject ? "Öppna första projektet" : `Börja med ${namn}`,
+        hint: "Godkänn ett svar du kan använda, så är projektet i gång.",
+        act: team.firstProject ? openFirstProject : () => prefill(team.entryAgent,
+          "Vi kör igång vårt första projekt tillsammans. Föreslå vad vi borde börja med, utifrån det du vet om oss, och gör det första steget direkt."),
+      };
+    case "rutin": {
+      const rt = (team.routines || []).find((r) => r.day === todayDayNo() && !routineDone(r.label));
+      return { label: "Kör rutinen", act: () => (rt ? runRoutine(rt) : selectAgent(steg.agentId)) };
+    }
+    case "mote": return { label: "Håll mötet", act: openMeeting };
+    case "anstallning": return { label: `Träffa ${namn}`, act: () => openHire(steg.agentId) };
+    case "utkast": return { label: "Läs och godkänn", act: () => selectAgent(steg.agentId) };
+    default:
+      return veckostartDennaVecka()
+        ? { label: `Öppna samtalet med ${namn}`, act: () => prefill(steg.agentId, "") }
+        : { label: "Håll veckomötet", act: startWeek };
+  }
+}
+
+function renderNastaSteg(lage, var_) {
+  const steg = nastaStegFor(lage);
+  const h = nastaStegHandling(steg);
+  const card = el("div", "next-card next-" + var_);
+  card.id = "nasta-steg-" + var_;
+  card.appendChild(el("div", "side-label", "Ert nästa steg"));
+  card.appendChild(el("p", "next-text", steg.text));
+  const b = el("button", "btn-primary next-act", h.label); b.type = "button";
+  b.onclick = h.act;
+  card.appendChild(b);
+  if (h.hint) card.appendChild(el("p", "next-hint", h.hint));
+  card.appendChild(el("p", "next-niva",
+    `Firman: ${lage.n.namn} (nivå ${lage.n.niva} av 5)` + (lage.n.kvar ? ` · nästa: ${lage.n.kvar}` : "")));
+  return card;
+}
+
+// På mobil ligger arbetsytan bakom ☰ — kortet hade varit gömt precis där ett
+// steg i taget passar bäst. Därför en kopia ovanför samtalet, som CSS visar
+// bara under 880 px (och döljer kopian i arbetsytan där).
+function paintNastaStegMain() {
+  const old = $("#nasta-steg-main"); if (old) old.remove();
+  if (!firmanAktiv()) return;
+  const main = document.querySelector(".main"); if (!main) return;
+  main.insertBefore(renderNastaSteg(firmanLage(), "main"), $("#chat-header"));
+}
+
+// ── svarens handlingar (SP19) ───────────────────────────────────────────
+// Knapparna under ett svar som bokför något. Bara i team med plan. Status
+// som redan bokförts står som en rad under svaret, synlig också utan hovring,
+// så att det går att se vad som är godkänt när man läser tillbaka.
+function firmanSvarsKnappar(row, acts, msg, agentId) {
+  if (!firmanAktiv() || !msg) return;
+  const status = el("div", "msg-status");
+  const rad = (t) => status.appendChild(el("span", "msg-stamp", t));
+  const efter = () => { renderLog(); };
+
+  if (msg.godkand) rad(`✓ Godkänd ${datumKort(msg.godkand)}`);
+  else {
+    const ok = el("button", "act-btn act-ok", "✓ Godkänn"); ok.type = "button";
+    ok.title = "Det här kan jag använda — teamet bokför det som en leverans";
+    ok.onclick = () => {
+      const e = firmanBokaOchRita("leverans_godkand", agentId);
+      if (!e) return;
+      msg.godkand = e.at; saveHistory(); efter();
+    };
+    acts.insertBefore(ok, acts.firstChild);
+  }
+
+  if (msg.rutin) {
+    if (msg.rutinKlar) rad(`✓ Rutinen "${msg.rutin}" klar`);
+    else {
+      const rk = el("button", "act-btn act-ok", "✓ Rutinen klar"); rk.type = "button";
+      rk.title = `Bekräfta att "${msg.rutin}" är gjord den här veckan`;
+      rk.onclick = () => {
+        const e = firmanBokaOchRita("rutin_klar", agentId);
+        if (!e) return;
+        msg.rutinKlar = e.at; saveHistory();
+        routineMarkDone(msg.rutin); // veckobocken, om den inte redan satts
+        efter();
+      };
+      acts.insertBefore(rk, acts.firstChild);
+    }
+  }
+
+  if (Array.isArray(msg.perspectives) && msg.perspectives.length) {
+    if (msg.beslut && msg.beslut.text) {
+      rad(`Beslut: ${msg.beslut.text}`);
+      if (msg.beslut.rutin) rad(`↻ Blev rutinen "${msg.beslut.rutin}"`);
+      else {
+        const rb = el("button", "act-btn act-ok", "↻ Gör beslutet till en rutin"); rb.type = "button";
+        rb.onclick = () => openBeslutRutin(msg);
+        acts.insertBefore(rb, acts.firstChild);
+      }
+    } else {
+      const bb = el("button", "act-btn act-ok", "✓ Det här bestämde vi"); bb.type = "button";
+      bb.title = "Skriv beslutet med en rad — det sparas med mötesanteckningen";
+      bb.onclick = () => {
+        if (row.querySelector(".beslut-form")) return;
+        const f = el("form", "beslut-form");
+        const inp = el("input", "ovl-input"); inp.type = "text"; inp.maxLength = 200;
+        inp.placeholder = "Det här bestämde vi, med en rad";
+        inp.setAttribute("aria-label", "Beslutet från mötet");
+        const spara = el("button", "act-btn act-ok", "Spara beslutet"); spara.type = "submit";
+        const avbryt = el("button", "act-btn", "Avbryt"); avbryt.type = "button";
+        avbryt.onclick = () => f.remove();
+        f.onsubmit = (ev) => {
+          ev.preventDefault();
+          const text = inp.value.replace(/\s+/g, " ").trim();
+          if (!text) { inp.focus(); return; }
+          const e = firmanBokaOchRita("mote_beslut", team.entryAgent);
+          if (!e) return;
+          msg.beslut = { text, at: e.at }; saveHistory(); efter();
+        };
+        f.append(inp, spara, avbryt);
+        row.appendChild(f);
+        inp.focus();
+      };
+      acts.insertBefore(bb, acts.firstChild);
+    }
+  }
+  if (status.children.length) row.insertBefore(status, acts);
+}
+
+// "Gör beslutet till en rutin": samma väg som en tillagd rutin i "Utveckla
+// teamet" (teamExt.routines), och händelsen som avslutar nivå 4.
+function openBeslutRutin(msg) {
+  const box = openOverlay("↻ Beslutet blir en rutin");
+  box.appendChild(el("p", "ovl-lead", `Beslutet: "${msg.beslut.text}". En rutin gör att någon i teamet följer upp det varje vecka.`));
+  const lab = (t, id) => { const l = el("label", "ovl-label", t); l.setAttribute("for", id); box.appendChild(l); };
+  lab("Rutinens namn", "br-namn");
+  const namn = el("input", "ovl-input"); namn.id = "br-namn"; namn.type = "text"; namn.maxLength = 60;
+  namn.value = msg.beslut.text.length > 48 ? msg.beslut.text.slice(0, 47).replace(/\s+\S*$/, "") + "…" : msg.beslut.text;
+  box.appendChild(namn);
+  lab("Vem följer upp", "br-agent");
+  const vem = el("select", "ovl-input"); vem.id = "br-agent";
+  team.agents.forEach((a) => { const o = el("option", null, a.name); o.value = a.id; vem.appendChild(o); });
+  vem.value = team.entryAgent;
+  box.appendChild(vem);
+  lab("Vilken dag", "br-dag");
+  const dag = el("select", "ovl-input"); dag.id = "br-dag";
+  DIGEST_DAYS.forEach(([n, t]) => { const o = el("option", null, t); o.value = String(n); dag.appendChild(o); });
+  dag.value = "1";
+  box.appendChild(dag);
+  const errEl = el("div", "setup-err"); errEl.style.display = "none"; box.appendChild(errEl);
+  const spara = el("button", "btn-primary ovl-save", "Lägg till rutinen"); spara.type = "button";
+  spara.onclick = () => {
+    const label = namn.value.replace(/\s+/g, " ").trim();
+    if (!label) { errEl.textContent = "Rutinen behöver ett namn."; errEl.style.display = "block"; return; }
+    if ((team.routines || []).some((r) => r.label === label)) { errEl.textContent = "Det finns redan en rutin med det namnet."; errEl.style.display = "block"; return; }
+    const rutin = {
+      label, agentId: vem.value, day: +dag.value,
+      prompt: `Följ upp beslutet från mötet ${new Date(msg.beslut.at).toLocaleDateString("sv-SE")}: "${msg.beslut.text}". Vad har hänt sedan sist, vad är nästa steg, och vad behöver du från mig?`,
+      franBeslut: true,
+    };
+    const cur = loadTeamExt();
+    cur.routines = (cur.routines || []).concat([rutin]);
+    if (!saveTeamExt(cur)) { errEl.textContent = "Rutinen kunde inte sparas — webbläsarens lagring är full."; errEl.style.display = "block"; return; }
+    (team.routines = team.routines || []).push(rutin);
+    msg.beslut.rutin = label; saveHistory();
+    closeOverlay();
+    firmanBokaOchRita("rutin_ur_beslut", vem.value);
+    renderLog();
+  };
+  box.appendChild(spara);
 }
 
 // ============================================================
@@ -2859,7 +3516,8 @@ function renderPulse() {
       : "Ny vecka — få \"Veckan som gick\" + förslag på veckans fokus";
     cards.push({ icon: "☀️", label: etikett, act: () => { pulseNewWeek = false; weekReview(); } });
   }
-  (team.routines || []).forEach((rt) => {
+  const rutinerÖppna = !firmanAktiv() || panelOppen(firmanLage(), "rutiner");
+  if (rutinerÖppna) (team.routines || []).forEach((rt) => {
     if (rt.day === todayDayNo() && !routineDone(rt.label)) cards.push({ icon: "📌", label: `Idag: ${rt.label}`, act: () => runRoutine(rt) });
   });
   if (team.firstProject) {
@@ -3008,6 +3666,9 @@ function stopAutoRoutines() {
 }
 async function runAutoRoutines() {
   if (state.demo || state.streaming || autoBusy) return;
+  // SP3: i ett team med plan är rutinerna låsta tills firman kommit dit —
+  // då ska de inte heller köras (och kosta) i bakgrunden.
+  if (firmanAktiv() && !panelOppen(firmanLage(), "rutiner")) return;
   // Dagfönster: rutinens dag ELLER senare samma vecka — den som öppnar
   // portalen på tisdag ska inte bli utan måndagsbriefen.
   const due = (team.routines || []).filter((rt) =>
@@ -3032,7 +3693,7 @@ async function runAutoRoutines() {
         });
         if (ctrl.signal.aborted) return; // avbruten mitt i: spara inget halvfärdigt
         if (!state.history[agent.id]) state.history[agent.id] = [];
-        state.history[agent.id].push(userMsg, { role: "assistant", content: reply, at: Date.now(), auto: true });
+        state.history[agent.id].push(userMsg, { role: "assistant", content: reply, at: Date.now(), auto: true, rutin: rt.label });
         saveHistory();
         routineMarkDone(rt.label);
         autoDeliveredPush(rt.label, agent.id);
@@ -4219,8 +4880,12 @@ function openFelRuta(agent, svar) {
   if (!COARSE) ta.focus();
 }
 
-function addActions(row, getText) {
+// `msg` är svaret i historiken (samma objekt), när det finns — de bokförande
+// knapparna (SP19) skriver sin status på det, så att "Godkänd ✓" står kvar
+// efter en omladdning. Utan msg ritas knapparna som förut.
+function addActions(row, getText, msg) {
   if (row.querySelector(".msg-actions")) return;
+  const ägare = state.activeAgentId; // svaret ligger i den här agentens samtal
   const acts = el("div", "msg-actions");
   const copy = el("button", "act-btn", "Kopiera"); copy.type = "button";
   copy.onclick = async () => {
@@ -4372,6 +5037,7 @@ function addActions(row, getText) {
     acts.append(mb2, mer);
   }
   row.appendChild(acts);
+  firmanSvarsKnappar(row, acts, msg, ägare);
 }
 
 // ---------- minimal markdown ----------
@@ -5203,6 +5869,18 @@ function openFirstProject() {
     }
   };
   box.appendChild(go);
+  // SP19: knappen ovan skickar bara en fråga. Att projektet faktiskt kommit i
+  // gång är kundens att säga — och det är den händelsen nivå 1 väntar på.
+  if (firmanAktiv()) {
+    const gjort = (firmanLogg() || { handelser: [] }).handelser.some((e) => e && e.typ === "projekt_paborjat");
+    if (gjort) box.appendChild(el("p", "ovl-note", "✓ Första steget är gjort."));
+    else {
+      const klar = el("button", "act-btn ovl-save", "✓ Första steget är gjort"); klar.type = "button";
+      klar.title = "Bekräfta att första projektet kommit i gång";
+      klar.onclick = () => { firmanBokaOchRita("projekt_paborjat", team.entryAgent); closeOverlay(); };
+      box.appendChild(klar);
+    }
+  }
 }
 
 // ---------- möten ----------
@@ -5363,7 +6041,7 @@ async function runMeeting(type, focus, ids) {
     introMark("meeting");
     touchStreak();
     const finalText = acc;
-    if (bub.isConnected) { renderMarkdown(bub, finalText); addActions(row, () => finalText); row.appendChild(perspToggle(perspectives)); }
+    if (bub.isConnected) { renderMarkdown(bub, finalText); addActions(row, () => finalText, msg); row.appendChild(perspToggle(perspectives)); }
     else if (state.activeAgentId === agentId) renderLog();
   } catch (err) {
     if (err && err.name === "AbortError" && acc) {
@@ -5480,7 +6158,13 @@ async function submitMessage(text, display, opts = {}) {
     // frågan står kvar att skicka igen, och historiken får ingen tom rad.
     if (!acc.trim()) throw new Error("Svaret kom tomt tillbaka. Skicka frågan igen.");
     if (truncated) onDelta("\n\n> ⚠️ **Svaret klipptes av** när det nådde sin längdgräns. Skriv \"fortsätt\" för resten.");
-    pushHistory(agentId, { role: "assistant", content: acc, at: Date.now() });
+    const svar = { role: "assistant", content: acc, at: Date.now() };
+    // SP19: ett svar på en rutin bär rutinens namn, så att knappen "Rutinen
+    // klar" kan sitta på just det svaret. Att frågan skickades bockar av
+    // veckan (som förut); att kunden bekräftar svaret är en annan sak.
+    const pr0 = state.pendingRoutine;
+    if (pr0 && (pr0.stem.length < 8 || text.startsWith(pr0.stem))) svar.rutin = pr0.label;
+    pushHistory(agentId, svar);
     saveHistory();
     // Första riktiga svaret: fäll ut hela arbetsytan, permanent. Kunden har
     // sett hur portalen fungerar och ska aldrig behöva leta efter en knapp
@@ -5496,7 +6180,7 @@ async function submitMessage(text, display, opts = {}) {
     // Rendera det färdiga svaret som markdown (strömningen skrev råtext),
     // och rita om från historiken om bubblan detachats av ett agentbyte.
     const finalText = acc;
-    if (assistantBubble.isConnected) { renderMarkdown(assistantBubble, finalText); addActions(assistantRow, () => finalText); }
+    if (assistantBubble.isConnected) { renderMarkdown(assistantBubble, finalText); addActions(assistantRow, () => finalText, svar); }
     else if (state.activeAgentId === agentId) renderLog();
   } catch (err) {
     if (err && err.name === "AbortError" && acc) {

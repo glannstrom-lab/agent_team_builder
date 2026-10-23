@@ -12,7 +12,17 @@
    test/firman.mjs i en egen vm-kontext — testet kör alltså samma kod
    som kunden, inte en kopia som kan bli mildare.
 
-   ── INKOPPLING (görs i ett senare pass, när skisserna i UX4 är godkända) ──
+   ── INKOPPLAD 2026-10-23 (avsnittet "FIRMAN VÄXER" i portal/app.js) ──
+   Allt nedan är gjort, med tre avvikelser från planen:
+     • Bara team med `hiringPlan` får trappan. Team utan plan (alla i
+       portal/teams/ och alla köpta före planen) är orörda: inga låsta
+       paneler, inget kort, inga nya knappar. Därför behövs aldrig `arv`.
+     • renderIntroCard() ersätts av kortet bara för team med plan;
+       pulskorten står kvar (utom "📌 Idag" när rutinerna är låsta).
+     • De som inte är anställda filtreras inte bort utan flyttas till
+       `team.pending` i applyTeamExt(), så att laget kan visa dem som
+       "Kommer enligt planen".
+   Planen nedan står kvar som beskrivning av vad som kopplades var.
 
    1. portal/index.html: <script src="firman.js"> före app.js. Lägg den
       också i SHELL i portal/sw.js och kontrollera att build-dist.mjs
@@ -223,7 +233,16 @@
     const h = normalisera(historik);
     const m = matt(h, nu);
     let niva = 1;
-    for (let k = 4; k >= 1; k--) if (m.v[k]) { niva = k + 1; break; }
+    if (h.arv) {
+      // Befintlig kund: ett högre steg räknas som bevis för de lägre, så att
+      // hon hamnar rätt direkt ur gammal lagring där de lägre stegen aldrig bokfördes.
+      for (let k = 4; k >= 1; k--) if (m.v[k]) { niva = k + 1; break; }
+    } else {
+      // Ny kund: stegen tas i tur och ordning. Annars gick det att hoppa till
+      // nivå 5 med "Visa allt", ett möte och en enda rutinvecka (uppmätt i
+      // webbläsaren 2026-10-23) — och trappan finns för att visa att något hänt.
+      while (niva <= 4 && m.v[niva]) niva++;
+    }
 
     let kvar = "";
     if (niva === 1) kvar = "att första projektet kommer i gång med VD-assistenten";

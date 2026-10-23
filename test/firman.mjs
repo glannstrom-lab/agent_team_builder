@@ -324,3 +324,21 @@ test("teamstatus-sammanslagning: samma händelse från två kollegor räknas en 
   assert.equal(ut.length, 3);
   assert.equal(ut[0].typ, "projekt_paborjat", "sorterat på tid");
 });
+
+// ── stegen tas i tur och ordning för nya kunder ─────────────────────────────
+
+test("ny kund kan inte hoppa över trappsteg med ett möte och en rutinvecka", () => {
+  // Uppmätt i webbläsaren 2026-10-23: med "Visa allt" och ett möte nådde en ny
+  // kund nivå 5 efter en enda rutinvecka, eftersom ett högre steg räknades som
+  // bevis för de lägre. Nivå 3 → 4 kräver rutiner tre veckor.
+  const genvag = [
+    ev("projekt_paborjat", vecka(0)),
+    ev("leverans_godkand", vecka(0), "offert"),
+    ev("rutin_klar", vecka(1), "offert"),
+    ev("mote_beslut", vecka(1)),
+    ev("rutin_ur_beslut", vecka(1)),
+  ];
+  assert.equal(F.nivaFor(h(genvag), vecka(1)).niva, 3);
+  // En befintlig kund (arv) räknas däremot som förut: högsta beviset gäller.
+  assert.ok(F.nivaFor(h(genvag, { arv: true }), vecka(1)).niva > 3);
+});

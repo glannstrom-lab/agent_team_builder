@@ -18,6 +18,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, readdirSync } from "node:fs";
+import vm from "node:vm";
 
 const KÄLLA = readFileSync("portal/app.js", "utf8");
 
@@ -698,8 +699,10 @@ test("ett tomt svar sparas aldrig — det går felvägen och frågan kan skickas
   const i = KÄLLA.indexOf("async function submitMessage(");
   const kropp = KÄLLA.slice(i, i + 6000);
   const vakt = kropp.indexOf('if (!acc.trim()) throw new Error(');
-  const spara = kropp.indexOf('pushHistory(agentId, { role: "assistant", content: acc');
+  // Svaret byggs som `svar` sedan SP19 (det bär rutinens namn), sedan sparas det.
+  const spara = kropp.indexOf('const svar = { role: "assistant", content: acc');
   assert.ok(vakt > 0 && spara > vakt, "vakten måste ligga före sparandet");
+  assert.ok(kropp.indexOf("pushHistory(agentId, svar)") > spara, "svaret sparas inte efter vakten");
 });
 
 // ── RE8: teamloggen — agenterna ser vad de andra levererat ──────────────────
@@ -783,4 +786,245 @@ test("KA15: faktabasen är kontrollerad inom 13 månader — belopp och gränser
   const w = {}; new Function("window", readFileSync("portal/fakta-se.js", "utf8"))(w);
   const ålder = (Date.now() - Date.parse(w.ATB_FAKTA_SE.kontrollerad)) / 86400000;
   assert.ok(ålder < 396, `portal/fakta-se.js kontrollerades för ${Math.round(ålder)} dagar sedan. Kontrollera varje regel mot källan igen (julgåva, ROT/RUT, friskvård och momsdatum ändras) och uppdatera "kontrollerad".`);
+});
+
+// ── Firman växer: bokföringen (SP19) och anställ en i taget (SP9) ───────────
+//
+// Två löften står här. (1) Firman levlar bara på de fem uttryckliga
+// handlingarna, och de skrivs i exakt den form portal/firman.js läser — en
+// annan form hade gett en trappa som aldrig rör sig, utan att något kastade.
+// (2) Ett team UTAN `hiringPlan` — alla i portal/teams/ och alla köpta team —
+// har alla anställda och ser ut som förut. Det är kontraktet med byggsidan.
+
+function laddaFirmanPortal({ demo = false, slug = "kund" } = {}) {
+  const i = KÄLLA.indexOf("⟦FIRMAN-START⟧");
+  const j = KÄLLA.indexOf("⟦FIRMAN-SLUT⟧");
+  assert.ok(i >= 0 && j > i, "hittade inte firman-blocket i portal/app.js");
+  const kropp = KÄLLA.slice(KÄLLA.indexOf("\n", i) + 1, KÄLLA.lastIndexOf("\n", j) + 1);
+  const lager = new Map();
+  const localStorage = {
+    getItem: (k) => (lager.has(k) ? lager.get(k) : null),
+    setItem: (k, v) => lager.set(k, String(v)),
+    removeItem: (k) => lager.delete(k),
+  };
+  const api = new Function("state", "localStorage", kropp +
+    "; return { firmanLogg, firmanBoka, firmanStarta, FIRMAN_HANDELSER };")({ demo, slug }, localStorage);
+  return { ...api, lager, localStorage };
+}
+const firmanJs = () => {
+  const ctx = vm.createContext({});
+  vm.runInContext(readFileSync("portal/firman.js", "utf8"), ctx, { filename: "portal/firman.js" });
+  return ctx.ATBFirman;
+};
+const PLANTEAM = { entryAgent: "vd-assistent", routines: [{ label: "Offerterna", agentId: "offert", day: 1 }] };
+
+test("SP19: portalen bokför samma fem handlingar som firman.js räknar på", () => {
+  const F = firmanJs();
+  const p = laddaFirmanPortal();
+  assert.deepEqual([...p.FIRMAN_HANDELSER].sort(), [...F.HANDELSER].sort(),
+    "listorna har glidit isär — en handling som bara finns på ena sidan bokförs men räknas aldrig, eller tvärtom");
+});
+
+test("SP19: en bokad händelse hamnar i atb_firman_<slug> och flyttar nivån", () => {
+  const F = firmanJs();
+  const p = laddaFirmanPortal();
+  const nivå = () => F.nivaFor(F.historikUr(p.localStorage, "kund", PLANTEAM), Date.now() + 1000).niva;
+  p.firmanStarta(Date.now() - 86400000);
+  assert.equal(nivå(), 1, "en tom logg är nivå 1");
+  assert.ok(p.firmanBoka("projekt_paborjat", "vd-assistent"));
+  assert.equal(nivå(), 2, "första projektet påbörjat ska ge nivå 2");
+  assert.ok(p.firmanBoka("leverans_godkand", "vd-assistent"));
+  assert.equal(nivå(), 2, "VD-assistentens godkända leverans är inte specialistens");
+  assert.ok(p.firmanBoka("leverans_godkand", "offert"));
+  assert.equal(nivå(), 3, "en godkänd leverans från en specialist ska ge nivå 3");
+  const logg = JSON.parse(p.lager.get("atb_firman_kund"));
+  assert.equal(logg.v, 1);
+  assert.ok(logg.start > 0, "loggen saknar start — då har dag 21-golvet inget att räkna från");
+  assert.deepEqual(logg.handelser.map((e) => e.typ), ["projekt_paborjat", "leverans_godkand", "leverans_godkand"]);
+  assert.equal(logg.handelser[2].agentId, "offert");
+});
+
+test("SP19: rutin klar räknas i rutinveckor, och möte → beslut → rutin avslutar nivå 4", () => {
+  const F = firmanJs();
+  const p = laddaFirmanPortal();
+  const DAG = 86400000, nu = Date.now();
+  p.firmanBoka("projekt_paborjat", "vd-assistent", nu - 30 * DAG);
+  p.firmanBoka("rutin_klar", "offert", nu - 21 * DAG);
+  p.firmanBoka("rutin_klar", "offert", nu - 14 * DAG);
+  p.firmanBoka("rutin_klar", "offert", nu - 7 * DAG);
+  const h = () => F.historikUr(p.localStorage, "kund", PLANTEAM);
+  assert.equal(F.nivaFor(h(), nu).niva, 4, "tre bekräftade rutinveckor från en specialist ska ge nivå 4");
+  p.firmanBoka("mote_beslut", "vd-assistent", nu - 60000);
+  assert.equal(F.nivaFor(h(), nu).niva, 4);
+  p.firmanBoka("rutin_ur_beslut", "offert", nu - 30000);
+  assert.equal(F.nivaFor(h(), nu).niva, 5);
+});
+
+test("SP19: okända handlingar och demoläget skriver ingenting", () => {
+  const p = laddaFirmanPortal();
+  assert.equal(p.firmanBoka("chatt", "vd-assistent"), null);
+  assert.equal(p.firmanBoka("veckostart", "vd-assistent"), null);
+  assert.equal(p.lager.size, 0);
+  const d = laddaFirmanPortal({ demo: true });
+  assert.equal(d.firmanBoka("leverans_godkand", "offert"), null);
+  assert.equal(d.firmanStarta(), null);
+  assert.equal(d.lager.size, 0, "demoläget skrev till lagret");
+});
+
+test("SP19: en trasig logg kastar inte, och firmanStarta skriver inte över en befintlig", () => {
+  const p = laddaFirmanPortal();
+  p.lager.set("atb_firman_kund", "{trasig");
+  assert.equal(p.firmanLogg(), null);
+  const e = p.firmanBoka("projekt_paborjat", "vd-assistent");
+  assert.ok(e, "en trasig post ska ersättas, inte blockera bokningen");
+  const före = p.lager.get("atb_firman_kund");
+  p.firmanStarta(1);
+  assert.equal(p.lager.get("atb_firman_kund"), före);
+});
+
+test("SP19: att skicka en rutin, få ett svar eller hålla ett möte bokför ingenting", () => {
+  // Det var hela felet SP19 beskriver: en "avbockad rutin" var en skickad
+  // fråga. Bokningen får bara ske i de uttryckliga knapparna.
+  const kropp = (namn) => { const i = KÄLLA.indexOf(namn); assert.ok(i > 0, namn); return KÄLLA.slice(i, KÄLLA.indexOf("\n}\n", i)); };
+  for (const f of ["function routineMarkDone(", "async function submitMessage(", "async function runMeeting(",
+    "async function runAutoRoutines(", "function startWeek(", "function touchStreak("]) {
+    assert.doesNotMatch(kropp(f), /firmanBoka/, `${f} bokför en händelse — det är chatt eller automatik, inte något kunden bekräftat`);
+  }
+  // …och de fem knapparna finns.
+  for (const typ of ["projekt_paborjat", "leverans_godkand", "rutin_klar", "mote_beslut", "rutin_ur_beslut"]) {
+    assert.match(KÄLLA, new RegExp(`firmanBokaOchRita\\("${typ}"`), `ingen knapp bokför ${typ}`);
+  }
+});
+
+test("SP19: händelseloggen speglas till teamstatus.json och slås ihop med kollegornas", () => {
+  const i = KÄLLA.indexOf("async function syncStatusNow");
+  const kropp = KÄLLA.slice(i, KÄLLA.indexOf("\n}\n", i));
+  assert.match(kropp, /slaIhopHandelser\(/, "loggen slås inte ihop — två kollegor skriver över varandras nivå");
+  assert.match(kropp, /status\.firman = firman/);
+  assert.match(kropp, /firmanSpara\(firman\)/, "det sammanslagna läget sparas inte tillbaka lokalt");
+});
+
+test("firman.js laddas före app.js och ligger i service workerns SHELL", () => {
+  const html = readFileSync("portal/index.html", "utf8");
+  const f = html.indexOf('<script src="firman.js">'), a = html.indexOf('<script src="app.js">');
+  assert.ok(f > 0 && a > f, "firman.js måste laddas före app.js");
+  const sw = readFileSync("portal/sw.js", "utf8");
+  assert.match(sw.match(/^const SHELL = \[(.*)\];$/m)[1], /"\.\/firman\.js"/,
+    "utan firman.js i SHELL öppnas en offline-PWA utan window.ATBFirman");
+});
+
+// ── SP9: anställ en i taget ─────────────────────────────────────────────────
+const SYS2 = "DITT PERSPEKTIV\nDu ser till att det blir gjort.\n\nLEVERANS\nEtt utkast.";
+const planteam = () => ({
+  company: "Salong Lina",
+  entryAgent: "vd-assistent",
+  agents: [
+    { id: "vd-assistent", name: "Vera", icon: "🧭", always: true, tagline: "håller ihop veckan", system: SYS2 },
+    { id: "luckor", name: "Luckfyllaren", icon: "🗓️", tagline: "fyller avbokningar", system: SYS2 },
+    { id: "insta", name: "Instagram-avlastaren", icon: "📸", tagline: "tar kvällarna tillbaka", system: SYS2 },
+    { id: "offert", name: "Offertskrivaren", icon: "🧾", tagline: "skriver offerter", system: SYS2 },
+  ],
+  hiringPlan: [
+    { agentId: "offert", order: 1, reason: "Ni lägger sex timmar i veckan på offerter" },
+    { agentId: "luckor", order: 2, reason: "Avbokningarna kostar en dag i månaden" },
+    { agentId: "insta", order: 3, reason: "Instagram tar kvällarna" },
+  ],
+});
+
+test("SP9: ett team utan hiringPlan har alla anställda och får inget nytt fält", () => {
+  const { applyTeamExt } = laddaExt();
+  const t = applyTeamExt(grundteam(), {});
+  assert.equal(t.agents.length, 3);
+  assert.equal(t.pending, undefined, "ett team utan plan fick ett pending-fält");
+  assert.equal(t.baseOrder, undefined);
+  // Ett hired-fält i tillägget (t.ex. synkat från en annan dator) ändrar inget.
+  assert.equal(applyTeamExt(grundteam(), { hired: {} }).agents.length, 3);
+});
+
+for (const fil of teamfiler) {
+  test(`SP9: ${fil} (utan rekryteringsplan) — alla anställda, ingen väntar`, () => {
+    const { applyTeamExt } = laddaExt();
+    const original = riktigtTeam(fil);
+    assert.ok(!Array.isArray(original.hiringPlan) || !original.hiringPlan.length,
+      `${fil} har fått en hiringPlan — då är det inte längre ett team från före planen, och testet ska skrivas om`);
+    const t = applyTeamExt(riktigtTeam(fil), { hired: {} });
+    assert.deepEqual(t.agents.map((a) => a.id), original.agents.map((a) => a.id));
+    assert.ok(!t.pending || !t.pending.length);
+  });
+}
+
+test("SP9: ett nytt team med plan börjar med bara VD-assistenten, de andra väntar i planens ordning", () => {
+  const { applyTeamExt } = laddaExt();
+  const t = applyTeamExt(planteam(), {});
+  assert.deepEqual(t.agents.map((a) => a.id), ["vd-assistent"]);
+  assert.deepEqual(t.pending.map((a) => a.id), ["offert", "luckor", "insta"], "planens order, inte konfigens");
+  assert.equal(t.entryAgent, "vd-assistent");
+});
+
+test("SP9: en anställd kommer in på sin plats i laget, och omkörningen är idempotent", () => {
+  const { applyTeamExt } = laddaExt();
+  const t = applyTeamExt(planteam(), {});
+  applyTeamExt(t, { hired: { insta: 1 } });
+  assert.deepEqual(t.agents.map((a) => a.id), ["vd-assistent", "insta"]);
+  assert.deepEqual(t.pending.map((a) => a.id), ["offert", "luckor"]);
+  applyTeamExt(t, { hired: { insta: 1, offert: 2 } });
+  assert.deepEqual(t.agents.map((a) => a.id), ["vd-assistent", "insta", "offert"], "byggets ordning i laget");
+  applyTeamExt(t, { hired: { insta: 1, offert: 2 } });
+  assert.deepEqual(t.agents.map((a) => a.id), ["vd-assistent", "insta", "offert"], "andra körningen ändrade laget");
+  assert.deepEqual(t.pending.map((a) => a.id), ["luckor"]);
+});
+
+test("SP9: ingångsagenten väntar aldrig, inte ens om planen råkar nämna henne", () => {
+  const { applyTeamExt } = laddaExt();
+  const team = planteam();
+  team.hiringPlan.unshift({ agentId: "vd-assistent", order: 0, reason: "x" });
+  const t = applyTeamExt(team, {});
+  assert.deepEqual(t.agents.map((a) => a.id), ["vd-assistent"]);
+  assert.ok(!t.pending.some((a) => a.id === "vd-assistent"));
+});
+
+test("SP9: demoläget visar hela teamet, och en avslutad agent väntar inte", () => {
+  const { applyTeamExt } = laddaExt();
+  assert.equal(applyTeamExt(planteam(), {}, { allaAnstallda: true }).agents.length, 4);
+  const t = applyTeamExt(planteam(), { retired: ["luckor"] });
+  assert.deepEqual(t.pending.map((a) => a.id), ["offert", "insta"]);
+});
+
+test("SP9: hired synkas via mappen — och följer med när filen skrivs", () => {
+  const i = KÄLLA.indexOf("async function mergeTeamExtFromFolder");
+  const kropp = KÄLLA.slice(i, KÄLLA.indexOf("\n}\n", i));
+  assert.match(kropp, /fromFile\.hired/, "en anställning på en annan dator kommer aldrig hem");
+  const j = KÄLLA.indexOf("async function syncTeamExtWithFolder");
+  assert.match(KÄLLA.slice(j, KÄLLA.indexOf("\n}\n", j)), /cur\.hired/);
+});
+
+test("SP9: ingångsagenten får veta vem som väntar — och inget ändras när alla är anställda", () => {
+  const { applyTeamExt } = laddaExt();
+  const t = applyTeamExt(planteam(), { hired: { offert: 1 } });
+  const i = KÄLLA.indexOf("const DOC_BUDGET"), j = KÄLLA.indexOf("// ---------- helpers ----------");
+  const ladda = (tm) => new Function("loadMemory", "loadDocs", "state", "team", KÄLLA.slice(i, j) + "\nreturn { systemFor };")(
+    () => "", () => [], { history: {} }, tm).systemFor;
+  const systemFor = ladda(t);
+  const vd = systemFor(t.agents.find((a) => a.id === "vd-assistent"));
+  assert.match(vd, /TEAMET JUST NU/);
+  assert.match(vd, /Offertskrivaren/, "den anställda saknas");
+  assert.match(vd, /Luckfyllaren \(fyller avbokningar\) — Avbokningarna kostar en dag i månaden/, "den väntande och skälet saknas");
+  assert.match(vd, /Hänvisa aldrig kunden till någon som inte är anställd/);
+  assert.ok(vd.indexOf("Luckfyllaren") < vd.indexOf("Instagram-avlastaren"), "turordningen ska följa planen");
+  const spec = systemFor(t.agents.find((a) => a.id === "offert"));
+  assert.match(spec, /KOLLEGOR SOM INTE ÄR ANSTÄLLDA ÄN: Luckfyllaren, Instagram-avlastaren/);
+  const alla = applyTeamExt(planteam(), { hired: { offert: 1, luckor: 1, insta: 1 } });
+  assert.equal(ladda(alla)(alla.agents[0]), SYS2, "ett fullt anställt team ska ha samma instruktion som förut");
+});
+
+test("SP3/SP1: upplåsning och nästa steg ritas bara för team med plan, aldrig i demoläget", () => {
+  // `lage` är null för alla andra, och då är varje gren i renderSidebar() den gamla.
+  const i = KÄLLA.indexOf("function renderSidebar(");
+  const kropp = KÄLLA.slice(i, KÄLLA.indexOf("\n}\n", i));
+  assert.match(kropp, /const lage = firmanAktiv\(\) \? firmanLage\(\) : null;/);
+  assert.match(kropp, /const intro = lage \? null : renderIntroCard\(\);/);
+  assert.match(kropp, /const hideExtras = lage \? false : wsCollapsed\(\);/);
+  const fa = KÄLLA.slice(KÄLLA.indexOf("function firmanAktiv("), KÄLLA.indexOf("function firmanAktiv(") + 300);
+  assert.match(fa, /!state\.demo/, "demoläget ska aldrig visa trappan");
+  assert.match(fa, /hiringPlan/);
 });

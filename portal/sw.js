@@ -19,10 +19,12 @@
 // gäller vid lokal körning (python -m http.server serverar källan, inte dist/).
 const CACHE = "atb-portal-v28";
 // De delade rot-skripten (avatars/atb-claude) MÅSTE precachas — utan dem
-// kraschar en offline-öppnad PWA med "ATBClaude is undefined".
+// kraschar en offline-öppnad PWA med "ATBClaude is undefined". Samma sak med
+// firman.js (2026-10-23): app.js läser window.ATBFirman för varje team med
+// rekryteringsplan.
 // Typsnitten är självhostade sedan 2026-08-05 — utan dem i skalet renderar en
 // offline-öppnad PWA fallback-sans tills runtime-cachen hunnit hämta dem.
-const SHELL = ["./", "./index.html", "./app.js", "./portal.css", "./teams/index.js", "./manifest.webmanifest", "./icon.svg", "../avatars.js", "../atb-claude.js", "../fonts/fonts.css", "../fonts/archivo-var-latin.woff2", "../fonts/karla-var-latin.woff2", "../fonts/ibm-plex-mono-400-latin.woff2", "../fonts/ibm-plex-mono-500-latin.woff2"];
+const SHELL = ["./", "./index.html", "./app.js", "./firman.js", "./portal.css", "./teams/index.js", "./manifest.webmanifest", "./icon.svg", "../avatars.js", "../atb-claude.js", "../fonts/fonts.css", "../fonts/archivo-var-latin.woff2", "../fonts/karla-var-latin.woff2", "../fonts/ibm-plex-mono-400-latin.woff2", "../fonts/ibm-plex-mono-500-latin.woff2"];
 
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()).catch(() => {}));

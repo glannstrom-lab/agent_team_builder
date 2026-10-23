@@ -797,6 +797,59 @@ a.link-btn { text-decoration: none; }
 .folder-box { margin-bottom: 4px; }
 .folder-box .ovl-note { margin-top: 8px; }
 
+/* ---------- Firman växer (SP1, SP3, SP9, SP19) ----------
+   Bara för team med rekryteringsplan; inget av det här ritas för andra.
+   Tonen är personalliggarens: tunn linje, papper, ockra som signal — inga
+   märken, inga stjärnor, ingen poängtavla. */
+
+/* "Ert nästa steg": ETT kort, överst i arbetsytan. Samma ockra ram som
+   provmånadskortet, för det är samma sorts upplysning. */
+.next-card {
+  margin: 2px 0 10px; padding: 12px 13px 11px; flex-shrink: 0;
+  background: var(--accent-soft); border: 1px solid rgba(169, 116, 31, 0.35); border-radius: 10px;
+}
+.next-text { margin: 4px 0 10px; font-size: 15px; font-weight: 700; line-height: 1.45; color: var(--text); }
+.next-act { margin-top: 0; padding: 10px 14px; min-height: 44px; font-size: 14.5px; }
+.next-hint { margin: 8px 0 0; font-size: 13px; line-height: 1.55; color: var(--text-dim); }
+.next-niva { margin: 8px 0 0; padding-top: 8px; border-top: 1px solid rgba(169, 116, 31, 0.25); font-size: 12.5px; line-height: 1.5; color: var(--accent-2); }
+/* Kopian ovanför samtalet finns för mobilen, där arbetsytan ligger bakom ☰. */
+.next-main { margin: 10px 16px 0; }
+.next-main .next-act { width: auto; padding-left: 18px; padding-right: 18px; }
+@media (min-width: 880px) { .next-main { display: none; } }
+@media (max-width: 879px) { .next-ws { display: none; } }
+
+/* "Kommer enligt planen" i laget: samma rad som en agent, men dämpad och
+   inte klickbar — de finns inte i teamet än. */
+.plan-list { margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 2px; }
+.plan-head { margin: 2px 10px 4px; }
+.plan-item { display: flex; align-items: flex-start; gap: 11px; padding: 8px 10px; color: var(--text); }
+.plan-icon { opacity: 0.55; filter: grayscale(0.6); }
+.plan-item .agent-name { color: var(--text-dim); }
+.plan-why { font-size: 13px; line-height: 1.45; color: var(--text-dim); }
+.plan-when { margin-top: 3px; font-family: var(--font-mono); font-size: 11.5px; line-height: 1.5; color: var(--text-dim); }
+.plan-act {
+  align-self: flex-start; margin-top: 6px; min-height: 36px; padding: 6px 12px;
+  background: var(--accent-soft); border: 1px solid var(--accent); border-radius: 7px;
+  color: var(--text); font-family: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer;
+}
+.plan-act:hover { background: rgba(169, 116, 31, 0.18); }
+.plan-all { align-self: flex-start; margin: 2px 10px 0; }
+
+/* Låsta paneler: en rad per villkor, inte en låst knapp per funktion. */
+.ws-locked { padding: 7px 10px; border: 1px dashed var(--border); border-radius: 8px; margin-bottom: 4px; }
+.ws-locked-names { font-size: 13.5px; line-height: 1.45; color: var(--text-dim); }
+.ws-locked-when { margin-top: 2px; font-size: 12.5px; line-height: 1.5; color: var(--text-dim); font-style: italic; }
+.ws-showall { align-self: flex-start; margin: 2px 2px 0; }
+
+/* Under svaren: de bokförande knapparna får ockra kant, och det som redan
+   bokförts står som en rad som syns även utan hovring. */
+.act-btn.act-ok { color: var(--text); border-color: rgba(169, 116, 31, 0.45); }
+.act-btn.act-ok:hover { background: var(--accent-soft); border-color: var(--accent); }
+.msg-status { display: flex; flex-wrap: wrap; gap: 6px 12px; margin-top: 6px; }
+.msg-stamp { font-family: var(--font-mono); font-size: 11.5px; line-height: 1.5; color: var(--green); }
+.beslut-form { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; width: 100%; max-width: 640px; }
+.beslut-form .ovl-input { flex: 1 1 260px; min-width: 0; margin-bottom: 0; }
+
 /* ---------- rubriker i display-snittet (Karla bär inte 800) ---------- */
 .setup h1, .picker h1, .brand-name, .chat-title, .empty-title, .ovl-title, .q-num, .pcard-name, .agent-name {
   font-family: var(--font-display); letter-spacing: -0.02em;
