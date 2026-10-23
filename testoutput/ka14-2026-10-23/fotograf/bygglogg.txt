@@ -1,0 +1,5 @@
+  research: 21.9 s, 17548 tecken, finish=stop
+  scale: 1.0 s, 380 tecken, finish=stop
+  proposal: 19.6 s, 15602 tecken, finish=stop
+  structure: 24.7 s, 26591 tecken, finish=stop
+team klart på försök 1: vd-assistent, offert-uppfoljning, leveransplanering, prissattning

@@ -29,7 +29,9 @@ externa beroenden förutom Google Fonts.
 
 ### 2. Teamöversikt (graf)
 
-Visuell hierarki: VD → VD-assistent → Specialister.
+Visuell hierarki: VD → VD-assistent → Specialister. I solo, mikro och
+personläget finns ingen VD-agent (KA14): översta noden är då **kunden**
+("Du — VD, fattar besluten"), utan kort nedanför.
 Varje nod visar namn + jobb (en mening). Kopplingslinjer mellan
 nivåerna.
 
@@ -49,7 +51,7 @@ Ett kort per agent med fade-in-animation. Varje kort innehåller:
 - **Triggas av** — som chip/tags i kursiv
 - **Skills** — om agenten har föreslagna skills, visa som badges
 
-Ordning: VD, VD-assistent, sedan specialister i prioritetsordning.
+Ordning: VD (där en sådan finns), VD-assistent, sedan specialister i prioritetsordning.
 
 ### 4. Avvisade moment
 

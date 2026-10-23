@@ -65,7 +65,8 @@ Läs `prompts/shared/scale.md`. Ta företagsstorlek från intake och
 klusterantal från research. Producera skalningsbeslutet.
 
 Visa: "Skalningsbeslut: X agenter (VD + VD-assistent + Y specialister).
-Motivering: ..."
+Motivering: ..." — i solo, mikro och personläget i stället "(VD-assistent +
+Y specialister — ingen separat VD, kunden är VD:n)" (KA14, se `scale.md`).
 
 Gå vidare utan att vänta på godkännande — skalningen är en
 mellanberäkning, inte ett förslag.

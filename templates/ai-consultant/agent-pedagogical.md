@@ -88,7 +88,9 @@ verkar närliggande. Skrivet så att kunden vet var gränsen går.]
 
 ## Samverkan
 
-- **Rapporterar till:** VD (vid trade-offs och prioriteringsfrågor)
+- **Rapporterar till:** VD-agenten vid trade-offs och prioriteringsfrågor
+  — eller, i solo, mikro och personläget, kunden själv (som är VD:n), via
+  VD-assistenten som förbereder valet
 - **Samordnas av:** VD-assistent (daglig triage)
 - **Samarbetar med:** [lista relevanta specialistagenter, eller "Inga
   — jobbar självständigt"]

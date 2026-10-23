@@ -11,6 +11,12 @@ Används när:
 - Mognad = nybörjare eller van
 - Teamstorlek ≤ 5 agenter (nybörjare brukar hamna här via
   mognadsdämpningen)
+- Företaget är *litet* eller större (3+ personer)
+
+**Inte i solo, mikro eller personläget** (beslut 2026-10-23, KA14):
+där är kunden själv VD:n och teamet har ingen VD-agent. Mognaden
+ändrar inte det — den styr bara hur VD-assistenten förklarar att det är
+kunden som bestämmer (`chief-of-staff.md`, *Förbereder era val*).
 
 Om kunden är AI-byggare, använd `ceo-small.md` eller `ceo-large.md`
 med pedagogiska sektioner från `agent-pedagogical.md`.

@@ -86,6 +86,15 @@ test("saknas beslutet returneras null — då visas råtexten", () => {
 // ── KA10: skalningsbeslutet läses och hålls inom tabellens tak ─────────────
 const skalningsTak = plocka("skalningsTak");
 const hållSkalningsTak = plocka("hållSkalningsTak");
+// hållSkalningsTak anropar skalningsKärna; funktionerna evalueras i plocka()
+// och ser modulens bindningar, så den måste finnas här under samma namn.
+// eslint-disable-next-line no-unused-vars
+const skalningsKärna = plocka("skalningsKärna");
+const antalRad = plocka("antalRad");
+// utanVdAgent bor i DELAD-blocket och läser en konstant därifrån.
+// eslint-disable-next-line no-unused-vars
+var STORLEKAR_UTAN_VD = (0, eval)(KÄLLA.match(/var STORLEKAR_UTAN_VD = (\[[^\]]*\]);/)[1]);
+const utanVdAgent = plocka("utanVdAgent");
 
 test("KA10: taket följer scale.md — storlek, personläge och mognad", () => {
   assert.equal(skalningsTak({ size: "solo" }), 4);
@@ -117,5 +126,73 @@ test("KA10: ett beslut inom taket lämnas orört", () => {
 });
 
 test("KA10: bygget anropar taket i skalningssteget", () => {
-  assert.ok(KÄLLA.includes("acc = hållSkalningsTak(acc, skalningsTak(intake));"), "runBuild använder inte taket");
+  assert.ok(KÄLLA.includes("acc = hållSkalningsTak(acc, skalningsTak(intake), utanVdAgent(intake));"), "runBuild använder inte taket");
+});
+
+// ── KA14: i små firmor är kunden VD:n (beslut 2026-10-23) ──────────────────
+//
+// Beslutet: ingen separat VD-agent i solo, mikro och personläget —
+// VD-assistenten förbereder valen och kunden fattar dem. Från "litet" och uppåt
+// finns VD-agenten kvar. Gränsen ska vara densamma som skalningstabellens.
+
+test("KA14: VD-agenten finns inte i solo, mikro och personläget — men från litet och uppåt", () => {
+  assert.equal(utanVdAgent({ size: "solo" }), true);
+  assert.equal(utanVdAgent({ size: "mikro" }), true);
+  // Personläget skalas som solo, oavsett arbetsplatsens storlek.
+  assert.equal(utanVdAgent({ audience: "person", size: "stort" }), true);
+  assert.equal(utanVdAgent({ size: "litet" }), false);
+  assert.equal(utanVdAgent({ size: "medelstort" }), false);
+  assert.equal(utanVdAgent({ size: "stort" }), false);
+  // Mognaden ändrar inte vem som är VD — en nybörjare med 15 anställda har en.
+  assert.equal(utanVdAgent({ mode: "ai-consultant", size: "medelstort", maturity: "nybörjare" }), false);
+  // Okänd storlek behandlas som skalningsTak() gör: "litet", alltså med VD.
+  assert.equal(utanVdAgent({}), false);
+  assert.equal(utanVdAgent(null), false);
+});
+
+test("KA14: ett beslut över taket i en solo-firma skrivs om utan VD", () => {
+  const ut = hållSkalningsTak("Skalningsbeslut: 6 agenter (VD + VD-assistent + 4 specialister)\nMotivering: x", 4, true);
+  assert.match(ut, /^Skalningsbeslut: 4 agenter \(VD-assistent \+ 3 specialister — ingen separat VD/);
+  assert.doesNotMatch(ut, /VD \+ VD-assistent/);
+});
+
+test("KA14: ett beslut inom taket som ändå räknar in en VD får rätt kärna", () => {
+  // Uppmätt mönster: modellen skriver gärna exemplets gamla form. Förslaget
+  // läser raden — står VD kvar där beställer skalningen den VD proposal.md
+  // förbjuder.
+  const ut = hållSkalningsTak("Skalningsbeslut: 4 agenter (VD + VD-assistent + 2 specialister)\nMotivering: Mikro, tre kluster.", 4, true);
+  assert.match(ut, /^Skalningsbeslut: 4 agenter \(VD-assistent \+ 3 specialister — ingen separat VD, kunden är VD:n\)/);
+  assert.match(ut, /Motivering: Mikro, tre kluster\./, "motiveringen ska stå kvar");
+});
+
+test("KA14: ett beslut med rätt kärna lämnas orört — och större firmor behåller VD", () => {
+  const rätt = "Skalningsbeslut: 3 agenter (VD-assistent + 2 specialister — ingen separat VD, kunden är VD:n)\nMotivering: y";
+  assert.equal(hållSkalningsTak(rätt, 4, true), rätt);
+  const stor = "Skalningsbeslut: 6 agenter (VD + VD-assistent + 4 specialister)\nMotivering: z";
+  assert.equal(hållSkalningsTak(stor, 7, false), stor);
+  assert.match(hållSkalningsTak("", 7, false), /^Skalningsbeslut: 7 agenter \(VD \+ VD-assistent \+ 5 specialister\)/);
+});
+
+test("KA14: sammanställningens ANTAL-rad säger rätt kärna", () => {
+  assert.match(antalRad(4, true), /VD-assistenten inräknad\. Ingen separat VD-agent/);
+  assert.doesNotMatch(antalRad(4, true), /VD och VD-assistent/);
+  assert.match(antalRad(7, false), /VD och VD-assistent inräknade/);
+  const sam = KÄLLA.slice(KÄLLA.indexOf("async function structureTeam("), KÄLLA.indexOf("async function structureTeam(") + 3000);
+  assert.ok(sam.includes("antalRad(nBeslut, utanVd)"), "structureTeam skickar inte kärnan till sammanställningen");
+  assert.ok(sam.includes("trimmaTeam(team, n, utanVd)") && sam.includes("teamBrister(team, n, utanVd)"),
+    "structureTeam kontrollerar inte kärnan");
+});
+
+// Kopplingen mellan scale.md och koden: beslutsraden som koden känner igen
+// ("ingen separat VD") måste vara den form prompten beställer, annars skriver
+// hållSkalningsTak om varje riktig rad. Och prompten får inte längre säga att
+// VD alltid räknas in.
+test("KA14: scale.md beställer samma beslutsrad som koden känner igen", () => {
+  const scale = readFileSync("prompts/shared/scale.md", "utf8");
+  assert.match(scale, /\(VD-assistent \+ \[antal-1\] specialister — ingen separat VD, kunden är VD:n\)/);
+  assert.match(skalningsKärna(4, true), /ingen separat VD/);
+  assert.doesNotMatch(scale, /VD och VD-assistent räknas alltid in/);
+  const proposal = readFileSync("prompts/shared/proposal.md", "utf8");
+  assert.doesNotMatch(proposal, /^VD och VD-assistent finns alltid/m, "proposal.md lovar fortfarande en VD i varje team");
+  assert.match(proposal, /hon förbereder valet,\s+kunden fattar det/);
 });

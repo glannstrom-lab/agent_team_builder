@@ -1,0 +1,7 @@
+  research: 14.9 s, 12157 tecken, finish=stop
+  scale: 1.0 s, 578 tecken, finish=stop
+  proposal: 14.2 s, 11939 tecken, finish=stop
+  structure: 11.1 s, 12007 tecken, finish=stop
+  sammanställningen föll: teamet har bara 2 agenter; teamet saknar VD-assistenten (id "vd-assistent")
+  structure: 16.6 s, 16873 tecken, finish=stop
+team klart på försök 2: vd-assistent, instagram-redaktor, atertags-assistent

@@ -23,7 +23,7 @@ om under uppdraget.
 
 | Agent | Jobb | Varför den finns |
 |-------|------|------------------|
-| VD | [jobb, en mening] | [kopplat till intake] |
+| VD | [jobb, en mening] | [kopplat till intake] — raden utgår i solo och mikro, där ni själva är VD:n |
 | VD-assistent | [jobb] | Alltid närvarande — er startpunkt |
 | [Specialist 1] | [jobb] | [kopplat till intake] |
 | [Specialist 2] | [jobb] | [kopplat till intake] |

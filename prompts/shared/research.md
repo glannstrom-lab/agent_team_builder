@@ -117,7 +117,8 @@ Allt ovan i den här filen gäller fortfarande. Det här är hur det ska läsas:
    det påverkar hela teamets utformning.
 
 7. **VD-momentet (regel 6) blir prioriteringen av den egna veckan.** För en
-   person finns ingen strategi att sätta. Det som motsvarar VD-momentet är
+   person finns ingen strategi att sätta — och ingen VD-agent: personen
+   väljer själv, och VD-assistenten förbereder valet. Det som motsvarar VD-momentet är
    att välja vad som ska göras i dag när tre saker är brådskande och att
    kunna säga ifrån med underlag. Leta efter sådana signaler i intake och
    lyft dem — men hitta inte på dem om de inte finns.
@@ -403,7 +404,9 @@ och hur.>
 
 6. **VD-momentet.** Om intake innehåller indikationer på prioritering,
    riktning eller beslut — lyft fram dem särskilt, eftersom de motiverar
-   VD-agenten i nästa steg. Om företaget är litet ska sådana moment
+   VD-agenten i nästa steg (från *litet* och uppåt) eller det
+   VD-assistenten förbereder åt kunden (solo och mikro, där kunden själv
+   är VD:n och ingen VD-agent finns). Om företaget är litet ska sådana moment
    vara operativa ("prioritera veckans tasks") inte abstrakta ("sätta
    strategisk riktning"). Om intake *inte* innehåller sådana
    indikationer, notera det i "Osäkerheter" istället för att hitta på.

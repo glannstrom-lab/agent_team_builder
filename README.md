@@ -27,7 +27,8 @@ hjälper andra komma igång med AI.
 ## Vad du får
 
 Ett `.claude/agents/`-bibliotek med 2–14 subagents skräddarsydda efter
-verksamheten, inklusive alltid en VD och en VD-assistent. Plus mötesmallar
+verksamheten, inklusive alltid en VD-assistent (och en VD från litet
+företag och uppåt — i solo och mikro är du själv VD:n). Plus mötesmallar
 i `meetings/` och (i konsult-läget) ett första-projekt-dokument och en
 överlämningsguide.
 

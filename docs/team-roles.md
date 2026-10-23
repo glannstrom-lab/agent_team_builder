@@ -1,34 +1,51 @@
 # Teamroller
 
-Varje team innehåller alltid två fasta agenter: VD och VD-assistent. Resten
-(0–12 specialister) bestäms av research-steget.
+Varje team har alltid en VD-assistent. **En separat VD-agent finns bara
+från *litet* och uppåt** (3+ personer). Resten (0–12 specialister) bestäms
+av research-steget.
 
-## VD (CEO)
+## Kunden är VD:n i små firmor (beslut 2026-10-23, KA14)
+
+I solo, mikro och personläget är kunden själv VD:n. Det är produktens
+berättelse — "du är chefen", VD-kontoret är kundens rum — och det är också
+det enda som stämmer: i en firma på en eller två personer finns ingen annan
+som fattar besluten. En VD-agent där blev teater. Uppmätt 2026-09-26: alla
+fyra simulerade team fick en, två av dem bar kundens eget namn ("Maria" hos
+Maria), och ingen av kunderna använde den.
+
+Prioriteringsmomenten försvinner inte — de byter form. **VD-assistenten
+förbereder valen och kunden fattar dem.** Hon lägger fram alternativen,
+vad vart och ett kostar i tid eller pengar, vad som får vänta och sin
+rekommendation med skäl. Hon väljer aldrig själv.
+
+## VD (CEO) — bara från *litet* och uppåt
 
 Sätter riktning, prioriterar, fattar trade-off-beslut.
 
 ### Den avgörande regeln
 
-**För små team måste VD också ha ett konkret operativt jobb.** Abstrakt
-strategi räcker inte. En solo-VD som bara "ger strategiska råd" är teater.
+**I ett litet företag (3–10) måste VD också ha ett konkret operativt jobb.**
+Abstrakt strategi räcker inte. En VD som bara "ger strategiska råd" är
+teater.
 
-Konkreta operativa jobb för en solo-VD:
+Konkreta operativa jobb för en VD i ett litet företag:
 
-- Prioritera veckans tasks när användaren är osäker
+- Prioritera veckans tasks mellan personerna när det inte räcker till alla
 - Hålla roadmap uppdaterad baserat på vad som faktiskt händer i projektet
 - Fatta knop-beslut när två agenter ger motstridiga rekommendationer
-- Läsa av när användaren glider bort från det den sa var viktigt
+- Läsa av när teamet glider bort från det som sades vara viktigt
 
 För stora team får VD bara göra det en VD faktiskt gör: riktning och
 trade-offs. Då är det operativa jobbet utfördelat på andra agenter.
 
 Två mallar finns:
 
-- `templates/team-builder/ceo-small.md` — operativ
-- `templates/team-builder/ceo-large.md` — strategisk
+- `templates/team-builder/ceo-small.md` — operativ (litet)
+- `templates/team-builder/ceo-large.md` — strategisk (medelstort, stort)
 
 Ai-consultant-läget använder `templates/ai-consultant/ceo-beginner.md` för
-nybörjarkunder, vilket är ännu mer operativ och ännu mer pedagogisk.
+nybörjarkunder, vilket är ännu mer operativ och ännu mer pedagogisk — men
+också den bara från *litet* och uppåt.
 
 ## VD-assistent (Chief of Staff)
 
@@ -38,9 +55,15 @@ Har två sammanflätade ansvar:
 
 ### Primärt: operativ arbetspartner
 
-Hjälper användaren prioritera, sammanfatta, orientera sig. "Var är jag nu?
-Vad borde jag göra härnäst? Hur står det till?" Det här är det jobb som
-gör att agenten används ofta nog för att den ska märka saker.
+Förbereder användarens prioriteringar, sammanfattar, orienterar. "Var är
+jag nu? Vad borde jag göra härnäst? Hur står det till?" Det här är det jobb
+som gör att agenten används ofta nog för att den ska märka saker.
+
+Jobbet byggs ur kundens **breda** moment — det som kräver kontext från
+flera delar av verksamheten, faller mellan stolarna eller upptäcks för
+sent — inte ur en mall (SP17, `prompts/shared/proposal.md` steg 2). I solo,
+mikro och personläget bär hon också prioriteringsmomenten, i formen
+*förbereda*: kunden väljer.
 
 ### Sekundärt: håller teamet relevant
 
@@ -69,7 +92,7 @@ prata med VD-assistenten om allt.
 
 ## Specialister
 
-Allt utöver VD och VD-assistent. Bestäms av research-steget baserat på
+Allt utöver VD-assistenten (och VD:n, där en sådan finns). Bestäms av research-steget baserat på
 konkreta arbetsmoment som identifierats i intake.
 
 **Regler:**
@@ -92,7 +115,9 @@ Användaren pratar primärt med VD-assistenten. VD-assistenten kan säga:
 
 - "Det här är en fråga för specialist X, prata direkt med den"
 - "Det här kräver ett möte — ska jag kalla teamet?"
-- "Det här är ett beslut VD ska fatta, jag hämtar den"
+- "Det här är ett beslut du ska fatta — här är alternativen och vad jag
+  rekommenderar" (solo, mikro, personläget) eller "det här är ett beslut VD
+  ska fatta, jag hämtar den" (från *litet* och uppåt)
 - "Det här kan jag hantera själv"
 
 Specialisterna pratar sällan med varandra direkt. De pratar via användaren

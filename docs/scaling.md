@@ -16,10 +16,25 @@ storlek. Ai-consultant kombinerar båda.
 Max 14 agenter. Om research-steget vill föreslå fler — slå ihop tills det
 får plats.
 
+**Kärnan räknas in i antalet, och den beror på storleken** (beslut
+2026-10-23, KA14):
+
+| Storlek                            | Kärna                 |
+|------------------------------------|-----------------------|
+| Solo / mikro (1–2), enskild person | VD-assistent          |
+| Litet, medelstort, stort           | VD + VD-assistent     |
+
+I solo, mikro och personläget är kunden själv VD:n och teamet har ingen
+VD-agent. Platsen går till en specialist — eller lämnas tom, om research
+inte motiverar fler. Ett solo-team på fyra agenter är alltså
+VD-assistenten och tre specialister. Taket räknas i kod i
+`skalningsTak()` och kärnan i `utanVdAgent()`, båda i `builder/builder.js`.
+
 **Princip:** när teamet krymper slås ansvar *ihop* på färre agenter. När
-det växer *delas* ansvar upp. En solo-VD-agent kan också vara strateg,
-produktchef och prioriterare i ett. En enterprise-VD-agent gör bara det
-en VD gör.
+det växer *delas* ansvar upp. I en solo-firma bär VD-assistenten också
+prioriteringsmomenten — hon förbereder valen och kunden fattar dem. En
+VD-agent i ett litet företag är operativ; en enterprise-VD-agent gör bara
+det en VD gör.
 
 ## AI-mognad (bara ai-consultant-läget)
 

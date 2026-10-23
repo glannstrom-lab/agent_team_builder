@@ -307,6 +307,36 @@ for (const fil of teamfiler) {
   });
 }
 
+// KA14 (2026-10-23): nya team i solo, mikro och personläget har ingen VD-agent
+// — kunden är VD:n. Portalen får därför aldrig förutsätta att id "vd" finns.
+// Befintliga team MED VD prövas av slingan ovan; här prövas ett team utan.
+const utanVdTeam = () => ({
+  company: "Salong Lina",
+  agents: [
+    { id: "vd-assistent", name: "VD-assistent", icon: "🧭", always: true, tagline: "förbereder veckans val", system: SYS },
+    { id: "luckfyllaren", name: "Luckfyllaren", icon: "🗓️", tagline: "fyller avbokningar", system: SYS },
+    { id: "instagram", name: "Instagram-avlastaren", icon: "📸", tagline: "tar kvällarna tillbaka", system: SYS },
+  ],
+  routines: [{ label: "Veckans val", agentId: "vd-assistent", prompt: "Lägg fram veckans val." }],
+});
+
+test("KA14: ett team utan VD-agent får VD-assistenten som ingång och klarar varje avslut", () => {
+  const { applyTeamExt, extEntryEfter } = laddaExt();
+  const t = applyTeamExt(utanVdTeam(), {});
+  assert.equal(t.entryAgent, "vd-assistent");
+  for (const a of utanVdTeam().agents) {
+    const efter = applyTeamExt(utanVdTeam(), { retired: [a.id] });
+    assert.ok(efter.agents.some((x) => x.id === efter.entryAgent), a.id + ": ingången pekar på någon som inte finns");
+  }
+  assert.equal(extEntryEfter(t, "luckfyllaren"), "vd-assistent");
+});
+
+test("KA14: portalen slår aldrig upp id vd — ett team utan VD-agent får inte tappa en funktion", () => {
+  // Allt som behöver "den som håller ihop veckan" går via entryAgent eller
+  // `always`. En hårdkodad "vd" hade tyst slutat fungera för alla nya små team.
+  assert.doesNotMatch(KÄLLA, /id\s*===?\s*["']vd["']|["']vd["']\s*===?/, "portal/app.js letar efter id \"vd\"");
+});
+
 test("även ett team utan `always`-agent får en ingång", () => {
   const { applyTeamExt } = laddaExt();
   const t = applyTeamExt({

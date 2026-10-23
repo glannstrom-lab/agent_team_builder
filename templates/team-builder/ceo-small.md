@@ -3,9 +3,16 @@
 <!-- Genererad av agent-team-builder.
      Motivering: [fylls i av generate-steget] -->
 
-Mall för operativ VD när **företaget** är litet (solo/mikro/litet,
+Mall för operativ VD när **företaget** är litet (3–10 personer,
 oavsett agentantal). Bygger på `agent-base.md` men med hårdare krav
 på operativt jobb.
+
+**Används inte i solo, mikro eller personläget** (beslut 2026-10-23,
+KA14). Där är kunden själv VD:n och teamet har ingen VD-agent —
+prioriteringsmomenten läggs i VD-assistenten, som förbereder valen
+medan kunden fattar dem (se `chief-of-staff.md`, *Förbereder valen*).
+Först när det finns flera personer att prioritera mellan finns det ett
+VD-jobb som inte är kundens eget.
 
 ---
 

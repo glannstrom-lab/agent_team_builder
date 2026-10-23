@@ -62,9 +62,13 @@ signal och inte brus.
 
 Kör igenom de här för hand, med utdatan framför dig:
 
-- **Har VD/ingångsagenten ett operativt jobb?** För ett solo-projekt räcker
-  inte abstrakt strategi — då blir agenten teater. Näst viktigaste regeln efter
-  divergensen. Skriptet skriver ut ingångsagentens LEVERANS för bedömningen.
+- **Har ingångsagenten ett operativt jobb — och finns VD-agenten bara där den
+  ska?** I solo, mikro och personläget ska teamet sakna VD-agent (kunden är
+  VD:n, KA14) och VD-assistenten *förbereda* prioriteringsvalen utan att fatta
+  dem. Från *litet* och uppåt ska VD-agenten ha ett operativt jobb, inte
+  abstrakt strategi. Näst viktigaste regeln efter divergensen. Skriptet skriver
+  ut ingångsagentens LEVERANS för bedömningen; i Buildern fäller `teamBrister`
+  en VD-agent i ett litet team.
 - **Kan varje agent motiveras med ett konkret fynd ur researchen?** Ingen
   motivering, ingen agent. Samma ribba för skills.
 - **Skalningen** mot `docs/scaling.md` — och för konsult-läget: får en

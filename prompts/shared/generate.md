@@ -29,7 +29,12 @@ som kan placeras i `.claude/agents/` och användas direkt.
 mkdir -p .claude/agents
 ```
 
-### 2. Generera VD
+### 2. Generera VD — bara från *litet* och uppåt
+
+**Solo, mikro och personläget: hoppa över steget.** Där är kunden själv
+VD:n och teamet har ingen VD-agent (beslut 2026-10-23, KA14).
+Prioriteringsmomenten ligger i VD-assistenten, som förbereder valen
+medan kunden fattar dem — se steg 3. Ingen `ceo.md` skrivs.
 
 **Ai-consultant-läge (nybörjare/van):** använd `ceo-beginner.md` och
 hoppa över mallvalet nedan. Byggare-kunder följer team-builder-valet.
@@ -37,7 +42,7 @@ hoppa över mallvalet nedan. Byggare-kunder följer team-builder-valet.
 Välj `ceo-small.md` eller `ceo-large.md` baserat på **företagets
 storlek** (inte agentantalet — även ett 6-agentteam åt ett litet
 företag behöver en VD med operativt jobb, se designprincip 3):
-- solo / mikro / litet företag → `ceo-small.md` (operativ VD)
+- litet företag (3–10) → `ceo-small.md` (operativ VD)
 - medelstort / stort företag → `ceo-large.md` (strategisk VD)
 
 Fyll i alla platshållare med data från proposal och research:
@@ -58,8 +63,13 @@ Fyll i `chief-of-staff.md` — team-builder-versionen i team-builder-
 läget, `templates/ai-consultant/chief-of-staff.md` i konsult-läget:
 - Lista teamets specialisters namn och domäner
 - Definiera triage-reglerna: vilken typ av fråga → vilken agent
-- Trösklar: vad hanterar VD-assistenten själv, vad eskaleras
-  till VD, vad skickas till specialist
+- Trösklar: vad hanterar VD-assistenten själv, vad förbereds och
+  läggs fram för kunden (solo, mikro, personläget — kunden är VD:n)
+  eller för VD-agenten (från *litet* och uppåt), vad skickas till
+  specialist
+- Solo, mikro och personläget: fyll *Förbereder valen* ur researchens
+  prioriteringsmoment. Hon lägger fram alternativen och sin
+  rekommendation; kunden väljer
 - Mötesfunktionen: integrera de tre mötesmallarna genom att
   specificera vilka av teamets agenter som typiskt deltar i varje
   mötestyp, och vilka typer av frågor som triggar ett möte vs.
@@ -163,7 +173,7 @@ Efter generering, visa användaren:
 
 ```
 Genererade filer:
-- .claude/agents/ceo.md
+- .claude/agents/ceo.md            (bara från litet och uppåt)
 - .claude/agents/chief-of-staff.md
 - .claude/agents/[specialist-1].md
 - .claude/agents/[specialist-2].md

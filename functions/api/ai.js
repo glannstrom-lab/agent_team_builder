@@ -31,7 +31,7 @@
 
 import { json, nowMs, allowAttempt, clientIp, sessionUser } from "./auth/_lib.js";
 import { planState, planUpdateSql, PLAN_REASON } from "./_plan.js";
-import { byggSteg, ärByggsteg } from "./_build.js";
+import { byggSteg, ärByggsteg, läsIntervju } from "./_build.js";
 
 // ── tak ───────────────────────────────────────────────────────────────────
 //
@@ -454,9 +454,20 @@ export async function onRequestPost(context) {
     if (messages.length !== 1 || messages[0].role !== "user") {
       return json({ error: FEL.byggsteg, code: "build_step_required" }, 400);
     }
+    // SP8: intervjun är flera turer men fortfarande ETT meddelande. Servern
+    // läser transkriptet, håller turtaket och teckentaket (se _build.js för
+    // siffrorna) och byter ut klientens sträng mot sin egen uppställning — det
+    // som går uppströms är aldrig klientens text i klientens form. Allt ovan
+    // (K1, MAX_MESSAGES, ett användarmeddelande) gäller fortfarande först.
+    let intervju = null;
+    if (body.step === "intervju") {
+      intervju = läsIntervju(messages[0].content);
+      if (intervju.fel) return json({ error: intervju.fel, code: intervju.code }, intervju.status);
+      messages[0] = { role: "user", content: intervju.text };
+    }
     let steg;
     try {
-      steg = await byggSteg(env, request, body.step, body);
+      steg = await byggSteg(env, request, body.step, body, intervju);
     } catch (e) {
       // Prompten gick inte att läsa. Det är en driftmiss hos oss — filen är
       // borttagen ur bygget, eller ASSETS svarar inte — och kunden ska inte

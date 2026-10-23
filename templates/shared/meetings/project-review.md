@@ -15,6 +15,8 @@ granskningen gäller. Inte alla — bara de som har relevant perspektiv.
 
 - **VD-assistent:** Leder, sammanfattar, producerar output
 - **VD:** Deltar om granskningen berör riktning eller prioritering
+  (bara där teamet har en VD-agent — i solo, mikro och personläget är
+  kunden VD:n och sitter redan i mötet)
 - **Specialister:** De vars domäner berörs
 
 ## Körning

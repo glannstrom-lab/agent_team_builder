@@ -47,7 +47,7 @@ precis som vanligt; scriptet sköter resten.
 4. **`#research`** — `.moments` (varje moment med `.fit high/med/low` för AI-lämplighet) + `.clusters` (kluster över ribban med `.cp` prioritet).
 5. **`#skalning`** — `.decision`-box: skalningsbeslutet och motiveringen (storlek + antal kluster → antal agenter).
 6. **(Bara ai-consultant) `#forsta-projektet`** — `.decision`/`.quotes`: projektnamn, problemet i kundens ord, vad som ska vara sant efter vecka 1, vem som äger det.
-7. **`#proposal` / `#team`** — `.org` (VD → VD-assistent → specialister, fler rader för stora team) + `.cards` (ett `.card` per agent: ikon, namn, `.tag`, jobb, `.caps`, `.chips` för triggers, `.skbadge` för ev. skills). `is-ceo` / `is-cos` på VD- och assistent-korten.
+7. **`#proposal` / `#team`** — `.org` (VD → VD-assistent → specialister, fler rader för stora team; i solo, mikro och personläget är översta noden kunden — "Du, VD" — eftersom teamet saknar VD-agent, KA14) + `.cards` (ett `.card` per agent: ikon, namn, `.tag`, jobb, `.caps`, `.chips` för triggers, `.skbadge` för ev. skills). `is-ceo` / `is-cos` på VD- och assistent-korten.
 8. **Avvisade** — `.rejected-grid` med `.rej` per avvisat moment och motivering.
 9. **Möten** — `.meet-grid` med tre `.meet`.
 10. **`footer`** — `.built`, `.fstats`, en `.try-live`-knapp `href="../portal/?team=<slug>"` (texten "💬 Prova teamet live →"), och `.backlink` till `index.html`. Läge B: lägg `.hyp-warn` före knappen.

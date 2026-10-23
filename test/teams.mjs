@@ -381,7 +381,7 @@ const STEGKONTROLL = (() => {
   const src = readFileSync("builder/builder.js", "utf8");
   const i = src.indexOf("⟦DELAD-START⟧"), j = src.indexOf("⟦DELAD-SLUT⟧");
   const kropp = src.slice(src.indexOf("\n", i) + 1, src.lastIndexOf("\n", j) + 1);
-  return new Function(kropp + "; return { stegBrister, teamBrister, skalningsAntal, förslagsAntal, trimmaTeam };")();
+  return new Function(kropp + "; return { stegBrister, teamBrister, skalningsAntal, förslagsAntal, trimmaTeam, utanVdAgent, nämnerNamn };")();
 })();
 
 test("stegkontrollen: en avbruten research (719 tecken ur drift) underkänns", () => {
@@ -419,7 +419,7 @@ test("stegkontrollen: bygget kör varje steg genom medOmförsök och sammanstäl
   assert.ok((bygg.match(/await medOmförsök\(/g) || []).length >= 2, "de strömmande och icke-strömmande stegen ska båda göras om");
   assert.ok(bygg.includes("return stegBrister(stg.step, acc, n);"));
   const sam = src.slice(src.indexOf("async function structureTeam("), src.indexOf("async function structureTeam(") + 3000);
-  assert.ok(sam.includes("teamBrister(team, n)") && sam.includes("await medOmförsök("), "sammanställningen ska kontrollera antalet och göras om");
+  assert.ok(sam.includes("teamBrister(team, n, utanVd)") && sam.includes("await medOmförsök("), "sammanställningen ska kontrollera antalet och göras om");
   assert.ok(/kravSlut: true/.test(src.slice(src.indexOf("async function callSteg("))), "stegen ska kräva ett helt svar");
 });
 
@@ -453,4 +453,92 @@ test("trimmaTeam: den bortflyttade agenten stryks ur de andras DITT TEAM (Status
   const listrader = vda().system.split("\n").filter((r) => /^\s*[-•*]\s/.test(r) && r.includes("Statusvakten"));
   assert.deepEqual(listrader, [], "VD-assistenten hänvisar fortfarande till en agent som inte finns");
   assert.ok(vda().system.includes("Offertmakaren"), "de kvarvarande ska stå kvar i listan");
+});
+
+// ── KA14: i små firmor är kunden VD:n (beslut 2026-10-23) ──────────────────
+//
+// Ingen separat VD-agent i solo, mikro och personläget; VD-assistenten
+// förbereder valen och kunden fattar dem. Från "litet" och uppåt finns VD:n
+// kvar, och befintliga kunders team MED VD ska fungera precis som förut.
+//
+// Fixturerna är KA9:s riktiga mikrobyggen (2026-09-26, före beslutet) — alla
+// tre har en VD-agent, alltså precis det som nu ska rättas.
+const KA9 = ["bygg2", "ka9-salong", "ka9-fotograf"];
+const utanVd = (team) => Object.assign({}, team, { agents: team.agents.filter((a) => a.id !== "vd"),
+  routines: (team.routines || []).map((r) => (r.agentId === "vd" ? Object.assign({}, r, { agentId: "vd-assistent" }) : r)) });
+
+test("KA14: ett litet team utan VD godkänns av teamBrister och rörs inte av trimmaTeam", () => {
+  for (const k of KA9) {
+    const team = utanVd(JSON.parse(readFileSync(`${SIM}/${k}/team.json`, "utf8")));
+    assert.ok(!team.agents.some((a) => a.id === "vd"));
+    assert.deepEqual(STEGKONTROLL.teamBrister(team, 4, true), [], k);
+    const före = JSON.stringify(team);
+    assert.deepEqual(STEGKONTROLL.trimmaTeam(team, 4, true), [], k + ": trimmaTeam flyttade något ur ett korrekt team");
+    assert.equal(JSON.stringify(team), före, k + ": trimmaTeam ändrade ett korrekt team");
+  }
+});
+
+test("KA14: en VD-agent i en mikrofirma underkänns — kunden är VD:n", () => {
+  for (const k of KA9) {
+    const team = JSON.parse(readFileSync(`${SIM}/${k}/team.json`, "utf8"));
+    assert.match(STEGKONTROLL.teamBrister(team, 4, true).join(" "), /separat VD-agent/, k);
+    // Samma team i ett litet företag (3–10) är i sin ordning.
+    assert.deepEqual(STEGKONTROLL.teamBrister(team, 4, false), [], k + " (med VD, litet)");
+  }
+});
+
+test("KA14: trimmaTeam flyttar VD-agenten till de avvisade och ger platsen till en specialist", () => {
+  const team = JSON.parse(readFileSync(`${SIM}/bygg2/team-5-agenter.json`, "utf8"));
+  const vdNamn = team.agents.find((a) => a.id === "vd").name;
+  team.routines = (team.routines || []).concat([{ label: "Veckans val", agentId: "vd", day: 5, timeEstimate: null, auto: false, prompt: "x" }]);
+  const flyttade = STEGKONTROLL.trimmaTeam(team, 4, true);
+  assert.deepEqual(flyttade, [vdNamn], "bara VD:n ska flyttas — utan den ryms alla fyra");
+  assert.deepEqual(team.agents.map((a) => a.id), ["vd-assistent", "offertmakaren", "ata-vakten", "statusvakten"]);
+  const avvisad = team.rejected.find((r) => r.name === vdNamn);
+  assert.ok(avvisad && /du är VD:n/.test(avvisad.why), "VD:n ska stå bland de avvisade med skälet");
+  assert.ok(team.routines.every((r) => team.agents.some((a) => a.id === r.agentId)), "ingen rutin får peka på VD:n");
+  assert.equal(team.routines.find((r) => r.label === "Veckans val").agentId, "vd-assistent", "VD:ns rutin går till VD-assistenten");
+  assert.deepEqual(STEGKONTROLL.teamBrister(team, 4, true), []);
+});
+
+test("KA14: en VD som heter bara \"VD\" stryker inte raderna om VD-assistenten", () => {
+  // bygg-ds: VD-agenten heter "VD". En delsträngsträff hade strukit varje
+  // listrad som nämner VD-assistenten — hänvisningen till den som blir kvar.
+  const team = JSON.parse(readFileSync(`${SIM}/bygg-ds/team.json`, "utf8"));
+  assert.equal(team.agents.find((a) => a.id === "vd").name, "VD");
+  const spec = team.agents.find((a) => a.id === "bkr-vatrum");
+  spec.system += "\n\nDITT TEAM:\n- VD: prioriterar veckan\n- VD-assistenten: tar emot det som inte är ditt";
+  STEGKONTROLL.trimmaTeam(team, 4, true);
+  assert.ok(!team.agents.some((a) => a.id === "vd"));
+  assert.ok(spec.system.includes("- VD-assistenten: tar emot det som inte är ditt"), "raden om VD-assistenten ströks");
+  assert.ok(!spec.system.includes("- VD: prioriterar veckan"), "raden om den flyttade VD:n står kvar");
+  assert.equal(STEGKONTROLL.nämnerNamn("- VD-assistenten: håller ihop", "VD"), false);
+});
+
+test("KA14: ett stort team med VD godkänns och behåller sin VD", () => {
+  const team = JSON.parse(readFileSync(`${SIM}/ehandel2/team.json`, "utf8")); // medelstort
+  assert.ok(team.agents.some((a) => a.id === "vd"));
+  const n = team.agents.length;
+  assert.deepEqual(STEGKONTROLL.trimmaTeam(team, n, false), []);
+  assert.ok(team.agents.some((a) => a.id === "vd"), "VD:n ska stå kvar i ett medelstort företag");
+  assert.deepEqual(STEGKONTROLL.teamBrister(team, n, false), []);
+});
+
+test("KA14: teamBrister kräver VD-assistenten — hon är kärnan i alla storlekar", () => {
+  const team = utanVd(JSON.parse(readFileSync(`${SIM}/ka9-salong/team.json`, "utf8")));
+  team.agents = team.agents.filter((a) => a.id !== "vd-assistent").concat([{ id: "x", name: "X" }]);
+  assert.match(STEGKONTROLL.teamBrister(team, 4, true).join(" "), /saknar VD-assistenten/);
+});
+
+test("KA14: befintliga team i portal/teams/ godkänns oförändrade — VD:n får finnas kvar", () => {
+  // Beslutet gäller nya byggen. Kunder som redan har en VD-agent behåller den.
+  for (const fil of readdirSync("portal/teams").filter((f) => f.endsWith(".js") && f !== "index.js")) {
+    const win = {};
+    new Function("window", readFileSync(`portal/teams/${fil}`, "utf8"))(win);
+    const team = win.TEAM;
+    assert.deepEqual(STEGKONTROLL.teamBrister(team, team.agents.length, false), [], fil);
+    const före = JSON.stringify(team);
+    assert.deepEqual(STEGKONTROLL.trimmaTeam(team, team.agents.length, false), [], fil);
+    assert.equal(JSON.stringify(team), före, fil + " ändrades av trimmaTeam");
+  }
 });

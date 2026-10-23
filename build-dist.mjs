@@ -57,6 +57,7 @@ const PROMPT_FILES = [
   "prompts/shared/scale.md",
   "prompts/shared/proposal.md",
   "prompts/ai-consultant/first-project.md",
+  "prompts/shared/interview.md",
 ];
 
 rmSync("dist", { recursive: true, force: true });

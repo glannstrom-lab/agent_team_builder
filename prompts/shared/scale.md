@@ -10,6 +10,21 @@ implementerar dem.
 - **Antal personer** från intake
 - **Antal kluster över ribban** från research
 - **(Bara ai-consultant) Mognadsnivå** från maturity-intake
+- **Om teamet byggs för en enskild person** (intaget säger "en enskild
+  person i sitt jobb") — då skalas det som solo
+
+## Kärnan: vem som räknas in
+
+VD-assistenten finns alltid. **En separat VD-agent finns bara i firmor
+från *litet* och uppåt** (3+ personer). I solo, mikro och personläget är
+kunden själv VD:n — VD-kontoret är hennes rum, och VD-assistenten
+förbereder valen som kunden fattar (beslut 2026-10-23, KA14). Kärnan är
+alltså:
+
+| Storlek                            | Kärna                  |
+|------------------------------------|------------------------|
+| Solo / mikro (1–2), enskild person | VD-assistent (1)       |
+| Litet, medelstort, stort           | VD + VD-assistent (2)  |
 
 ## Steg
 
@@ -43,17 +58,25 @@ Research-dokumentets kluster ger en indikation på hur många
 distinkta agent-domäner som finns. Jämför:
 
 - **Kluster över ribban < tabellens minimum:** Sänk till antal
-  kluster + 2 (VD + VD-assistent). Tvinga inte in agenter som
-  inte motiveras.
+  kluster + kärnan (1 i solo/mikro/personläget, annars 2). Tvinga
+  inte in agenter som inte motiveras.
 - **Kluster över ribban > tabellens maximum:** Slå ihop kluster
   tills de ryms. Proposal-steget avgör vilka.
 - **Kluster inom intervallet:** Välj ett tal i det intervall
-  tabellen anger, närmast antal kluster + 2.
+  tabellen anger, närmast antal kluster + kärnan.
 
 ### 4. Output
 
-En enda rad:
+Två rader. Parentesen beror på kärnan — skriv den form som gäller:
 
+Solo, mikro eller enskild person:
+```
+Skalningsbeslut: [antal] agenter (VD-assistent + [antal-1] specialister — ingen separat VD, kunden är VD:n)
+Motivering: [Storlek X → intervall Y–Z. Research hittade N kluster
+över ribban. Valde [antal] för att [kort motivering].]
+```
+
+Litet, medelstort eller stort:
 ```
 Skalningsbeslut: [antal] agenter (VD + VD-assistent + [antal-2] specialister)
 Motivering: [Storlek X → intervall Y–Z. Research hittade N kluster
@@ -67,7 +90,10 @@ live för kunden, så läckande tankekedja blir ett kundproblem.)
 ## Regler
 
 1. Max 14 agenter. Aldrig fler.
-2. VD och VD-assistent räknas alltid in i totalen.
+2. Kärnan räknas alltid in i totalen: VD-assistenten alltid, VD bara
+   från *litet* och uppåt. Lägg aldrig till en VD-agent i solo, mikro
+   eller personläget för att fylla intervallet — den platsen går till en
+   specialist eller lämnas tom.
 3. Om research hittade för få kluster, skala ner. Research har rätt
    — inte storlekstabellen.
 4. Om det finns en uppenbar mismatch (t.ex. stort företag men bara

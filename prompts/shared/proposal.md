@@ -17,9 +17,14 @@ Proposal-steget tar emot:
 Omvandla research-kluster till konkreta agent-förslag. Varje kluster
 över ribban *kan* bli en agent, men behöver inte. Du bestämmer vilka
 kluster som motiverar en egen agent och vilka som bör slås ihop eller
-hanteras av VD/VD-assistent.
+hanteras av VD-assistenten (eller VD:n, där en sådan finns).
 
-VD och VD-assistent finns alltid. De räknas in i skalningsbeslutet.
+**VD-assistenten finns alltid. En separat VD-agent finns bara från
+*litet* och uppåt (3+ personer).** I solo, mikro och personläget är
+kunden själv VD:n: VD-kontoret är hennes rum, och VD-assistenten
+förbereder valen som kunden fattar (beslut 2026-10-23, KA14).
+Skalningsbeslutet säger vilket som gäller — står det "ingen separat VD"
+skriver du ingen. Kärnan räknas in i skalningsbeslutet.
 
 ## Steg
 
@@ -33,7 +38,7 @@ Gå igenom research-klustrena i prioritetsordning:
 - **Kluster under ribban** → ingen agent. Nämn dem explicit som
   avvisade med motivering.
 
-Antal agenter (inklusive VD och VD-assistent) får inte överstiga
+Antal agenter (inklusive kärnan) får inte överstiga
 skalningsbeslutet. Om research har fler kluster över ribban än vad
 skalningen tillåter — slå ihop de minst distinkta.
 
@@ -47,14 +52,29 @@ tar helgerna ska få hjälp med återkopplingen, med betygssättningen utanför.
 (Uppmätt i simuleringen 2026-09-26: just de moment två av fyra kunder lyfte
 först avvisades, och båda sa upp.)
 
-### 2. VD och VD-assistent
+### 2. VD-assistent — och VD, där en sådan finns
 
-VD och VD-assistent formuleras alltid, baserat på:
+VD-assistenten formuleras alltid. VD:n bara från *litet* och uppåt.
+Prioriteringsmomenten formuleras alltid — frågan är bara vem som bär dem:
 
-- **VD:** bygg VD:ns jobb på de prioriterings- och riktningsmoment research
-  hittade. Använd `ceo-small.md` eller `ceo-large.md` som mall.
+- **Solo, mikro och personläget — kunden är VD:n.** Ingen VD-agent.
+  Prioriterings- och riktningsmomenten research hittade blir en del av
+  VD-assistentens jobb, men i en bestämd form: **hon förbereder valet,
+  kunden fattar det.** Hon lägger fram alternativen, vad vart och ett
+  kostar i tid eller pengar, vad som får vänta, och sin rekommendation
+  med skäl — sedan avgör kunden. Hon väljer aldrig själv vad veckan ska
+  räcka till. Ett sådant moment står i hennes **Varje vecka** ("fredag:
+  lägger fram nästa veckas tre möjliga jobb med vad vart och ett ger —
+  du väljer"), inte som en allmän förmåga att "hjälpa till att
+  prioritera".
 
-  **Hittade research inga sådana moment är det inte klartecken för ett
+- **VD (bara litet, medelstort, stort):** bygg VD:ns jobb på de
+  prioriterings- och riktningsmoment research hittade. Använd
+  `ceo-small.md` (litet) eller `ceo-large.md` (medelstort, stort) som
+  mall.
+
+  **Hittade research inga sådana moment — vare sig de ska bäras av VD:n
+  eller förberedas av VD-assistenten — är det inte klartecken för ett
   generiskt jobb — det är ett tecken på att research inte är klar.** Gå
   tillbaka och leta efter var besluten faktiskt fattas: vad som prioriteras
   bort när veckan inte räcker, vem som avgör vilken kund som får vänta, vad
@@ -63,27 +83,102 @@ VD och VD-assistent formuleras alltid, baserat på:
   "ledning".
 
   Formulera hellre VD:ns jobb ur det mest verksamhetsspecifika du hittade än
-  ur en mall. En VD utan konkret jobb blir teater, och för ett solo-team är
-  abstrakt strategi just det (designprincip 3 i `CLAUDE.md`).
+  ur en mall. En VD utan konkret jobb blir teater (designprincip 3 i
+  `CLAUDE.md`) — och i en firma på en eller två personer finns ingen VD
+  att skriva det jobbet åt, därför ingen agent där.
 
   VD är den agent som är lättast att fylla med branschklichéer, och en
   generisk VD är den vanligaste anledningen till att två olika kunder får
   team som liknar varandra.
 
-- **VD-assistent:** Alltid operativ arbetspartner. Specificera vilka
-  av teamets agenter den ska kunna hänvisa till. Använd
-  `chief-of-staff.md` som mall.
+- **VD-assistent:** hon är kundens första anställda och den hon pratar
+  mest med — i början den enda. Bygg hennes jobb med samma ribba som
+  VD:ns, men ur ett annat råmaterial: researchens **breda** moment. Det
+  är momenten med kontextprofil *brett* (de kräver kontext från flera
+  delar av verksamheten), det som **faller mellan stolarna** (ägare
+  "oklart" eller "delat" i researchen, eller ingen specialist äger det),
+  och det ägaren **påminns om för sent** (det som glöms, skjuts upp,
+  upptäcks när det redan brinner). Svara på tre frågor, ur *denna*
+  kunds research:
 
-**Namnen.** Ingen agent får heta som kunden eller någon i kundens
-verksamhet. VD-agenten är inte ägaren; den hjälper ägaren att prioritera.
-En agent som heter "Maria" hos Maria är förvirrande i varje svar (uppmätt
-2026-09-26). Namnge efter jobbet.
+  1. **Vad gör hon varje vecka hos just den här kunden?** Två till fyra
+     återkommande moment, med veckodag eller tillfälle om researchen
+     anger det. Hos en byggfirma kan det vara "måndag: går igenom vilka
+     ÄTA-arbeten från förra veckan som saknar underlag innan fakturan
+     går" — aldrig "sammanfattar nuläget". Formen, inte innehållet, är
+     exemplet: hos en annan kund ser raden helt annorlunda ut.
+  2. **Vad håller hon koll på som ingen specialist äger?** De trådar som
+     löper över flera moment — en kund som både väntar på offert och har
+     en obetald faktura, ett datum som rör tre olika delar av veckan.
+     Namnge trådarna med kundens egna ord.
+  3. **Vad tar hon hand om tills specialisterna anställs?** Se nedan.
+
+  **Hittade research inga breda moment är research inte klar — samma
+  regel som för VD:n.** Gå tillbaka och leta: vad hänger ihop med vad i
+  kundens vecka, vad blir liggande för att det inte är någons, vad har
+  kunden sagt att hon kommer på klockan elva på kvällen. De momenten finns
+  hos alla som har mer än en sak att göra. En VD-assistent som bara
+  "hjälper till att prioritera och hänvisar rätt" är en mall, och en
+  generisk VD-assistent är — tillsammans med en generisk VD — den
+  vanligaste orsaken till att två kunder får team som liknar varandra.
+  Hon är dessutom den agent kunden möter först, så det är här skillnaden
+  måste synas först.
+
+  **Hennes perspektiv är helhetens, inte en specialists.** Hon får inte
+  låna en specialists blick ens när hon tillfälligt gör specialistens
+  moment — då blir två agenter utbytbara (uppmätt 2026-09-26: lärarens
+  VD-assistent och kommunikationsagenten delade 87 % av perspektivet).
+  Hon är inte heller en specialist med fel titel: döps hon efter ett
+  enskilt moment ("Offertstödet") har momentet fått fel ägare.
+
+  **Gränsen mot VD:n.** VD:n väljer vad veckan ska räcka till;
+  VD-assistenten förbereder valet, ser till att det valda blir gjort och att inget
+  tappas på vägen. Ett prioriteringsbeslut fattar hon aldrig själv. I
+  solo, mikro och personläget är VD:n kunden: hon lägger fram valet för
+  kunden. Från *litet* och uppåt är VD:n en egen agent: hon lämnar
+  valet vidare dit.
+
+  **Specialisterna anställs en i taget, och hon tar hand om deras moment
+  tills dess.** Kunden börjar med VD-assistenten; resten av teamet
+  anställs i turordning. Ange därför för varje specialist **när** den
+  anställs och **varför just då**, med skälet ur researchen ("ni lägger
+  sex timmar i veckan på offerter" — inte "viktigt område"). Först
+  kommer det kunden säger klämmer mest, sedan det som kostar mest tid
+  eller kommer oftast. Ange också vad VD-assistenten gör av momentet
+  under tiden: oftast en enklare version (ett första utkast, en
+  påminnelse, en checklista), ibland ingenting — ett **bullrigt** moment
+  ska vänta på sin specialist i stället för att äta upp hennes samtal.
+  Turordningen blir kundens rekryteringsplan (se *Rekryteringsplan*
+  nedan).
+
+  Behåll hänvisningen: hon ska veta vilka av teamets agenter hon kan
+  skicka vidare till — och vilka som ännu inte är anställda, så att hon
+  inte hänvisar till någon som inte finns. Använd `chief-of-staff.md`
+  som **skelett**, inte som text: varje plats i mallen fylls ur
+  researchen, och en plats som inte går att fylla betyder att research
+  inte är klar.
+
+**Namnen.** VD-assistenten bär ett **personnamn som kunden har valt**.
+Står ett sådant namn i underlaget, använd det: rubriken blir
+`### [Namnet] (VD-assistent)`. Saknas det, skriv rollen: `### VD-assistent`.
+Hitta aldrig på ett personnamn åt henne — namnet är kundens val.
+Specialisterna — och VD-agenten, där en sådan finns — namnges efter
+jobbet (se regel 2).
+
+Ingen agent får heta som kunden eller någon i kundens verksamhet — det
+gäller också det namn kunden valt åt sin assistent. Krockar det valda
+namnet med kundens eget eller med någon som nämns i intaget, skriv
+rollen och lyft krocken under *Flaggat för användaren*. Ingen agent
+är ägaren. En agent som heter
+"Maria" hos Maria är förvirrande i varje svar (uppmätt 2026-09-26), och
+samma sak gäller "Karins assistent" hos Karin.
 
 **När teamet byggs för en enskild person** (intaget säger "en enskild
-person i sitt jobb") finns ingen VD att stötta. VD-rollen blir då personens
-*prioriterare*: den som hjälper hen välja vad veckan ska räcka till och vad
-som får vänta. Behåll funktionen men kalla den vid det namnet ("Veckans
-prioriteringar", "Planeraren" eller liknande), aldrig "VD".
+person i sitt jobb") gäller samma sak som för solo: ingen VD-agent och
+ingen separat prioriterare. Personen väljer själv vad veckan ska räcka
+till; VD-assistenten förbereder valet. (Tidigare fick personläget en
+"Veckans prioriteringar"-agent i VD:ns ställe — den är struken av samma
+skäl som VD:n.)
 
 ### 3. Matcha skills
 
@@ -99,8 +194,11 @@ baserat på ett konkret fynd från research?
 
 ### 4. Formulera förslag
 
-Skriv varje agent i formatet nedan. Ordningen: VD först, VD-assistent
-sedan, specialister i prioritetsordning.
+Skriv varje agent i formatet nedan. Ordningen: VD-assistent först
+(kundens första anställda), VD sedan där en sådan finns, specialister i
+**anställningsordning**.
+Anställningsordningen och prioritetsordningen är samma sak: blir teamet
+större än skalningsbeslutet stryks specialisterna bakifrån.
 
 ## Output-format per agent
 
@@ -141,7 +239,51 @@ VD-assistenten granskar mötesbidrag mot dessa.]
 **Skalningsnot:** [För små team: vilka extra hattar bär agenten?
 För stora team: vad gör den medvetet inte som en bredare agent
 skulle göra?]
+
+**Anställs:** [Bara specialister. Plats i turordningen + skälet ur
+research, med kundens ord eller siffra: "2 — offerterna tar sex timmar
+i veckan." Tills dess: vad VD-assistenten gör av momentet, eller
+"väntar" om det är bullrigt.]
 ```
+
+**VD-assistenten har tre rader till**, direkt under **Jobb**, och de är
+obligatoriska:
+
+```markdown
+**Varje vecka:** [2–4 återkommande moment hos just den här kunden, med
+dag eller tillfälle om researchen anger det. Ur researchens breda
+moment.]
+
+**Håller koll på:** [De trådar som löper mellan momenten och som ingen
+specialist äger — med kundens ord.]
+
+**Tills de anställs:** [Per specialist som inte anställs först: vilken
+enklare version av momentet hon gör under tiden, eller "väntar".]
+```
+
+Det som står under **Varje vecka** och **Tills de anställs** ska också
+synas i hennes **Kapaciteter** och **Leverans** — det är de fälten som
+blir hennes systemprompt. En rad som bara står här försvinner i
+sammanställningen.
+
+## Rekryteringsplan
+
+Efter agenterna, före de avvisade: turordningen samlad på ett ställe.
+Kunden ser den som sin plan för hur firman växer, så den ska gå att läsa
+utan resten av förslaget. Använd rubriknivå `##` och en numrerad lista —
+inga `###`-rubriker här, de räknas som agenter.
+
+```markdown
+## Rekryteringsplan
+
+1. [VD-assistentens namn eller "VD-assistent"] — börjar i dag.
+2. [Specialist] — [skälet ur research, en mening med kundens ord].
+3. [Specialist] — [skälet].
+```
+
+En VD-agent (bara från *litet* och uppåt) står inte i planen: den hör
+till kärnan och följer med VD-assistenten. I solo, mikro och
+personläget finns ingen att nämna — kunden är VD:n.
 
 ## Avvisade agenter
 
@@ -181,7 +323,8 @@ här med en kort rekommendation:
 2. **Namn ska vara specifika.** "Innehållsskribent" slår
    "Textproduktions-agent". "Kundservice-triage" slår
    "Support-agent". Namnge efter vad agenten *gör*, inte vad
-   den *är*.
+   den *är*. Undantaget är VD-assistenten, som bär det personnamn
+   kunden valt — eller rollnamnet, om inget namn är valt (se steg 2).
 
 3. **Skills motiveras separat.** En skill på en agent utan
    motivering är lika illa som en agent utan motivering.
@@ -196,8 +339,8 @@ här med en kort rekommendation:
 
 6. **Kontextprofil påverkar agentdesign.** Moment med bullrig profil
    bör motivera en isolerad agent som inte delar kontext med andra.
-   Moment med bred profil kan hanteras av VD-assistenten eller en
-   agent med medvetet bred syn.
+   Moment med bred profil är VD-assistentens råmaterial (steg 2) — eller,
+   i ett större team, en agent med medvetet bred syn.
 
 7. **Språk följer research.** Om research är på svenska, är
    förslaget på svenska.
@@ -247,6 +390,9 @@ här med en kort rekommendation:
     den är för generisk. Knyt varje agent hårdare till ett konkret fynd ur
     *denna* intake/research, eller stryk den. Testa perspektiven särskilt:
     kan två agenter i teamet byta perspektiv med varandra utan att någon
-    märker det — skärp dem. Output ska vara omöjlig att förväxla med ett
+    märker det — skärp dem. Testa VD-assistenten för sig: byt kundens
+    namn och bransch i hennes **Jobb**, **Varje vecka** och **Håller koll
+    på** — läser det fortfarande rätt? Då är det mallen som talar, inte
+    researchen. Output ska vara omöjlig att förväxla med ett
     annat företags team. Det här är projektets viktigaste regel: ser
     output likadan ut oavsett input är förslaget trasigt.

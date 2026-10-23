@@ -43,7 +43,9 @@ hjälper att välja.
 
 **Lösningen:** output är en kort, motiverad rekommendation. "Gör det här
 först, sen det här, för att…". Max tre prioriteringar. Om teamet inte kan
-enas ska VD fatta beslutet.
+enas ska VD fatta beslutet — VD-agenten från *litet* och uppåt, kunden
+själv i solo, mikro och personläget, där VD-assistenten lägger fram valet
+(KA14).
 
 ## Mötesflödet
 

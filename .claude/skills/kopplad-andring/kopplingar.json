@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "kontrollerad": "2026-09-26",
+  "kontrollerad": "2026-10-23",
   "kommentar": "Registret över filer som måste ändras samma dag. Varje ankare är kontrollerat den dag som står i kontrollerad — kör `node .claude/skills/kopplad-andring/kontrollera.mjs --revidera` för att se att de fortfarande finns. Ett ankare som ruttnat gör registret farligare än inget register, för det ser ut att vakta något.",
   "kopplingar": [
     {
@@ -417,6 +417,55 @@
           "fil": "portal/avatars",
           "ankare": "",
           "roll": "bilderna"
+        }
+      ]
+    },
+    {
+      "id": "vd-karna",
+      "rubrik": "Kärnan: ingen VD-agent i solo, mikro och personläget (KA14)",
+      "varfor": "Beslut 2026-10-23: i små firmor är kunden VD:n och VD-assistenten förbereder valen. Gränsen (solo, mikro, personläget) och beslutsradens form står på fem ställen. Glider skalningsprompten och koden isär skriver hållSkalningsTak om varje riktig beslutsrad, eller låter en rad som beställer en VD gå igenom till förslaget. Glider PORTAL_RULES och portal-team.md isär får Buildern och /build-team olika VD-assistenter.",
+      "vaktas_av": [
+        "test/skalning.mjs — KA14: scale.md beställer samma beslutsrad som koden känner igen",
+        "test/skalning.mjs — KA14: VD-agenten finns inte i solo, mikro och personläget — men från litet och uppåt",
+        "test/ai.mjs — KA14: structurePrompt beställer VD bara om förslaget har en, och TEAM_SCHEMA kräver ingen",
+        "test/ai.mjs — KA14: PORTAL_RULES punkt 4 och portal-team.md säger samma sak om kärnan",
+        "test/portal.mjs — KA14: portalen slår aldrig upp id vd — ett team utan VD-agent får inte tappa en funktion"
+      ],
+      "delar": [
+        {
+          "fil": "prompts/shared/scale.md",
+          "ankare": "ingen separat VD, kunden är VD:n",
+          "roll": "skalningsbeslutets form och kärnan per storlek"
+        },
+        {
+          "fil": "prompts/shared/proposal.md",
+          "ankare": "En separat VD-agent finns bara",
+          "roll": "vem som bär prioriteringsmomenten"
+        },
+        {
+          "fil": "builder/builder.js",
+          "ankare": "var STORLEKAR_UTAN_VD",
+          "roll": "gränsen i kod: utanVdAgent, hållSkalningsTak, trimmaTeam, teamBrister"
+        },
+        {
+          "fil": "functions/api/_build.js",
+          "ankare": "OM förslaget har en VD-agent",
+          "roll": "sammanställningen och PORTAL_RULES punkt 4"
+        },
+        {
+          "fil": "templates/shared/portal-team.md",
+          "ankare": "Har teamet ingen VD-agent",
+          "roll": "samma punkt 4 för /build-team"
+        },
+        {
+          "fil": "docs/scaling.md",
+          "ankare": "Kärnan räknas in i antalet",
+          "roll": "skalningsreglernas facit"
+        },
+        {
+          "fil": "testoutput/sim-2026-09/sim.mjs",
+          "ankare": "B.antalRad(n, utanVd)",
+          "roll": "simuleringen bygger som Buildern"
         }
       ]
     }

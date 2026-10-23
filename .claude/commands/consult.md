@@ -93,7 +93,8 @@ Visa förslaget och vänta på godkännande.
 Läs `prompts/shared/generate.md`.
 
 Generera agent-filer med pedagogiska mallar:
-- VD: `templates/ai-consultant/ceo-beginner.md` för nybörjare/van,
+- VD (bara från *litet* och uppåt — solo och mikro har ingen VD-agent,
+  kunden är VD:n): `templates/ai-consultant/ceo-beginner.md` för nybörjare/van,
   `templates/team-builder/ceo-small.md` eller `ceo-large.md` för
   byggare (med pedagogiska sektioner från `agent-pedagogical.md`)
 - VD-assistent: `templates/ai-consultant/chief-of-staff.md`

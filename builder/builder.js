@@ -983,7 +983,7 @@ async function runBuild(intake, prevR) {
           if (rent) acc = rent;
           else console.warn("[builder] skalningssvaret saknade 'Skalningsbeslut:' — visar råtexten");
           // KA10: taket ur tabellen, innan förslaget byggs på beslutet.
-          acc = hållSkalningsTak(acc, skalningsTak(intake));
+          acc = hållSkalningsTak(acc, skalningsTak(intake), utanVdAgent(intake));
         }
         panel.textContent = acc;
       }
@@ -1056,15 +1056,38 @@ function skalningsTak(intake) {
 
 // Returnerar beslutet som det ska användas: oförändrat om det håller sig
 // inom taket, annars omskrivet till taket med en rad om varför.
-function hållSkalningsTak(text, tak) {
+//
+// KA14 (2026-10-23): i solo, mikro och personläget finns ingen separat
+// VD-agent — kunden är VD:n. Beslutsraden är det förslagssteget läser för att
+// veta vilken kärna teamet har, så en rad som ändå räknar in en VD skrivs om
+// till rätt kärna. Annars beställer skalningen den VD som proposal.md
+// förbjuder, och modellen får två motstridiga order i samma underlag.
+function hållSkalningsTak(text, tak, utanVd) {
   const t = String(text || "");
   const m = t.match(/Skalningsbeslut\s*:\s*\**\s*(\d+)/i);
   const n = m ? Number(m[1]) : null;
-  if (n !== null && n >= 2 && n <= tak) return t;
+  if (n !== null && n >= 2 && n <= tak) {
+    if (!utanVd || /ingen separat VD/i.test(t)) return t;
+    return t.replace(/^[^\n]*Skalningsbeslut[^\n]*/im, `Skalningsbeslut: ${n} agenter ${skalningsKärna(n, true)}`);
+  }
   const orsak = n === null
     ? "Skalningssteget gav inget beslut; taket för storleken används."
     : `Skalningssteget föreslog ${n}, men taket för storleken är ${tak} (scale.md). Slå ihop de minst distinkta klustren.`;
-  return `Skalningsbeslut: ${tak} agenter (VD + VD-assistent + ${tak - 2} specialister)\nMotivering: ${orsak}`;
+  return `Skalningsbeslut: ${tak} agenter ${skalningsKärna(tak, utanVd)}\nMotivering: ${orsak}`;
+}
+
+// Parentesen i beslutsraden — samma två former som scale.md steg 4.
+function skalningsKärna(n, utanVd) {
+  return utanVd
+    ? `(VD-assistent + ${n - 1} specialister — ingen separat VD, kunden är VD:n)`
+    : `(VD + VD-assistent + ${n - 2} specialister)`;
+}
+
+// ANTAL-raden i sammanställningens underlag (KA19), med rätt kärna (KA14).
+function antalRad(n, utanVd) {
+  return utanVd
+    ? `ANTAL: teamet ska ha exakt ${n} agenter, VD-assistenten inräknad. Ingen separat VD-agent — kunden är VD:n. Har förslaget fler: slå ihop de minst distinkta eller flytta dem till rejected med skäl.`
+    : `ANTAL: teamet ska ha exakt ${n} agenter, VD och VD-assistent inräknade. Har förslaget fler: slå ihop de minst distinkta eller flytta dem till rejected med skäl.`;
 }
 
 // Sammanställningssteget är långt (upp till 16k tokens, icke-strömmat) och
@@ -1095,8 +1118,10 @@ async function structureTeam(intake, r) {
   // Antalet står uttryckligen sist (KA19): skalningsbeslutet i löptext räckte
   // inte — ett förslag på fem agenter gav fem tre gånger av tre mot beslutet fyra.
   const nBeslut = skalningsAntal(r.scaling);
+  // KA14: i solo, mikro och personläget är kunden VD:n — ingen VD-agent.
+  const utanVd = utanVdAgent(intake);
   const user = `RESEARCH-DOKUMENT:\n${r.research}\n\nSKALNINGSBESLUT:\n${r.scaling}\n\nFÖRSLAG (agenterna):\n${r.proposal}${fpBlock}\n\n` +
-    (nBeslut ? `ANTAL: teamet ska ha exakt ${nBeslut} agenter, VD och VD-assistent inräknade. Har förslaget fler: slå ihop de minst distinkta eller flytta dem till rejected med skäl.\n\n` : "") +
+    (nBeslut ? antalRad(nBeslut, utanVd) + "\n\n" : "") +
     `Sammanställ som JSON.`;
 
   // Steget är det enda i pipelinen som måste ge maskinläsbart svar, och det var
@@ -1113,9 +1138,9 @@ async function structureTeam(intake, r) {
       try { team = parseTeamJson(raw); } catch (_) { return ["ogiltig JSON"]; }
       if (!team || !Array.isArray(team.agents) || team.agents.length === 0) return ["inga agenter"];
       // För många agenter rättas i kod, inte med ett nytt försök (se trimmaTeam).
-      const flyttade = trimmaTeam(team, n);
+      const flyttade = trimmaTeam(team, n, utanVd);
       if (flyttade.length) console.warn("[builder] teamet trimmat till skalningsbeslutet", flyttade);
-      const brister = teamBrister(team, n);
+      const brister = teamBrister(team, n, utanVd);
       try { kontrolleraSystemprompter(team); } catch (e) { brister.push(e.message.split("\n")[0]); }
       return brister;
     });
@@ -1338,45 +1363,109 @@ function stegBrister(steg, text, n) {
   return b;
 }
 
+// ── KÄRNAN: VEM SOM ÄR VD (KA14, beslut 2026-10-23) ───────────────────────
+//
+// I solo, mikro och personläget är kunden själv VD:n — VD-kontoret är hennes
+// rum — och teamet har ingen separat VD-agent. VD-assistenten finns alltid;
+// hon förbereder prioriteringsvalen och kunden fattar dem. Från "litet" och
+// uppåt finns VD-agenten kvar (ceo-small.md / ceo-large.md).
+//
+// Uppmätt 2026-09-26 innan beslutet: alla fyra simulerade team fick en
+// VD-agent, två av dem bar kundens eget namn, och ingen av kunderna använde
+// den. Samma gräns som skalningstabellen (scale.md, docs/scaling.md): den
+// enskilda personen skalas som solo. Saknas storleken behålls VD:n — samma
+// standard som skalningsTak() ("litet").
+var STORLEKAR_UTAN_VD = ["solo", "mikro"];
+function utanVdAgent(intake) {
+  var i = intake || {};
+  if (i.audience === "person") return true;
+  return STORLEKAR_UTAN_VD.indexOf(String(i.size || "")) >= 0;
+}
+
 // Ett team större än skalningsbeslutet trimmas i kod i stället för att göras
-// om: VD, VD-assistent och de första specialisterna behålls (proposal.md
-// skriver specialisterna i prioritetsordning), resten flyttas till de
-// avvisade med skälet utskrivet. Deterministiskt — samma indata ger samma team.
-function trimmaTeam(team, n) {
+// om: VD-assistenten, en eventuell VD och de första specialisterna behålls
+// (proposal.md skriver specialisterna i anställningsordning), resten flyttas
+// till de avvisade med skälet utskrivet. Deterministiskt — samma indata ger
+// samma team.
+//
+// utanVd (KA14): en VD-agent i ett team där kunden är VD:n flyttas också till
+// de avvisade, före antalsräkningen. Rättas i kod av samma skäl som antalet —
+// ett nytt försök ger samma svar — och platsen går till nästa specialist.
+function trimmaTeam(team, n, utanVd) {
   var a = (team && team.agents) || [];
-  if (!n || a.length <= n) return [];
-  var kärna = a.filter(function (x) { return x.id === "vd" || x.id === "vd-assistent"; });
-  var övriga = a.filter(function (x) { return x.id !== "vd" && x.id !== "vd-assistent"; });
-  var plats = Math.max(0, n - kärna.length);
-  var behåll = övriga.slice(0, plats), flytta = övriga.slice(plats);
-  team.agents = a.filter(function (x) { return kärna.indexOf(x) >= 0 || behåll.indexOf(x) >= 0; });
+  var vdUt = utanVd ? a.filter(function (x) { return x.id === "vd"; }) : [];
+  var rest = a.filter(function (x) { return vdUt.indexOf(x) < 0; });
+  var kärna = rest.filter(function (x) { return x.id === "vd" || x.id === "vd-assistent"; });
+  var övriga = rest.filter(function (x) { return x.id !== "vd" && x.id !== "vd-assistent"; });
+  var plats = n ? Math.max(0, n - kärna.length) : övriga.length;
+  var behåll = övriga.slice(0, plats), överskott = övriga.slice(plats);
+  var flytta = vdUt.concat(överskott);
+  if (!flytta.length) return [];
+  team.agents = rest.filter(function (x) { return kärna.indexOf(x) >= 0 || behåll.indexOf(x) >= 0; });
   var flyttadeId = flytta.map(function (x) { return x.id; });
+  // Rutiner som ägdes av en flyttad agent går till VD-assistenten — hon tar
+  // hand om momenten tills någon annan gör det (proposal.md, steg 2).
+  var mottagare = (kärna.filter(function (x) { return x.id === "vd-assistent"; })[0] || kärna[0] || team.agents[0]).id;
   team.routines = (team.routines || []).map(function (r) {
-    return flyttadeId.indexOf(r.agentId) >= 0 ? Object.assign({}, r, { agentId: (kärna[0] || team.agents[0]).id }) : r;
+    return flyttadeId.indexOf(r.agentId) >= 0 ? Object.assign({}, r, { agentId: mottagare }) : r;
   });
+  // Årshjulets agentId är nullbart; en flyttad ägare blir VD-assistenten.
+  if (Array.isArray(team.seasons)) {
+    team.seasons = team.seasons.map(function (s) {
+      return s && flyttadeId.indexOf(s.agentId) >= 0 ? Object.assign({}, s, { agentId: mottagare }) : s;
+    });
+  }
   // Den som flyttats får inte stå kvar i de andras systemprompter. Uppmätt i
   // simuleringen: VD-assistenten hänvisade till den bortflyttade "Statusvakten"
   // varje måndag, eftersom den stod kvar i DITT TEAM. Listrader som nämner en
   // flyttad agent vid namn stryks.
+  //
+  // Namnet måste stå som ett helt ord. VD-agenten heter ibland bara "VD"
+  // (uppmätt i tre av tretton simulerade team), och en delsträngsträff hade
+  // då strukit varje rad om VD-assistenten — alltså hela hänvisningen till
+  // den agent som blir kvar.
   var flyttadeNamn = flytta.map(function (x) { return String(x.name || "").trim(); }).filter(Boolean);
   team.agents.forEach(function (ag) {
     ag.system = String(ag.system || "").split("\n").filter(function (rad) {
       var r = rad.trim();
       if (!/^([-•*]|\d+[.)])\s/.test(r)) return true;
-      return !flyttadeNamn.some(function (nm) { return r.indexOf(nm) >= 0; });
+      return !flyttadeNamn.some(function (nm) { return nämnerNamn(r, nm); });
     }).join("\n");
   });
   team.rejected = (team.rejected || []).concat(flytta.map(function (x) {
+    if (vdUt.indexOf(x) >= 0) {
+      return { name: x.name, why: "Ingen separat VD i en firma av den här storleken — du är VD:n. VD-assistenten förbereder valen och du fattar dem." };
+    }
     return { name: x.name, why: "Rymdes inte i skalningsbeslutet på " + n + " agenter — lägre prioritet än de som blev kvar. Kan läggas till senare under Utveckla teamet." };
   }));
   return flytta.map(function (x) { return x.name; });
 }
 
-function teamBrister(team, n) {
+// Står namnet som ett helt ord i raden? Bindestreck räknas som en del av
+// ordet, så "VD" träffar inte "VD-assistenten".
+var ORDTECKEN = /[A-Za-zÅÄÖåäöÉéÜü0-9\-‑]/;
+function nämnerNamn(rad, namn) {
+  var från = 0, i;
+  while ((i = rad.indexOf(namn, från)) >= 0) {
+    var före = i > 0 ? rad.charAt(i - 1) : "", efter = rad.charAt(i + namn.length);
+    if (!(före && ORDTECKEN.test(före)) && !(efter && ORDTECKEN.test(efter))) return true;
+    från = i + 1;
+  }
+  return false;
+}
+
+// utanVd (KA14): i solo, mikro och personläget är en VD-agent en brist —
+// kunden är VD:n. trimmaTeam() flyttar den redan, så i Buildern fäller den här
+// raden bara om trimningen hoppats över. Den finns för kontroll.mjs och för
+// testerna, som bedömer ett färdigt team utan att trimma det.
+// VD-assistenten krävs alltid: hon är kärnan i alla storlekar.
+function teamBrister(team, n, utanVd) {
   var a = (team && team.agents) || [], b = [];
   var min = Math.min(3, n || 3);
   if (a.length < min) b.push("teamet har bara " + a.length + " agenter");
   if (n && a.length > n) b.push("teamet har " + a.length + " agenter, skalningsbeslutet är " + n);
+  if (a.length && !a.some(function (x) { return x.id === "vd-assistent"; })) b.push("teamet saknar VD-assistenten (id \"vd-assistent\")");
+  if (utanVd && a.some(function (x) { return x.id === "vd"; })) b.push("teamet har en separat VD-agent, men i den här storleken är kunden VD:n");
   return b;
 }
 // ── ⟦DELAD-SLUT⟧ ──────────────────────────────────────────────────────────
@@ -1819,7 +1908,16 @@ function renderResult(team) {
   const cos = team.agents.find((a) => a.id === "vd-assistent");
   const specs = team.agents.filter((a) => a.id !== "vd" && a.id !== "vd-assistent");
   if (ceo) org.appendChild(orgRow([node(ceo, "ceo")]));
-  if (ceo && cos) org.appendChild(connector(true));
+  // KA14: utan VD-agent är kunden VD:n — då står hon överst i schemat, inte
+  // ett tomt hål. Ingen agent, så inget porträtt och inget kort nedanför.
+  else if (cos) {
+    const du = el("div", "node ceo");
+    du.appendChild(el("div", "role", "VD"));
+    du.appendChild(el("div", "nm", "Du"));
+    du.appendChild(el("div", "jb", "fattar besluten — VD-assistenten förbereder dem"));
+    org.appendChild(orgRow([du]));
+  }
+  if (cos) org.appendChild(connector(true));
   if (cos) org.appendChild(orgRow([node(cos, "cos")]));
   if (specs.length) { org.appendChild(connector(false)); org.appendChild(orgRow(specs.map((a) => node(a, "spec")))); }
   wrap.appendChild(org);

@@ -16,7 +16,8 @@ på den specifika saken. Oftast 2–3, sällan alla.
 
 - **VD-assistent:** Leder, håller fokus, producerar output
 - **Specialister:** De vars domäner berörs av saken
-- **VD:** Deltar bara om förändringen berör riktning
+- **VD:** Deltar bara om förändringen berör riktning (bara där teamet
+  har en VD-agent — annars är kunden VD:n)
 
 ## Körning
 

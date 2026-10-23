@@ -32,7 +32,7 @@ Läs alla filer i `.claude/agents/`:
 Sammanfatta teamet kort för användaren:
 
 > "Ditt nuvarande team har [antal] agenter:
-> - **VD:** [jobb]
+> - **VD:** [jobb] (bara om teamet har en — solo, mikro och personläget har ingen)
 > - **VD-assistent:** [jobb]
 > - **[Specialist 1]:** [jobb]
 > - ...

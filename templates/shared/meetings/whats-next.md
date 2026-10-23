@@ -9,10 +9,17 @@ Landa i en kort, motiverad rekommendation: gör det här först, sen
 det här. Max tre prioriteringar. Om teamet inte enas fattar VD
 beslutet.
 
+**Vem som är VD:** i solo, mikro och personläget är det kunden själv —
+teamet har ingen VD-agent (beslut 2026-10-23, KA14). Där fattar kunden
+alltid beslutet, även vid konsensus; VD-assistenten lägger fram
+rekommendationen och vad den kostar. Från *litet* och uppåt är VD en
+agent och avgör bara när teamet inte enas.
+
 ## Deltagare
 
 - **VD-assistent:** Leder, samlar perspektiv, producerar output
-- **VD:** Fattar beslutet om teamet inte enas
+- **VD:** Fattar beslutet om teamet inte enas (VD-agenten — eller
+  kunden, där ingen VD-agent finns)
 - **Specialister:** De vars domäner innehåller kandidater
 
 ## Körning
@@ -40,7 +47,9 @@ VD-assistenten avbryter om:
 ### 3. Syntes (VD-assistenten)
 
 Sammanfatta perspektiven. Om det finns konsensus — formulera
-rekommendationen. Om inte — lyft konflikten till VD.
+rekommendationen. Om inte — lyft konflikten till VD. Utan VD-agent:
+lägg fram alternativen för kunden, med vad vart och ett kostar och
+din rekommendation.
 
 ### 4. Beslut (VD om det behövs)
 
@@ -73,7 +82,7 @@ dokumenterar.
 
 ## Beslut av
 
-[VD-assistent (konsensus) / VD (avgjorde)]
+[VD-assistent (konsensus) / VD (avgjorde) / kunden (valde ur förberett underlag)]
 ```
 
 ## Risker att bevaka
@@ -83,4 +92,5 @@ dokumenterar.
   det är en att-göra-lista. Skär ner.
 - **Alla vill göra sitt eget:** Naturligt men inte hjälpsamt.
   VD-assistenten ska tvinga trade-off-diskussionen.
-- **Ingen vågar prioritera bort:** VD:s jobb. Påminn om det.
+- **Ingen vågar prioritera bort:** VD:s jobb — kundens, där hon är VD:n.
+  Påminn om det.

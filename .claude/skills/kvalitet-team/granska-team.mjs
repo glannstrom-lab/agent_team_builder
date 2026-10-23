@@ -183,7 +183,7 @@ function granska(namn, team, ref, övriga) {
     const lev = sektionText(ingång.system, "LEVERANS") || "";
     noteringar.push(`Ingångsagent: ${ingång.name || ingång.id} — LEVERANS ${lev.length} tecken` +
       (lev ? `\n      ${C.dim}${lev.split("\n")[0].slice(0, 120)}${C.av}` : ""));
-    noteringar.push('Bedöm för hand: har VD/ingången ett OPERATIVT jobb, eller bara abstrakt strategi? För solo-team är det senare teater (CLAUDE.md, princip 3).');
+    noteringar.push('Bedöm för hand: har ingången ett OPERATIVT jobb, eller bara abstrakt strategi? I solo, mikro och personläget ska teamet sakna VD-agent och VD-assistenten förbereda valen åt kunden (CLAUDE.md, princip 3, KA14).');
   }
 
   return { brister, varningar, noteringar };

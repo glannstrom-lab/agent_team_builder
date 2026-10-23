@@ -30,7 +30,9 @@ const SCRATCH = process.env.SIM_SCRATCH ||
 
 const [cmd, kund, ...rest] = process.argv.slice(2);
 if (!cmd || !kund) { console.error("se kommentaren överst i sim.mjs"); process.exit(1); }
-const KDIR = join(HÄR, kund);
+// SIM_KATALOG pekar ut en annan katalog (relativt repo-roten) för kunderna,
+// så att ett eget mätpass får sin råutdata där i stället för här.
+const KDIR = join(process.env.SIM_KATALOG ? join(ROT, process.env.SIM_KATALOG) : HÄR, kund);
 if (!existsSync(KDIR)) { console.error("ingen kund: " + KDIR); process.exit(1); }
 mkdirSync(SCRATCH, { recursive: true });
 
@@ -56,7 +58,7 @@ const B = new Function(
   klipp("function parseTeamJson", "async function retryStructure") + "\n" +
   klipp("function rensaSkalning", "\n}\n") + "\n}\n" +
   klipp("function skalningsTak", "// Sammanställningssteget är långt") +
-  "return { kontrolleraSystemprompter, parseTeamJson, rensaSkalning, skalningsTak, hållSkalningsTak, stegBrister, teamBrister, skalningsAntal, trimmaTeam };"
+  "return { kontrolleraSystemprompter, parseTeamJson, rensaSkalning, skalningsTak, hållSkalningsTak, stegBrister, teamBrister, skalningsAntal, trimmaTeam, antalRad, utanVdAgent };"
 )();
 
 // ── portalens egna funktioner (systemFor + contextFor), ur källan ──────────
@@ -135,8 +137,11 @@ async function steg(step, user) {
   const t0 = Date.now();
   const r = await anropa({ step, ...stepOpts(), messages: [{ role: "user", content: user }] });
   console.error(`  ${step}: ${((Date.now() - t0) / 1000).toFixed(1)} s, ${r.text.length} tecken, finish=${r.finish}`);
+  förbrukning.push({ step, sekunder: (Date.now() - t0) / 1000, usage: r.usage || null });
   return r;
 }
+// Förbrukningen per anrop (usage ur strömmens sista ram) — sparas i bygge.json.
+const förbrukning = [];
 
 // Samma stegkontroll som Buildern (stegBrister ur DELAD-blocket, kravSlut ur
 // atb-claude.js): ett avbrutet svar eller ett svar med brister görs om, högst
@@ -164,11 +169,12 @@ async function build() {
   const rFil = join(KDIR, "bygge.json");
   const r = läsJson(rFil, {});
   const ib = intakeBlock();
-  const spara = () => skrivJson(rFil, r);
+  r.förbrukning = r.förbrukning || [];
+  const spara = () => { r.förbrukning.push(...förbrukning.splice(0)); skrivJson(rFil, r); };
   if (!r.research) { r.research = await stegMedKontroll("research", ib); spara(); }
   if (!r.scaling) {
     const s = await stegMedKontroll("scale", `INTAKE:\n${ib}\n\nRESEARCH-DOKUMENT:\n${r.research}`);
-    r.scaling_raw = s; r.scaling = B.hållSkalningsTak(B.rensaSkalning(s) || s, B.skalningsTak(skalIntake())); spara();
+    r.scaling_raw = s; r.scaling = B.hållSkalningsTak(B.rensaSkalning(s) || s, B.skalningsTak(skalIntake()), B.utanVdAgent(skalIntake())); spara();
   }
   const n = B.skalningsAntal(r.scaling);
   if (!r.proposal) { r.proposal = await stegMedKontroll("proposal", `INTAKE:\n${ib}\n\nRESEARCH-DOKUMENT:\n${r.research}\n\nSKALNINGSBESLUT:\n${r.scaling}`, n); spara(); }
@@ -176,9 +182,10 @@ async function build() {
     r.firstproject = await stegMedKontroll("firstproject", `INTAKE:\n${ib}\n\nRESEARCH-DOKUMENT:\n${r.research}\n\nFÖRSLAG:\n${r.proposal}`); spara();
   }
   const fp = r.firstproject ? `\n\nFÖRSTA PROJEKTET:\n${r.firstproject}` : "";
-  // Samma meddelande som structureTeam() i builder.js sedan KA19.
+  // Samma meddelande som structureTeam() i builder.js sedan KA19 (KA14: kärnan).
+  const utanVd = B.utanVdAgent(skalIntake());
   const user = `RESEARCH-DOKUMENT:\n${r.research}\n\nSKALNINGSBESLUT:\n${r.scaling}\n\nFÖRSLAG (agenterna):\n${r.proposal}${fp}\n\n` +
-    (n ? `ANTAL: teamet ska ha exakt ${n} agenter, VD och VD-assistent inräknade. Har förslaget fler: slå ihop de minst distinkta eller flytta dem till rejected med skäl.\n\n` : "") +
+    (n ? B.antalRad(n, utanVd) + "\n\n" : "") +
     `Sammanställ som JSON.`;
   r.structureForsok = r.structureForsok || [];
   const TILLÅT = process.argv.includes("--tillat");
@@ -190,9 +197,9 @@ async function build() {
       if (svar.finish !== "stop") throw new Error("svaret bröts (finish=" + svar.finish + ")");
       team = B.parseTeamJson(raw);
       if (!team || !Array.isArray(team.agents) || !team.agents.length) throw new Error("saknar agenter");
-      const flyttade = B.trimmaTeam(team, n);
+      const flyttade = B.trimmaTeam(team, n, utanVd);
       if (flyttade.length) console.error("  trimmat till skalningsbeslutet: " + flyttade.join(", "));
-      const tb = B.teamBrister(team, n);
+      const tb = B.teamBrister(team, n, utanVd);
       if (tb.length) throw new Error(tb.join("; "));
       B.kontrolleraSystemprompter(team);
     } catch (e) { fel = e.message; }

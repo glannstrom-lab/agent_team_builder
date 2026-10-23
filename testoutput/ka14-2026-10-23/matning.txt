@@ -1,0 +1,47 @@
+
+=== FÖRE: KA9 2026-09-26 (drift, med VD) ===
+byggfirma: vd-assistent, vd, offertmakaren, ata-vakten
+  skalning: Skalningsbeslut: 4 agenter (VD + VD-assistent + 2 specialister)
+  VD-agent: JA · teamBrister(utanVd): ["teamet har en separat VD-agent, men i den här storleken är kunden VD:n"] · systemprompter: OK · perspektivBrister: 0
+  VD-assistenten mot egna: vd 0.25 · offertmakaren 0.06 · ata-vakten 0.19
+  förslaget: "### VD"-rubrik utan assistent: nej · ## Rekryteringsplan: nej · **Anställs:** 0 · Varje vecka: nej · Håller koll på: nej · Tills de anställs: nej
+  i teamet (efter sammanställningen): rekrytering/turordning i JSON: nämns i job/why · "förbered" i VD-assistentens system: nej · "kunden är VD"/"du är VD": nej
+salong: vd-assistent, vd, luckfyllaren, instagram-avlastaren
+  skalning: Skalningsbeslut: 4 agenter (VD + VD-assistent + 2 specialister)
+  VD-agent: JA · teamBrister(utanVd): ["teamet har en separat VD-agent, men i den här storleken är kunden VD:n"] · systemprompter: OK · perspektivBrister: 0
+  VD-assistenten mot egna: vd 0 · luckfyllaren 0.05 · instagram-avlastaren 0.1
+  förslaget: "### VD"-rubrik utan assistent: nej · ## Rekryteringsplan: nej · **Anställs:** 0 · Varje vecka: nej · Håller koll på: nej · Tills de anställs: nej
+  i teamet (efter sammanställningen): rekrytering/turordning i JSON: nej · "förbered" i VD-assistentens system: nej · "kunden är VD"/"du är VD": ja
+fotograf: vd, vd-assistent, offert-och-forfragan, sasongen
+  skalning: Skalningsbeslut: 4 agenter (VD + VD-assistent + 2 specialister)
+  VD-agent: JA · teamBrister(utanVd): ["teamet har en separat VD-agent, men i den här storleken är kunden VD:n"] · systemprompter: OK · perspektivBrister: 0
+  VD-assistenten mot egna: vd 0.12 · offert-och-forfragan 0 · sasongen 0.09
+  förslaget: "### VD"-rubrik utan assistent: nej · ## Rekryteringsplan: nej · **Anställs:** 0 · Varje vecka: nej · Håller koll på: nej · Tills de anställs: nej
+  i teamet (efter sammanställningen): rekrytering/turordning i JSON: nej · "förbered" i VD-assistentens system: nej · "kunden är VD"/"du är VD": nej
+  VD-assistenterna mellan teamen: byggfirma~salong 0.06 · byggfirma~fotograf 0.06 · salong~fotograf 0.05
+
+=== EFTER: KA14 2026-10-23 (lokal emulator, utan VD) ===
+byggfirma: vd-assistent, offert, ata, bkr
+  skalning: Skalningsbeslut: 4 agenter (VD-assistent + 3 specialister — ingen separat VD, kunden är VD:n)
+  VD-agent: nej · teamBrister(utanVd): [] · systemprompter: OK · perspektivBrister: 0
+  VD-assistenten mot egna: offert 0.05 · ata 0.05 · bkr 0
+  förslaget: "### VD"-rubrik utan assistent: nej · ## Rekryteringsplan: ja · **Anställs:** 3 · Varje vecka: ja · Håller koll på: ja · Tills de anställs: ja
+  i teamet (efter sammanställningen): rekrytering/turordning i JSON: nämns i job/why · "förbered" i VD-assistentens system: ja · "kunden är VD"/"du är VD": ja
+  förbrukning: 4 anrop · 39301 in / 18589 ut tokens · $0.0307 (usage.cost)
+salong: vd-assistent, instagram-redaktor, atertags-assistent
+  skalning: Skalningsbeslut: 3 agenter (VD-assistent + 2 specialister — ingen separat VD, kunden är VD:n)
+  VD-agent: nej · teamBrister(utanVd): [] · systemprompter: OK · perspektivBrister: 0
+  VD-assistenten mot egna: instagram-redaktor 0 · atertags-assistent 0.08
+  förslaget: "### VD"-rubrik utan assistent: nej · ## Rekryteringsplan: ja · **Anställs:** 2 · Varje vecka: ja · Håller koll på: ja · Tills de anställs: ja
+  i teamet (efter sammanställningen): rekrytering/turordning i JSON: nej · "förbered" i VD-assistentens system: ja · "kunden är VD"/"du är VD": ja
+  förbrukning: 5 anrop · 44152 in / 18045 ut tokens · $0.0302 (usage.cost)
+fotograf: vd-assistent, offert-uppfoljning, leveransplanering, prissattning
+  skalning: Skalningsbeslut: 4 agenter (VD-assistent + 3 specialister — ingen separat VD, kunden är VD:n)
+  VD-agent: nej · teamBrister(utanVd): [] · systemprompter: OK · perspektivBrister: 0
+  VD-assistenten mot egna: offert-uppfoljning 0.1 · leveransplanering 0.06 · prissattning 0.19
+  förslaget: "### VD"-rubrik utan assistent: nej · ## Rekryteringsplan: ja · **Anställs:** 3 · Varje vecka: ja · Håller koll på: ja · Tills de anställs: ja
+  i teamet (efter sammanställningen): rekrytering/turordning i JSON: nej · "förbered" i VD-assistentens system: ja · "kunden är VD"/"du är VD": ja
+  förbrukning: 4 anrop · 40002 in / 20104 ut tokens · $0.0352 (usage.cost)
+  VD-assistenterna mellan teamen: byggfirma~salong 0.1 · byggfirma~fotograf 0.15 · salong~fotograf 0.1
+
+Total kostnad för de tre KA14-byggena: $0.0962
