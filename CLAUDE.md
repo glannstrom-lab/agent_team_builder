@@ -68,9 +68,13 @@ regeln.
    görs i veckan, inte vilka titlar branschen har.
 2. **Skala efter storlek och (för konsult-läget) mognad.** Små team eller
    AI-nybörjare → färre agenter, bredare uppdrag. Se `docs/scaling.md`.
-3. **VD måste ha ett operativt jobb.** För solo-projekt räcker inte abstrakt
-   strategi — då blir agenten teater. Den här regeln är den näst viktigaste
-   efter "output ska vara olika".
+3. **Ingen VD-agent utan ett VD-jobb — i små firmor är kunden VD:n.** I solo,
+   mikro och personläget finns ingen separat VD-agent: kunden är chefen, och
+   VD-assistenten *förbereder* valen (alternativ, vad de kostar, en
+   rekommendation) som kunden fattar. Från *litet* och uppåt finns VD-agenten,
+   och den måste ha ett operativt jobb — abstrakt strategi är teater. Beslutat
+   2026-10-23 (KA14); kärnan räknas i `utanVdAgent()` i `builder/builder.js`.
+   Den här regeln är den näst viktigaste efter "output ska vara olika".
 4. **VD-assistenten är den primära arbetspartnern.** Se `docs/team-roles.md`.
 5. **Varje agent ska kunna motiveras med ett konkret fynd.** Ingen motivering,
    ingen agent. Samma ribba för skills.
@@ -279,7 +283,7 @@ prompt-fil som faller ur `PROMPT_FILES` i `build-dist.mjs` gör det också
 (annars 503 på just det steget — och för `first-project.md` bara i konsult-läget,
 alltså precis den sorts fel som får ligga i veckor).
 
-**Noll provsvar (beslut 2026-08-06).** Inte fem, som en tidigare spec sa. Att
+**Ersatt 2026-10-23 (Mikael): nivå 1 blir gratis — mötet, rekryteringsplanen och första projektet som provanställning (SP14 i `ROADMAP.md`). Texten nedan gäller tills det är genomfört.** **Noll provsvar (beslut 2026-08-06).** Inte fem, som en tidigare spec sa. Att
 chatta med sitt eget team är det som säljs — vore det gratis vore köpet valfritt.
 Den som vill se portalen först tittar på ett demoteam. Därför finns heller ingen
 "prova teamet live"-knapp: villkoret sägs i stället *före* köpet, i Builderns
@@ -848,7 +852,25 @@ ny kund dyker upp i både galleri och portal automatiskt.
 > mot källan** (webbsökning låst till myndighetsdomäner) och **↗ ChatGPT/Claude**
 > under varje svar. Se *Driftsatt 2026-09-26* i `ROADMAP.md`.
 >
-> **Nästa pass enda uppgift:** kör om månadssimuleringen med DeepSeek och
+> **Omläggning 2026-10-23 (Mikaels beslut):** målet är tre ben — konsultverktyget,
+> teamet installerat i kundens egen AI (Claude/ChatGPT/Copilot) och svenska regler
+> som stämmer — plus ett gränssnitt som prövas mot plattformarnas tomma chattruta.
+> OM1 är därmed besvarad. Allt står under *Omläggning 2026-10-23* överst i
+> `ROADMAP.md` (ID:n OL1–OL10, UX1–UX4).
+>
+> **Beslut 2026-10-23 kväll:** KA14 ja (kunden är VD:n, ingen VD-agent i små
+> firmor), SP14 ja (nivå 1 gratis), SP18 parkerad (DeepSeek ensam). En giltig
+> OpenRouter-nyckel ligger nu i `.dev.vars`. Se blockcitatet överst i *Omläggning
+> 2026-10-23* i `ROADMAP.md`.
+>
+> **Nästa pass enda uppgift (ersätter raden nedan):** **KA14** genomförd och SP17
+> provad i tre riktiga byggen lokalt.
+>
+> *Tidigare:* **OL4** — exporten av ett genererat team till EN
+> plattform (förslag: ChatGPT), med aktuellt format och teckentak kontrollerade
+> innan något byggs.
+>
+> *Förra "nästa pass", gjort 2026-09-26:* kör om månadssimuleringen med DeepSeek och
 > dagens fixar (`testoutput/sim-2026-09/sim.mjs`, samma fyra personor, nya
 > byggen) och jämför betygen mot 2,6. Svaret avgör både portalens resonemang
 > (av = snabbt, på = långsamt) och om PR7 (från team till uppdrag) behövs.
@@ -922,7 +944,9 @@ vidare till fas 3 förrän fas 2 gör det.
       i testet kunde blivit mildare än den som faktiskt kör. Taket är mätt:
       108 agentpar i `portal/teams/` ger max 0,42, 37 par i `examples/` max
       0,38. Höj det inte för att ett bygge föll; mät om fördelningen först.
-- [ ] VD-agenten i ett solo-projekt har ett operativt jobb
+- [ ] Solo, mikro och personläget har ingen VD-agent, och VD-assistenten
+      förbereder prioriteringsvalen utan att fatta dem (KA14 — `teamBrister`
+      fäller annars); från *litet* och uppåt har VD-agenten ett operativt jobb
 - [ ] VD-assistenten vägrar kalla till möte när en enskild agent räcker
 - [ ] Varje möte landar i sitt definierade output-format
 - [ ] Minst en föreslagen agent avvisas i en typisk körning

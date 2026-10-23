@@ -20,6 +20,694 @@ Från genomgången 2026-09-01 · sex parallella linser + egen verifiering.
 > (retention) tillkom 2026-09-01. Nummerserien fortsätter per prefix — nya
 > ID:n återanvänder aldrig ett gammalt nummer, inte ens ett avbetat.
 
+## Omläggning 2026-10-23 — tre ben och ett eget gränssnitt
+
+> **Beslut, Mikael 2026-10-23**, efter omvärldsläget i oktober. Plattformarna har
+> tagit "personlig assistent för småföretag": Claude for Small Business (tillägg
+> till Cowork, ~43 färdiga arbetsflöden, QuickBooks/HubSpot/M365/Slack),
+> ChatGPT Business med workspace agents (20–25 $/plats), Copilot Business med
+> agentbygge på vanlig engelska och Copilot Cowork i allmän drift. Och
+> "beskriv verksamheten → få ett team" finns redan: Taskades AI Team Generator,
+> Relevance AI, Agentica (samma sex roller för alla — precis det kärnregeln
+> förbjuder). **Att generera agenter är inte längre något att sälja.** Det som går
+> att sälja är att veta *vilka* agenter just det här företaget ska ha, och att de
+> har *rätt* om svenska regler.
+>
+> Behovet finns: Pax8 (okt 2026, 200 svenska småföretag) — 64 % lägger 3+ timmar
+> i veckan på att granska och rätta AI-svar, 66 % har fått en högre AI-räkning än
+> väntat, 70 % betalar mer för kontroll över datan. Svenska AI-konsulter tar
+> 30–90 000 kr för en workshop och 60–180 000 för en förstudie. Vår egen
+> simulering säger samma sak: kunderna värderar att teamet *redan känner
+> verksamheten* och säger upp på *sakfel* — "annorlunda, inte bättre" än ChatGPT.
+> Värdet sitter i innehållet, inte i skalet.
+>
+> **Projektets mål är från och med nu tre ben:**
+> 1. **Konsultverktyget** — diagnosen och första projektet (mål 3 i `CLAUDE.md`).
+> 2. **Teamet installerat i den AI kunden redan betalar för** — Claude, ChatGPT,
+>    Copilot.
+> 3. **Svenska regler som stämmer** — faktabasen ingen internationell aktör har.
+>
+> Plus ett fjärde, **som prövas och inte antas**: ett gränssnitt som är enklare
+> och snyggare än plattformarnas tomma chattruta. Mikaels iakttagelse: "jag kan
+> göra vad som helst i Claude Code, men snyggt och enkelt är det inte."
+>
+> **Det här besvarar OM1** (vägen "vi bygger teamet, du kör det var du vill") och
+> gör **BF2** till en funktion i stället för en läcka. **PR1, PR5, PR7, PR8** hör
+> hemma här nu. **Riv ingenting** (samma regel som PR2): portalen står kvar och
+> underhålls för den som köper den — frågan är bara vad nästa timme läggs på.
+>
+> Nya prefix 2026-10-23: `OL` (omläggning) och `UX` (gränssnittet). Källor:
+> svaret i sessionen 2026-10-23; Pax8 via
+> <https://www.dagensinfrastruktur.se/2026/10/13/undersokning-fran-pax8-visar-att-svenska-smaforetag-utvecklar-ai-snabbare-an-de-hinner-styra-och-kontrollera-anvandningen/>,
+> konsultpriser via <https://www.aikollegorna.se/insikter/ai-byraer-sverige-2026>
+> (skriven av en konkurrent — läs med det i minnet).
+
+> **Mikaels beslut 2026-10-23 (kväll):**
+> 1. **KA14 — ja.** Kunden är VD:n. Ingen separat VD-agent i små firmor (solo,
+>    mikro, personläget). VD-assistenten behövs: hon får storyn att rulla och
+>    sammanfattar. Se KA14.
+> 2. **SP14 — ja.** Nivå 1 är gratis: mötet, rekryteringsplanen och första
+>    projektet som provanställning. Detta ersätter beslutet "noll provsvar" från
+>    2026-08-06.
+> 3. **SP18 — vänta.** Ingen lön och inga seniorer än. Produkten kör DeepSeek
+>    ensam, och vi ser vad den räcker till. **UX2** byter därmed mål: inte att mäta
+>    en bättre modell, utan att mäta hur långt DeepSeek bär den nya portalen.
+> 4. **Trappans detaljer** lämnades till mig. Valt: nivå 5 har en examen (91 dagar
+>    och 10 rutinveckor) som låser upp exporten; en rutin räknas när kunden
+>    *bekräftat* den (SP19), och en bekräftad specialistrutin är en godkänd
+>    leverans; befintliga kunder får **allt** upplåst, inte bara det de använt —
+>    "ingen befintlig kund förlorar något" gäller det de sett (`upplast(…, { arv })`
+>    i `portal/firman.js`, testat och mutationsprovat).
+> 5. **Testundantaget** `VÄNTAR_PÅ_KLIENTEN` för intervjusteget godkänt.
+> 6. **Nyckeln** fanns: den låg i `korsord/.dev.vars` (lånad därifrån, tak $10).
+>    Kopierad till `.dev.vars` här och verifierad (200 från OpenRouter). Riktiga
+>    byggen kan köras lokalt med `npm run dev:cf`.
+
+### Ordningen
+
+1. **OL4** — exporten till EN plattform. Utan den finns ben 2 inte, och ben 1 har
+   inget att lämna över.
+2. **OL8** — faktabasen följer med i exporten. Annars tappar ben 2 det enda som
+   skiljer oss från att kunden skriver prompten själv.
+3. **OL1** — konsultpaketet med pris, ovanpå de två.
+4. **UX2 → UX4 → SP1–SP6** — gränssnittet som spåret *Firman växer* (ett steg i
+   taget, nivåer som låser upp funktioner), men först när vi vet att modellen
+   bär. Skisserna (UX4) kan göras redan nu.
+
+### Ben 1 — konsultverktyget
+
+- [ ] **OL1** **Konsultleveransen som ett paket med pris.** Allt tekniskt finns:
+  `/consult`, `/handoff`, `prompts/ai-consultant/first-project.md`, konsult-läget
+  i Buildern (`builder/builder.js:283`), `templates/shared/team-presentation.md`
+  och `templates/ai-consultant/handoff-document.md` med "när ringer ni tillbaka".
+  Det som saknas är ett erbjudande. Förslag: *Diagnos + skräddarsytt team +
+  första projekt*, fast pris; leveransen är presentationen, teamet installerat i
+  kundens AI (**OL4**) och en uppföljning efter 30 dagar. Marknaden tar 30 000+
+  för mindre. **Priset är ditt** — och ändras det i `index.html` gäller
+  samma-dag-regeln (`kopplad-andring`) · `läst i koden` · beslut; ~1 dag text och mall
+- [ ] **OL2** **Buildern som mötesverktyg framför kunden, inte som formulär.**
+  Konsult-läget kör pipelinen men ser ut som ett formulär. Ett presentationsläge:
+  stor text, ett steg i taget, researchens fynd synliga när de kommer, avvisade
+  agenter med skäl som ett eget ögonblick ("det här bygger vi INTE åt er, för
+  att…"). Det är där kärnregeln blir synlig för den som betalar · `builder/` ·
+  `läst i koden` · ~1–2 pass
+- [ ] **OL3** = **PR5** (återförsäljarspåret — sälj verktyget till andra
+  AI-konsulter). Först när **OL1** har sålts minst en gång; ett paket som inte
+  bevisats går inte att licensiera · beslut
+
+### Ben 2 — teamet i kundens egen AI
+
+- [ ] **OL4** **Export per plattform — börja med en.** I dag ger
+  `downloadConfig()` (`builder/builder.js:2110`) en JSON-fil som ingen kund kan
+  använda. Behövs: per agent ett färdigt paket för plattformen — namn,
+  instruktion, startförslag (`starters`), rutinerna och första projektet
+  inskrivna i instruktionen, faktabasen som bifogad kunskapsfil (**OL8**).
+  Kandidater: ChatGPT (egen GPT / workspace agent), Claude (projekt + en fil per
+  agent, eller ett Cowork-tillägg om formatet är öppet), Copilot (agent-
+  instruktion). Förslag: **ChatGPT först** — tre av fyra simulerade kunder hade
+  den redan. **Kontrollera aktuellt format, teckentak och vad gratisnivån tillåter
+  innan något byggs** — det ändras varje kvartal och inget av det är verifierat
+  här. Lägg exportformaterna i `functions/api/_build.js` bredvid `TEAM_SCHEMA`,
+  så att ett fält i schemat inte kan saknas i exporten (samma fälla som
+  `starters` 2026-08-16) · `läst i koden` · ~1 pass per plattform
+- [ ] **OL5** **Installationen som en guide, inte en fil.** Steg för steg med
+  skärmbilder per plattform, på kundens språk, och en kontroll på slutet ("fråga
+  agenten X — svarar den Y är det rätt installerat"). Arbetsledarläget (**PR1**)
+  är samma leverans för den vars AI saknar agentstöd · `builder/` · ~1 pass
+- [ ] **OL6** **Prismodell för ben 2.** Engångsköpet är hederligt igen, eftersom
+  leveransen inte kräver drift av oss (**PR1**). Två frågor, båda dina: (a) vad
+  kostar ett installerat team, (b) ska gratisbygget fortfarande visa hela teamet
+  och exporten vara det betalda — det är **BF2**:s slutliga form. Prislistan i
+  `index.html`, `villkor.html` §4 och `TIERS` i `functions/api/_stripe.js` ändras
+  samma dag · beslut, sedan ~2–4 h
+- [ ] **OL7** **Uppdatering som återkommande intäkt.** Teamet åldras med
+  verksamheten och reglerna. `/update-team` gör diff utan att skrota; en
+  halvårsvis omkörning plus nya årets regler (**OL10**) är skälet att betala igen
+  utan att vi driftar någon chatt · `.claude/commands/update-team.md` · senare
+
+### Ben 3 — svenska regler som stämmer
+
+- [ ] **OL8** **Faktabasen ut ur portalen och in i leveransen.** `portal/fakta-se.js`
+  (16 regler, kontrollerade mot primärkälla, 13-månadersvakt — **KA15**) når i
+  dag bara portalens systemprompter. Gör den till ett dokument per bransch —
+  regel, belopp, giltighetsår, källa — som följer med exporten som kunskapsfil
+  och med konsultleveransen som bilaga. En källa, två utdata; testet fäller
+  bygget om de skiljer sig · `portal/fakta-se.js`, `test/` · ~3 h
+- [ ] **OL9** **Täckning per bransch, mätt mot simuleringens fel.** Varje sakfel i
+  `testoutput/sim-2026-09/granskning-tre.md` ska ha en regel. Därefter branscherna
+  i `verticals/` en i taget: hantverk (ROT, ÄTA, betalningsvillkor), redovisning
+  (avdrag, momsdatum), skola (betygskriterier, Gy25), e-handel (distansavtal,
+  ångerrätt), salong. Ingen regel utan källa och datum · `mätt` (felen) · ~2 h per bransch
+- [ ] **OL10** **Årsskiftet som rutin.** Belopp ändras 1 januari (prisbasbelopp,
+  ROT/RUT-tak, gåvogränser). En genomgång varje januari med källa per regel;
+  vakten finns redan. Säljbart: "reglerna uppdateras varje år" är ett skäl till
+  löpande betalning som ingen plattform erbjuder · rutin, ~1 dag/år
+- **KA21** (Kontrollera mot källan) hör till det här benet och står kvar som
+  lagad.
+
+### Det fjärde — gränssnittet som är enklare än plattformarna (prövas)
+
+> Iakttagelsen stämmer: plattformarna kan allt men visar en tom ruta, och det är
+> samma hinder som **PR7** beskriver. Men ett eget gränssnitt konkurrerar bara om
+> svaren bakom håller samma nivå, och portalen kör i dag en mindre modell än
+> plattformarna gör. Därför är **UX2 en förutsättning, inte en sidoaffär.**
+> Spänningen mot ben 2 är verklig: säljer vi installationen i kundens AI behöver
+> portalen ett eget skäl att finnas. Det skälet är *enkelheten* — för den som
+> inte har eller inte vill lära sig en AI-plattform.
+
+- [ ] **UX1** = **PR7** **Uppdrag i stället för chatt.** 6–10 knappar per kund,
+  genererade i bygget ur kundens vecka ("Skriv offert", "Svara på reklamation"):
+  fält in, färdig text ut, faktaprofilen ifylld en gång (**KA16**). Riktningen i
+  PR7 är härmed vald; omfattningen avgörs av **UX4** · beslut taget som riktning; flera pass
+- [ ] **UX2** = **PR8** **Mät en bättre modell innan gränssnittet byggs om.**
+  Kostnaden är inte hindret (Haiku ≈ 1,9 kr, Sonnet ≈ 3,8 kr per kund och månad
+  enligt PR8). Kör simuleringen med samma personor och jämför. Ändras modellen
+  gäller modellen-bor-på-tre-ställen (`atb-claude.js`, `functions/api/ai.js`,
+  `functions/api/digest/run.js`) plus siffrorna i `index.html` och `villkor.html`
+  · `mätt` (kostnaden) · ~1 pass
+- [ ] **UX3** *(ersatt 2026-10-23 av spåret Firman växer, SP1–SP3: bantningen sker
+  genom att funktionerna låses upp en i taget, inte genom att de göms bakom "Mer")*
+  **Portalen bantas till en förstasida.** `portal/app.js` är 5 604
+  rader och arbetsytan har ett dussin paneler. Inventera vad simuleringens kunder
+  faktiskt använde; första skärmen blir veckans uppdrag plus en ruta, resten bakom
+  "Mer". Göm, radera inte (PR2). Verifiera med `portal-med-ogon` · ~1–2 pass
+- [ ] **UX4** **Skissa först, koda sen.** *(Skärpt 2026-10-23: skisserna gäller
+  förstasidan på nivå 1 och nivå 3 i spåret Firman växer — ett steg i taget, inte
+  en översikt.)* Tre skisser av förstasidan (det finns
+  elva riktningar i `design/` att utgå från), prövade mot simuleringens fyra
+  personor innan en rad i `portal/app.js` ändras · ~1 pass
+- **Mätpunkt för hela benet:** ny simulering — snitt minst 4, minst två av fyra
+  stannar, **och** en ny fråga i dagboken: "enklare eller krångligare än
+  ChatGPT?". Svarar de krångligare är UX-benet fel, och då läggs timmarna på ben
+  1–3.
+
+### Spåret Firman växer — ett steg i taget i stället för en dashboard
+
+> **Mikaels idé 2026-10-23:** gör portalen till ett spel där man levlar upp sitt
+> företagande — "det blir lite unikt och roligt", och "mer tydligt ett steg i
+> taget och inte så mycket dashboard".
+>
+> **Varför det håller.** (1) Det ger portalen ett eget skäl att finnas bredvid
+> ben 2: plattformarna kan allt men har ingen progression, och ingen av de sju i
+> funktionsjämförelsen har något liknande. Det går inte heller att exportera.
+> (2) Det löser överlastningen: arbetsytan visar ett dussin paneler från dag ett;
+> låses de upp en i taget blir första skärmen enkel av sig själv. (3) Halva
+> mekaniken finns: mognadsnivåerna i `docs/scaling.md`, "Utveckla teamet" som
+> anställer avvisade agenter, vecko-streaken, kom igång-listan, sparad tid och
+> passerkorten. (4) Det är princip 10 (situerad pedagogik) gjord till produkt.
+>
+> **Reglerna, som skyddar mot att det blir fånigt:**
+> - **Företaget levlar, inte personen.** Köparen betalar och kollegorna delar
+>   samma nivå (via `teamstatus.json` när mappen är kopplad, som streaken i dag).
+> - **Varje nivå kräver något som faktiskt hänt** — avbockade rutiner, godkända
+>   utkast, ett möte som ledde till ett beslut. Inga poäng för att öppna sidan
+>   eller chatta. Samma ärlighetsregel som **OM5**.
+> - **Belöningen är en förmåga, inte en medalj** — en ny anställd, en ny funktion.
+> - **Tonen är "firman växer"**, i personalliggarens språk, inte arkad. Inga
+>   poängtavlor, inga XP-siffror. Den som vill ha allt direkt kan slå på "Visa
+>   allt".
+> - **Ingen befintlig kund förlorar något.** Nivån räknas fram ur historiken vid
+>   första laddningen, och allt som redan används är upplåst.
+>
+> **Andra idén samma dag, som gör om början:** *"i stället för att man bygger ett
+> helt team direkt tänker jag mig att allt börjar med ett videomöte med
+> VD-assistenten och att alla agenter och funktioner läggs till en och en, så att
+> kunden hinner bekanta sig. Nu är det en skärm med massa agenter och funktioner
+> som blir rörigt."* Det betyder att även **agenterna** låses upp, inte bara
+> funktionerna. Firman börjar med en enda anställd — VD-assistenten, som enligt
+> princip 4 redan är den primära arbetspartnern — och teamet växer fram ur
+> arbetet. Bygget planerar fortfarande hela teamet (research, skalning, förslag
+> och avslag körs som i dag, så kärnregeln skyddas av samma pipeline), men
+> resultatet presenteras som en **rekryteringsplan**, inte som en skärm full av
+> agenter. Se **SP7–SP12**.
+>
+> **Trappan, andra utkastet** (prövas i UX4 och simuleringen innan den låses):
+>
+> | Nivå | Firman | Krävs för nästa | Låser upp |
+> |---|---|---|---|
+> | 1 | Första mötet | Första projektet påbörjat med VD-assistenten | Första specialisten (planens högst prioriterade) |
+> | 2 | Första anställningen | En leverans från specialisten godkänd | Veckans rutiner, nästa specialist ur planen |
+> | 3 | Rutinerna sitter | Rutiner avbockade tre veckor | Mötet med flera agenter, resten av planen |
+> | 4 | Teamet samarbetar | Möte → beslut → rutin | Kedjor (**IK4**), utkast → godkänn → ut (**IK3**), rutiner som mejlas (**IK2**) |
+> | 5 | Ni kan det här | Ett kvartal i gång | Exporten till egen AI (**OL4**), "Utveckla teamet" bortom planen |
+>
+> **Takten har ett golv.** Provmånaden är 30 dagar (`TRIAL_LENGTH_DAYS`), och
+> kunden ska ha sett hela planen i arbete innan den tar slut. Når hon inte nästa
+> nivå av sig själv föreslår VD-assistenten nästa anställning ändå, så att hela
+> rekryteringsplanen är ombord senast dag 21. Och den som vill ha allt direkt
+> kan välja "Anställ alla nu".
+>
+> Nivå 5 är examen: kunden har lärt sig arbetssättet och tar med sig teamet. Det
+> knyter ihop spåret med ben 1 och 2 i stället för att konkurrera med dem.
+>
+> Nytt prefix 2026-10-23: `SP`. Ersätter **UX3**; styr **UX1** (uppdragen blir
+> stegen) och **UX4** (skisserna gäller nivå 1 och 3).
+
+- [ ] **SP1** *(logiken byggd 2026-10-23: `nastaSteg()` i `portal/firman.js`, testad i `test/firman.mjs`; inte inkopplad i app.js)* **Nästa steg — en sak att göra, inte en översikt.** Portalens
+  startvy blir ett kort: "Ert nästa steg", med en handling och agenten som gör den.
+  Chatten finns bakom, inte framför. En ren funktion `nastaSteg(tillstånd)` väljer
+  ur: första projektet, en rutin som förfaller i dag, ett utkast att godkänna, ett
+  möte att hålla, en avvisad agent att anställa. Läggs mellan `⟦AUTO-START⟧`-markörer
+  i `portal/app.js` (eller i `portal/logik.js` om **DR12** hunnit före) och testas ur
+  källan · `portal/app.js` · mätpunkt: personorna i simuleringen svarar ja på "visste
+  du vad du skulle göra härnäst?" · ~1 pass
+- [ ] **SP2** *(logiken byggd 2026-10-23: `nivaFor()` + `historikUr()` i `portal/firman.js`, 22 tester, fem mutationsprov; nivån räknas på en ny händelselogg `atb_firman_<slug>` eftersom portalen inte bokför verkliga händelser i dag, se SP19. Inte inkopplad)* **Nivåtrappan som ren logik.** `nivaFor(historik)` räknar nivå och
+  vad som återstår till nästa ur det som redan bokförs: rutinloggen, streaken,
+  leveranserna (RE5), mötena och — när IK3 finns — godkända utkast. Sparas i
+  `teamExt` och speglas till `teamstatus.json`. Tester: att ingenting utom verkliga
+  händelser flyttar nivån, och att en befintlig kund med historik hamnar på rätt
+  nivå direkt · `portal/app.js` · mätpunkt: mutationsprov — en chatt utan leverans
+  får aldrig höja nivån · ~3 h
+- [ ] **SP3** **Upplåsningen styr vad som syns.** Arbetsytans paneler visas efter
+  nivå; låsta funktioner syns som en rad — "låses upp när rutinerna suttit i tre
+  veckor" — så att kunden vet att de finns och vad som krävs. "Visa allt" för den
+  som vill. Det här är bantningen (ex-UX3), gjord utan att något göms permanent
+  (PR2). Verifieras med `portal-med-ogon`, även mobilbredd, där ett steg i taget
+  passar ännu bättre · `portal/app.js`, `portal/portal.css` · mätpunkt: förstasidan
+  på nivå 1 har en handling ovanför vecket · ~1–2 pass
+- [ ] **SP4** *(utvidgad 2026-10-23 av SP10: varje anställning, inte bara de tidigare avvisade, introduceras så här)* **Befordran som ett ögonblick.** När firman når en ny nivå: en scen,
+  inte en notis. Den nya anställda presenteras med passerkort och porträtt
+  (`.pbadge`, `avatars.js`), hämtad ur de tidigare avvisade förslagen med sitt
+  ursprungliga skäl och varför det nu är dags. Det gör "Utveckla teamet" till en
+  belöning och personalliggarens nej till ett "inte än" · `portal/app.js`,
+  `avatars.js` · mätpunkt: personorna nämner befordran i dagboken · ~3 h
+- [ ] **SP5** **Nivån syns för den som betalar.** Veckobrevet och månadsbrevet
+  (**FS6**) säger "Firman nådde nivå 3: teamet samarbetar". Servern ser inte
+  historiken, så portalen skickar upp nivån — ett heltal per team, inget innehåll.
+  Liten men ny uppgift om kunden: en mening i `integritet.html`, som är din text ·
+  `functions/api/digest/run.js`, `portal/app.js` · ~2 h + integritetsrad
+- [ ] **SP6** **Mät om det är roligt eller barnsligt.** Två nya frågor i
+  simuleringens dagbok: "kändes det roligt eller barnsligt?" och "visste du vad du
+  skulle göra härnäst?". Redovisningsbyrån är det hårdaste testet — godtar hon det,
+  godtar alla det. Svarar två av fyra "barnsligt" görs tonen om, inte mekaniken ·
+  `testoutput/sim-2026-09/sim.mjs` · ~1 h
+- [ ] **SP7** **Första mötet med VD-assistenten är vägen in.** I dag börjar
+  Buildern med ett formulär, en valbar enkät och högst två följdfrågor. I stället:
+  ett mötesrum där VD-assistenten (porträtt ur `avatars.js`, stort) ställer en fråga
+  i taget och kunden svarar med röst eller text. Dikteringen finns redan i Buildern
+  (`builder/builder.js:328`). Mötet fyller samma intagskontrakt som formuläret i dag
+  (`prompts/shared/research.md`, inklusive Avgränsningar), så research, skalning,
+  förslag och avslag körs oförändrat efteråt. Enkäten blir ett val i mötet ("vill du
+  hellre kryssa?") för den som har svårt att formulera sig. Löser samtidigt **KA7**
+  på riktigt: en intervju ger två kunder i samma bransch olika intag, vilket en
+  kryssenkät inte gör · `builder/`, `prompts/team-builder/intake-interview.md`
+  (proceduren finns redan för `/build-team`) · mätpunkt: intagen från fyra personor i
+  samma bransch skiljer sig mer än enkätvägens (mät som KA7: tecken som skiljer) · ~2 pass
+- [ ] **SP8** *(serverdelen byggd 2026-10-23: `prompts/shared/interview.md`, steget `intervju` i `BUILD_STEPS`, tak 12 turer / 2 000 tecken per svar / 20 000 totalt / 3 072 tokens, kontroller i `ai.js`, nio tester, mutationsprovade. Testet "varje steg Buildern namnger" har ett tillfälligt undantag `VÄNTAR_PÅ_KLIENTEN` som fäller när builder.js börjar anropa steget. Klienten (SP7) återstår. Inte driftsatt)* **Intervjun under K4:s regler.** Den fria rutten tar i dag ett steg och
+  **exakt ett** användarmeddelande — det är det som skiljer ett bygge från gratis
+  chatt (`functions/api/_build.js`, `BUILD_STEPS`). En intervju är flera turer. Lösningen
+  som håller regeln: ett nytt steg `intervju` där klienten skickar hela
+  transkriptet som ETT meddelande och servern äger prompten (nästa fråga, eller
+  "klart" plus färdigt intag). Tak på antal turer (t.ex. 12) och på tecken, eget
+  `max_tokens`, samma IP-tak som bygget. Lägg stegnamnet i både `BUILD_STEPS` och
+  `builder.js`, och prompten i `PROMPT_FILES` i `build-dist.mjs` — två tester fäller
+  annars bygget (se K4 i `CLAUDE.md`, och skillen `kopplad-andring`) · `functions/api/_build.js`,
+  `test/ai.mjs` · mätpunkt: test som visar att steget inte går att använda som
+  allmän chatt (fel prompt in → fortfarande bara en intervjufråga ut) · ~3 h
+- [ ] **SP9** *(logiken byggd 2026-10-23: `rekrytering()` och `anstallAlla()` i `portal/firman.js` med dag 21-golvet. Rekryteringsplanen bärs inte genom sammanställningen än: TEAM_SCHEMA saknar fält för turordning och skäl, och PORTAL_RULES punkt 4 skiljer inte anställda från väntande — samma kontrakt-regel, fältet läggs till ihop med läsaren i portalen)* **Teamet planeras helt men anställs ett i taget.** Buildern avslutas
+  inte med alla agenter på en skärm utan med **rekryteringsplanen**: VD-assistenten
+  börjar i dag, de andra står i turordning med skälet ur researchen ("Offertskrivaren
+  — ni lägger sex timmar i veckan på offerter"), och de avvisade står överstrukna som
+  i dag. Säljögonblicket och kärnregeln syns kvar; arbetsytan visar en anställd. I
+  portalen: ett fält `hired` (eller ordning plus datum) i `teamExt`, samma väg som
+  P4:s `retired`/`edits`, applicerat av `applyTeamExt()`. Befintliga kunder räknas
+  som att alla är anställda · `builder/builder.js`, `portal/app.js` · mätpunkt:
+  portalens första skärm har exakt en agent · ~1–2 pass
+- [ ] **SP10** **Varje ny anställd introduceras i ett kort möte.** VD-assistenten
+  presenterar kollegan: vem, varför (fyndet ur researchen) och ett första uppdrag
+  som görs direkt, samma dag. Kunden lär känna agenten genom att använda den, inte
+  genom att läsa ett kort. Utvidgar **SP4** · `portal/app.js` · mätpunkt: varje ny
+  agent i simuleringen har gjort minst ett uppdrag inom två dagar efter anställningen
+  · ~3 h
+- [ ] **SP11** **Veckostarten blir veckomötet i samma rum.** Veckostarten finns i dag
+  som en knapp i arbetsytan. Gör den till ett kort möte med VD-assistenten i samma
+  mötesrum som det första mötet: förra veckan, den här veckans steg (**SP1**), och —
+  när det är dags — nästa anställning. Ett återkommande ögonblick i stället för en
+  panel bland andra · `portal/app.js` · mätpunkt: personorna håller veckomötet minst
+  tre veckor av fyra · ~3 h
+- [ ] **SP12** **Riktig röst och video kommer i den ordningen, och bara om det behövs.**
+  "Videomöte" byggs i tre steg, och varje steg prövas innan nästa: (1) **mötesrummet**
+  — porträtt, en fråga i taget, textning, diktering. Ingen ny infrastruktur. (2)
+  **Syntetisk röst** för VD-assistenten — kräver en talleverantör, en ny secret, en
+  vidgad `connect-src` i `_headers` (med test i `test/csp.mjs`) och en kostnad per
+  minut som ska in i kronmätaren. Webbläsarens inbyggda svenska röst räcker inte för
+  att låta som en kollega. (3) **Videoavatar** — dyrast och mest riskabelt för
+  tonen; först om steg 2 visat att rösten bär. Beslutet om steg 2 och 3 är ditt ·
+  `_headers`, `functions/api/` · mätpunkt: SP6:s fråga "roligt eller barnsligt?"
+  efter steg 1 · steg 1 ingår i SP7
+- [ ] **SP13** **Hemsidan är demot.** *Mikael 2026-10-23: "hemsidan vill jag göra som
+  en demo och inte massa text och information. Kunden ska ledas in i systemet."*
+  `index.html` är i dag 742 rader i elva avsnitt: säljtext, bevis, prislista, FAQ.
+  I stället öppnar startsidan mötesrummet (**SP7**): VD-assistentens porträtt, en
+  mening om vad som händer och första frågan direkt. Kunden går från hemsidan rakt in
+  i sitt eget första möte och ser rekryteringsplanen växa fram (**SP9**) — det är
+  demon, och den är kundens egen i stället för ett exempel. Det som står kvar som
+  text flyttar till egna sidor bakom en diskret länk: priser, villkor, integritet,
+  data och drift (**OM2**), skillnaden mellan tre team (**FS3**). Tre saker får inte
+  försvinna i omläggningen: (a) priset och villkoren ska vara nåbara innan köpet
+  (distansavtalslagen, se **BF4**), (b) prislistan i `index.html`, `villkor.html` §4
+  och `TIERS` ändras fortfarande samma dag — flyttar listan till en egen sida flyttar
+  regeln och testet i `test/stripe.mjs` med, (c) sökmotorerna behöver text att läsa,
+  så sidorna bakom länkarna är riktiga sidor, inte borttagna. Branschsidorna
+  (`verticals/`) blir samma mötesrum med branschen förifylld · `index.html`,
+  `verticals/`, `test/stripe.mjs` · mätpunkt: en ny besökare i simuleringen har svarat
+  på första frågan inom 30 sekunder från startsidan · ~2 pass efter SP7
+- [ ] **SP14** *(beslutat 2026-10-23: ja, nivå 1 gratis. Genomförandet återstår)* **Det börjar kosta när kunden känt nyttan.** *Mikael 2026-10-23:
+  "sen när den börjar känna nytta ska det börja kosta."* **Detta river ett beslut
+  från 2026-08-06**: "noll provsvar" (att chatta med sitt eget team är det som säljs,
+  så inget går gratis), som står i `CLAUDE.md` under *Noll provsvar* och *Betalväggen*.
+  Det är ditt att riva, och det har följder:
+  - **Var gränsen går.** Förslag: nivå 1 är gratis — mötet, rekryteringsplanen och
+    första projektet med VD-assistenten. Betalningen kommer när första specialisten
+    ska anställas (övergången nivå 1 → 2). Då har kunden fått en riktig leverans och
+    vet vad hon betalar för.
+  - **Taket.** Gratisfasen behöver ett eget tak per kund, inte bara per IP: t.ex.
+    30 svar eller första projektet levererat, det som kommer först. Utan det är
+    nivå 1 en gratis ChatGPT på vår nyckel. Taken i `functions/api/ai.js` och
+    `ai_budget` får en tredje trafiktyp bredvid bygge och portal, med en egen
+    dygnsrad som `build:global`, så att den inte kan svälta betalande kunder.
+  - **K4.** Den fria rutten tar bara ett meddelande med en serverägd prompt — det
+    var hela skyddet mot gratis chatt. Gratisfasen måste därför också gå på
+    serverägd prompt: VD-assistentens systemprompt hämtas ur det sparade teamet på
+    servern, aldrig ur klienten. Kräver att utkastet sparas serverside, alltså ett
+    konto.
+  - **Kontot kommer tidigt men inte först.** E-post efter mötet ("spara er plan och
+    börja första projektet") — det löser **P2** (gratisbygget fångar ingen e-post)
+    och gör taket per kund möjligt. Samma adress kan inte starta en ny gratisfas,
+    vilket också stänger **KR4**:s mönster för gratisfasen.
+  - **Provmånaden för 90 kr** behövs kanske inte längre: gratisfasen gör dess jobb.
+    Då blir stegen 0 (nivå 1) / 290 kr/mån / offert. Prislistan, `villkor.html` §4 och
+    `TIERS` ändras samma dag, och `TRIAL_LENGTH_DAYS` plus takt-golvet i trappan
+    räknas om.
+  - **Kostnaden** är liten men ska mätas: ett första projekt är ungefär 20–40 svar,
+    alltså några kronor per kund som inte köper. Lägg den i kronmätaren
+    (`npm run kostnad`) innan taket sätts — mät före spärren.
+  · `functions/api/ai.js`, `functions/api/_plan.js`, `CLAUDE.md`, `villkor.html`,
+  `index.html`, `functions/api/_stripe.js` · mätpunkt: andelen som betalar efter
+  nivå 1, jämfört med andelen som köper efter dagens bygge · **beslut**; därefter ~2–3 pass
+- [ ] **SP15** **Öppningsscenen.** *Mikael 2026-10-23: "en dramatisk öppningsscen,
+  lite humor och lite drama — tidigare VD-assistent säger upp sig och
+  anställningsintervjun efter en ny börjar. Börja med att man väljer bild och namn."*
+  Skissen finns: `design/12-oppningsscen.html`
+  (<https://claude.ai/artifact/Tx2WL7dyL8a22Gxh21ggwu>). Tre akter: (1) kunden väljer
+  kandidatens porträtt och namn, plus sitt eget namn och firman; (2) Gunnar säger upp
+  sig i mörkret, med ett val för kunden, passerkortet som stämplas "Slutat" och en
+  dörr som smäller; (3) intervjun i dagsljus, där kandidaten säger att hen är en AI
+  (EU AI Acts transparenskrav, gjort som en replik) och vänder på intervjun: "vad gör
+  ni på en vanlig måndag?". Där tar **SP7** vid. *Ändrat samma dag (Mikael): andra
+  scenen utspelar sig på VD-kontoret — kunden ringer kandidaten i ett videosamtal på
+  datorn, och där börjar intervjun.* Gjort: datorn på skrivbordet, "Ring upp",
+  signaler, och ett första skämt som också lär ut gränssnittet — mikrofonen är
+  avstängd och kunden måste slå på den. Gunnars passerkort ligger kvar på bordet.
+  Samtalsappen är generisk, inte Teams: vi får inte låna en annan produkts utseende. Djur- och robotporträtten får egna
+  repliker. Ljudet är syntetiserat i webbläsaren tills riktigt material finns, och går
+  att stänga av; "Hoppa till intervjun" finns hela tiden. Byggd som webbsida, inte i
+  Remotion: scenen ska vara interaktiv och köras på hemsidan, och Remotion gör
+  videofiler. Remotion passar däremot för en **trailer** till sociala medier, gjord
+  ur samma manus. Kvar innan den går i drift: fonterna från `/fonts/` i stället för
+  Google (CSP:n släpper inte in Google), porträttvägarna via `avatars.js`, och
+  valet av kandidat sparat så att det följer med in i portalen (**SP9**) · mätpunkt:
+  andelen som når intervjufrågan, mätt med P1 när den är påslagen · skiss gjord;
+  ~1 pass till drift
+- [ ] **SP16** *(skiss gjord 2026-10-23: `design/13-kontoren.html`, <https://claude.ai/artifact/KmhAPAnvnJnVThfs4dBLrD>; KA14 obesvarad)* **Kontoren är vyerna.** *Mikael 2026-10-23: "sen ska det finnas ett
+  VD-kontor och ett kontor till VD-assistenten, detta ska vara vyer."* Portalen blir
+  rum i stället för paneler — samma grepp som "värld och platser" i stället för en
+  översikt:
+  - **VD-kontoret** är kundens eget rum. Kunden är VD:n. Här ligger det som väntar på
+    henne: nästa steg (**SP1**), utkast att godkänna (**IK3**), firmans nivå (**SP2**),
+    Gunnars gamla passerkort på skrivbordet som en påminnelse om var det började.
+  - **VD-assistentens kontor** är där man pratar: chatten, veckomötet (**SP11**),
+    rekryteringsplanen (**SP9**) och introduktionen av nya kollegor (**SP10**).
+  - **Varje ny anställd får ett eget rum** när hen anställs, så kontoret växer med
+    nivåerna. En planritning över våningen ersätter agentlistan i vänsterspalten.
+  **Följd för KA14:** om kunden själv är VD behövs ingen separat VD-agent i små
+  firmor — hennes kontor är VD-kontoret. Det är just det KA14 föreslår, och det har
+  väntat på ditt beslut eftersom "VD + VD-assistent finns alltid" är en designregel
+  (`prompts/shared/proposal.md`, princip 3). Den här idén besvarar det i praktiken;
+  bekräfta, så skrivs regeln om · `portal/app.js`, `portal/portal.css`,
+  `prompts/shared/proposal.md` · mätpunkt: personorna hittar rätt rum utan att
+  fråga · beslut (KA14) + ~2 pass, skiss först i `design/`
+
+- [ ] **SP17** *(punkt 1 och 4 gjorda 2026-10-23 i `prompts/shared/proposal.md` och båda `chief-of-staff.md` (nu skelett). Baslinje: VD-assistenternas perspektiv mellan team max 0,26, men mot egna specialister upp till 0,87 (läraren). Oprovat i riktigt bygge — nyckeln lokalt är ogiltig. Följer med: TEAM_SCHEMA/PORTAL_RULES (se SP9), `generate.md` steg 3, `docs/team-roles.md`)* **VD-assistenten görs om: från mall till huvudperson.** Kartlagt
+  2026-10-23. I dag skapas VD-assistenten i samma bygge som alla andra, ur ett intag
+  den själv aldrig deltog i, och den är teamets minst skräddarsydda agent:
+  `proposal.md:50–80` ger VD:n fyra stycken om att jobbet ska byggas ur kundens
+  beslutsmoment, VD-assistenten två rader och en mall (`chief-of-staff.md`).
+  Porträttet sätts av `avatars.js` ur företagsnamnet; kunden väljer inte. I den nya
+  idén är den huvudpersonen, så fyra ändringar:
+  1. **Ett eget, skräddarsytt jobb** med samma krav som VD:ns: byggt ur kundens
+     breda moment (`research.md` pekar redan dit, "en agent med bred syn"), vad den
+     gör varje vecka just hos den här kunden, inte "operativ arbetspartner".
+  2. **Två lägen, en person.** Före bygget är den *kandidaten* som intervjuar
+     (**SP8**, serverägd prompt). Efter bygget får samma person sitt skräddarsydda
+     jobb. Intervjun följer med in i hennes minne, så att hon minns vad kunden sa.
+  3. **Kundens val av namn och porträtt** från öppningsscenen (**SP15**) bärs in:
+     namnet via `teamExt.edits` (finns, P4), porträttet via ett nytt fält
+     (`avatarN` på agenten finns redan i `avatars.js`, som respekterar ett satt
+     värde).
+  4. **Namnregeln.** VD-assistenten får det personnamn kunden valde; specialisterna
+     behåller jobbnamn tills varje ny anställd får sitt namn i introduktionen
+     (**SP10**). Förbudet mot kundens eget namn står kvar.
+  · `prompts/shared/proposal.md`, `templates/*/chief-of-staff.md`, `functions/api/_build.js`,
+  `portal/app.js`, `avatars.js` · mätpunkt: kvalitet-team — VD-assistenternas
+  instruktioner i tre team ur samma storleksklass överlappar under 0,70 · ~2 pass
+
+- [ ] **SP18** **Lön i stället för krediter.** *(Parkerad 2026-10-23 av Mikael: ingen lön och inga seniorer än — DeepSeek ensam först.)* Mikael
+  2026-10-23: bygget gratis på DeepSeek, gratis krediter att prova med, sedan välja
+  modell och köpa krediter — och sedan: *"i stället för att ge teamet lön, så ger
+  man dem krediter."* Krediter som mätare är det branschen klagar mest på (Sintra;
+  Pax8: 66 % av svenska småföretag har fått en högre AI-räkning än väntat), men
+  krediter som **lön** passar spelet och går att förstå för en arbetsgivare:
+  - **Provanställning** = gratisfasen (**SP14**): VD-assistenten arbetar gratis
+    under första projektet.
+  - **Lönebudget** = abonnemanget: 290 kr/mån är teamets lönebudget. Ingen
+    förbetald kassa — det håller villkor och ångerrätt enkla.
+  - **Junior eller senior** ersätter modellvalet: en senior (bättre modell) kostar
+    mer lön och anställs för roller som kräver det. Kunden behöver aldrig kunna
+    modellnamn. Seniorlönen prissätts efter mätning (**UX2**): junior ≈ 2 öre per
+    svar för oss, en Claude-modell 10–20 gånger mer.
+  - **Övertid** när budgeten tar slut: VD-assistenten varnar i förväg, ingen slutar
+    mitt i ett arbete, och kunden väljer att köpa till eller vänta till nästa månad.
+  - **Lönebeskedet** i VD-kontoret en gång i månaden: lön per anställd bredvid
+    avbockade rutiner och deras `timeEstimate` (samma ärlighetsregel som **OM5**).
+    Det är **FS6** (värdet för den som betalar) i spelets språk. Aldrig en mätare
+    under varje svar. Kronorna är en fördelning av priset, inte vår kostnad, och
+    ska stå så.
+  - **Modellbytet i frågan** (`deepseek/deepseek-v4-flash-0731`): produkten kör i
+    dag `deepseek/deepseek-v4.1-flash`, där bygget är bevisat (KA9). V4 Flash föll
+    på sammanställningssteget fyra av fyra gånger i augusti; byt inte innan en
+    körning visat att 0731 klarar det. Modellen bor på tre ställen (se
+    `kopplad-andring`).
+  **Beslut:** (a) ingår lönebudgeten i 290 kr, (b) seniorer från början eller
+  senare, (c) övertid att köpa eller vänta till nästa månad. Prislistan,
+  `villkor.html` §4 och `TIERS` ändras samma dag · `functions/api/ai.js`
+  (`ai_usage` per anställd), `functions/api/_stripe.js`, `portal/` · steg 1
+  (lönebudget + lönebesked, utan påfyllning) ~2 pass; steg 2 (senior + övertid)
+  efter beslut och UX2
+
+- [ ] **SP19** **Portalen bokför inte det trappan ska levla på.** Uppmätt 2026-10-23
+  när nivålogiken skrevs: en "avbockad rutin" är en skickad chattfråga
+  (`pendingRoutine`) eller en auto-körning; "leveranser" i Veckans arbete är alla
+  svar; streaken flyttas av veckostart och möte (AI-anrop); möten sparar inget beslut;
+  första projektet är "panelen öppnad". Inget av det är en verklig händelse enligt
+  spårets egen regel. Fem uttryckliga handlingar ska skriva till `atb_firman_<slug>`:
+  *påbörja första projektet*, *godkänn leverans* (= **IK3**), *rutin klar* (kundens
+  bekräftelse, inte att prompten skickats), *mötesbeslut* och *rutin ur beslut*.
+  Beskrivet överst i `portal/firman.js`. När filen kopplas in: lägg den i `sw.js`
+  SHELL och versionsstämplingen i `build-dist.mjs` (`kopplad-andring`). **Beslut i
+  agentens tolkningar:** nivå 5 "ett kvartal" blev en examen inom nivå 5 (91 dagar och
+  10 rutinveckor); en avbockad specialistrutin räknas som godkänd leverans; befintliga
+  kunder får upplåst det de *använt*, inte allt de sett — kan upplevas som förlust ·
+  `portal/app.js`, `portal/firman.js` · ~1 pass
+
+### Väntar på ElevenLabs
+
+> Mikael 2026-10-23: "vi ska skapa bra material till det här senare i ElevenLabs,
+> tills vidare får du göra vad du kan med dina egna resurser." Krediterna är slut
+> sedan oktober. Tills de är påfyllda används syntetiserat ljud och text. Det som ska
+> göras när de finns:
+
+- [ ] **EL1** Gunnars röst och kandidatens röst (en per porträtt eller en neutral) till
+  öppningsscenen (**SP15**), med textningen kvar för den som har ljudet av.
+- [ ] **EL2** Ljudeffekter som ersätter de syntetiserade: dörrsmäll, lampa, stämpel,
+  notis, kontorsbrus.
+- [ ] **EL3** Musik: ett mörkt tema för uppsägningen och ett ljusare när intervjun börjar.
+- [ ] **EL4** VD-assistentens röst i mötesrummet (**SP12** steg 2), om scenens röst bär.
+
+### Det som pausas
+
+- **Nya arbetsytefunktioner** (mapp, auto-rutiner, minne & underlag): underhåll,
+  bygg inte ut — det är plattformarnas kärnfunktioner (**PR2**).
+- **PR6** privatpersoner: ingen tid.
+- **OM4** integrationer: följer av ben 2 — kunden får integrationerna av sin
+  plattform (QuickBooks, HubSpot, M365 via Cowork, Slack via ChatGPT). **Bekräfta
+  att det är bortvalet**, så stängs OM4.
+- **OM3** (avslaget och mötet på framsidan) lever vidare som **OL2**.
+
+## Funktionsplanen 2026-10-23 — försprånget och glappet
+
+> Ur funktionsjämförelsen samma dag (16 funktioner mot Claude Cowork + Small
+> Business, ChatGPT Business, Taskade, Sintra, Marblism, AI Kollegorna och
+> Vorker): <https://claude.ai/artifact/MCjMqiSnZGsWhSjAyu7z12#funktioner>.
+> Konkurrentrutorna är hämtade från deras egna sajter och hjälpsidor i oktober,
+> bara Cowork och ChatGPT med officiell dokumentation. Rutor som inte gick att
+> bekräfta står som `?` på sidan.
+>
+> **Två listor:** `FS` (försprång) = det bara vi har, gjort starkare och
+> *synligare*. `IK` (ikapp) = det alla andra har och vi saknar. Planen följer
+> omläggningen ovan, alltså med tre regler:
+> 1. **Ett försprång räknas bara om det följer med teamet.** Allt vi är ensamma
+>    om är innehåll, och innehåll går att exportera (ben 2). Mötet och
+>    värdesiffrorna gör det inte i dag — därför **FS4**.
+> 2. **Ett glapp som kundens plattform redan fyller byggs inte en gång till.**
+>    Integrationer, kanaler och toppmodell får kunden av Claude/ChatGPT när
+>    teamet installeras där. I portalen tas glappet bara igen där det går utan
+>    ny infrastruktur (princip 8): med artefakter, mejl och den klocka som redan
+>    finns (`worker-veckobrev/`).
+> 3. **Varje punkt har en mätpunkt.** Försprång som inte syns för kunden i
+>    nästa simulering räknas inte som förbättrade.
+>
+> Nya prefix 2026-10-23: `FS`, `IK`.
+
+### Ordningen
+
+1. **OM4** — bekräfta bortvalet av egna integrationer. Det avgör om IK1 är
+   artefakter eller en riktig koppling. *Ditt beslut.*
+2. **FS1 + FS2** — analysen och nejet syns för kunden. Det är skillnaden mot
+   Taskade, och den kostar inget att visa.
+3. **FS4** — mötet följer med exporten, samtidigt som **OL4**.
+4. **IK3 + IK1** — utkast → godkänn → ut i kundens verktyg. Portalens aha-scen.
+5. **IK2** — rutiner som körs utan att kunden loggar in.
+6. **FS3, FS5, FS6, IK4, IK5, IK6** — i den ordning passen tillåter.
+
+### Försprång — det bara vi har
+
+- [ ] **FS1** **Analysen syns — och går att rätta — innan teamet byggs.**
+  Researchsteget (`prompts/shared/research.md`) hittar arbetsmomenten i kundens
+  vecka, men kunden ser bara resultatet: agenterna. Taskade bygger också ett team
+  ur en prompt; skillnaden är analysen, och den är osynlig. Visa en läsbar
+  sammanfattning efter researchsteget — "så här ser er vecka ut: de här momenten,
+  det här klämmer" — med en rad per moment att stryka eller rätta innan förslaget
+  körs. Rättelserna går in i förslagssteget. Ger bättre team (fel fångas före
+  förslaget, inte efter) och är det första kunden ser av kärnregeln. Hör ihop med
+  **OL2** (Buildern som mötesverktyg) · `builder/builder.js`, `prompts/shared/research.md` ·
+  mätpunkt: i nästa simulering rättar minst en av fyra personor något, och teamet
+  speglar rättelsen · ~1 pass
+- [ ] **FS2** **Nejet följer med överallt.** Avvisade förslag med skäl står i
+  dag i Builderns personalliggare och i "Utveckla teamet". De ska också stå (a) i
+  exporten (**OL4**) som en fil "Det här byggde vi inte, och varför", (b) på
+  framsidan med en riktig körning (= **OM3**, som står kvar med sitt ID), och
+  (c) i konsultleveransen (**OL1**). Kontrollera samtidigt att **KA13** höll — att
+  det som står under "Var det klämmer" aldrig avvisas — med en mätning över
+  `examples/` och KA9-byggena, inte bara promptfixen · `builder/builder.js`,
+  `index.html`, `test/examples.mjs` · mätpunkt: test som fäller bygget om ett
+  klämmoment avvisas · ~3 h + OM3
+- [ ] **FS3** **Divergensen som bevis på sajten.** Kärnregeln mäts sedan KA4
+  (överlapp under 0,70) och KA9 (tre mikroföretag, max 0,24 mellan team), men
+  kunden ser aldrig mätningen. En sida: tre företag i samma storleksklass —
+  byggfirman, frisörsalongen, fotografen ur KA9 — med sina tre team bredvid
+  varandra och siffran som visar hur olika de är. Ställer oss rakt mot Agentica
+  och Sintra (samma roller för alla) utan att nämna dem. Använd skillen
+  `kvalitet-team` för siffran, så den på sidan är den uppmätta · `site/`,
+  `testoutput/sim-2026-09/ka9-*` · mätpunkt: siffran på sidan kommer ur
+  `kvalitet-team`, inte ur handen · ~3 h
+- [ ] **FS4** **Mötet följer med exporten.** Mötet är det enda försprånget som
+  bara finns i portalen. Cowork-tillägg kan bära underagenter (enligt Anthropics
+  supportsida: tillägg buntar skills, kopplingar och underagenter), alltså går
+  mötet att leverera som en procedur: VD-assistenten frågar de valda agenterna var
+  för sig och sammanställer enligt `templates/shared/meetings/`. För ChatGPT, där
+  agenter inte anropar varandra, blir det en instruktion i VD-assistentens GPT som
+  kör perspektiven i tur och ordning. **Formaten verifieras mot aktuell
+  dokumentation innan något byggs**, samma regel som OL4 · `templates/shared/meetings/`,
+  exportkoden från OL4 · mätpunkt: ett möte kört i den exporterade plattformen
+  landar i rätt utdataformat · ~1 pass efter OL4
+- [ ] **FS5** **Regelsvaren visar sin källa i svaret.** Faktabasen (**KA15**,
+  **OL8–OL10**) gör svaren rätt, men kunden kan inte se skillnaden mot ChatGPT
+  förrän något går fel. Märk varje svar som bygger på en regel ur
+  `portal/fakta-se.js` med regel, år och länk — "Skatteverket, ROT 2026" — under
+  svaret, där "Kontrollera mot källan" redan sitter. Samma märkning i exporten:
+  kunskapsfilen säger åt plattformens modell att ange källan · `portal/app.js`,
+  `portal/fakta-se.js` · mätpunkt: i nästa simulering har varje regelfråga en
+  synlig källa, och ingen av personorna rapporterar ett regelfel · ~3 h
+- [ ] **FS6** **Värdet når den som betalar, inte bara den som använder.**
+  Halvårssimuleringen 2026-07-18 sa det redan: värdet bevisas hos utföraren,
+  beslutet fattas av köparen. Sparad tid (**OM5**) och "Rapport till chefen"
+  (**RE5**) finns, men bara i portalen och bara om utföraren skickar dem vidare.
+  Ett månadsbrev till teamets ägare (köparen) med avbockade rutiner och deras
+  `timeEstimate`, leveranserna per agent och en mening om vad som ligger och
+  väntar — samma ärlighetsregler som OM5: bara avbockat räknas, ingenting
+  uppskattas per svar. Byggs på veckobrevets klocka och tak. **Obs:** servern ser
+  inte kundens historik (den ligger i webbläsaren), så antingen skickar portalen
+  upp en sammanfattning med kundens samtycke, eller så säger brevet bara vad
+  rutinerna är värda om de körs — samma uppdelning som veckobrevet har i dag.
+  Valet är en integritetsfråga och därmed ditt · `functions/api/digest/run.js`,
+  `portal/app.js` · mätpunkt: köparpersonan i nästa simulering nämner brevet när
+  hon motiverar att fortsätta · beslut + ~1 pass
+
+### Ikapp — det andra har och vi saknar
+
+- [ ] **IK1** **Agenterna lämnar något i kundens egna verktyg.** Alla sju
+  konkurrenter har integrationer; vi har noll. **Huvudsvaret är ben 2**: installerat
+  i kundens Claude eller ChatGPT får teamet plattformens kopplingar (QuickBooks,
+  HubSpot, M365, Gmail, Slack). **I portalen**, under förutsättning att **OM4**
+  bekräftas som bortval av egna kopplingar: **PR4**:s läsbara artefakter — årshjulet
+  och rutinerna som `.ics` (inga träffar på `.ics` i `portal/app.js` i dag), svar som
+  mejlutkast (`mailto:` med ämne och text), tabeller som CSV, och en
+  "kopiera som …"-knapp med format för det kunden sagt sig använda i intaget.
+  Ingen OAuth, inga tokens, ingen drift · `portal/app.js`, `portal/deadlines-se.js` ·
+  mätpunkt: minst två personor i nästa simulering använder en artefakt i sitt
+  eget verktyg · beslut (OM4); ~4–8 h
+- [ ] **IK2** **Rutiner som körs utan att kunden loggar in.** I dag körs rutinerna
+  bara när portalen öppnas, och Cowork kör bara när datorn är på — ChatGPT, Sintra,
+  Marblism, Vorker och AI Kollegorna kör i molnet. Klockan finns redan:
+  `worker-veckobrev/` knackar varje timme, och `functions/api/digest/run.js`
+  genererar och mejlar med teamets konfig, egna tak och opt-in. Utöka: kunden
+  väljer en eller två rutiner som ska komma som mejl på sin dag ("Måndag 07:00:
+  veckans offertuppföljning"). Opt-in per rutin, egen dygnsrad i `ai_usage` som
+  `digest:global`, så att det inte kan svälta chatten. Samma gräns som veckobrevet:
+  servern har konfig och minne om kunden kopplat det, inte historiken · `functions/api/digest/`,
+  `migrations/` (en tabell för valen) · mätpunkt: en rutin mejlas tre veckor i rad
+  utan att någon öppnat portalen; kostnaden syns i `npm run kostnad` · ~1–2 pass
+- [ ] **IK3** **Utkast → godkänn → ut.** Marblism, Vorker, AI Kollegorna och
+  Claude Small Business bygger sin aha-scen på att agenten föreslår och ägaren
+  godkänner innan något skickas. Vi har inget som skickas och därför ingen sådan
+  scen. Med **IK1** finns något: ett svar som är gjort för att lämna portalen får
+  status *utkast / godkänt / skickat* i Veckans arbete, och "Godkänn" öppnar
+  mejlutkastet eller laddar ner filen. Ger dessutom underlag till sparad tid utan
+  att något uppskattas: ett godkänt utkast är en faktisk leverans · `portal/app.js`
+  (Veckans arbete, RE5) · mätpunkt: personorna godkänner minst ett utkast per vecka
+  · ~3 h efter IK1
+- [ ] **IK4** **Kedjor mellan agenterna utan handpåläggning.** "→ Skicka vidare"
+  finns (`portal/app.js:4326`) men kräver ett klick per steg. Marblism kedjar
+  automatiskt (bloggtext → sociala inlägg). Låt en rutin ta "senaste leveransen från
+  agent X" som underlag, så att skribentens nyhetsbrev blir sociala inläggets
+  underlag nästa dag. Bygger på teamloggen (**RE8**), som redan vet vad varje agent
+  levererat · `portal/app.js` (rutiner, `teamLogg`) · mätpunkt: en kedjad rutin
+  körs i simuleringen och bygger på rätt leverans · ~3 h
+- [ ] **IK5** **Data i EU — eller ett tydligt besked om varför inte.** AI Kollegorna
+  säljer på dedikerad EU-drift; vi kör hos fem amerikanska leverantörer
+  (`PROVIDER_ONLY`, `functions/api/ai.js:195`) med `data_collection: "deny"`.
+  Utred om modellen (eller en likvärdig, se **UX2**) går att köra hos en leverantör
+  med EU-drift via OpenRouter, och vad det kostar. Oavsett utfall: **OM2**:s sida om
+  data och drift — vars text fortfarande säger `gpt-oss-120b` och därmed är
+  inaktuell sedan modellbytet 2026-09-26 — skrivs med det som faktiskt gäller ·
+  `functions/api/ai.js`, `integritet.html` · mätpunkt: sidan namnger
+  leverantörerna och regionen, och ett test fäller bygget om `PROVIDER_ONLY` ändras
+  utan att sidan följer med (lägg kopplingen i `kopplad-andring`) · ~2 h utredning +
+  OM2
+- [ ] **IK6** **En människa hjälper igång.** AI Kollegorna tar två veckor och en
+  processgenomgång; Sintras mest citerade brist är att ingen hjälper till. Vi har
+  konsultläget (**OL1**) för den som köper paketet, men inget för den som köper
+  290-nivån. Billigaste vägen utan att binda din tid: en guidad första vecka i
+  portalen (kom igång-listan finns — gör den till fem dagar med ett uppdrag per dag
+  ur kundens egna rutiner). Dyrare vägen: ett bokningsbart samtal på 20 minuter i
+  provmånaden. **Den dyrare vägen är din tid och därmed ditt beslut** ·
+  `portal/app.js` (kom igång) · mätpunkt: färre personor ger upp vecka 1 · ~3 h
+  eller beslut
+- **Modellen** står redan som **UX2** (= PR8) och upprepas inte här.
+- **Kanaler** (Slack, Teams): täcks av ben 2 — ChatGPT-agenter går att lägga i
+  Slack. Ingen egen punkt.
+
 ## Nu — riktiga fel
 
 > **Simuleringen 2026-09-26** (fyra kunder, fyra veckor i drift, gpt-oss-120b) gav
@@ -32,7 +720,7 @@ Från genomgången 2026-09-01 · sex parallella linser + egen verifiering.
 - [x] **KA11** *(lagad 2026-09-26: delad rubrikläsare sektionText() i DELAD-blocket godtar numrerade, versala, markdown- och engelska rubriker vid radbörjan; fem tester i test/teams.mjs kör kontrollen mot riktiga råsvar, mutationsprovade)* **Bygget fungerar inte i drift: Builderns kontroll fäller varje sammanställning.** `kontrolleraSystemprompter` kräver rubriken `DITT PERSPEKTIV` ordagrant (`perspektivText`, `indexOf`). gpt-oss följer promptens numrerade lista men skriver om rubrikerna, till exempel `2. Perspektiv:` och `4. Leverans:`. Uppmätt: 9 av 9 sammanställningar fälldes, för fyra olika kunder. En riktig kund får "Agenternas systemprompter blev ofullständiga" varje gång hon försöker igen. Verifieringen 2026-09-06 körde steget skarpt men aldrig kontrollen, och därför syntes felet inte. Fix, strukturell: låt `TEAM_SCHEMA` ge `perspective` och `delivery` som egna fält och bygg systemprompten i kod, så att rubrikerna aldrig beror på modellen. Snabbfix: acceptera rubrikvarianterna. Lägg till ett test som kör kontrollen mot ett riktigt råsvar (`testoutput/sim-2026-09/bygg/structure-raw.json`) · `builder/builder.js:1128-1137`, `:1192`, `functions/api/_build.js:107-117`, `:202` · `mätt` · ~1 h snabbfix / ~3 h strukturellt
 - [x] **KA12** *(lagad 2026-09-26: resonemanget avstängt i bygget och under 2 500 tokens, se Driftsatt 2026-09-26)* **gpt-oss resonemang äter tokentaket, och tomma svar räknas som lyckade.** Det dolda resonemanget räknas mot `max_tokens`. Uppmätt: `clarify` (tak 300) gav 0 tecken i 4 av 13 körningar, och Buildern hoppade då tyst över följdfrågorna. `scale` (1 024) gav 0 tecken för redovisningsbyrån, så förslaget byggdes utan skalningsbeslut. Mötets perspektiv (600) gav 2 av 4 tomma och 2 avklippta på e-handelns möte (`reasoning_tokens` upp till 597 av 600), och mötesanteckningen (2 000) klipptes. Portalen räknar ett tomt eller vägrande perspektiv ("Jag kan inte hjälpa till med den begäran.") som lyckat. Fix: `reasoning: { effort: "low" }` eller tak med marginal för de fyra ställena i `ai.js`, och i portalen behandla tom text eller `finish: length` som misslyckat · `functions/api/_build.js:269-276`, `functions/api/ai.js:474`, `portal/app.js:5010-5030` · `mätt` · ~2 h
 - [x] **KA13** *(promptfix 2026-09-26 i proposal.md: det som står under Var det klämmer eller Mål får aldrig avvisas, avgränsningen blir Rör inte. Obevisad tills en ny simulering körts)* **Bygget avvisar just det kunden säger att det klämmer mest på.** Läraren skrev att rättningen tar hennes helger. Agenterna "Bedömning & återkoppling" och "Utvecklingssamtal" avvisades, troligen på avgränsningen "AI ska inte sätta betyg". E-handelns första mål är att sänka returgraden, men ingen agent äger den, och kampanjplaneringen inför Black Week avvisades. Regeln om att minst en agent ska avvisas är rätt, men den träffar fel agent. Fix: i `proposal.md` får ett moment som står under "Var det klämmer" eller "Mål" inte avvisas. En avgränsning blir då ett villkor i agentens "Rör inte", inte ett skäl att stryka agenten. Lägg till ett test på `examples/` · `prompts/shared/proposal.md`, `testoutput/sim-2026-09/larare/team.json`, `ehandel/team.json` · `mätt` · ~2 h + ny simulering
-- [ ] **KA14** *(delvis 2026-09-26: proposal.md förbjuder kundens namn på agenter och döper VD-rollen till prioriterare i personläget. VD + VD-assistent är en designregel — "finns alltid" i proposal.md och princip 3 — och tas inte bort utan ditt beslut)* **Varje team fick en separat VD-agent, även där ingen VD finns.** Alla fyra team hade både VD-assistent och VD. Hos e-handeln heter VD-agenten "Maria" och hos byrån "Karin", alltså kunden själv. Läraren i personläget fick en VD. VD-agenten användes knappt. Det bryter mot designprincip 3 (operativt jobb) och mot skalningsreglerna för solo och mikro. Fix: i `scale.md`/`proposal.md` ska solo, mikro och personläget inte ha en separat VD-agent, och ingen agent får bära kundens namn. Kontrolleras i kod, i samma block som KA11 · `prompts/shared/scale.md`, `proposal.md`, `docs/team-roles.md` · `mätt` · ~1–2 h
+- [ ] **KA14** *(beslutat 2026-10-23: ja — ingen separat VD-agent i solo, mikro och personläget; kunden är VD:n, VD-assistenten finns alltid. **Genomfört samma kväll, inte driftsatt:** `utanVdAgent()` i DELAD-blocket, `hållSkalningsTak`/`trimmaTeam`/`teamBrister` tar kärnan, scale/proposal/PORTAL_RULES/portal-team.md/mallar/docs omskrivna, kopplingen `vd-karna` i registret, 437 gröna. Skarpt provat lokalt i tre mikrobyggen (`testoutput/ka14-2026-10-23/`): ingen VD, Builderns kontroll godkänner alla tre, VD-assistenten mot egna max 0,19 (före 0,87 hos läraren), mellan team max 0,15. Kvar: fredagsraden ur proposal.md:s exempel kopierades ordagrant i tre av tre)* *(delvis 2026-09-26: proposal.md förbjuder kundens namn på agenter och döper VD-rollen till prioriterare i personläget. VD + VD-assistent är en designregel — "finns alltid" i proposal.md och princip 3 — och tas inte bort utan ditt beslut)* **Varje team fick en separat VD-agent, även där ingen VD finns.** Alla fyra team hade både VD-assistent och VD. Hos e-handeln heter VD-agenten "Maria" och hos byrån "Karin", alltså kunden själv. Läraren i personläget fick en VD. VD-agenten användes knappt. Det bryter mot designprincip 3 (operativt jobb) och mot skalningsreglerna för solo och mikro. Fix: i `scale.md`/`proposal.md` ska solo, mikro och personläget inte ha en separat VD-agent, och ingen agent får bära kundens namn. Kontrolleras i kod, i samma block som KA11 · `prompts/shared/scale.md`, `proposal.md`, `docs/team-roles.md` · `mätt` · ~1–2 h
 
 - [ ] **KR4** Provmånaden kan köpas om varje månad — 90 kr i stället för 290, i all evighet. `startUpgrade` blockerar en ny provmånad på SAMMA slug ("sälja samma sak två gånger", `checkout.js:120-124`), men webhookens nytt-team-gren har ingen kundkontroll alls: den skapar team och kopplar till e-postadressen villkorslöst, oavsett hur många team adressen redan äger. Varken villkoren eller prislistan säger något om en provmånad per kund (noll träffar på båda ställena). Med gratis bygge och körningen kvar i webbläsaren är cykeln två klick i månaden; med kopplad mapp följer företagsminnet med. Samma felklass som pass 2 lagade, flyttad en nivå upp: provmånaden tar slut per *team*, inte per *kund*. Förslag: leverera ändå (betalt är betalt) men flagga raden och mejla `info@`; villkorsraden är din text · `functions/api/stripe-webhook.js:133-192`, `checkout.js:120-124`, `villkor.html:255` · `läst i koden` · ~2 h + villkorsrad
 - [ ] **BF4** Villkoren visas aldrig före köpet — och §15 lovar ett samtycke som ingen kod inhämtar. Uppmätt: noll förekomster av "villkor" eller "ånger" i kundens gränssnitt genom hela köpflödet (Builderns avslut, kassan, `aktivera.html`); träffarna i `builder.js` är kodkommentarer. `checkout.js` sätter varken `consent_collection` eller `custom_text`. Samtidigt står i `villkor.html:539`: "Vi ber om det samtycket uttryckligen" — det finns ingen sådan fråga någonstans. Distansavtalslagen kräver information om ångerrätten INNAN avtalet ingås; utan den börjar fristen inte löpa, och ångerknappen (BL2) skyddar då inte mot en väsentligt längre frist än de 14 dagar koden räknar med. Fix: `consent_collection[terms_of_service]=required` i båda sessionsanropen + villkors-URL i Stripes dashboard (ditt steg). **Meningen i §15 är din text — jag har inte rört den** · `functions/api/checkout.js:83-96`, `:150-163`, `villkor.html:539-540` · `mätt` · ~1–2 h
@@ -106,7 +794,7 @@ Från genomgången 2026-09-01 · sex parallella linser + egen verifiering.
   skulle blockeras, tyst. Slå alltså på den automatiska. Kontrollerat i drift 2026-08-29: ingen beacon
   levereras i dag, alltså är mätningen inte påslagen. Kvar sedan: en mening i `integritet.html` om att
   besöksstatistik samlas in cookiefritt — din text · `_headers`, Cloudflare-dashboarden · `mätt` · ~10 min
-- [ ] **OM1** Hållningen till Claude Cowork och ChatGPT Agents är inte bestämd. Cowork (april 2026) ger filsystemsåtkomst, schemalagda uppgifter och bakgrundsarbete — vår mappfunktion plus våra rutiner — gratis på varje betald Claude-plan, och Small Business-bundlen (maj) lägger integrationer ovanpå. Antingen är svaret "vi bygger teamet, du kör det var du vill" — och då är **BF2** (gratisbygget delar ut systemprompterna) en *funktion* som ska säljas, inte en läcka — eller så ska läckan stängas. Det är ett och samma beslut, och Coworks existens gör att det ska fattas nu · `docs/omvarldsresearch-2026-08-18.md` · `mätt` · beslut, inte kod
+- [x] **OM1** *(besvarad 2026-10-23 av Mikael: vi bygger teamet, kunden kör det i sin egen AI — se Omläggning 2026-10-23, OL4–OL6)* Hållningen till Claude Cowork och ChatGPT Agents är inte bestämd. Cowork (april 2026) ger filsystemsåtkomst, schemalagda uppgifter och bakgrundsarbete — vår mappfunktion plus våra rutiner — gratis på varje betald Claude-plan, och Small Business-bundlen (maj) lägger integrationer ovanpå. Antingen är svaret "vi bygger teamet, du kör det var du vill" — och då är **BF2** (gratisbygget delar ut systemprompterna) en *funktion* som ska säljas, inte en läcka — eller så ska läckan stängas. Det är ett och samma beslut, och Coworks existens gör att det ska fattas nu · `docs/omvarldsresearch-2026-08-18.md` · `mätt` · beslut, inte kod
 - [ ] **OM2** Ingen sida säger var modellen körs eller vad som lagras. AI Kollegorna säljer 4 900 kr/mån delvis på "ingen data lämnar era lokaler"; vi kör OpenRouter → `openai/gpt-oss-120b` med geografin osagd. Samma sida täcker EU AI Acts transparenskrav (i kraft 2 augusti 2026, vi ligger i limited risk: kunden ska veta att motparten är AI) och tar bort deras enda övertag mot oss · `integritet.html`, `index.html` · `mätt` · ~2–4 h
 - [ ] **OM3** De två sakerna ingen konkurrent har står längst ner respektive i en sidopanel. Att en agent får **nej** är motgiftet mot exakt den kritik Sintra och Marblism får ("starka utkast, inte utförande"), och **mötet** löser Sintras mest citerade brist (helpers kan inte dela kontext). Flytta båda till framsidan — och gör det med en riktig körning, alltså tillsammans med **KR2** · `index.html:145`, `:163`, `:216-218` · `mätt` · ~2–4 h ihop med KR2
 - [ ] **OM4** Integrationsspåret är varken valt eller bortvalt. Alla konkurrenter har verktygsåtkomst (Lindy 5 000+, Vorker Fortnox/Visma, Marblism Gmail/WordPress) — våra agenter kan tala, deras kan göra. Antingen **en** integration väl gjord (kalender eller Gmail; Fortnox är Vorkers hemmaplan), eller sälj bortvalet explicit: "vi kopplas inte in i era system." Att inte välja är det enda som är fel · `docs/omvarldsresearch-2026-08-18.md` · `mätt` · beslut först
