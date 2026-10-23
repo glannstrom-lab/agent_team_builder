@@ -1,0 +1,8 @@
+  research: 33.8 s, 19317 tecken, finish=stop
+  scale: 1.2 s, 472 tecken, finish=stop
+  proposal: 26.6 s, 16763 tecken, finish=stop
+  … 429, väntar 60 s ({"error":"För många anrop just nu. Vänta en kvart och försök igen.","code":"rate_limited"})
+  … 429, väntar 60 s ({"error":"För många anrop just nu. Vänta en kvart och försök igen.","code":"rate_limited"})
+  … 429, väntar 60 s ({"error":"För många anrop just nu. Vänta en kvart och försök igen.","code":"rate_limited"})
+  structure: 202.9 s, 25146 tecken, finish=stop
+team klart på försök 1: vd-assistent, offertskrivaren, ata-dokumentationen, forfragningssvaret

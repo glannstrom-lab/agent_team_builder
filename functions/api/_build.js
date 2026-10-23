@@ -108,7 +108,7 @@ const PORTAL_RULES = `Bygg varje agents "system" som en komplett systemprompt SK
 1. Kontext om företaget + agentens jobb (jobb-meningen ur proposalen).
 2. DITT PERSPEKTIV — proposalens Perspektiv: blicken agenten resonerar från, vad den alltid letar efter/varnar för. Det som gör att två agenter med närliggande uppgifter svarar olika.
 3. DINA KAPACITETER — punktlista ur proposalen.
-4. (Bara VD-assistenten) DITT TEAM — lista övriga agenter och vad de gör, så den kan hänvisa rätt. VD-assistenten granskar dessutom mötesbidrag mot varje agents "Klart när"-punkter innan sammanställning. Har teamet ingen VD-agent (solo, mikro, en enskild person) är kunden VD:n: skriv det här, och att VD-assistenten FÖRBEREDER prioriteringsbeslut — alternativen, vad vart och ett kostar, vad som får vänta, en rekommendation med skäl — medan kunden fattar dem. Hon väljer aldrig själv. Finns en VD-agent lämnar hon valet dit.
+4. (Bara VD-assistenten) DITT TEAM — hela teamet enligt rekryteringsplanen: varje kollega med namn, vad den gör och sin plats i turordningen. Kollegorna anställs en i taget i den ordningen, inte alla på dag ett, och hon är den enda som finns från början: skriv att hon hänvisar bara till dem som redan är anställda (portalen talar om vilka det är just nu), att hon tills en kollega är anställd själv tar hand om dess moment i den enklare form förslaget anger under "Tills de anställs" — eller säger rakt ut att momentet väntar på sin kollega — och att hon lämnar över momentet när kollegan börjat. VD-assistenten granskar dessutom mötesbidrag mot varje agents "Klart när"-punkter innan sammanställning. Har teamet ingen VD-agent (solo, mikro, en enskild person) är kunden VD:n: skriv det här, och att VD-assistenten FÖRBEREDER prioriteringsbeslut — alternativen, vad vart och ett kostar, vad som får vänta, en rekommendation med skäl — medan kunden fattar dem. Hon väljer aldrig själv. Finns en VD-agent lämnar hon valet dit.
 5. LEVERANS — proposalens Leverans + "Klart när"-punkter: hur ett färdigt svar ser ut, så agenten levererar mot det istället för att resonera fritt.
 6. ARBETSSÄTT — be om data agenten saknar istället för att gissa. Saknas en uppgift som ska stå i en text kunden skickar vidare (telefonnummer, organisationsnummer, pris, datum, namn, adress) skrivs den som [fyll i: …] — aldrig påhittad, aldrig ett exempelnummer.
 7. TON — kort; nybörjarkund → pedagogisk/klarspråk, van/byggare → rakare. Avsluta med "Svara på <språk>."
@@ -142,6 +142,7 @@ function structurePrompt({ konsult, coach }) {
   "firstProject": ${konsult ? '{ "name": string, "problem": string, "week1": string, "owner": string }' : "null"},
   "divergence": string,
   "rejected": [{ "name": string, "why": string }],
+  "hiringPlan": [{ "agentId": string, "order": number, "reason": string }],
   "routines": [{ "label": string, "agentId": string, "day": number|null, "timeEstimate": number|null, "auto": boolean, "prompt": string }],
   "seasons": [{ "label": string, "month": number, "day": number|null, "agentId": string|null, "prompt": string|null }],
   "agents": [{
@@ -163,6 +164,8 @@ DIVERGENCE: en mening ur proposalens/researchens divergens-check — varför jus
 SEASONS: kundens årshjul — BARA händelser som uttryckligen nämns i intake/research (mässor, deklarationsdatum, högsäsonger, ansökningsdeadlines). month 1–12, day om känd annars null, agentId = mest relevant agent annars null, prompt = valfri startuppgift i du-form. Fabricera inga datum; tom lista om årsrytmen är okänd. Portalen påminner kunden i förväg ("X dagar till mässan").
 
 TRIGGERS: per agent, 0–3 konkreta situationer i kundens vardag då man ska vända sig till just den agenten ("När en offert ska ut", "Inför månadsbokslutet"). Hämta dem ur researchens arbetsmoment. Har en agent ingen tydlig utlösare — VD-assistenten (och en eventuell VD) har sällan det, de är alltid på — lämna listan tom. Hitta aldrig på en situation för att fylla ut.
+
+HIRINGPLAN: kundens rekryteringsplan, hämtad ur förslagets "## Rekryteringsplan" och specialisternas rader "Anställs:". EN post per specialist och bara specialister — VD-assistenten och en eventuell VD finns från dag ett och står inte i planen. agentId = specialistens id i agents; order = platsen i turordningen: 1 för den specialist som anställs först, sedan 2, 3 … utan hål och utan dubbletter, i samma ordning som specialisterna står i agents. Förslagets lista börjar med VD-assistenten som 1 — hon räknas inte här, så förslagets 2 blir order 1; reason = EN mening riktad till kunden om varför just den kollegan anställs just då, byggd av kundens egna ord eller siffror ur intaget/researchen, på samma sätt som WHY. Skriv inget platsnummer i reason — order bär ordningen. Fabricera inget skäl; står inget i förslaget, hämta det ur researchens moment för den agenten.
 
 RUTINER: 3–5 stående rutiner hämtade ur kundens faktiska veckomoment (inte påhittade). label = kort namn; agentId = agenten som äger momentet; day = veckodag 1–7 (1=måndag) om momentet är dagbundet, annars null; timeEstimate = minuter momentet brukar ta manuellt ENLIGT RESEARCHEN (null om researchen inte anger tid — hitta aldrig på); auto = true på HÖGST EN rutin och bara om dess prompt är komplett utan [fyll i]-luckor (portalen kör den då automatiskt på rätt dag), annars false; prompt = uppgiften i du-form med [fyll i]-luckor för det agenten behöver av användaren, konkret nog att skicka direkt.
 
@@ -204,7 +207,7 @@ export const TEAM_SCHEMA = {
   // Allt i properties måste stå i required — strict-läget tillåter inga
   // valfria fält. Det som får saknas uttrycks som nullbar typ eller tom lista,
   // inte som en utelämnad nyckel.
-  required: ["company", "tagline", "slug", "divergence", "agents", "rejected", "routines", "seasons", "firstProject"],
+  required: ["company", "tagline", "slug", "divergence", "agents", "rejected", "hiringPlan", "routines", "seasons", "firstProject"],
   properties: {
     company: { type: "string" }, tagline: { type: "string" }, slug: { type: "string" },
     divergence: { type: "string" },
@@ -230,6 +233,20 @@ export const TEAM_SCHEMA = {
       type: "array", minItems: 1,
       items: { type: "object", additionalProperties: false, required: ["name", "why"],
         properties: { name: { type: "string" }, why: { type: "string" } } },
+    },
+    // Rekryteringsplanen (SP9): specialisterna i anställningsordning.
+    // VD-assistenten — och en eventuell VD — står aldrig här; de finns från
+    // dag ett. minItems 1, för ett team har alltid minst en specialist
+    // (teamBrister kräver tre agenter, och kärnan är högst två). Läsaren är
+    // portalen (`team.hiringPlan`); saknas fältet, som i alla team byggda
+    // före 2026-10-23, räknas alla som anställda. Att planen pekar på riktiga
+    // id, täcker varje specialist och har obruten ordning kan schemat inte
+    // uttrycka — det kontrolleras av planBrister() i builder/builder.js.
+    hiringPlan: {
+      type: "array", minItems: 1,
+      items: { type: "object", additionalProperties: false,
+        required: ["agentId", "order", "reason"],
+        properties: { agentId: { type: "string" }, order: { type: "integer" }, reason: { type: "string" } } },
     },
     routines: {
       type: "array", minItems: 3,

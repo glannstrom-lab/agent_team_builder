@@ -54,7 +54,7 @@ När den går igenom: uppdatera `kontrollerad`-datumet i `kopplingar.json`.
 
 ## Vad som står i registret i dag (2026-09-06)
 
-Sjutton kopplingar (`vd-karna`, KA14, tillkom 2026-10-23 och är vaktad). **Fem av dem är ovaktade** — ingen test fäller om halvorna
+Arton kopplingar (`vd-karna`, KA14, och `rekryteringsplan`, SP9, tillkom 2026-10-23 och är vaktade). **Fem av dem är ovaktade** — ingen test fäller om halvorna
 glider isär:
 
 | id | vad som kan gå isär | följd |

@@ -200,6 +200,8 @@ async function build() {
       const flyttade = B.trimmaTeam(team, n, utanVd);
       if (flyttade.length) console.error("  trimmat till skalningsbeslutet: " + flyttade.join(", "));
       const tb = B.teamBrister(team, n, utanVd);
+      // SP9: samma krav som structureTeam() i builder.js — ett nytt bygge har planen.
+      if (!Array.isArray(team.hiringPlan)) tb.push("teamet saknar rekryteringsplanen (hiringPlan)");
       if (tb.length) throw new Error(tb.join("; "));
       B.kontrolleraSystemprompter(team);
     } catch (e) { fel = e.message; }

@@ -154,7 +154,7 @@ test("stripTeam bär vidare varje agentfält portalen läser", () => {
     assert.ok(bär(fält), `stripTeam utelämnar agents[].${fält} — fältet kastas ur allt som lämnar Buildern`);
   }
   // Teamnivån: fälten arbetsytan bygger sina paneler av.
-  for (const fält of ["routines", "seasons", "firstProject", "rejected", "workstyle", "entryAgent"]) {
+  for (const fält of ["routines", "seasons", "firstProject", "rejected", "workstyle", "entryAgent", "hiringPlan"]) {
     assert.ok(bär(fält), `stripTeam utelämnar team.${fält}`);
   }
 });
@@ -381,7 +381,7 @@ const STEGKONTROLL = (() => {
   const src = readFileSync("builder/builder.js", "utf8");
   const i = src.indexOf("⟦DELAD-START⟧"), j = src.indexOf("⟦DELAD-SLUT⟧");
   const kropp = src.slice(src.indexOf("\n", i) + 1, src.lastIndexOf("\n", j) + 1);
-  return new Function(kropp + "; return { stegBrister, teamBrister, skalningsAntal, förslagsAntal, trimmaTeam, utanVdAgent, nämnerNamn };")();
+  return new Function(kropp + "; return { stegBrister, teamBrister, skalningsAntal, förslagsAntal, trimmaTeam, utanVdAgent, nämnerNamn, planBrister, planUtan };")();
 })();
 
 test("stegkontrollen: en avbruten research (719 tecken ur drift) underkänns", () => {
@@ -541,4 +541,110 @@ test("KA14: befintliga team i portal/teams/ godkänns oförändrade — VD:n få
     assert.deepEqual(STEGKONTROLL.trimmaTeam(team, team.agents.length, false), [], fil);
     assert.equal(JSON.stringify(team), före, fil + " ändrades av trimmaTeam");
   }
+});
+
+// ── SP9: rekryteringsplanen (2026-10-23) ───────────────────────────────────
+//
+// Teamet planeras helt men anställs en i taget. `hiringPlan` bär turordningen
+// från sammanställningen till portalen. Schemat kan bara säga att fältet har
+// rätt form; att det stämmer med agenterna avgör planBrister() — och den körs
+// av teamBrister, så både Buildern och simuleringen underkänner en trasig plan.
+//
+// Fixturen är KA9:s riktiga salongsteam utan VD (samma grepp som KA14 ovan),
+// med en plan i den form sammanställningen beställer.
+const medPlan = () => {
+  const team = utanVd(JSON.parse(readFileSync(`${SIM}/ka9-salong/team.json`, "utf8")));
+  team.hiringPlan = [
+    { agentId: "luckfyllaren", order: 1, reason: "Ni sa att avbokade tider står tomma varje vecka." },
+    { agentId: "instagram-avlastaren", order: 2, reason: "Instagram tar kvällarna, men det kan vänta tills luckorna fylls." },
+  ];
+  return team;
+};
+
+test("SP9: en hel rekryteringsplan godkänns av teamBrister", () => {
+  assert.deepEqual(STEGKONTROLL.planBrister(medPlan()), []);
+  assert.deepEqual(STEGKONTROLL.teamBrister(medPlan(), 3, true), []);
+});
+
+test("SP9: ett team utan hiringPlan (alla äldre team) godkänns — portalen räknar då alla som anställda", () => {
+  const team = medPlan();
+  delete team.hiringPlan;
+  assert.deepEqual(STEGKONTROLL.planBrister(team), []);
+  team.hiringPlan = null;
+  assert.deepEqual(STEGKONTROLL.planBrister(team), []);
+});
+
+test("SP9: planen underkänns när den pekar på en agent som inte finns", () => {
+  const team = medPlan();
+  team.hiringPlan[1].agentId = "bokforaren";
+  const b = STEGKONTROLL.teamBrister(team, 3, true).join(" ");
+  assert.match(b, /pekar på "bokforaren", som inte finns/);
+  assert.match(b, /saknar specialisten "instagram-avlastaren"/, "den som ersattes står inte längre i planen");
+});
+
+test("SP9: planen underkänns när en specialist saknas", () => {
+  const team = medPlan();
+  team.hiringPlan = team.hiringPlan.slice(0, 1);
+  assert.match(STEGKONTROLL.teamBrister(team, 3, true).join(" "), /saknar specialisten "instagram-avlastaren"/);
+});
+
+test("SP9: planen underkänns när ingångsagenten (eller en VD) står i den — de finns från dag ett", () => {
+  const team = medPlan();
+  team.hiringPlan.unshift({ agentId: "vd-assistent", order: 0, reason: "x" });
+  team.hiringPlan.forEach((p, i) => { p.order = i + 1; });
+  assert.match(STEGKONTROLL.planBrister(team).join(" "), /tar med "vd-assistent", som finns från dag ett/);
+
+  const medVd = JSON.parse(readFileSync(`${SIM}/ka9-salong/team.json`, "utf8")); // har en VD-agent
+  medVd.hiringPlan = [
+    { agentId: "vd", order: 1, reason: "x" },
+    { agentId: "luckfyllaren", order: 2, reason: "x" },
+    { agentId: "instagram-avlastaren", order: 3, reason: "x" },
+  ];
+  assert.match(STEGKONTROLL.planBrister(medVd).join(" "), /tar med "vd"/);
+});
+
+test("SP9: planen underkänns vid hål, dubbletter eller fel start i ordningen", () => {
+  for (const ordning of [[1, 3], [1, 1], [2, 3], [0, 1]]) {
+    const team = medPlan();
+    team.hiringPlan.forEach((p, i) => { p.order = ordning[i]; });
+    assert.match(STEGKONTROLL.planBrister(team).join(" "), /ordning är inte 1–2/, String(ordning));
+  }
+  const dubbel = medPlan();
+  dubbel.hiringPlan.push(Object.assign({}, dubbel.hiringPlan[0], { order: 3 }));
+  assert.match(STEGKONTROLL.planBrister(dubbel).join(" "), /"luckfyllaren" två gånger/);
+});
+
+test("SP9: planen underkänns när ett skäl saknas", () => {
+  const team = medPlan();
+  team.hiringPlan[0].reason = "  ";
+  assert.match(STEGKONTROLL.planBrister(team).join(" "), /saknar skäl för "luckfyllaren"/);
+});
+
+test("SP9: trimmaTeam tar den bortflyttade specialisten ur planen och numrerar om", () => {
+  // Femagentsteamet ur drift: trimningen flyttar Statusvakten (sist i agents).
+  // I planen står den på plats 2 — då måste ATA-vakten flytta upp från 3 till 2.
+  const team = JSON.parse(readFileSync(`${SIM}/bygg2/team-5-agenter.json`, "utf8"));
+  team.hiringPlan = [
+    { agentId: "offertmakaren", order: 1, reason: "a" },
+    { agentId: "statusvakten", order: 2, reason: "b" },
+    { agentId: "ata-vakten", order: 3, reason: "c" },
+  ];
+  assert.deepEqual(STEGKONTROLL.trimmaTeam(team, 4), ["Statusvakten"]);
+  assert.deepEqual(team.hiringPlan.map((p) => [p.agentId, p.order]), [["offertmakaren", 1], ["ata-vakten", 2]]);
+  assert.deepEqual(STEGKONTROLL.teamBrister(team, 4), [], "det trimmade teamet ska godkännas, planen inräknad");
+});
+
+test("SP9: trimmaTeam rör inte planen i ett team inom beslutet", () => {
+  const team = medPlan();
+  const före = JSON.stringify(team.hiringPlan);
+  assert.deepEqual(STEGKONTROLL.trimmaTeam(team, 3, true), []);
+  assert.equal(JSON.stringify(team.hiringPlan), före);
+});
+
+test("SP9: ett nytt bygge kräver rekryteringsplanen — i Buildern och i simuleringen", () => {
+  const src = readFileSync("builder/builder.js", "utf8");
+  const sam = src.slice(src.indexOf("async function structureTeam("), src.indexOf("async function structureTeam(") + 3500);
+  assert.match(sam, /if \(!Array\.isArray\(team\.hiringPlan\)\) brister\.push/, "structureTeam godkänner ett nytt team utan plan");
+  const sim = readFileSync(`${SIM}/sim.mjs`, "utf8");
+  assert.match(sim, /if \(!Array\.isArray\(team\.hiringPlan\)\) tb\.push/, "simuleringen bygger inte som Buildern");
 });

@@ -1141,6 +1141,9 @@ async function structureTeam(intake, r) {
       const flyttade = trimmaTeam(team, n, utanVd);
       if (flyttade.length) console.warn("[builder] teamet trimmat till skalningsbeslutet", flyttade);
       const brister = teamBrister(team, n, utanVd);
+      // SP9: ett nytt bygge MÅSTE ha rekryteringsplanen. teamBrister godkänner
+      // ett team utan den (alla äldre team), så kravet står här.
+      if (!Array.isArray(team.hiringPlan)) brister.push("teamet saknar rekryteringsplanen (hiringPlan)");
       try { kontrolleraSystemprompter(team); } catch (e) { brister.push(e.message.split("\n")[0]); }
       return brister;
     });
@@ -1409,6 +1412,9 @@ function trimmaTeam(team, n, utanVd) {
   team.routines = (team.routines || []).map(function (r) {
     return flyttadeId.indexOf(r.agentId) >= 0 ? Object.assign({}, r, { agentId: mottagare }) : r;
   });
+  // Rekryteringsplanen (SP9): den som flyttats till de avvisade anställs
+  // aldrig, och de som är kvar numreras om så att ordningen förblir obruten.
+  if (Array.isArray(team.hiringPlan)) team.hiringPlan = planUtan(team.hiringPlan, flyttadeId);
   // Årshjulets agentId är nullbart; en flyttad ägare blir VD-assistenten.
   if (Array.isArray(team.seasons)) {
     team.seasons = team.seasons.map(function (s) {
@@ -1466,7 +1472,61 @@ function teamBrister(team, n, utanVd) {
   if (n && a.length > n) b.push("teamet har " + a.length + " agenter, skalningsbeslutet är " + n);
   if (a.length && !a.some(function (x) { return x.id === "vd-assistent"; })) b.push("teamet saknar VD-assistenten (id \"vd-assistent\")");
   if (utanVd && a.some(function (x) { return x.id === "vd"; })) b.push("teamet har en separat VD-agent, men i den här storleken är kunden VD:n");
+  return b.concat(planBrister(team));
+}
+
+// ── REKRYTERINGSPLANEN (SP9) ──────────────────────────────────────────────
+//
+// `hiringPlan` säger i vilken ordning specialisterna anställs; portalen läser
+// den och visar en kollega i taget. Schemat (TEAM_SCHEMA i _build.js) kan bara
+// säga att fältet finns och har rätt form — inte att det stämmer med agenterna.
+// Det gör den här kontrollen:
+//
+//   • varje agentId finns i agents (annars anställs någon som inte finns),
+//   • ingångsagenten och en eventuell VD står inte i planen (de finns från
+//     dag ett — står de där väntar kunden på sin första anställda),
+//   • varje specialist står där exakt en gång (en som saknas anställs aldrig),
+//   • order är 1, 2, 3 … utan hål och dubbletter,
+//   • varje post har ett skäl.
+//
+// Saknas fältet helt godkänns teamet här: så ser varje team byggt före
+// 2026-10-23 ut, och portalen räknar då alla som anställda. Att ett NYTT
+// bygge har planen kräver structureTeam() för sig (schemat kräver den också).
+var KÄRNA_ID = ["vd-assistent", "vd"];
+function planBrister(team) {
+  var plan = team && team.hiringPlan;
+  if (plan === undefined || plan === null) return [];
+  if (!Array.isArray(plan)) return ["hiringPlan är ingen lista"];
+  var a = (team && team.agents) || [], b = [];
+  var ingång = (team && team.entryAgent) || "vd-assistent";
+  var finns = {}, sedda = {};
+  a.forEach(function (x) { finns[x.id] = true; });
+  plan.forEach(function (p) {
+    var id = p && p.agentId;
+    if (!finns[id]) b.push("rekryteringsplanen pekar på \"" + id + "\", som inte finns i teamet");
+    else if (id === ingång || KÄRNA_ID.indexOf(id) >= 0) b.push("rekryteringsplanen tar med \"" + id + "\", som finns från dag ett");
+    if (sedda[id]) b.push("rekryteringsplanen tar med \"" + id + "\" två gånger");
+    sedda[id] = true;
+    if (!p || !String(p.reason || "").trim()) b.push("rekryteringsplanen saknar skäl för \"" + id + "\"");
+  });
+  a.forEach(function (x) {
+    if (x.id === ingång || KÄRNA_ID.indexOf(x.id) >= 0) return;
+    if (!sedda[x.id]) b.push("rekryteringsplanen saknar specialisten \"" + x.id + "\"");
+  });
+  var ordning = plan.map(function (p) { return p && p.order; }).sort(function (x, y) { return x - y; });
+  for (var i = 0; i < ordning.length; i++) {
+    if (ordning[i] !== i + 1) { b.push("rekryteringsplanens ordning är inte 1–" + plan.length + " utan hål och dubbletter (" + plan.map(function (p) { return p && p.order; }).join(", ") + ")"); break; }
+  }
   return b;
+}
+
+// Tar bort agenter ur planen och numrerar om resten i samma inbördes ordning.
+// Används av trimmaTeam(): den som flyttats till de avvisade anställs aldrig.
+function planUtan(plan, bortId) {
+  if (!Array.isArray(plan)) return plan;
+  return plan.filter(function (p) { return p && bortId.indexOf(p.agentId) < 0; })
+    .slice().sort(function (x, y) { return x.order - y.order; })
+    .map(function (p, i) { return Object.assign({}, p, { order: i + 1 }); });
 }
 // ── ⟦DELAD-SLUT⟧ ──────────────────────────────────────────────────────────
 
@@ -2070,6 +2130,10 @@ function stripTeam(team) {
     firstProject: team.firstProject || null,
     divergence: team.divergence || null,
     rejected: Array.isArray(team.rejected) ? team.rejected : [],
+    // Rekryteringsplanen (SP9): portalen läser den och anställer en kollega i
+    // taget. Saknas den (äldre team) räknas alla som anställda — därför null
+    // och inte en tom lista, som skulle betyda "ingen anställs någonsin".
+    hiringPlan: Array.isArray(team.hiringPlan) ? team.hiringPlan : null,
     workstyle: team.workstyle || null,
     agents: team.agents.map((a) => ({ id: a.id, name: a.name, icon: a.icon, avatarN: a.avatarN, role: a.role, tagline: a.tagline, always: !!a.always,
       job: a.job, why: a.why || null, capabilities: a.capabilities, starters: a.starters,

@@ -1,0 +1,6 @@
+  research: 27.2 s, 14810 tecken, finish=stop
+  scale: 1.2 s, 519 tecken, finish=stop
+  proposal: 29.6 s, 17210 tecken, finish=stop
+  structure: 26.7 s, 26600 tecken, finish=stop
+  trimmat till skalningsbeslutet: Lagerpåminnelse
+team klart på försök 1: vd-assistent, innehall-instagramsvar, ateraktiveringsstod, luckstod

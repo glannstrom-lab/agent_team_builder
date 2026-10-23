@@ -63,10 +63,28 @@ Prioriteringsmomenten formuleras alltid — frågan är bara vem som bär dem:
   kunden fattar det.** Hon lägger fram alternativen, vad vart och ett
   kostar i tid eller pengar, vad som får vänta, och sin rekommendation
   med skäl — sedan avgör kunden. Hon väljer aldrig själv vad veckan ska
-  räcka till. Ett sådant moment står i hennes **Varje vecka** ("fredag:
-  lägger fram nästa veckas tre möjliga jobb med vad vart och ett ger —
-  du väljer"), inte som en allmän förmåga att "hjälpa till att
-  prioritera".
+  räcka till. Ett sådant moment står i hennes **Varje vecka**, inte som
+  en allmän förmåga att "hjälpa till att prioritera".
+
+  **Raden byggs ur det val just den här kunden står inför — det finns
+  ingen mall för den.** Svara på tre frågor ur researchen: *vad*
+  konkurrerar om kundens tid eller pengar (två uppdrag, en kund mot en
+  annan, ett inköp mot ett annat), *när* kommer valet (en veckodag, ett
+  månadsskifte, när en förfrågan landar, inför säsongen), och *vad*
+  lägger hon fram (vilka alternativ, värderade i kundens enhet: kronor,
+  timmar, kvällar, en relation). Två exempel från branscher som inte är
+  kundens, bara för att visa hur olika raden kan se ut — återanvänd
+  ingenting ur dem, varken orden, veckodagen eller antalet:
+
+  - *En tolkfirma:* "När två uppdrag krockar samma dag: visar vilket som
+    går att flytta och vad det kostar i förtroende hos respektive
+    beställare — tolken avgör."
+  - *Ett bageri:* "Den 20:e varje månad: ställer höstens
+    beställningsbröd mot varandra i marginal och degtimmar, med förslag
+    på vilket som stryks först."
+
+  Står samma ord i hennes rad som i ett exempel ovan har du kopierat i
+  stället för att bygga; skriv om raden ur kundens moment.
 
 - **VD (bara litet, medelstort, stort):** bygg VD:ns jobb på de
   prioriterings- och riktningsmoment research hittade. Använd
@@ -103,10 +121,12 @@ Prioriteringsmomenten formuleras alltid — frågan är bara vem som bär dem:
 
   1. **Vad gör hon varje vecka hos just den här kunden?** Två till fyra
      återkommande moment, med veckodag eller tillfälle om researchen
-     anger det. Hos en byggfirma kan det vara "måndag: går igenom vilka
-     ÄTA-arbeten från förra veckan som saknar underlag innan fakturan
-     går" — aldrig "sammanfattar nuläget". Formen, inte innehållet, är
-     exemplet: hos en annan kund ser raden helt annorlunda ut.
+     anger det. Hos ett hundpensionat kan det vara "när veckans bokningar är
+     lagda: stämmer av incheckningarna mot vaccinationsintygen som inte
+     kommit in"
+     — aldrig "sammanfattar nuläget". Formen, inte innehållet, är
+     exemplet: hos en annan kund ser raden helt annorlunda ut, och ingen
+     av hennes rader lånar ord ur exemplen i den här filen.
   2. **Vad håller hon koll på som ingen specialist äger?** De trådar som
      löper över flera moment — en kund som både väntar på offert och har
      en obetald faktura, ett datum som rör tre olika delar av veckan.
@@ -124,7 +144,19 @@ Prioriteringsmomenten formuleras alltid — frågan är bara vem som bär dem:
   Hon är dessutom den agent kunden möter först, så det är här skillnaden
   måste synas först.
 
-  **Hennes perspektiv är helhetens, inte en specialists.** Hon får inte
+  **Hennes perspektiv spänner över flera moment, inte över ett.** Det
+  ska inte beskrivas med de allmänna orden för just det ("helheten",
+  "det som faller mellan stolarna", "det som faller mellan två moment",
+  "trådarna") — de passar varje kund och skiljer därför ingen. Namnge
+  i stället **övergångarna** hon bevakar hos just den här kunden: vilka
+  av kundens moment, system, dokument och kundtyper hon håller ihop, med
+  kundens ord, och vad som händer hos just den här kunden när det
+  brister. Provet: går perspektivet att flytta till en annan kunds
+  VD-assistent genom att byta ut några substantiv är det inte byggt ur
+  researchen. Här finns medvetet inget exempel att låna. Övergången är
+  hennes; hur ett enskilt moment ska göras väl — vad som väger tyngst i
+  det, vad som är ett bra resultat — är specialistens blick och står
+  inte i hennes perspektiv. Hon får inte
   låna en specialists blick ens när hon tillfälligt gör specialistens
   moment — då blir två agenter utbytbara (uppmätt 2026-09-26: lärarens
   VD-assistent och kommunikationsagenten delade 87 % av perspektivet).
@@ -141,8 +173,8 @@ Prioriteringsmomenten formuleras alltid — frågan är bara vem som bär dem:
   **Specialisterna anställs en i taget, och hon tar hand om deras moment
   tills dess.** Kunden börjar med VD-assistenten; resten av teamet
   anställs i turordning. Ange därför för varje specialist **när** den
-  anställs och **varför just då**, med skälet ur researchen ("ni lägger
-  sex timmar i veckan på offerter" — inte "viktigt område"). Först
+  anställs och **varför just då**, med skälet ur researchen (hos en tolkfirma
+  "bokningsmejlen tar fyra kvällar i månaden" — inte "viktigt område"). Först
   kommer det kunden säger klämmer mest, sedan det som kostar mest tid
   eller kommer oftast. Ange också vad VD-assistenten gör av momentet
   under tiden: oftast en enklare version (ett första utkast, en
@@ -241,8 +273,8 @@ För stora team: vad gör den medvetet inte som en bredare agent
 skulle göra?]
 
 **Anställs:** [Bara specialister. Plats i turordningen + skälet ur
-research, med kundens ord eller siffra: "2 — offerterna tar sex timmar
-i veckan." Tills dess: vad VD-assistenten gör av momentet, eller
+research, med kundens ord eller siffra: "2 — [kundens ord eller
+siffra för momentet]." Tills dess: vad VD-assistenten gör av momentet, eller
 "väntar" om det är bullrigt.]
 ```
 

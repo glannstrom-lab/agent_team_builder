@@ -1,0 +1,79 @@
+
+=== FÖRE: KA14 2026-10-23 (lokal emulator, gamla exempel, ingen plan) ===
+byggfirma: vd-assistent, offert, ata, bkr
+  skalning: Skalningsbeslut: 4 agenter (VD-assistent + 3 specialister — ingen separat VD, kunden är VD:n)
+  VD-agent: nej · teamBrister(utanVd): [] · systemprompter: OK · perspektivBrister: 0
+  VD-assistenten mot egna: offert 0.05 · ata 0.05 · bkr 0
+  förslaget: "### VD"-rubrik utan assistent: nej · ## Rekryteringsplan: ja · **Anställs:** 3 · Varje vecka: ja · Håller koll på: ja · Tills de anställs: ja
+  i teamet (efter sammanställningen): rekrytering/turordning i JSON: nämns i job/why · "förbered" i VD-assistentens system: ja · "kunden är VD"/"du är VD": ja
+  hiringPlan: SAKNAS · planBrister: []
+  valraden i Varje vecka: - **Vardag kväll (21–23):** lägger fram kvällens överblivna offertunderlag, så Jonas kan skriva klart på en kväll i stället för tre — sorterat efter vilka hembesök som ligger närmast i tid. | - **Fredag eftermiddag:** lägger fram nästa veckas tre möjliga jobb med vad vart och ett ger i kronor och tid, vad som får vänta om han väljer det ena framför det andra — Jonas väljer.
+  "tre möjliga jobb": JA · perspektiv (VD-ass.): Du letar alltid efter det som ingen annan äger — tråden mellan ett hembesök i tisdags, ett obesvarat offertmejl i torsdags och en förfrågan på Offerta som snart är en vecka gammal. Du varnar när en ku
+  förbrukning: 4 anrop · 39301 in / 18589 ut tokens · $0.0307 (usage.cost)
+salong: vd-assistent, instagram-redaktor, atertags-assistent
+  skalning: Skalningsbeslut: 3 agenter (VD-assistent + 2 specialister — ingen separat VD, kunden är VD:n)
+  VD-agent: nej · teamBrister(utanVd): [] · systemprompter: OK · perspektivBrister: 0
+  VD-assistenten mot egna: instagram-redaktor 0 · atertags-assistent 0.08
+  förslaget: "### VD"-rubrik utan assistent: nej · ## Rekryteringsplan: ja · **Anställs:** 2 · Varje vecka: ja · Håller koll på: ja · Tills de anställs: ja
+  i teamet (efter sammanställningen): rekrytering/turordning i JSON: nej · "förbered" i VD-assistentens system: ja · "kunden är VD"/"du är VD": ja
+  hiringPlan: SAKNAS · planBrister: []
+  valraden i Varje vecka: Måndag morgon: lägger fram veckans luckor (avbokningar, sena tider) med förslag på vem som kan ringas — Lina väljer vem. | Fredag: lägger fram nästa veckas tre möjliga inlägg med vad vart och ett kräver av Lina (bild, tid) — Lina väljer.
+  "tre möjliga jobb": JA · perspektiv (VD-ass.): Helheten — du ser vad som hänger ihop mellan stolarna, kvällarna och lagret. Du varnar när något ser löst ut i kanten (en tråd som tappats, ett datum som rör tre moment) och frågar hellre en gång för 
+  förbrukning: 5 anrop · 44152 in / 18045 ut tokens · $0.0302 (usage.cost)
+fotograf: vd-assistent, offert-uppfoljning, leveransplanering, prissattning
+  skalning: Skalningsbeslut: 4 agenter (VD-assistent + 3 specialister — ingen separat VD, kunden är VD:n)
+  VD-agent: nej · teamBrister(utanVd): [] · systemprompter: OK · perspektivBrister: 0
+  VD-assistenten mot egna: offert-uppfoljning 0.1 · leveransplanering 0.06 · prissattning 0.19
+  förslaget: "### VD"-rubrik utan assistent: nej · ## Rekryteringsplan: ja · **Anställs:** 3 · Varje vecka: ja · Håller koll på: ja · Tills de anställs: ja
+  i teamet (efter sammanställningen): rekrytering/turordning i JSON: nej · "förbered" i VD-assistentens system: ja · "kunden är VD"/"du är VD": ja
+  hiringPlan: SAKNAS · planBrister: []
+  valraden i Varje vecka: Fredag: lägger fram nästa veckas tre möjliga jobb med vad vart och ett ger i tid och intäkt — och sin rekommendation med skäl. Oskar och Emma väljer. Inför januari: påminner om mässbokning och att leadlistan från förra årets mässa ska följas upp innan den kallnar.
+  "tre möjliga jobb": JA · perspektiv (VD-ass.): Du ser helheten över säsongen — hela kedjan från obesvarad förfrågan till levererat galleri till recension. Du letar alltid efter det som faller mellan två moment eller två personer: par som väntar på
+  förbrukning: 4 anrop · 40002 in / 20104 ut tokens · $0.0352 (usage.cost)
+  VD-assistenterna mellan teamen: byggfirma~salong 0.1 · byggfirma~fotograf 0.15 · salong~fotograf 0.1
+  längsta ordagranna fras (≥5 ord) i valraderna: byggfirma~salong: "lägger fram nästa veckas tre möjliga" · byggfirma~fotograf: "lägger fram nästa veckas tre möjliga jobb med vad vart och ett ger i" · salong~fotograf: "fredag lägger fram nästa veckas tre möjliga"
+
+=== EFTER: SP9 + SP17 2026-10-23 (lokal emulator, hiringPlan, nya exempel) ===
+byggfirma: offertskrivaren, ata-rot-stodet, forfragningssvararen, vd-assistent
+  skalning: Skalningsbeslut: 4 agenter (VD-assistent + 3 specialister — ingen separat VD, kunden är VD:n)
+  VD-agent: nej · teamBrister(utanVd): [] · systemprompter: OK · perspektivBrister: 0
+  VD-assistenten mot egna: offertskrivaren 0.16 · ata-rot-stodet 0.15 · forfragningssvararen 0.13
+  förslaget: "### VD"-rubrik utan assistent: nej · ## Rekryteringsplan: ja · **Anställs:** 3 · Varje vecka: ja · Håller koll på: ja · Tills de anställs: ja
+  i teamet (efter sammanställningen): rekrytering/turordning i JSON: nej · "förbered" i VD-assistentens system: ja · "kunden är VD"/"du är VD": ja
+  hiringPlan: 1:offertskrivaren · 2:ata-rot-stodet · 3:forfragningssvararen · planBrister: []
+    1. offertskrivaren — Du skriver offerterna kl 21 när barnen sover, 1–2 timmar styck, och vill ner till 20 minuter i bilen — det är den största enskilda tidstjuven i din vecka.
+    2. ata-rot-stodet — ÄTA blir ofta bråk för att du inte skriver ner dem ordentligt innan ni gör dem, och du har ingen mall — dokumentationen ska ske i stunden, så specialisten behövs tidigt.
+    3. forfragningssvararen — Förfrågningarna blir liggande en vecka och då har kunderna valt någon annan — tidskritiskt, men kommer när offert och ÄTA bär sin tid.
+  valraden i Varje vecka: - **Inför varje kvällspass (21–23):** lägger fram kvällens val — skriva de offerter som ligger, eller följa upp de som redan skickats, eller ringa den kund som väntar på svar om ÄTA. Med vad vart och ett kostar i tid och vad som får vänta. Jonas avgör.
+  "tre möjliga jobb": nej · perspektiv (VD-ass.): Du ser var trådar glider isär mellan momenten — ett hembesök vars anteckningar inte blivit offert medan kunden redan hör av sig igen, en ÄTA som är gjord men inte godkänd av kund, ett badrum där fotot
+  förbrukning: 4 anrop · 42582 in / 20626 ut tokens · $0.0327 (usage.cost)
+salong: vd-assistent, luckhanteraren, instagram-vardinnan, stamkundsvardaren
+  skalning: Skalningsbeslut: 4 agenter (VD-assistent + 3 specialister — ingen separat VD, kunden är VD:n)
+  VD-agent: nej · teamBrister(utanVd): [] · systemprompter: OK · perspektivBrister: 0
+  VD-assistenten mot egna: luckhanteraren 0.43 · instagram-vardinnan 0.07 · stamkundsvardaren 0.33
+  förslaget: "### VD"-rubrik utan assistent: nej · ## Rekryteringsplan: ja · **Anställs:** 3 · Varje vecka: ja · Håller koll på: ja · Tills de anställs: ja
+  i teamet (efter sammanställningen): rekrytering/turordning i JSON: nämns i job/why · "förbered" i VD-assistentens system: ja · "kunden är VD"/"du är VD": ja
+  hiringPlan: 1:luckhanteraren · 2:instagram-vardinnan · 3:stamkundsvardaren · planBrister: []
+    1. luckhanteraren — Du sa att hål i schemat inte hinner fyllas — och en fylld färgtid är dyrare än en klipptid, så Luckhanteraren anställs först.
+    2. instagram-vardinnan — Du sa att Instagram tar kvällarna — Instagram-värdinnan anställs näst, för att returnera tid som inte finns i schemat eftersom arbetet sker utanför stolarna.
+    3. stamkundsvardaren — Du sa att stamkunder glider iväg utan att du märker det — tydlig ROI, men det blir oregelbundet i praktiken, därför anställs Stamkundsvårdaren sist.
+  valraden i Varje vecka: Måndag morgon: går igenom veckans schema mot de kunder som avbokat eller inte bekräftat, och lägger fram vilka luckor som behöver fyllas först — med vad en fylld färgtid är värd jämfört med en klippning. | Fredag eftermiddag: lägger fram veckans Instagram-underlag (2–3 inläggstexter med hashtags) och stamkundslistan för månaden — vad som hinns med och vad som får vänta. När en lucka uppstår mitt i dagen: prioriterar den mot pågående arbete och frågar Lina vad som går först.
+  "tre möjliga jobb": nej · perspektiv (VD-ass.): Du ser alltid hela veckan som ett pussel där stolarna, kundernas intervall och Linas tid konkurrerar — du letar efter luckor som kan fyllas av en kund som ändå borde kontaktas, och varnar när en färgt
+  förbrukning: 4 anrop · 37092 in / 17782 ut tokens · $0.0295 (usage.cost)
+fotograf: vd-assistent, forfrågningsspecialisten, offertskrivaren, marknadsplaneraren
+  skalning: Skalningsbeslut: 4 agenter (VD-assistent + 3 specialister — ingen separat VD, kunden är VD:n)
+  VD-agent: nej · teamBrister(utanVd): [] · systemprompter: OK · perspektivBrister: 0
+  VD-assistenten mot egna: forfrågningsspecialisten 0.23 · offertskrivaren 0.09 · marknadsplaneraren 0.15
+  förslaget: "### VD"-rubrik utan assistent: nej · ## Rekryteringsplan: ja · **Anställs:** 3 · Varje vecka: ja · Håller koll på: ja · Tills de anställs: ja
+  i teamet (efter sammanställningen): rekrytering/turordning i JSON: nämns i job/why · "förbered" i VD-assistentens system: ja · "kunden är VD"/"du är VD": ja
+  hiringPlan: 1:forfrågningsspecialisten · 2:offertskrivaren · 3:marknadsplaneraren · planBrister: []
+    1. forfrågningsspecialisten — Förfrågningar i högsäsong hinner ni inte svara på, och högsäsongen börjar i maj — därför anställs den här kollegan först.
+    2. offertskrivaren — Ni vill ha fler företagskunder under vintern, och vinterlågsäsongen är när offert- och prisarbetet kan göras utan att konkurrera med bröllopen.
+    3. marknadsplaneraren — Mässorna ligger i januari och det är där vinterns kunder kommer in — en koncentrerad insats inför säsongen, sist i turordningen.
+  valraden i Varje vecka: (ingen hittad)
+  "tre möjliga jobb": nej · perspektiv (VD-ass.): Du bevakar övergångarna mellan bröllops- och företagsspåret — att ett paketpris, en leverans och en recensionspåminnelse hör till samma kund men hamnar på tre olika ställen i deras vecka, och att säso
+  förbrukning: 5 anrop · 52512 in / 26609 ut tokens · $0.0388 (usage.cost)
+  VD-assistenterna mellan teamen: byggfirma~salong 0.15 · byggfirma~fotograf 0.3 · salong~fotograf 0.19
+  längsta ordagranna fras (≥5 ord) i valraderna: byggfirma~salong: "och vad som får vänta" · byggfirma~fotograf: "–" · salong~fotograf: "–"
+
+Total kostnad för de tre SP9-byggena: $0.1010

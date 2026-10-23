@@ -57,8 +57,10 @@ specialist äger, med kundens egna ord.]
 
 [MÅSTE FYLLAS i solo, mikro och personläget, där kunden är VD:n och
 ingen VD-agent finns: de prioriteringsmoment researchen hittade, i den
-form hon förbereder dem — med dag eller tillfälle. "Fredag: lägger fram
-nästa veckas tre möjliga jobb med vad vart och ett ger — du väljer."
+form hon förbereder dem — med dag eller tillfälle. Byggs ur det val just
+den här kunden står inför (se `prompts/shared/proposal.md`, steg 2): vad
+som konkurrerar om tiden, när valet kommer och i vilken enhet
+alternativen värderas. Ingen färdig formulering finns att låna.
 Hon fattar aldrig valet själv. Finns en VD-agent: stryk avsnittet.]
 
 ## Tills de anställs

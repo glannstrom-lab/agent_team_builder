@@ -41,9 +41,22 @@ window.TEAM = {
   workstyle: null,           // "coach" = arbetsledarläge (se nedan), annars null/utelämna
   divergence: "<en mening ur divergens-checken: varför teamet inte skulle passa en annan aktör i samma bransch>",
   rejected: [ { name: "<avvisat moment>", why: "<varför det inte blev en agent>" } ],
+  hiringPlan: [ { agentId: "<specialistens id>", order: 1, reason: "<en mening till kunden, med kundens egna ord>" } ],
   agents: [ /* se nedan, VD-assistent först, sedan VD (bara från litet och uppåt), sedan specialister */ ]
 };
 ```
+
+### Rekryteringsplanen (`hiringPlan`)
+
+Kunden börjar med VD-assistenten; specialisterna anställs en i taget.
+`hiringPlan` hämtas ur proposalens `## Rekryteringsplan` och raderna
+**Anställs:** — en post per specialist och **bara** specialister:
+VD-assistenten (och en VD, där en sådan finns) är anställd från dag ett och
+står inte i planen. `order` är platsen i turordningen, 1, 2, 3 … utan hål
+eller dubbletter, i samma ordning som specialisterna står i `agents`.
+`reason` riktas till kunden och byggs av kundens egna ord eller siffror, som
+`why` — fabricera inget. Portalen läser fältet; saknas det räknas alla
+agenter som anställda.
 
 `divergence` + `rejected` (från proposalens Avvisade-sektion) driver portalens
 sida **"Därför ser ert team ut så här"** — den öppnas automatiskt vid kundens
@@ -134,7 +147,7 @@ Bygg varje del från proposal/research:
 1. **Kontext + roll** — en mening om företaget, sedan agentens jobb (jobb-meningen från proposal).
 2. **DITT PERSPEKTIV** — proposalens Perspektiv: blicken agenten resonerar från, vad den alltid letar efter/varnar för. Det här är vad som gör att två agenter med närliggande uppgifter svarar olika.
 3. **DINA KAPACITETER** — punktlista, agentens kapaciteter från proposal.
-4. **DITT TEAM** (bara för VD-assistenten) — lista övriga agenter och vad de gör, så den kan hänvisa rätt. För VD-assistenten även: granska mötesbidrag mot varje agents "Klart när"-punkter innan sammanställning. Har teamet ingen VD-agent (solo, mikro, en enskild person) är kunden VD:n: skriv det här, och att VD-assistenten **förbereder** prioriteringsbeslut — alternativen, vad vart och ett kostar, vad som får vänta, en rekommendation med skäl — medan kunden fattar dem. Hon väljer aldrig själv. Finns en VD-agent lämnar hon valet dit.
+4. **DITT TEAM** (bara för VD-assistenten) — hela teamet enligt rekryteringsplanen: varje kollega med namn, vad den gör och sin plats i turordningen. Kollegorna anställs en i taget i den ordningen, inte alla på dag ett, och hon är den enda som finns från början: skriv att hon hänvisar bara till dem som redan är anställda (portalen talar om vilka det är just nu), att hon tills en kollega är anställd själv tar hand om dess moment i den enklare form proposalen anger under "Tills de anställs" — eller säger rakt ut att momentet väntar på sin kollega — och att hon lämnar över momentet när kollegan börjat. För VD-assistenten även: granska mötesbidrag mot varje agents "Klart när"-punkter innan sammanställning. Har teamet ingen VD-agent (solo, mikro, en enskild person) är kunden VD:n: skriv det här, och att VD-assistenten **förbereder** prioriteringsbeslut — alternativen, vad vart och ett kostar, vad som får vänta, en rekommendation med skäl — medan kunden fattar dem. Hon väljer aldrig själv. Finns en VD-agent lämnar hon valet dit.
 5. **LEVERANS** — proposalens Leverans + "Klart när"-punkter: hur ett färdigt svar ser ut, så agenten levererar mot det istället för att resonera fritt.
 6. **ARBETSSÄTT** (valfritt) — hur agenten ska be om data den saknar istället för att gissa (jfr regel 8 i generate.md: agenter startar utan data). Saknas en uppgift som ska stå i en text kunden skickar vidare (telefonnummer, organisationsnummer, pris, datum, namn, adress) skrivs den som [fyll i: …] — aldrig påhittad, aldrig ett exempelnummer.
 7. **TON** — kort. Spegla läget: nybörjarkund → pedagogisk, klarspråk; van/byggare → rakare, mer jämbördig. Avsluta med "Svara på <språk>."

@@ -1049,3 +1049,40 @@ test("KA14: PORTAL_RULES punkt 4 och portal-team.md säger samma sak om kärnan"
     assert.match(rad, /väljer aldrig själv/, namn + ": säger inte att hon aldrig väljer själv");
   }
 });
+
+// ── SP9: rekryteringsplanen i kontraktet (2026-10-23) ──────────────────────
+//
+// `hiringPlan` är ett nytt toppnivåfält. Båda halvorna av kontraktet ska ha
+// det — ett fält som beställs men saknas i schemat kommer aldrig tillbaka, och
+// ett som krävs men inte beställs blir påhittat — och PORTAL_RULES punkt 4
+// måste säga att kollegorna anställs i turordning, på båda ställena.
+test("SP9: structurePrompt beställer hiringPlan och TEAM_SCHEMA kräver det i strict-form", async () => {
+  const { skickat } = await uppström({ step: "structure", mode: "team-builder", messages: ETT });
+  const prompt = skickat.messages[0].content;
+  const schema = skickat.response_format.json_schema.schema;
+  assert.ok(schema.required.includes("hiringPlan"), "TEAM_SCHEMA kräver inte hiringPlan");
+  const plan = schema.properties.hiringPlan;
+  assert.equal(plan.type, "array");
+  assert.ok(plan.minItems >= 1, "en tom plan betyder att ingen anställs någonsin");
+  assert.equal(plan.items.additionalProperties, false);
+  assert.deepEqual([...plan.items.required].sort(), ["agentId", "order", "reason"]);
+  assert.deepEqual(Object.keys(plan.items.properties).sort(), ["agentId", "order", "reason"]);
+  assert.equal(plan.items.properties.order.type, "integer");
+  // Prompthalvan: fältet i JSON-skissen, och en egen instruktion.
+  assert.match(prompt, /"hiringPlan": \[\{ "agentId": string, "order": number, "reason": string \}\]/);
+  assert.match(prompt, /HIRINGPLAN:[^\n]*Rekryteringsplan[^\n]*Anställs/, "prompten säger inte var planen hämtas");
+  assert.match(prompt, /HIRINGPLAN:[^\n]*bara specialister/i, "prompten säger inte att kärnan står utanför planen");
+});
+
+test("SP9: PORTAL_RULES punkt 4 och portal-team.md säger båda att kollegorna anställs i turordning", () => {
+  const regler = readFileSync("functions/api/_build.js", "utf8").match(/^4\. \(Bara VD-assistenten\)[^\n]*/m);
+  const mall = readFileSync("templates/shared/portal-team.md", "utf8").match(/^4\. \*\*DITT TEAM\*\*[^\n]*/m);
+  assert.ok(regler && mall, "hittade inte punkt 4 på båda ställena");
+  for (const [namn, rad] of [["PORTAL_RULES", regler[0]], ["portal-team.md", mall[0]]]) {
+    assert.match(rad, /rekryteringsplanen/, namn + ": VD-assistenten känner inte planen");
+    assert.match(rad, /anställs en i taget/, namn + ": säger inte att kollegorna anställs över tid");
+    assert.match(rad, /hänvisar bara till dem som redan är anställda/, namn + ": hon kan hänvisa till någon som inte finns");
+    assert.match(rad, /Tills de anställs/, namn + ": säger inte att hon tar momenten tills dess");
+  }
+  assert.match(readFileSync("templates/shared/portal-team.md", "utf8"), /hiringPlan: \[/, "portal-team.md visar inte fältet i formatet");
+});

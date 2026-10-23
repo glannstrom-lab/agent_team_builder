@@ -1,0 +1,5 @@
+  research: 27.8 s, 17054 tecken, finish=stop
+  scale: 1.0 s, 437 tecken, finish=stop
+  proposal: 23.8 s, 16488 tecken, finish=stop
+  structure: 23.3 s, 26944 tecken, finish=stop
+team klart på försök 1: vd-assistent, offertskrivaren, ata-fakturaunderlag, forfragningsberedningen

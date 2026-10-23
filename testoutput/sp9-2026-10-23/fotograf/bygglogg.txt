@@ -1,0 +1,18 @@
+  research: 21.0 s, 16584 tecken, finish=stop
+  scale: 1.1 s, 380 tecken, finish=stop
+  proposal: 19.6 s, 14860 tecken, finish=stop
+  … 429, väntar 60 s ({"error":"För många anrop just nu. Vänta en kvart och försök igen.","code":"rate_limited"})
+  … 429, väntar 60 s ({"error":"För många anrop just nu. Vänta en kvart och försök igen.","code":"rate_limited"})
+  … 429, väntar 60 s ({"error":"För många anrop just nu. Vänta en kvart och försök igen.","code":"rate_limited"})
+  … 429, väntar 60 s ({"error":"För många anrop just nu. Vänta en kvart och försök igen.","code":"rate_limited"})
+  … 429, väntar 60 s ({"error":"För många anrop just nu. Vänta en kvart och försök igen.","code":"rate_limited"})
+  … 429, väntar 60 s ({"error":"För många anrop just nu. Vänta en kvart och försök igen.","code":"rate_limited"})
+  … 429, väntar 60 s ({"error":"För många anrop just nu. Vänta en kvart och försök igen.","code":"rate_limited"})
+  … 429, väntar 60 s ({"error":"För många anrop just nu. Vänta en kvart och försök igen.","code":"rate_limited"})
+  … 429, väntar 60 s ({"error":"För många anrop just nu. Vänta en kvart och försök igen.","code":"rate_limited"})
+  … 429, väntar 60 s ({"error":"För många anrop just nu. Vänta en kvart och försök igen.","code":"rate_limited"})
+  … 429, väntar 60 s ({"error":"För många anrop just nu. Vänta en kvart och försök igen.","code":"rate_limited"})
+  structure: 678.8 s, 24597 tecken, finish=stop
+  sammanställningen föll: rekryteringsplanens ordning är inte 1–3 utan hål och dubbletter (2, 3, 4)
+  structure: 17.4 s, 24279 tecken, finish=stop
+team klart på försök 2: vd-assistent, forfrågningsspecialisten, offertskrivaren, marknadsplaneraren

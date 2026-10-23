@@ -468,6 +468,60 @@
           "roll": "simuleringen bygger som Buildern"
         }
       ]
+    },
+    {
+      "id": "rekryteringsplan",
+      "rubrik": "Rekryteringsplanen: hiringPlan från förslaget till portalen (SP9)",
+      "varfor": "Teamet planeras helt men anställs ett i taget. Turordningen står på sex ställen: proposal.md skriver den, structurePrompt beställer den, TEAM_SCHEMA tillåter den, planBrister/trimmaTeam håller den hel, stripTeam bär den ut ur Buildern och portalen läser den. Faller fältet ur schemat kommer det aldrig tillbaka; faller det ur stripTeam når det aldrig kunden; glider PORTAL_RULES punkt 4 och portal-team.md isär vet VD-assistenten i /build-team inte att kollegorna anställs över tid. Kontraktet: bara specialister, order 1, 2, 3 … utan hål, ingångsagenten och en eventuell VD aldrig med; saknas fältet är alla anställda.",
+      "vaktas_av": [
+        "test/ai.mjs — SP9: structurePrompt beställer hiringPlan och TEAM_SCHEMA kräver det i strict-form",
+        "test/ai.mjs — SP9: PORTAL_RULES punkt 4 och portal-team.md säger båda att kollegorna anställs i turordning",
+        "test/teams.mjs — SP9: trimmaTeam tar den bortflyttade specialisten ur planen och numrerar om",
+        "test/teams.mjs — SP9: ett nytt bygge kräver rekryteringsplanen — i Buildern och i simuleringen",
+        "test/teams.mjs — stripTeam bär vidare varje agentfält portalen läser"
+      ],
+      "delar": [
+        {
+          "fil": "prompts/shared/proposal.md",
+          "ankare": "## Rekryteringsplan",
+          "roll": "förslaget skriver turordningen och raderna Anställs"
+        },
+        {
+          "fil": "functions/api/_build.js",
+          "ankare": "HIRINGPLAN:",
+          "roll": "structurePrompt beställer fältet"
+        },
+        {
+          "fil": "functions/api/_build.js",
+          "ankare": "hiringPlan: {",
+          "roll": "TEAM_SCHEMA tillåter fältet"
+        },
+        {
+          "fil": "builder/builder.js",
+          "ankare": "function planBrister",
+          "roll": "kontrollen och omnumreringen vid trimning"
+        },
+        {
+          "fil": "builder/builder.js",
+          "ankare": "hiringPlan: Array.isArray(team.hiringPlan)",
+          "roll": "stripTeam bär fältet ut ur Buildern"
+        },
+        {
+          "fil": "templates/shared/portal-team.md",
+          "ankare": "### Rekryteringsplanen (`hiringPlan`)",
+          "roll": "samma fält och punkt 4 för /build-team"
+        },
+        {
+          "fil": "testoutput/sim-2026-09/sim.mjs",
+          "ankare": "teamet saknar rekryteringsplanen",
+          "roll": "simuleringen kräver planen som Buildern"
+        },
+        {
+          "fil": "portal/app.js",
+          "ankare": "hiringPlan",
+          "roll": "läsaren: saknas fältet är alla anställda"
+        }
+      ]
     }
   ]
 }

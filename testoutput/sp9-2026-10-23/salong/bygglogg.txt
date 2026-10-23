@@ -1,0 +1,5 @@
+  research: 18.3 s, 14135 tecken, finish=stop
+  scale: 1.0 s, 456 tecken, finish=stop
+  proposal: 17.2 s, 14428 tecken, finish=stop
+  structure: 21.6 s, 24267 tecken, finish=stop
+team klart på försök 1: vd-assistent, luckhanteraren, instagram-vardinnan, stamkundsvardaren
