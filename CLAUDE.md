@@ -863,8 +863,17 @@ ny kund dyker upp i både galleri och portal automatiskt.
 > OpenRouter-nyckel ligger nu i `.dev.vars`. Se blockcitatet överst i *Omläggning
 > 2026-10-23* i `ROADMAP.md`.
 >
-> **Nästa pass enda uppgift (ersätter raden nedan):** **KA14** genomförd och SP17
-> provad i tre riktiga byggen lokalt.
+> **Passet 2026-10-23 kväll är committat men INTE pushat eller driftsatt** (20
+> commits före `origin/main`). Gjort: KA14, SP1–SP3, SP8 (server), SP9, SP17
+> (prompt), SP19, skisser SP15/SP16. 480 gröna. Drift kör fortfarande de gamla
+> prompterna — driftsätt inte förrän punkten nedan är mätt.
+>
+> **Nästa pass enda uppgift:** mät VD-assistenten (SP17) ordentligt — 3 körningar
+> × byggfirma/salong/fotograf lokalt, emulatorn omstartad efter varje
+> promptändring, ≈ $0,90 — och rätta prompten tills hon inte lånar specialistens
+> blick och inte hittar på namn.
+>
+> *Förra passets rad:* **KA14** genomförd och SP17 provad i tre riktiga byggen lokalt.
 >
 > *Tidigare:* **OL4** — exporten av ett genererat team till EN
 > plattform (förslag: ChatGPT), med aktuellt format och teckentak kontrollerade
