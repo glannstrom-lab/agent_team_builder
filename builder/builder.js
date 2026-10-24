@@ -106,7 +106,8 @@ function boot() {
   scenUtkast();
   state.apiKey = "";
   syncModelForProvider();
-  renderForm();
+  // SP7: kommer kunden från öppningsscenen fortsätter intervjun i mötesrummet.
+  if (mötetFörst()) renderMote(); else renderForm();
 }
 
 // Liten banner som visas i demoläget.
@@ -229,6 +230,11 @@ function renderForm() {
     : person
       ? "Fyll i, tryck Bygg, och se hela den riktiga analysen växa fram live. Teamet byggs runt din arbetsvecka — inte runt arbetsplatsens organisationsschema."
       : "Fyll i, tryck Bygg, och se hela den riktiga analysen växa fram live. Körningen tar under en minut — och resultatet blir korrekt."));
+  if (!state.demo) {
+    const tillMöte = el("button", "link-btn mote-lank", "Hellre prata än fylla i? Låt kandidaten intervjua dig →");
+    tillMöte.type = "button"; tillMöte.onclick = renderMote;
+    head.appendChild(tillMöte);
+  }
   wrap.appendChild(head);
 
   // Sparad körning? Erbjud återupptagning — de klara stegen är redan betalda.
@@ -637,7 +643,27 @@ function renderSurvey(audience) {
 // prompts/shared/research.md under "När teamet byggs för en enskild person".
 // Sektionsrubrikerna är desamma i båda fallen; kontraktet ändras inte, det
 // får bara sällskap av ett par personspecifika sektioner.
+// Raderna om kandidaten (SP9/SP17 punkt 3–4). proposal.md läser namnet ur
+// underlaget ("Namnen"): står det här blir VD-assistenten den kunden valde,
+// annars får hon rollnamnet. Kundens eget namn står med för krockregeln — och
+// för att modellen inte ska hitta på ett efternamn åt ägaren.
+function kandidatRader(intake) {
+  const k = intake.kandidat || {};
+  return [
+    k.namn ? `vd_assistentens_namn: ${k.namn}  (valt av kunden — VD-assistenten heter så)` : null,
+    k.chef ? `kundens_namn:   ${k.chef}  (ägaren — ingen agent får heta så)` : null,
+  ].filter(Boolean);
+}
+
 function buildIntakeBlock(intake) {
+  // SP7: intervjun skriver intaget själv, i kontraktets form. Det går vidare
+  // som det är — sektionerna nedan är formulärets översättning till samma form.
+  if (intake.intakeText) {
+    const rader = String(intake.intakeText).split("\n");
+    const tom = rader.findIndex((x) => !x.trim());
+    rader.splice(tom < 0 ? rader.length : tom, 0, ...kandidatRader(intake));
+    return ["```", ...rader, "```"].join("\n");
+  }
   const val = (v, alt) => (v && v.trim() ? v.trim() : alt);
   const sv = intake.survey || {};
   const list = (a) => (Array.isArray(a) && a.length ? a.join(", ") : "");
@@ -735,6 +761,7 @@ function buildIntakeBlock(intake) {
     `läge:           ${intake.mode}`,
     intake.maturity ? `ai_mognad:      ${intake.maturity}` : null,
     `källa:          intervju`,
+    ...kandidatRader(intake),
     ...profile,
     "",
     // Vägvalet upprepas som egen sektion, inte bara som en rad högst upp. En
@@ -911,6 +938,235 @@ function renderClarify(form, intake, qs, tvingande) {
   inputs[0]?.t.focus();
 }
 
+// ---------- mötesrummet (SP7) ----------
+//
+// Öppningsscenen slutar mitt i intervjun: kandidaten har frågat "vad gör ni
+// på en vanlig måndag?" och kunden har svarat. Här fortsätter samma samtal,
+// med samma ansikte och samma namn, en fråga i taget — i stället för att
+// kunden möts av ett formulär och får börja om.
+//
+// Servern äger prompten (prompts/shared/interview.md, steget `intervju`).
+// Härifrån går bara transkriptet, som ETT meddelande i den form läsIntervju()
+// i functions/api/_build.js läser: {"turer":[{"fraga","svar"}]}. Svaret är
+// en fråga eller "klart" plus ett färdigt intag, som går rakt in i research —
+// research, skalning, förslag och avslag körs alltså oförändrade.
+//
+// Formuläret och enkäten finns kvar som ett val ("hellre kryssa?"), för den
+// som har svårt att formulera sig i fritt samtal.
+const MOTE_STORAGE = "atb_mote";
+const MOTE_MAX_TURER = 12;      // samma tal som INTERVJU_MAX_TURER på servern
+const MOTE_MAX_SVAR = 2000;     // samma tal som INTERVJU_MAX_SVAR
+const SCEN_FRAGA = "Så — vad gör ni på en vanlig måndag?";
+
+function läsScen() {
+  try { return JSON.parse(localStorage.getItem("atb_scen") || "null") || null; } catch (_) { return null; }
+}
+
+// Kandidaten kunden valde i scenen. Utan scen: samma förval som scenen har
+// (porträtt 14, Robin), så att mötesrummet aldrig står utan ansikte.
+function scenKandidat() {
+  const s = läsScen() || {};
+  const n = Number(s.avatarN);
+  const namn = String(s.namn || "").trim().slice(0, 40);
+  return {
+    namn: namn || null,
+    avatarN: Number.isInteger(n) && n >= 1 && n <= 25 ? n : null,
+    chef: String(s.chef || "").trim().slice(0, 60) || null,
+    firma: s.firma && s.firma !== "Firman" ? String(s.firma).trim().slice(0, 80) : null,
+  };
+}
+
+function läsMöte() {
+  try {
+    const m = JSON.parse(localStorage.getItem(MOTE_STORAGE) || "null");
+    return m && Array.isArray(m.turer) ? m : null;
+  } catch (_) { return null; }
+}
+function sparaMöte(m) { try { localStorage.setItem(MOTE_STORAGE, JSON.stringify(m)); } catch (_) { /* full lagring */ } }
+function glömMöte() { try { localStorage.removeItem(MOTE_STORAGE); } catch (_) { /* inget att göra */ } }
+
+// Ett nytt möte. Har kunden svarat på måndagsfrågan i scenen är det samtalets
+// första tur — kandidaten ställde den, och svaret ska inte behöva ges två gånger.
+function nyttMöte() {
+  const s = läsScen() || {};
+  const turer = s.mandag ? [{ fraga: SCEN_FRAGA, svar: String(s.mandag).slice(0, MOTE_MAX_SVAR) }] : [];
+  return { turer, fraga: null, klart: null };
+}
+
+// Ska Buildern öppna mötet i stället för formuläret? Ja när kunden kommer från
+// scenen eller redan har ett möte på gång — och inte i demoläget, som spelar
+// upp en inspelad körning.
+function mötetFörst() {
+  if (state.demo) return false;
+  const saved = loadRun();
+  if (saved && saved.intake && (saved.team || (saved.r && Object.keys(saved.r).length))) return false;
+  return !!(läsMöte() || läsScen());
+}
+
+// Intaget ur intervjun → det intake-objekt pipelinen redan känner. Texten går
+// vidare som den är (buildIntakeBlock ser `intakeText`); fälten här är bara de
+// som Buildern själv läser: rubriken, vägvalet, storleken och läget.
+const STORLEKAR = ["solo", "mikro", "litet", "medelstort", "stort"];
+function intagTillIntake(text, kandidat) {
+  const rad = (k) => {
+    const m = String(text).match(new RegExp("^\\s*" + k + "\\s*:\\s*(.+)$", "mi"));
+    return m ? m[1].trim() : "";
+  };
+  const person = /enskild person/i.test(rad("teamet_för"));
+  const storlek = (rad("storlek").toLowerCase().match(/[a-zåäö]+/) || [""])[0];
+  let company = rad("företagsnamn");
+  if (!company || /^okänt/i.test(company)) company = (kandidat && kandidat.firma) || (person ? (rad("roll") || "Mitt team") : "Er verksamhet");
+  company = company.slice(0, 80);
+  // Modellen skriver "okänt" när namnet inte sades i samtalet — men scenen vet
+  // det. Rätta raden i texten också, så research ser samma namn som rubriken.
+  let intakeText = String(text).trim();
+  if (/^\s*företagsnamn\s*:/mi.test(intakeText)) intakeText = intakeText.replace(/^(\s*företagsnamn\s*:\s*).*$/mi, "$1" + company);
+  return {
+    audience: person ? "person" : "verksamhet",
+    size: person ? "solo" : (STORLEKAR.includes(storlek) ? storlek : "litet"),
+    company, mode: "team-builder", workstyle: null,
+    intakeText, kandidat: kandidat || null,
+  };
+}
+
+function renderMote() {
+  const k = scenKandidat();
+  const namn = k.namn || "Robin";
+  const avatarN = k.avatarN || 14;
+  let möte = läsMöte() || nyttMöte();
+  sparaMöte(möte);
+
+  const root = $("#root"); root.innerHTML = "";
+  const wrap = el("main", "mote-wrap");
+  wrap.appendChild(hubLink());
+
+  const rum = el("section", "mote-rum");
+  rum.setAttribute("aria-label", `Intervjun med ${namn}`);
+  const kamera = el("div", "mote-kamera");
+  const bild = el("img", "mote-bild");
+  bild.src = window.ATBAvatars ? window.ATBAvatars.src(avatarN, AVATAR_BASE) : AVATAR_BASE + "avatar-14.png";
+  bild.alt = `${namn}, kandidaten till jobbet som VD-assistent`;
+  kamera.appendChild(bild);
+  const skylt = el("div", "mote-skylt");
+  skylt.appendChild(el("b", null, namn));
+  skylt.appendChild(el("span", null, "Kandidat · VD-assistent"));
+  kamera.appendChild(skylt);
+  const räknare = el("div", "mote-raknare");
+  kamera.appendChild(räknare);
+  rum.appendChild(kamera);
+
+  const logg = el("div", "mote-logg"); logg.setAttribute("aria-live", "polite");
+  rum.appendChild(logg);
+
+  const svarForm = el("form", "mote-svar");
+  const ta = el("textarea", "intake-text mote-ta"); ta.rows = 3; ta.maxLength = MOTE_MAX_SVAR;
+  ta.id = "mote-svar"; ta.placeholder = "Svara med egna ord — eller tryck på mikrofonen och prata.";
+  const lab = el("label", "mote-sr", `Ditt svar till ${namn}`); lab.setAttribute("for", ta.id);
+  const mic = window.ATBClaude && window.ATBClaude.dictationButton ? window.ATBClaude.dictationButton(ta, { klass: "intake-mic" }) : null;
+  const fält = el("div", "intake-dikt"); fält.append(ta); if (mic) fält.append(mic);
+  const skicka = el("button", "btn-primary", "Svara"); skicka.type = "submit";
+  const fel = el("div", "setup-err"); fel.setAttribute("role", "alert"); fel.hidden = true;
+  svarForm.append(lab, fält, skicka, fel);
+  rum.appendChild(svarForm);
+
+  const klar = el("div", "mote-klar"); klar.hidden = true;
+  rum.appendChild(klar);
+  wrap.appendChild(rum);
+
+  // Vägen ut ur samtalet. Enkäten är kvar för den som hellre kryssar; det
+  // scenen redan fått veta följer med in i formuläret (scenUtkast).
+  const fot = el("div", "mote-fot");
+  const tillFormulär = el("button", "link-btn", "Hellre kryssa och fylla i? Gå till formuläret"); tillFormulär.type = "button";
+  tillFormulär.onclick = () => { state.audience = state.audience || "verksamhet"; renderForm(); };
+  const omStart = el("button", "link-btn", "Börja om samtalet"); omStart.type = "button";
+  omStart.onclick = () => { if (confirm("Börja om intervjun från början?")) { glömMöte(); renderMote(); } };
+  fot.append(tillFormulär, omStart);
+  wrap.appendChild(fot);
+  root.appendChild(wrap);
+
+  const replik = (vem, text, kl) => {
+    const r = el("div", "mote-replik " + kl);
+    r.appendChild(el("span", "mote-vem", vem));
+    r.appendChild(el("p", null, text));
+    logg.appendChild(r);
+    return r;
+  };
+  const rita = () => {
+    logg.innerHTML = "";
+    möte.turer.forEach((t) => { replik(namn, t.fraga, "is-kandidat"); replik(k.chef || "Du", t.svar, "is-kund"); });
+    if (möte.fraga) replik(namn, möte.fraga, "is-kandidat");
+    if (möte.klart) replik(namn, möte.klart.replik, "is-kandidat");
+    const kvar = MOTE_MAX_TURER - möte.turer.length;
+    räknare.textContent = möte.klart ? "Intervjun är klar" : `Fråga ${Math.min(möte.turer.length + 1, MOTE_MAX_TURER)} · högst ${MOTE_MAX_TURER}${kvar <= 3 ? ` — ${kvar} kvar` : ""}`;
+    svarForm.hidden = !!möte.klart || !möte.fraga;
+    klar.hidden = !möte.klart;
+    if (möte.klart) ritaKlar();
+    logg.scrollTop = logg.scrollHeight;
+  };
+
+  const ritaKlar = () => {
+    klar.innerHTML = "";
+    klar.appendChild(el("p", "mote-klar-lead",
+      `${namn} har hört nog för att lägga fram en rekryteringsplan: vilka kollegor ni behöver, i vilken ordning — och vilka ni inte behöver.`));
+    const d = el("details", "mote-intag");
+    d.appendChild(el("summary", null, `Det ${namn} antecknade`));
+    d.appendChild(el("pre", null, möte.klart.intag));
+    klar.appendChild(d);
+    const bygg = el("button", "btn-primary build-btn", "Lägg fram planen →"); bygg.type = "button";
+    bygg.onclick = () => runBuild(intagTillIntake(möte.klart.intag, Object.assign({}, k, { namn, avatarN })));
+    klar.appendChild(bygg);
+    bygg.focus({ preventScroll: true });
+  };
+
+  // Hämtar kandidatens nästa replik. Ett fel lämnar transkriptet orört, så
+  // "Försök igen" frågar om samma sak — ingenting kunden skrivit går förlorat.
+  const fråga = async () => {
+    fel.hidden = true;
+    const väntar = replik(namn, "…", "is-kandidat is-vantar");
+    svarForm.hidden = true;
+    try {
+      const raw = await window.ATBClaude.collect({
+        apiKey: state.apiKey, model: state.model, step: "intervju", kravSlut: true,
+        messages: [{ role: "user", content: JSON.stringify({ turer: möte.turer }) }],
+      });
+      let svar = null;
+      try { svar = parseTeamJson(raw); } catch (_) { svar = null; }
+      if (!svar || typeof svar.replik !== "string") throw new Error("Kandidaten svarade inte begripligt. Försök igen.");
+      if (svar.status === "klart" && typeof svar.intag === "string" && svar.intag.trim()) {
+        möte.klart = { replik: svar.replik.trim(), intag: svar.intag.trim() };
+        möte.fraga = null;
+      } else {
+        möte.fraga = svar.replik.trim().slice(0, 600);
+      }
+      sparaMöte(möte);
+      rita();
+      if (!möte.klart) ta.focus({ preventScroll: true });
+    } catch (e) {
+      väntar.remove();
+      fel.textContent = (e && e.message) || "Det gick inte just nu.";
+      fel.hidden = false;
+      svarForm.hidden = false;
+      skicka.textContent = möte.fraga ? "Svara" : "Försök igen";
+    }
+  };
+
+  svarForm.onsubmit = (e) => {
+    e.preventDefault();
+    if (!möte.fraga) { fråga(); return; } // efter ett fel: fråga om
+    const svar = ta.value.trim();
+    if (svar.length < 2) { fel.textContent = "Skriv eller säg något — ett par ord räcker."; fel.hidden = false; return; }
+    möte.turer.push({ fraga: möte.fraga, svar: svar.slice(0, MOTE_MAX_SVAR) });
+    möte.fraga = null;
+    ta.value = "";
+    sparaMöte(möte);
+    rita();
+    fråga();
+  };
+
+  rita();
+  if (!möte.fraga && !möte.klart) fråga();
+}
+
 // ---------- körnings-persistens ----------
 // Varje avklarat steg skrivs till localStorage så att fel, F5 eller en stängd
 // flik aldrig kostar redan betalda API-anrop. team följer med när det är klart.
@@ -931,10 +1187,18 @@ async function runBuild(intake, prevR) {
   if (state.busy) return;
   state.busy = true;
   state.abort = new AbortController();
-  const intakeBlock = buildIntakeBlock(intake);
   const r = prevR || {};
   // KR5: ett nytt bygge är ett nytt team — köpmarkeringen hörde till det förra.
   if (!prevR) glömKöp();
+  // Kandidaten från scenen följer med in i teamet, oavsett om underlaget kom
+  // ur mötet eller formuläret. Sätts här, inte vid sammanställningen, så att
+  // en återupptagen körning bär samma val som den började med.
+  if (!prevR && !intake.kandidat && !state.demo) {
+    const k = scenKandidat();
+    if (k.namn || k.avatarN) intake = Object.assign({}, intake, { kandidat: k });
+  }
+  if (!prevR && intake.intakeText) glömMöte();
+  const intakeBlock = buildIntakeBlock(intake);
   state.lastRun = { intake, intakeBlock, r };
 
   // `step` namnger prompten; filen läses av servern, inte här. Stegnamnen är
@@ -1182,6 +1446,39 @@ async function structureTeam(intake, r) {
   // konfigen — och den är gjord för att läsas.
   team.workstyle = intake.workstyle === "coach" ? "coach" : null;
   team.entryAgent = (team.agents.find((a) => a.id === "vd-assistent") || team.agents[0]).id;
+  sättKandidat(team, intake.kandidat);
+  return team;
+}
+
+// SP9/SP17 punkt 3: kandidaten kunden valde i scenen ÄR VD-assistenten — samma
+// namn, samma ansikte. Prompten får namnet ur underlaget, men det här görs i
+// kod också: ett namn som modellen tappat eller ett porträtt som avatars.js
+// annars hade slumpat fram ur företagsnamnet är precis den sortens fel som
+// syns direkt för kunden. Krockar namnet med kundens eget står rollnamnet kvar
+// (proposal.md, "Namnen").
+function sättKandidat(team, k) {
+  const vd = team && Array.isArray(team.agents) && team.agents.find((a) => a.id === "vd-assistent");
+  if (!vd || !k) return team;
+  const namn = String(k.namn || "").trim();
+  const förnamn = (s) => String(s || "").trim().split(/\s+/)[0].toLowerCase();
+  if (namn && !(k.chef && förnamn(namn) === förnamn(k.chef))) {
+    vd.name = namn;
+    if (!nämnerNamn(String(vd.system || ""), namn)) {
+      vd.system = `Du heter ${namn}. Kunden valde ditt namn och ditt ansikte när du anställdes som VD-assistent.\n\n` + (vd.system || "");
+    }
+  }
+  const n = Number(k.avatarN);
+  if (Number.isInteger(n) && n >= 1 && n <= 25) {
+    vd.avatarN = n;
+    // Ingen kollega får samma ansikte som hon. avatars.js fyller i resten ur
+    // företagsnamnet; den som råkar få hennes nummer flyttas till ett ledigt.
+    if (window.ATBAvatars) window.ATBAvatars.assign(team);
+    const upptagna = new Set(team.agents.map((a) => a.avatarN));
+    team.agents.forEach((a) => {
+      if (a === vd || a.avatarN !== n) return;
+      for (let i = 1; i <= 25; i++) if (!upptagna.has(i)) { a.avatarN = i; upptagna.add(i); return; }
+    });
+  }
   return team;
 }
 

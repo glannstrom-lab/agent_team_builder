@@ -34,6 +34,8 @@ function plocka(namn) {
   return eval("(" + KÄLLA.slice(i, k + 1) + ")");
 }
 
+// buildIntakeBlock läser kandidatens rader (SP9) ur en egen funktion.
+const kandidatRader = plocka("kandidatRader");
 const buildIntakeBlock = plocka("buildIntakeBlock");
 const enkatBaradIntake = plocka("enkatBaradIntake");
 

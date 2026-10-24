@@ -301,7 +301,7 @@ Från genomgången 2026-09-01 · sex parallella linser + egen verifiering.
   skulle göra härnäst?". Redovisningsbyrån är det hårdaste testet — godtar hon det,
   godtar alla det. Svarar två av fyra "barnsligt" görs tonen om, inte mekaniken ·
   `testoutput/sim-2026-09/sim.mjs` · ~1 h
-- [ ] **SP7** **Första mötet med VD-assistenten är vägen in.** I dag börjar
+- [x] **SP7** *(byggd och driftsatt 2026-10-24: `renderMote()` i `builder/builder.js` — kandidaten från scenen, samma namn och porträtt, en fråga i taget mot steget `intervju`; scenens måndagssvar är första turen; intaget går rakt in i research via `intakeText`; formuläret finns kvar som "hellre kryssa". Provad i webbläsare mot riktig modell: 7–8 frågor, komplett intag, helt bygge. Fynd: mall-läckan "söndagskvällarna" ur `interview.md`s exempel — rättad. Kandidaten frågade samma sak om fakturan tre gånger trots regeln om en följdfråga per ämne — kvar att skärpa. Mätpunkten (KA7-jämförelse) är inte mätt)* **Första mötet med VD-assistenten är vägen in.** I dag börjar
   Buildern med ett formulär, en valbar enkät och högst två följdfrågor. I stället:
   ett mötesrum där VD-assistenten (porträtt ur `avatars.js`, stort) ställer en fråga
   i taget och kunden svarar med röst eller text. Dikteringen finns redan i Buildern
@@ -461,7 +461,7 @@ Från genomgången 2026-09-01 · sex parallella linser + egen verifiering.
   2. **Två lägen, en person.** Före bygget är den *kandidaten* som intervjuar
      (**SP8**, serverägd prompt). Efter bygget får samma person sitt skräddarsydda
      jobb. Intervjun följer med in i hennes minne, så att hon minns vad kunden sa.
-  3. **Kundens val av namn och porträtt** från öppningsscenen (**SP15**) bärs in:
+  3. *(gjord 2026-10-24: `sättKandidat()` i `structureTeam` ger VD-assistenten namnet och `avatarN`, flyttar en kollega som fått samma porträtt, och raderna `vd_assistentens_namn`/`kundens_namn` står i intaget så att proposal.md ser dem. Provat: "Sigge" #7, inget påhittat efternamn på ägaren. `test/mote.mjs`, mutationsprovad)* **Kundens val av namn och porträtt** från öppningsscenen (**SP15**) bärs in:
      namnet via `teamExt.edits` (finns, P4), porträttet via ett nytt fält
      (`avatarN` på agenten finns redan i `avatars.js`, som respekterar ett satt
      värde).

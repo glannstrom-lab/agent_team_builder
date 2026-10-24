@@ -709,12 +709,10 @@ test("varje steg Buildern namnger finns i BUILD_STEPS", () => {
   // Motprovet: ett steg i registret som ingen anropar är dödkod, och dödkod i
   // just den här filen är en väg in som ingen längre tänker på.
   //
-  // Undantaget är ETT namngivet steg vars klientsida inte är byggd än:
-  // `intervju` (SP8) finns på servern medan mötesrummet i Buildern är SP7.
-  // Undantaget löper ut av sig självt — så fort builder.js anropar steget
-  // fäller testet tills raden tas bort, så det kan inte bli en tyst
-  // permanent dörr.
-  const VÄNTAR_PÅ_KLIENTEN = new Set(["intervju"]);
+  // Här stod `intervju` som undantag medan mötesrummet (SP7) inte var byggt.
+  // Det är byggt sedan 2026-10-24 och mängden är tom — lägg bara till ett
+  // namn här för ett steg vars klient verkligen inte finns än.
+  const VÄNTAR_PÅ_KLIENTEN = new Set([]);
   for (const n of VÄNTAR_PÅ_KLIENTEN) {
     assert.ok(!namn.has(n),
       `builder.js kör nu "${n}" — ta bort det ur VÄNTAR_PÅ_KLIENTEN så att motprovet gäller det också`);

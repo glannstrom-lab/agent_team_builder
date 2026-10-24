@@ -1154,6 +1154,13 @@ async function boot() {
     // låsta vyn säger det, och erbjuder vägen tillbaka i stället för att be
     // henne bygga ett nytt team.
     if (err && err.planEnded) { renderPlanEnded(slug, err); return; }
+    // Inloggad kund med en länk som inte bär: visa hennes team, inte
+    // inloggningen igen. Förut gick hon runt i en ring — koden, omladdning,
+    // samma länk, inloggningen (Mikael 2026-10-24 med en gammal teamlänk).
+    if (!state.demo) {
+      const me = await authMe().catch(() => null);
+      if (me) { renderAccountPicker(me, err.message); return; }
+    }
     renderPicker(err.message);
   }
 }
@@ -1505,7 +1512,23 @@ function renderLogin(opts) {
 
 // Inloggad kund: visar de team kontot faktiskt når. Skiljer sig från
 // exempellistan genom att den kommer från servern och går att ta tillbaka.
-function renderAccountPicker(me) {
+function renderAccountPicker(me, errMsg) {
+  // Bara team som går att öppna. /api/teams/:slug avvisar en slug utanför
+  // 22–64 tecken, och ett konto kan bära ett sådant team från före
+  // kontosystemet (uppmätt 2026-10-24: "glanne-soner" bredvid det nya teamet,
+  // båda med samma namn — kunden valde det gamla och fick "hittade inget
+  // team"). Nyast först, samma ordning som startsidan använder.
+  me = Object.assign({}, me, {
+    teams: (me.teams || [])
+      .filter((t) => /^[A-Za-z0-9_-]{22,64}$/.test(t.slug || ""))
+      .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0)),
+  });
+  // Ett enda team: inget att välja mellan, så kunden går rakt in i kontoret.
+  // Gäller också den som kom via en gammal länk — hon ville till sitt team.
+  if (me.teams.length === 1 && getSlug() !== me.teams[0].slug) {
+    location.replace("?team=" + encodeURIComponent(me.teams[0].slug));
+    return;
+  }
   const root = $("#root");
   root.innerHTML = "";
   const wrap = el("main", "picker");
@@ -1518,6 +1541,7 @@ function renderAccountPicker(me) {
     : `Vilket <span class="grad">team</span> vill ni öppna?`;
   wrap.appendChild(h);
   wrap.appendChild(el("p", "setup-lead", "Inloggad som " + me.email + "."));
+  if (errMsg) wrap.appendChild(el("div", "setup-err", "⚠️ " + errMsg));
 
   if (!me.teams.length) {
     wrap.appendChild(el("div", "picker-empty",
