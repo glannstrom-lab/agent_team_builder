@@ -188,6 +188,73 @@ p{margin:0}
 .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--blak);color:var(--papper);padding:10px 16px;border-radius:6px;font-size:.9rem;opacity:0;transition:opacity .2s;pointer-events:none;z-index:60}
 .toast.syns{opacity:1}
 
+/* ---------- kundtavlan (CRM-linsen) ---------- */
+#vyKunder{background:radial-gradient(ellipse at 50% 0%,#2a231c 0%,var(--natt) 70%);color:var(--papper);min-height:calc(100vh - 58px)}
+.tavla-inre{max-width:1320px;margin:0 auto;padding:22px 16px 40px}
+.tavla-topp{display:flex;align-items:flex-end;gap:20px;flex-wrap:wrap;margin-bottom:18px}
+.tavla-topp h1{font-size:1.8rem}
+.tavla-topp p{color:var(--natt-text);font-size:.92rem;margin-top:4px}
+.summa{display:flex;gap:22px;margin-left:auto;flex-wrap:wrap}
+.summa div{font:500 .64rem/1.3 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--natt-text)}
+.summa b{display:block;font:800 1.25rem var(--display);letter-spacing:-.01em;color:var(--papper);text-transform:none}
+.summa .rod b{color:#E07A6A}
+.tavla{display:grid;grid-template-columns:repeat(5,minmax(180px,1fr));gap:10px;overflow-x:auto;padding:14px;background:#2B241C;border:1px solid var(--natt-linje);border-radius:8px;box-shadow:inset 0 0 0 6px #221C16}
+.kol{display:flex;flex-direction:column;gap:8px;min-width:0}
+.kol h3{font:500 .66rem var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--natt-text);padding:4px 2px 8px;border-bottom:1px solid var(--natt-linje);display:flex;justify-content:space-between}
+.kund{position:relative;text-align:left;background:var(--papper);color:var(--blak);border:0;border-radius:4px;padding:11px 12px 10px;box-shadow:0 2px 0 rgba(0,0,0,.35);transition:transform .12s}
+.kund:hover{transform:translateY(-2px) rotate(-.4deg)}
+.kund::before{content:"";position:absolute;top:-4px;left:50%;width:10px;height:10px;margin-left:-5px;border-radius:50%;background:var(--ockra);box-shadow:0 1px 0 rgba(0,0,0,.4)}
+.kund b{display:block;font-size:.95rem;line-height:1.25}
+.kund .vad{font-size:.8rem;color:var(--mjuk);margin-top:2px}
+.kund .belopp{font:500 .74rem var(--mono);margin-top:8px}
+.kund .nast{display:flex;gap:6px;align-items:center;margin-top:8px;padding-top:8px;border-top:1px solid var(--linje);font-size:.78rem;line-height:1.3}
+.kund .nast img,.kund .nast .du-mini{width:20px;height:20px;border-radius:3px;flex:none;object-fit:cover}
+.kund .nast .du-mini{background:var(--stampel);color:#fff;display:grid;place-items:center;font:800 .62rem var(--display)}
+.kund.du-tur{box-shadow:0 2px 0 rgba(0,0,0,.35),inset 3px 0 0 var(--stampel)}
+.kund .gammal{color:var(--stampel);font-weight:700}
+.kol .tom{font-size:.78rem;color:#7d7264;padding:6px 2px}
+/* pärmen */
+.parm-spar{display:flex;margin:14px 0 4px;flex-wrap:wrap}
+.parm-spar span{font:500 .66rem var(--mono);letter-spacing:.06em;text-transform:uppercase;padding:6px 12px 6px 18px;background:var(--sand);color:var(--mjuk);clip-path:polygon(0 0,calc(100% - 8px) 0,100% 50%,calc(100% - 8px) 100%,0 100%,8px 50%)}
+.parm-spar span.klar{background:#DCE5D8;color:var(--salvia)}
+.parm-spar span.nu{background:var(--blak);color:#fff}
+.tidslinje{list-style:none;padding:0;margin:8px 0 0;border-left:2px solid var(--linje)}
+.tidslinje li{position:relative;padding:4px 0 10px 16px;font-size:.88rem}
+.tidslinje li::before{content:"";position:absolute;left:-6px;top:9px;width:10px;height:10px;border-radius:50%;background:var(--papper);border:2px solid var(--ockra)}
+.tidslinje .d{font:500 .66rem var(--mono);letter-spacing:.08em;color:var(--mjuk);text-transform:uppercase}
+.projrad{display:flex;gap:10px;align-items:center;width:100%;text-align:left;background:#fff;border:1px solid var(--linje);border-radius:6px;padding:10px 12px;margin-top:8px}
+.projrad:hover{border-color:var(--ockra)}
+.projrad img{width:32px;height:32px;border-radius:4px;object-fit:cover}
+.projrad .s{margin-left:auto;font:500 .64rem var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--mjuk);text-align:right}
+.projrad .s.v{color:var(--stampel)}
+.kundlank{background:none;border:0;padding:0;font:500 .68rem var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--ockra-2);text-decoration:underline;text-underline-offset:3px}
+@media (max-width:860px){.tavla{grid-template-columns:repeat(5,78vw);scroll-snap-type:x mandatory}.kol{scroll-snap-align:start}.summa{margin-left:0}}
+
+.linser{display:flex;gap:4px;margin:0 0 12px;flex-wrap:wrap}
+.linser button{background:transparent;border:1px solid var(--natt-linje);color:var(--natt-text);border-radius:6px;padding:7px 14px;font-weight:700;font-size:.88rem}
+.linser button.akt{background:var(--papper);color:var(--blak);border-color:var(--papper)}
+.orgtyp{display:block;font:500 .6rem var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--ockra-2);margin-bottom:3px}
+.orgnat{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}
+.orgkort{text-align:left;background:var(--papper);color:var(--blak);border:0;border-radius:6px;padding:14px}
+.orgkort:hover,.kontakt:hover{outline:2px solid var(--ockra)}
+.orgkort b{font-size:1rem}
+.orgkort .vad,.kontakt .vad{font-size:.8rem;color:var(--mjuk);margin-top:2px}
+.folk{display:flex;align-items:center;gap:3px;margin:10px 0 6px}
+.folk span,.ini{width:26px;height:26px;border-radius:50%;background:var(--blak);color:var(--papper);display:grid;place-items:center;font:700 .66rem var(--mono);flex:none}
+.folk em{font-style:normal;font-size:.78rem;color:var(--mjuk);margin-left:6px}
+.aff{font-size:.8rem;border-top:1px solid var(--linje);padding-top:5px;margin-top:5px}
+.kontaktlista{display:grid;gap:6px}
+.kontakt{display:grid;grid-template-columns:30px minmax(160px,1.1fr) minmax(0,1.6fr) 80px;gap:12px;align-items:center;text-align:left;background:var(--papper);color:var(--blak);border:0;border-radius:6px;padding:10px 14px}
+.kontakt .ini{width:30px;height:30px}
+.kontakt .not{font-size:.84rem}
+.kontakt .senast{font:500 .62rem/1.4 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--mjuk);text-align:right}
+.kontakt-ljus{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-top:1px solid var(--linje)}
+.kontakt-ljus .not{font-size:.84rem;margin-top:3px}
+.utfors{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:12px;font-size:.84rem;color:var(--mjuk)}
+.utfors button{background:transparent;border:1px solid var(--linje);border-radius:6px;padding:4px 10px;font-weight:700;font-size:.82rem}
+.utfors button:hover{border-color:var(--ockra)}
+@media (max-width:860px){.kontakt{grid-template-columns:30px 1fr}.kontakt .not,.kontakt .senast{grid-column:2;text-align:left}}
+
 .anteckning{max-width:1320px;margin:0 auto;padding:0 16px 40px;color:var(--mjuk);font-size:.88rem}
 .anteckning details{border-top:1px solid var(--linje);padding-top:12px}
 .anteckning summary{cursor:pointer;font-weight:700;color:var(--blak)}
@@ -221,6 +288,7 @@ p{margin:0}
       <div class="pips" id="hudPips" aria-hidden="true"></div>
     </div>
     <button class="hudknapp" id="hudVaning">Våningen</button>
+    <button class="hudknapp" id="hudKunder">Kunderna</button>
     <button class="hudknapp" id="hudVd">VD-kontoret<span class="prick" id="hudPrick"></span></button>
   </div>
 </header>
@@ -232,6 +300,10 @@ p{margin:0}
   </div>
   <div class="nasta"><div class="nasta-kort" id="nastaKort"></div></div>
   <div class="rumlista" id="rumlista"></div>
+</main>
+
+<main id="vyKunder" hidden>
+  <div class="tavla-inre" id="tavlaInre"></div>
 </main>
 
 <main id="vyRum" hidden>
@@ -253,6 +325,7 @@ p{margin:0}
       <li><b>Projektet är enheten, inte chatten.</b> I Claude och ChatGPT är det en lång lista samtal. Här hör samtalet till ett projekt, projektet till ett rum, och projektet har steg, en leverans och en "Klart när"-lista. Klart betyder att du har godkänt det.</li>
       <li><b>Ett nästa steg, inte en dashboard.</b> Våningen har en enda knapp längst ner. VD-kontoret samlar det som väntar på dig från alla rum.</li>
       <li><b>Nivån syns som byggnad.</b> Godkänn offerten → nivå 3 → whiteboarden i pentryt tänds och det streckade rummet kan anställas. Belöningen är en förmåga, och den syns som ett nytt rum (trappan i spåret Firman växer).</li>
+      <li><b>Kunderna är en andra lins på samma firma.</b> Våningen visar vem som gör vad. Kundtavlan visar hur det går för varje affär: var den står, vad den är värd, vad som händer härnäst och vem som gör det. Allt på tavlan kommer ur projekten, så ingenting behöver matas in för hand. Varje kort öppnar kundens pärm med hela historiken och projekten i alla rum.</li>
       <li><b>Kunden är VD:n</b> (KA14). Hens kontor är eget rum. Någon VD-agent finns inte.</li>
       <li>Kvar att avgöra: om projekt ska vara ett nytt objekt i teamkonfigen (i dag finns bara samtal per agent, rutiner och firstProject), och hur ett projekt startas. Förslag: VD-assistenten föreslår projekt ur rutinerna och kunden kan starta egna med "+ Nytt projekt".</li>
     </ul>
@@ -298,11 +371,11 @@ p{margin:0}
   ];
 
   const P = {
-    villaek: { titel: "Offert: badrum Villa Ek", rum: "offert", steg: ["Underlag", "Kalkyl", "Utkast", "Din granskning", "Skickad"], nu: 3, du: true,
+    villaek: { titel: "Offert: badrum Villa Ek", rum: "offert", kund: "ek", steg: ["Underlag", "Kalkyl", "Utkast", "Din granskning", "Skickad"], nu: 3, du: true,
       klart: [["Totalpris inkl. moms och ROT-avdrag", 1], ["Förbehåll för dolda fel i bjälklaget", 1], ["Giltig i 30 dagar", 1], ["Begriplig för en privatperson", 0]],
       trad: [{ av: "offert", t: "Utkastet är klart. ROT är räknat på arbetskostnaden inklusive moms, och jag har lagt in förbehållet om bjälklaget som du nämnde i måndags." },
              { av: "offert", t: "Kolla en sak innan du godkänner: jag har antagit att kunden står för kakel över 450 kr/m². Stämmer det?" }] },
-    forbehall: { titel: "Förbehåll: tillbyggnad Andersson", rum: "offert", steg: ["Uppdrag", "Utkast", "Din granskning", "Klart"], nu: 1,
+    forbehall: { titel: "Förbehåll: ombyggnad Café Linden", rum: "offert", kund: "linden", steg: ["Uppdrag", "Utkast", "Din granskning", "Klart"], nu: 1,
       klart: [["Markförhållanden", 1], ["Bygglov är kundens ansvar", 0], ["Väder och leveranstider", 0]],
       trad: [{ av: "offert", t: "Jag skriver förbehållen nu. Utkast i eftermiddag." }] },
     mallen: { titel: "Offertmallen", rum: "robin", steg: ["Uppdrag", "Utkast", "Din granskning", "Klart"], nu: 1,
@@ -310,13 +383,142 @@ p{margin:0}
       trad: [{ av: "robin", t: "Jag bygger mallen ur dina tre senaste offerter, så att Offertskrivaren alltid utgår från din egen struktur." }] },
     v44: { titel: "Veckan v. 44", rum: "robin", steg: ["Läget", "Ditt val", "Plan"], nu: 1, du: true, fraga: true,
       klart: [["Offerter som väntar på svar", 1], ["Vilket jobb som går först", 0]],
-      trad: [{ av: "robin", t: "Två offerter ligger ute utan svar: Berg (84 000 kr, skickad för 9 dagar sedan) och Lund (212 000 kr, 4 dagar). Berg bör du ringa i dag." },
-             { av: "robin", t: "Och ett val som är ditt: Villa Ek och Andersson vill båda börja v. 46. Vilket går först?", val: ["Villa Ek först", "Andersson först", "Jag ringer båda först"] }] },
+      trad: [{ av: "robin", t: "Två offerter ligger ute utan svar: Brf Ekbacken (84 000 kr, skickad för 9 dagar sedan) och Väsby Fastigheter (212 000 kr, 4 dagar). Ring Maria Lind på Ekbacken i dag, hon har styrelsemöte på tisdag." },
+             { av: "robin", t: "Och ett val som är ditt: Villa Ek och Café Linden vill båda börja v. 46. Vilket går först?", val: ["Villa Ek först", "Café Linden först", "Jag ringer båda först"] }] },
   };
+
+  // ---------- kunderna: en andra lins på samma firma ----------
+  // Organisationer (kommuner, föreningar, företag, privatpersoner) och kontakter
+  // (människor). Affärerna rör sig på tavlan och hör till en organisation och en
+  // kontakt. Allt kommer ur arbetet — inget förs in för hand.
+  const ORG = {
+    kommun:   { namn: "Sollentuna kommun", typ: "Kommun", rel: "Ramavtal för mindre byggarbeten t.o.m. 2027 · 3 avrop · 220 000 kr" },
+    ekbacken: { namn: "Brf Ekbacken", typ: "Förening", rel: "Kund sedan 2023 · 2 jobb · 146 000 kr · betalar i tid" },
+    vasby:    { namn: "Väsby Fastigheter AB", typ: "Företag", rel: "Kund sedan 2021 · 5 jobb · 610 000 kr · er största kund" },
+    bageri:   { namn: "Sjöbergs Bageri AB", typ: "Företag", rel: "Kund sedan 2024 · 2 jobb" },
+    holm:     { namn: "Holms Redovisning AB", typ: "Företag", rel: "Kund sedan 2022 · 3 jobb" },
+    linden:   { namn: "Café Linden AB", typ: "Företag", rel: "Ny kund" },
+    tandvard: { namn: "Norrvikens Tandvård AB", typ: "Företag", rel: "Ny kund · tipsad av Brf Ekbacken" },
+    ek:       { namn: "Familjen Ek", typ: "Privatperson", rel: "Ny kund · ROT" },
+  };
+  const PERS = {
+    rashid: { namn: "Ahmed Rashid", roll: "Fastighetsförvaltare", org: "kommun", not: "Vill ha allt via mejl, med diarienumret i ämnesraden", senast: "21 okt" },
+    maria:  { namn: "Maria Lind", roll: "Ordförande", org: "ekbacken", not: "Styrelsemöte tisdagar. Föredrar sms.", senast: "15 okt" },
+    kjell:  { namn: "Kjell Ström", roll: "Kassör", org: "ekbacken", not: "Godkänner fakturorna, inte offerterna", senast: "maj 2024" },
+    johan:  { namn: "Johan Persson", roll: "Förvaltare", org: "vasby", not: "Bestämmer om jobb under 250 000 kr själv", senast: "20 okt" },
+    lisa:   { namn: "Lisa Berg", roll: "Inköp", org: "vasby", not: "Vill ha offerter som pdf, med ert org.nr", senast: "20 okt" },
+    per:    { namn: "Per Sjöberg", roll: "Ägare", org: "bageri", not: "På plats 04–12. Ring efter lunch.", senast: "22 okt" },
+    eva:    { namn: "Eva Holm", roll: "Delägare", org: "holm", not: "Nämnde ett pentry till våren", senast: "v. 41" },
+    sara:   { namn: "Sara Linden", roll: "Ägare", org: "linden", not: "Caféet måste hålla öppet under bygget", senast: "21 okt" },
+    lena:   { namn: "Lena Norén", roll: "Klinikchef", org: "tandvard", not: "Nås bäst före 08.00", senast: "23 okt" },
+    anders: { namn: "Anders Ek", roll: "Privatperson", org: "ek", not: "Jobbar hemifrån tisdagar", senast: "15 okt" },
+  };
+  const FASER = ["Förfrågan", "Offert skrivs", "Offert ute", "Pågår", "Klart"];
+  const K = {
+    kommun:   { org: "kommun", kontakt: "rashid", vad: "Förskolan Tallen: tillgänglighetsramp", fas: 0, kr: 0, nasta: { vem: "robin", t: "Läser avropet och föreslår ett svar" }, hist: [["21 okt", "Avrop på ramavtalet"]] },
+    tandvard: { org: "tandvard", kontakt: "lena", vad: "Väntrum och två behandlingsrum", fas: 0, kr: 0, nasta: { vem: "robin", t: "Föreslår tid för platsbesök" }, hist: [["23 okt", "Förfrågan via mejl"]] },
+    linden:   { org: "linden", kontakt: "sara", vad: "Ombyggnad av lokalen", fas: 1, kr: 340000, ca: true, nasta: { vem: "offert", t: "Skriver förbehållen" }, hist: [["8 okt", "Förfrågan via telefon"], ["14 okt", "Platsbesök"], ["21 okt", "Kalkyl klar"]] },
+    ek:       { org: "ek", kontakt: "anders", vad: "Badrum 6 m²", fas: 1, kr: 137000, nasta: { vem: "du", t: "Granska offerten" }, hist: [["12 okt", "Förfrågan via hemsidan"], ["15 okt", "Platsbesök"], ["20 okt", "Kalkyl klar"], ["24 okt", "Utkast klart"]] },
+    ekbacken: { org: "ekbacken", kontakt: "maria", vad: "Nya balkongräcken, 12 balkonger", fas: 2, kr: 84000, dagar: 9, nasta: { vem: "robin", t: "Påminner dig: sms:a Maria i dag" }, hist: [["mars 2023", "Takavvattning, 61 000 kr"], ["maj 2024", "Tvättstuga, 85 000 kr"], ["15 okt", "Offert skickad"]] },
+    vasby:    { org: "vasby", kontakt: "johan", vad: "Fasadrenovering, Kvarngatan 4", fas: 2, kr: 212000, dagar: 4, nasta: { vem: "robin", t: "Följer upp med Johan fredag v. 45" }, hist: [["2021–2024", "Fyra jobb, 398 000 kr"], ["20 okt", "Offert skickad som pdf till Lisa och Johan"]] },
+    bageri:   { org: "bageri", kontakt: "per", vad: "Nytt golv och el i bageriköket", fas: 3, kr: 156000, nasta: { vem: "robin", t: "Två extra uttag ska bli ett ÄTA-underlag" }, hist: [["sep", "Offert godkänd"], ["v. 42", "Bygget började"], ["22 okt", "Per bad om två extra uttag"]] },
+    holm:     { org: "holm", kontakt: "eva", vad: "Kontorsombyggnad", fas: 4, kr: 64000, nasta: { vem: "robin", t: "Frågar Eva om ett omdöme, och om pentryt" }, hist: [["v. 40", "Klart och besiktigat"], ["v. 41", "Fakturerad och betald"]] },
+  };
+  for (const k of Object.values(K)) k.namn = ORG[k.org].namn;
+  const kr = (n) => n.toLocaleString("sv-SE") + " kr";
+  const vemNamn = (v) => v === "du" ? "Du" : ANST[v].namn;
+  const vemBild = (v) => v === "du" ? `<span class="du-mini">${esc(F.chef[0])}</span>` : `<img src="${bild(ANST[v].av)}" alt="">`;
+  const initialer = (n) => n.split(" ").map((d) => d[0]).join("").slice(0, 2);
+  // När ÄTA-agenten är anställd tar hen över bageriets uttag från Robin.
+  const kundGor = (k) => (k === K.bageri && S.ataAnstalld) ? "ata" : k.nasta.vem;
+  const LINSER = [["affarer", "Affärer"], ["org", "Organisationer"], ["kontakter", "Kontakter"]];
+
+  function kunder(oid, lins) {
+    S.vy = "kunder"; if (lins) S.lins = lins; S.lins = S.lins || "affarer";
+    $("vyVaning").hidden = true; $("vyRum").hidden = true; $("vyKunder").hidden = false;
+    if (oid && ORG[oid]) return parm(oid);
+    const lista = Object.entries(K);
+    const ute = lista.filter(([, k]) => k.fas === 2), pag = lista.filter(([, k]) => k.fas === 3);
+    const vd = vantarPaDig().length;
+    let h = `<div class="tavla-topp"><div><div class="etikett" style="color:var(--ockra)">Kunderna</div><h1>Vilka gör ni affärer med?</h1><p>Allt här kommer ur arbetet på våningen. Ingenting behöver föras in för hand.</p></div>
+      <div class="summa"><div>Offerter ute<b>${ute.length} st · ${kr(ute.reduce((a, [, k]) => a + k.kr, 0))}</b></div><div>Pågår<b>${pag.length} jobb</b></div><div class="${vd ? "rod" : ""}">Väntar på dig<b>${vd}</b></div></div></div>
+      <div class="linser" role="tablist">${LINSER.map(([id, t]) => `<button role="tab" aria-selected="${S.lins === id}" class="${S.lins === id ? "akt" : ""}" data-lins="${id}">${t}</button>`).join("")}</div>`;
+    if (S.lins === "affarer") {
+      h += `<div class="tavla">`;
+      FASER.forEach((fas, i) => {
+        const iFas = lista.filter(([, k]) => k.fas === i);
+        h += `<div class="kol"><h3>${esc(fas)}<span>${iFas.length}</span></h3>`;
+        if (!iFas.length) h += `<div class="tom">Inget här just nu</div>`;
+        for (const [, k] of iFas) {
+          const v = kundGor(k), p = PERS[k.kontakt];
+          h += `<button class="kund ${v === "du" ? "du-tur" : ""}" data-o="${k.org}"><span class="orgtyp">${esc(ORG[k.org].typ)}</span><b>${esc(k.namn)}</b><div class="vad">${esc(k.vad)}</div>
+            <div class="vad">${esc(p.namn)}, ${esc(p.roll.toLowerCase())}</div>
+            <div class="belopp">${k.kr ? (k.ca ? "≈ " : "") + kr(k.kr) : "—"}${k.dagar ? ` · <span class="${k.dagar > 7 ? "gammal" : ""}">${k.dagar} dagar utan svar</span>` : ""}</div>
+            <div class="nast">${vemBild(v)}<span>${esc(k.nasta.t)}</span></div></button>`;
+        }
+        h += `</div>`;
+      });
+      h += `</div>`;
+    } else if (S.lins === "org") {
+      h += `<div class="orgnat">`;
+      for (const [oid2, o] of Object.entries(ORG)) {
+        const aff = lista.filter(([, k]) => k.org === oid2);
+        const folk = Object.values(PERS).filter((p) => p.org === oid2);
+        h += `<button class="orgkort" data-o="${oid2}"><span class="orgtyp">${esc(o.typ)}</span><b>${esc(o.namn)}</b><div class="vad">${esc(o.rel)}</div>
+          <div class="folk">${folk.map((p) => `<span title="${esc(p.namn)}">${esc(initialer(p.namn))}</span>`).join("")}<em>${folk.length} ${folk.length === 1 ? "kontakt" : "kontakter"}</em></div>
+          ${aff.map(([, k]) => `<div class="aff">${esc(FASER[k.fas])} · ${esc(k.vad)}</div>`).join("")}</button>`;
+      }
+      h += `</div>`;
+    } else {
+      h += `<div class="kontaktlista">`;
+      for (const p of Object.values(PERS)) {
+        h += `<button class="kontakt" data-o="${p.org}"><span class="ini">${esc(initialer(p.namn))}</span><div><b>${esc(p.namn)}</b><div class="vad">${esc(p.roll)} · ${esc(ORG[p.org].namn)}</div></div>
+          <div class="not">${esc(p.not)}</div><div class="senast">Senast<br>${esc(p.senast)}</div></button>`;
+      }
+      h += `</div>`;
+    }
+    $("tavlaInre").innerHTML = h;
+    $("tavlaInre").querySelectorAll("[data-o]").forEach((b) => b.onclick = () => kunder(b.dataset.o));
+    $("tavlaInre").querySelectorAll("[data-lins]").forEach((b) => b.onclick = () => kunder(null, b.dataset.lins));
+    hud(); scrollTo(0, 0);
+  }
+
+  function parm(oid) {
+    const o = ORG[oid];
+    const aff = Object.values(K).filter((k) => k.org === oid);
+    const folk = Object.values(PERS).filter((p) => p.org === oid);
+    const proj = Object.entries(P).filter(([, p]) => p.kund && K[p.kund].org === oid);
+    const affHtml = aff.map((k) => {
+      const v = kundGor(k);
+      const vemIkon = v === "du" ? `<div class="du-ikon" style="width:40px;height:40px;font-size:1rem;background:var(--stampel)">${esc(F.chef[0])}</div>` : `<img src="${bild(ANST[v].av)}" alt="">`;
+      return `<div class="etikett" style="margin-top:6px">Affären: ${esc(k.vad)}${k.kr ? " · " + (k.ca ? "≈ " : "") + kr(k.kr) : ""}</div>
+        <div class="parm-spar">${FASER.map((f, i) => `<span class="${i < k.fas ? "klar" : i === k.fas ? "nu" : ""}">${i < k.fas ? "✓ " : ""}${esc(f)}</span>`).join("")}</div>
+        <div class="vantar-rad" style="border:0">${vemIkon}<div><b>${esc(k.nasta.t)}</b><span class="dim" style="font-size:.86rem">Nästa steg · ${esc(vemNamn(v))} · med ${esc(PERS[k.kontakt].namn)}</span></div></div>`;
+    }).join("");
+    const projHtml = proj.length ? proj.map(([pid, p]) => {
+      const a = ANST[RUM.find((r) => r.id === p.rum).vem];
+      return `<button class="projrad" data-r="${p.rum}" data-p="${pid}"><img src="${bild(a.av)}" alt=""><div><b>${esc(p.titel)}</b><div class="dim" style="font-size:.82rem">${esc(a.namn)}</div></div><span class="s ${p.du ? "v" : ""}">${p.du ? "● Väntar på dig" : esc(p.steg[p.nu])}</span></button>`;
+    }).join("") : `<p class="dim" style="font-size:.88rem;margin-top:8px">Inget projekt öppet på våningen just nu.</p>`;
+    const hist = aff.flatMap((k) => k.hist);
+    $("tavlaInre").innerHTML = `<button class="hudknapp" id="tillTavlan" style="margin-bottom:14px">← Kunderna</button><div class="lada" style="color:var(--blak)">
+      <div class="etikett">${esc(o.typ)}</div><h1 style="font-size:1.8rem;margin-top:4px">${esc(o.namn)}</h1>
+      <p class="dim" style="margin-top:4px">${esc(o.rel)}</p>
+      <div class="vdrad"><div>${affHtml}
+        <div class="etikett" style="margin-top:16px">Projekt på våningen</div>${projHtml}
+      </div><div>
+        <div class="etikett" style="margin-top:6px">Kontakter</div>
+        ${folk.map((p) => `<div class="kontakt kontakt-ljus"><span class="ini">${esc(initialer(p.namn))}</span><div><b>${esc(p.namn)}</b><div class="vad">${esc(p.roll)} · senast ${esc(p.senast)}</div><div class="not">${esc(p.not)}</div></div></div>`).join("")}
+        <div class="etikett" style="margin-top:16px">Relationen</div>
+        <ol class="tidslinje">${hist.map(([d, t]) => `<li><div class="d">${esc(d)}</div>${esc(t)}</li>`).join("")}</ol>
+      </div></div></div>`;
+    $("tillTavlan").onclick = () => kunder();
+    $("tavlaInre").querySelectorAll("[data-p]").forEach((b) => b.onclick = () => oppna(b.dataset.r, b.dataset.p));
+    hud(); scrollTo(0, 0);
+  }
 
   // ---------- tillstånd ----------
   const S = { niva: Number(q.get("niva")) === 3 ? 3 : 2, ataAnstalld: false, ataByggs: false, vy: "vaning", rum: null, p: null };
-  if (S.niva === 3) { P.villaek.nu = 4; P.villaek.du = false; P.villaek.klart[3][1] = 1; }
+  if (S.niva === 3) { P.villaek.nu = 4; P.villaek.du = false; P.villaek.klart[3][1] = 1; K.ek.fas = 2; K.ek.nasta = { vem: "robin", t: "Påminner om svar om en vecka" }; }
 
   const vantarPaDig = () => Object.entries(P).filter(([, p]) => p.du).map(([id, p]) => ({ id, ...p }));
   const projIRum = (rid) => Object.entries(P).filter(([, p]) => p.rum === rid).map(([id, p]) => ({ id, ...p }));
@@ -472,7 +674,7 @@ p{margin:0}
 
   function vaning() {
     S.vy = "vaning";
-    $("vyVaning").hidden = false; $("vyRum").hidden = true;
+    $("vyVaning").hidden = false; $("vyRum").hidden = true; $("vyKunder").hidden = true;
     ritaVaning();
     const n = nastaSteg();
     $("nastaKort").innerHTML = `<div><div class="etikett">${esc(n.e)}</div><h2>${esc(n.h)}</h2><p>${esc(n.p)}</p></div><button class="knapp knapp-ockra" id="nastaK">${esc(n.k)} →</button>`;
@@ -529,7 +731,7 @@ p{margin:0}
 
   function oppna(rid, pid) {
     S.vy = "rum"; S.rum = rid;
-    $("vyVaning").hidden = true; $("vyRum").hidden = false;
+    $("vyVaning").hidden = true; $("vyRum").hidden = false; $("vyKunder").hidden = true;
     miniplan(rid);
     if (rid === "vd") return vdKontoret();
     const proj = projIRum(rid);
@@ -566,7 +768,7 @@ p{margin:0}
     const trad = p.trad.map((m) => m.av === "du"
       ? `<div class="msg mig"><span class="du-mini">${esc(F.chef[0])}</span><div class="bubbla">${esc(m.t)}</div></div>`
       : `<div class="msg"><img src="${bild(ANST[m.av].av)}" alt=""><div class="bubbla">${esc(m.t)}${m.val && p.du ? `<div class="val">${m.val.map((v) => `<button class="knapp-ghost" style="padding:5px 10px;font-size:.84rem" data-val="${esc(v)}">${esc(v)}</button>`).join("")}</div>` : ""}</div></div>`).join("");
-    $("yta").innerHTML = `<div class="yta"><div class="yta-topp"><div class="etikett">Projekt · ${esc(a.namn)}</div><h2>${esc(p.titel)}</h2><div class="steg">${steg}</div></div>
+    $("yta").innerHTML = `<div class="yta"><div class="yta-topp"><div class="etikett">Projekt · ${esc(a.namn)}${p.kund ? ` · <button class="kundlank" data-kund="${p.kund}">Kund: ${esc(K[p.kund].namn)} →</button>` : ""}</div><h2>${esc(p.titel)}</h2><div class="steg">${steg}</div><div class="utfors">Utförs av ${esc(a.namn)} här · eller skicka jobbet till <button data-ut="Claude">↗ Claude</button><button data-ut="ChatGPT">↗ ChatGPT</button></div></div>
       <div class="yta-kropp"><div class="leverans"><div class="etikett" style="margin-bottom:8px">Leveransen</div>${lev}${klart}${beslut}</div>
       <div class="trad"><div class="etikett">Samtalet om det här projektet</div><div class="msgs" id="msgs">${trad}</div>
       <form class="skriv" id="skriv"><input id="inp" placeholder="Skriv till ${esc(a.namn)} om ${esc(p.titel.toLowerCase())}…" aria-label="Meddelande"><button class="knapp">Skicka</button></form></div></div></div>`;
@@ -578,10 +780,12 @@ p{margin:0}
     };
     $("yta").querySelectorAll("[data-val]").forEach((b) => b.onclick = () => {
       p.trad.push({ av: "du", t: b.dataset.val });
-      p.trad.push({ av: "robin", t: "Då lägger jag in det i planen och säger till Offertskrivaren. Jag påminner dig om Berg vid lunch." });
+      p.trad.push({ av: "robin", t: "Då lägger jag in det i planen och säger till Offertskrivaren. Jag påminner dig om Ekbacken vid lunch." });
       p.du = false; p.nu = 2; p.klart[1][1] = 1; toast("Bokfört i VD-kontoret: ditt beslut om v. 46.");
       oppna(p.rum, pid);
     });
+    $("yta").querySelectorAll("[data-ut]").forEach((b) => b.onclick = () => toast(`Jobbet öppnas i ${b.dataset.ut} med uppdraget, kunden och Klart när-listan. Leveransen kommer tillbaka hit till din granskning.`));
+    $("yta").querySelectorAll("[data-kund]").forEach((b) => b.onclick = () => kunder(b.dataset.kund));
     if ($("godkann")) $("godkann").onclick = () => godkann(pid);
     if ($("andra")) $("andra").onclick = () => { p.trad.push({ av: "du", t: "Gör texten lite enklare för en privatperson." }); p.trad.push({ av: "offert", t: "Gör det. Jag kortar meningarna och förklarar tätskikt med en mening." }); yta(pid); };
   }
@@ -590,6 +794,7 @@ p{margin:0}
     const p = P[pid];
     p.du = false; p.nu = p.steg.length - 1; p.klart.forEach((k) => (k[1] = 1));
     p.trad.push({ av: "du", t: "Godkänt. Skicka." });
+    if (p.kund === "ek") { K.ek.fas = 2; K.ek.nasta = { vem: "robin", t: "Påminner om svar om en vecka" }; K.ek.hist.push(["24 okt", "Offert skickad"]); }
     if (S.niva < 3) {
       S.niva = 3; hud();
       const nv = NIVAER[2];
@@ -624,10 +829,12 @@ p{margin:0}
   $("hudVaning").onclick = vaning;
   $("tillVaning").onclick = vaning;
   $("hudVd").onclick = () => oppna("vd");
+  $("hudKunder").onclick = () => kunder();
 
   const vy = q.get("vy");
   if (vy === "rum" && q.get("rum")) oppna(q.get("rum"), q.get("p"));
   else if (vy === "vd") oppna("vd");
+  else if (vy === "kunder") kunder(q.get("k"));
   else vaning();
 })();
 </script>
