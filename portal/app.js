@@ -1636,6 +1636,7 @@ function renderPortal() {
       }).catch(() => { /* utan konto gäller loggens start */ });
     }
   }
+  if (harJobb()) hämtaJobbVantar(); // async: leveranser som väntar på godkännande (SP21)
   renderPulse();       // lokala puls-kort — portalen har alltid något att säga
   checkTrialNotice();  // async: provmånadens slutdatum, om kontot säger att det är en provmånad
   runAutoRoutines();   // async: auto-rutiner som ska ligga klara idag
@@ -1738,6 +1739,9 @@ function renderSidebar() {
   // egna mejl är det här den snabbaste vägen till ett första riktigt värde —
   // hon behöver inte lita på att agenten kan hennes jobb, bara att den kan läsa.
   wsBtn("🔎", "Granska mitt utkast", openReview, "Klistra in ett mejl, en offert eller ett inlägg — teamet säger vad som saknas innan du skickar", "granska");
+  // SP21: jobben — det som görs här eller i kundens egen Claude/ChatGPT och
+  // godkänns här. Bara köpta team; ett demoteam har ingen rad att lägga dem på.
+  if (harJobb()) wsBtn("📋", "Jobben", openJobs, "Uppdrag åt teamet — görs här eller i din egen Claude eller ChatGPT, och godkänns här");
   if (!tourLeft) introBtn();
   if (whyAvailable()) wsBtn("✨", "Därför detta team", openWhyTeam, "Varje agents koppling till er verksamhet — och det vi medvetet sa nej till", "darfor");
   if (team.firstProject) wsBtn("🎯", "Första projektet", openFirstProject, "Ert första AI-projekt — planen och första steget", "forsta-projektet");
@@ -2831,7 +2835,9 @@ function nastaStegFor(lage) {
     niva: lage.n.niva, examen: lage.n.examen, anvant: lage.hist.anvant, visaAllt: !!lage.ext.visaAllt,
     entryAgent: team.entryAgent, namn,
     forstaProjektet: { namn: team.firstProject && team.firstProject.name, agentId: team.entryAgent, paborjat: lage.n.niva > 1 },
-    utkast: [],
+    // SP21: leveranser från jobben (här eller via Claude/ChatGPT) som väntar
+    // på kunden. Det var platsen IK3 lämnade tom; jobben fyller den.
+    utkast: (state.jobbVantar || []).map((j) => ({ id: j.id, agentId: j.agentId, titel: j.title })),
     rutiner: (team.routines || []).map((r) => ({ label: r.label, agentId: agentById(r.agentId) ? r.agentId : team.entryAgent, day: r.day, klar: routineDone(r.label) })),
     mote: null,
     rekrytering: lage.rk,
@@ -2862,7 +2868,7 @@ function nastaStegHandling(steg) {
     }
     case "mote": return { label: "Håll mötet", act: openMeeting };
     case "anstallning": return { label: `Träffa ${namn}`, act: () => openHire(steg.agentId) };
-    case "utkast": return { label: "Läs och godkänn", act: () => selectAgent(steg.agentId) };
+    case "utkast": return { label: "Läs och godkänn", act: () => (harJobb() && (state.jobbVantar || []).length ? openJobs() : selectAgent(steg.agentId)) };
     default:
       return veckostartDennaVecka()
         ? { label: `Öppna samtalet med ${namn}`, act: () => prefill(steg.agentId, "") }
@@ -5226,6 +5232,220 @@ function startWeek() {
   introMark("week");
   touchStreak();
   submitMessage(text, `⭐ Veckostart — ${days[now.getDay()]} ${now.toLocaleDateString("sv-SE")}`);
+}
+
+// ---------- jobben (SP21) ----------
+//
+// Mikael 2026-10-24: "jag vill ha en riktig koppling" — ett jobb ska kunna
+// göras i kundens egen Claude eller ChatGPT och leveransen komma tillbaka hit.
+// Ledstången samma dag: begriplighet och översikt, inte funktionalitet.
+// Plattformen gör arbetet; här syns läget, och här godkänner kunden.
+//
+// Jobben bor på servern (/api/jobb), inte i localStorage som resten av
+// arbetsytan — de ska nås av plattformen via /mcp. Bara köpta team har dem:
+// ett demoteam eller utkast har ingen rad att lägga dem på.
+const harJobb = () => !state.demo && !!state.slug && !state.slug.startsWith("__") && !isShowcaseSlug(state.slug);
+
+const JOBB_STATUS = {
+  oppen: ["Öppen", "jb-oppen"],
+  levererad: ["Väntar på dig", "jb-vantar"],
+  godkand: ["Godkänd", "jb-klar"],
+};
+
+async function jobbApi(path, body) {
+  const res = await window.ATBClaude.fetchWithTimeout(path, body
+    ? { method: "POST", credentials: "same-origin", headers: { "content-type": "application/json" }, body: JSON.stringify({ team: state.slug, ...body }) }
+    : { credentials: "same-origin" }, 10000);
+  let data = {};
+  try { data = await res.json(); } catch (_) { /* tomt svar */ }
+  if (!res.ok) throw new Error(data.error || "Det gick inte just nu.");
+  return data;
+}
+
+// Leveranserna som väntar på kunden, för nästa steg-kortet. Hämtas vid
+// laddning och efter varje handling i jobbpanelen.
+async function hämtaJobbVantar() {
+  try {
+    const { jobb } = await jobbApi(`/api/jobb?team=${encodeURIComponent(state.slug)}`);
+    state.jobbVantar = jobb.filter((j) => j.status === "levererad");
+    if (firmanAktiv()) firmanOmritning();
+  } catch (_) { /* utan svar gäller kortet som förut */ }
+}
+
+const tidKort = (ms) => ms ? new Date(ms).toLocaleString("sv-SE", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "";
+
+function openJobs() {
+  const box = openOverlay("📋 Jobben");
+  box.classList.add("jb-box");
+  box.appendChild(el("p", "ovl-lead",
+    "Ett jobb är ett uppdrag åt någon i teamet. Gör det här i chatten, eller i din egen Claude eller ChatGPT. "
+    + "Leveransen kommer tillbaka hit, och jobbet är klart först när du godkänt det."));
+
+  const lista = el("div", "jb-lista");
+  lista.appendChild(el("p", "ovl-note", "Hämtar jobben…"));
+  box.appendChild(lista);
+
+  const nyKnapp = el("button", "btn-primary ovl-save", "＋ Nytt jobb"); nyKnapp.type = "button";
+  box.appendChild(nyKnapp);
+  const form = el("div", "jb-form"); form.hidden = true;
+  box.appendChild(form);
+  nyKnapp.onclick = () => { form.hidden = !form.hidden; nyKnapp.hidden = !form.hidden; if (!form.hidden) form.querySelector("input").focus(); };
+  byggJobbForm(form, () => { form.hidden = true; nyKnapp.hidden = false; ladda(); });
+
+  box.appendChild(kopplingsRuta());
+
+  async function ladda() {
+    try {
+      const { jobb } = await jobbApi(`/api/jobb?team=${encodeURIComponent(state.slug)}`);
+      ritaJobb(lista, jobb, ladda);
+    } catch (e) {
+      lista.innerHTML = ""; lista.appendChild(el("p", "ovl-note", e.message));
+    }
+  }
+  ladda();
+}
+
+function ritaJobb(lista, jobb, ladda) {
+  lista.innerHTML = "";
+  const aktiva = jobb.filter((j) => j.status !== "godkand");
+  const klara = jobb.filter((j) => j.status === "godkand");
+  if (!jobb.length) {
+    lista.appendChild(el("p", "doc-empty", "Inga jobb än. Lägg upp det första: något som ska göras den här veckan, åt någon i teamet."));
+    return;
+  }
+  // Det som väntar på kunden står först. Det är det enda hon behöver göra.
+  aktiva.sort((a, b) => (b.status === "levererad") - (a.status === "levererad") || b.updatedAt - a.updatedAt);
+  aktiva.forEach((j) => lista.appendChild(jobbKort(j, ladda)));
+  if (klara.length) {
+    const d = el("details", "jb-klara");
+    d.appendChild(el("summary", null, `Godkända (${klara.length})`));
+    klara.forEach((j) => d.appendChild(jobbKort(j, ladda)));
+    lista.appendChild(d);
+  }
+}
+
+function jobbKort(j, ladda) {
+  const a = agentById(j.agentId);
+  const kort = el("div", "jb-kort " + (JOBB_STATUS[j.status] || ["", ""])[1]);
+  const topp = el("div", "jb-topp");
+  topp.appendChild(el("b", "jb-titel", j.title));
+  topp.appendChild(el("span", "jb-status", (JOBB_STATUS[j.status] || [j.status])[0]));
+  kort.appendChild(topp);
+  const rad = [a ? a.name : j.agentId];
+  if (j.kund) rad.push("åt " + j.kund);
+  if (j.status === "levererad") rad.push(`levererad av ${j.levereradVia === "portal" ? "teamet här" : j.levereradVia} ${tidKort(j.levereradAt)}`);
+  else if (j.status === "oppen" && j.hamtadAt) rad.push(`hämtad av ${j.hamtadAv} ${tidKort(j.hamtadAt)}`);
+  kort.appendChild(el("div", "jb-meta", rad.join(" · ")));
+
+  const knappar = el("div", "jb-knappar");
+  const knapp = (txt, fn, cls = "jb-knapp") => { const b = el("button", cls, txt); b.type = "button"; b.onclick = fn; knappar.appendChild(b); return b; };
+  const gör = async (handling, extra) => {
+    knappar.querySelectorAll("button").forEach((b) => (b.disabled = true));
+    try {
+      await jobbApi("/api/jobb/handling", { id: j.id, handling, ...extra });
+      // Ett godkänt jobb är en godkänd leverans — samma händelse som
+      // "✓ Godkänn" under ett svar, och den som flyttar trappan (SP19).
+      if (handling === "godkann" && firmanAktiv()) firmanBokaOchRita("leverans_godkand", j.agentId);
+      ladda(); hämtaJobbVantar();
+    }
+    catch (e) { alert(e.message); knappar.querySelectorAll("button").forEach((b) => (b.disabled = false)); }
+  };
+
+  if (j.leverans) {
+    const d = el("details", "jb-leverans");
+    if (j.status === "levererad") d.open = true;
+    d.appendChild(el("summary", null, "Leveransen"));
+    const md = el("div", "jb-md"); renderMarkdown(md, j.leverans); d.appendChild(md);
+    kort.appendChild(d);
+  }
+
+  if (j.status === "levererad") {
+    knapp("✓ Godkänn", () => gör("godkann"), "btn-primary jb-godkann");
+    knapp("↺ Skicka tillbaka", () => gör("oppna"));
+  }
+  if (j.status === "oppen") {
+    knapp("Gör det här i chatten", () => {
+      closeOverlay();
+      if (a) selectAgent(a.id);
+      const ta = $("#composer-input");
+      if (ta) {
+        ta.value = `Jobb: ${j.title}\n\n${j.brief}` + (j.klartNar.length ? `\n\nKlart när:\n${j.klartNar.map((k) => "- " + k).join("\n")}` : "");
+        ta.dispatchEvent(new Event("input")); ta.focus();
+      }
+    });
+    const fråga = `Hämta jobbet ${j.id} från Mitt AI-team och gör det. Lämna leveransen där när du är klar.`;
+    knapp("↗ Claude", () => window.open("https://claude.ai/new?q=" + encodeURIComponent(fråga), "_blank", "noopener"));
+    knapp("↗ ChatGPT", () => window.open("https://chatgpt.com/?q=" + encodeURIComponent(fråga), "_blank", "noopener"));
+  }
+  if (j.status !== "godkand") knapp("Stryk", () => { if (confirm(`Stryka jobbet "${j.title}"?`)) gör("avbryt"); }, "jb-knapp jb-stryk");
+  if (knappar.childNodes.length) kort.appendChild(knappar);
+
+  if (j.status !== "godkand") {
+    const uppdrag = el("details", "jb-uppdrag");
+    uppdrag.appendChild(el("summary", null, "Uppdraget"));
+    uppdrag.appendChild(el("p", null, j.brief));
+    if (j.klartNar.length) {
+      const ul = el("ul");
+      j.klartNar.forEach((k) => ul.appendChild(el("li", null, k)));
+      uppdrag.appendChild(el("div", "ovl-label", "Klart när")); uppdrag.appendChild(ul);
+    }
+    kort.appendChild(uppdrag);
+  }
+  return kort;
+}
+
+function byggJobbForm(form, klar) {
+  const fält = (label, node) => { const l = el("label", "ovl-label", label); node.id = "jb-" + label.replace(/\W+/g, "").toLowerCase(); l.setAttribute("for", node.id); form.append(l, node); return node; };
+  const vem = fält("Vem gör jobbet?", el("select", "ovl-input"));
+  team.agents.filter((a) => !a.retired).forEach((a) => { const o = el("option", null, `${a.name} · ${a.tagline || a.role || ""}`); o.value = a.id; vem.appendChild(o); });
+  const rubrik = fält("Rubrik", el("input", "ovl-input")); rubrik.maxLength = 140;
+  rubrik.placeholder = "T.ex. Offert till Brf Ekbacken";
+  const uppdrag = fält("Uppdraget", el("textarea", "ovl-ta")); uppdrag.rows = 4; uppdrag.maxLength = 8000;
+  uppdrag.placeholder = "Vad ska göras, med vilket underlag, och vad du redan vet.";
+  const kund = fält("Åt vem? (valfritt)", el("input", "ovl-input")); kund.maxLength = 200;
+  kund.placeholder = "Organisation eller person";
+  const klartNar = fält("Klart när (en punkt per rad, valfritt)", el("textarea", "ovl-ta")); klartNar.rows = 3;
+  klartNar.placeholder = "Priset står inklusive moms\nGiltig i 30 dagar";
+  const err = el("div", "setup-err"); err.setAttribute("role", "alert"); err.hidden = true; form.appendChild(err);
+  const spara = el("button", "btn-primary ovl-save", "Lägg upp jobbet"); spara.type = "button"; form.appendChild(spara);
+  spara.onclick = async () => {
+    err.hidden = true;
+    if (!rubrik.value.trim() || !uppdrag.value.trim()) { err.textContent = "Jobbet behöver en rubrik och ett uppdrag."; err.hidden = false; return; }
+    spara.disabled = true; spara.textContent = "Lägger upp…";
+    try {
+      await jobbApi("/api/jobb", {
+        agentId: vem.value, title: rubrik.value, brief: uppdrag.value, kund: kund.value,
+        klartNar: klartNar.value.split("\n").map((s) => s.trim()).filter(Boolean),
+      });
+      rubrik.value = ""; uppdrag.value = ""; kund.value = ""; klartNar.value = "";
+      klar();
+    } catch (e) { err.textContent = e.message; err.hidden = false; }
+    spara.disabled = false; spara.textContent = "Lägg upp jobbet";
+  };
+}
+
+// Hur kunden kopplar sin egen AI. Adressen är den enda uppgift som behövs —
+// inloggningen sker med samma kod som här, och samtyckessidan säger exakt vad
+// plattformen får göra.
+function kopplingsRuta() {
+  const d = el("details", "jb-koppla");
+  d.appendChild(el("summary", null, "Koppla din egen Claude eller ChatGPT"));
+  const adress = location.origin + "/mcp";
+  d.appendChild(el("p", "ovl-note", "Lägg till Mitt AI-team som en koppling en gång. Sedan kan du säga till exempel "
+    + "\"ta nästa jobb från Mitt AI-team\" så hämtar den jobbkortet, gör jobbet och lämnar leveransen här."));
+  const rad = el("div", "jb-adress");
+  const fält = el("input", "ovl-input"); fält.readOnly = true; fält.value = adress; fält.setAttribute("aria-label", "Kopplingens adress");
+  const kop = el("button", "jb-knapp", "Kopiera"); kop.type = "button";
+  kop.onclick = async () => { try { await navigator.clipboard.writeText(adress); kop.textContent = "Kopierad"; } catch (_) { fält.select(); } };
+  rad.append(fält, kop); d.appendChild(rad);
+  const steg = el("ol", "jb-steg");
+  [
+    "Claude: Inställningar → Anpassa → Kopplingar → Lägg till anpassad koppling. Klistra in adressen. Fungerar på alla abonnemang, även gratis.",
+    "ChatGPT: lägg till en egen app (koppling) med adressen under Inställningar → Appar. På vissa abonnemang krävs utvecklarläge, och det är Business och Enterprise som säkert får lämna leveranser tillbaka.",
+    "Logga in med samma e-post som här, och säg ja på sidan som visar vad kopplingen får göra.",
+  ].forEach((s) => steg.appendChild(el("li", null, s)));
+  d.appendChild(steg);
+  return d;
 }
 
 // ---------- veckobrev ----------

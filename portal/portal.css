@@ -880,3 +880,33 @@ a.link-btn { text-decoration: none; }
   .doc-del, .pulse-x, .intro-x { width: 44px; height: 44px; }
   .chat-clear { min-height: 44px; }
 }
+
+/* ===== Jobben (SP21) =====
+   Ett kort per jobb. Det som väntar på kunden har stämpelrött i kanten — samma
+   signal som den röda pricken på våningen i skiss 14. */
+.ovl-box.jb-box { max-width: 680px; max-height: calc(100vh - 40px); overflow-y: auto; }
+.jb-lista { display: flex; flex-direction: column; gap: 8px; margin: 6px 0 4px; }
+.jb-kort { border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; background: var(--surface-2); }
+.jb-kort.jb-vantar { border-left: 3px solid var(--red); }
+.jb-kort.jb-klar { opacity: .8; }
+.jb-topp { display: flex; gap: 10px; align-items: baseline; justify-content: space-between; }
+.jb-titel { font-size: 15px; line-height: 1.35; }
+.jb-status { flex: none; font-size: 11.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-dim); }
+.jb-vantar .jb-status { color: var(--red); font-weight: 700; }
+.jb-meta { font-size: 13px; color: var(--text-dim); margin-top: 3px; }
+.jb-knappar { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.jb-knapp { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 7px 12px; min-height: 36px; font: inherit; font-size: 13.5px; color: var(--text); cursor: pointer; }
+.jb-knapp:hover { border-color: var(--accent); }
+.jb-godkann { padding: 7px 14px; min-height: 36px; font-size: 13.5px; width: auto; }
+.jb-stryk { margin-left: auto; color: var(--text-dim); }
+.jb-leverans, .jb-uppdrag { margin-top: 10px; font-size: 14px; }
+.jb-leverans > summary, .jb-uppdrag > summary, .jb-klara > summary, .jb-koppla > summary { cursor: pointer; font-weight: 600; font-size: 13.5px; min-height: 32px; }
+.jb-md { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; margin-top: 6px; max-height: 360px; overflow: auto; font-size: 14px; line-height: 1.55; }
+.jb-uppdrag p { margin: 6px 0; white-space: pre-wrap; }
+.jb-uppdrag ul, .jb-steg { margin: 4px 0 0; padding-left: 20px; font-size: 13.5px; line-height: 1.55; }
+.jb-klara { margin-top: 6px; }
+.jb-klara .jb-kort { margin-top: 6px; }
+.jb-form { border-top: 1px solid var(--border); margin-top: 12px; padding-top: 4px; }
+.jb-koppla { margin-top: 16px; border-top: 1px solid var(--border); padding-top: 10px; }
+.jb-adress { display: flex; gap: 6px; align-items: center; margin-top: 8px; }
+.jb-adress .ovl-input { margin: 0; font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 13px; }

@@ -1,0 +1,1 @@
+- Namnfel: modellen skrev 'Mikael Glänne' (påhittat efternamn) i systemprompterna trots att intaget säger Mikael Glännström. Rättat för hand i team.json före provisionering. Samma fällatyp som SP17 (påhittade namn).

@@ -1,0 +1,2 @@
+- Hur ser en typisk vecka ut – vilka fasta dagar/tider ägnas åt försäljning, bokföring respektive bygge?
+- Vad använder du för att fånga kontakter och löften i dag (t.ex. aktivitetslista i Gmail, anteckningar), och var hamnar de?

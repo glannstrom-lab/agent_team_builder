@@ -200,6 +200,20 @@ skisser i `design/` (deployas inte).
 - **Branscher** (`verticals/`) — datadrivna branschlandningssidor
   (`?v=<slug>` från `verticals.js`); varje bransch har en live-demo utan nyckel.
 
+**Kopplingen till kundens egen AI (SP21, 2026-10-24).** Mitt AI-team är också en
+MCP-server: `https://mittaiteam.se/mcp`, med en egen OAuth-server under `/oauth/*`
+och `/.well-known/*` (bägge UTANFÖR `/api/` — samtyckessidan är HTML, och
+middlewaren byter HTML under `/api/` mot 404). Kunden lägger till adressen som
+anpassad koppling i Claude eller ChatGPT och loggar in med samma engångskod.
+Tre verktyg: `lista_jobb`, `hamta_jobb`, `lamna_leverans` — plattformen gör
+jobbet, portalen visar läget, kunden godkänner (panelen **📋 Jobben**). Jobben
+är den enda delen av arbetsytan som bor i D1 (`jobs`, migration 0008); samtal,
+minne och underlag ligger kvar hos kunden. Ledstången (Mikael 2026-10-24):
+*begriplighet och översikt, inte funktionalitet* — fler verktyg i `/mcp` kräver
+ett skäl av det slaget. Kraven från Claudes dokumentation står överst i
+`functions/api/_koppling.js`; testerna (`test/koppling.mjs`) kör mot riktig
+SQLite byggd ur `migrations/`, inte en låtsasdatabas.
+
 **Vår nyckel, inga kundnycklar (2026-08-06):** kunden har aldrig en egen
 API-nyckel. Allt går genom `POST /api/ai` (`functions/api/ai.js`) på vår
 OpenRouter-nyckel (`OPENROUTER_KEY` som Pages-secret). **Fem tak**
@@ -533,7 +547,7 @@ finns bara där. **Kopiorna ligger på samma disk som repot** — de skyddar mot
 trasig migration, inte mot en trasig disk. Flytta dem någon annanstans.
 
 **Rulla tillbaka kod och schema tillsammans.** Pages har rollback i sin
-dashboard, men migrationerna (`migrations/0001`–`0007`) är enkelriktade: det
+dashboard, men migrationerna (`migrations/0001`–`0008`) är enkelriktade: det
 finns inga down-skript, och `ALTER TABLE ADD COLUMN` i 0003 och 0005 är inte
 idempotenta om de körs om för hand. Att rulla tillbaka *bara* koden går bra så
 länge migrationerna bara lägger till kolumner — extra kolumner ignoreras. Den
@@ -586,7 +600,8 @@ ny kund dyker upp i både galleri och portal automatiskt.
 ├── worker-veckobrev/               # Klockan för veckobrevet (egen Worker, cron)
 │                                   #   Deployas separat: se index.js
 ├── migrations/                     # D1-schema (SQL): init, auth, commerce, ai_proxy,
-│                                   #   plan_lifecycle, ai_errors, weekly_digest
+│                                   #   plan_lifecycle, ai_errors, weekly_digest, jobb_och_koppling
+├── functions/mcp.js + oauth/       # Kopplingen till kundens egen AI (SP21)
 ├── test/                           # node --test: teams, stripe, plan, ai, throttle,
 │                                   #   examples, klient, intake, health, skalning,
 │                                   #   digest, csp, portal (274 tester)

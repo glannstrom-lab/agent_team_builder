@@ -55,6 +55,9 @@ const METHOD_RULES = [
   // en uppsägning eller ett ångrat köp utlöst av en länkförhandsvisning.
   { match: /^\/api\/subscription\/cancel\/?$/, allow: ["POST"] },
   { match: /^\/api\/subscription\/withdraw\/?$/, allow: ["POST"] },
+  // Jobben (SP21). Listan läses, jobb läggs upp och handlingar görs med POST.
+  { match: /^\/api\/jobb\/?$/, allow: ["GET", "POST"] },
+  { match: /^\/api\/jobb\/handling\/?$/, allow: ["POST"] },
 ];
 
 export async function onRequest(context) {
