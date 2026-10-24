@@ -1,0 +1,76 @@
+{
+  "turer": [
+    {
+      "fraga": "Hej! Vad roligt att du ringde — jag är nyfiken på det här jobbet, men innan jag tackar ja vill jag förstå er vardag. Vad är det för verksamhet du vill ha hjälp i?",
+      "svar": "Tja! Ja, det är byggfirma här i Örebro, jag och två snickare, vi gör badrum och tillbyggnader åt privatfolk. Och det jag behöver mest hjälp med är fakturorna, för fan, jag sitter varje söndagskväll i Fortnox och då har man glömt ÄTA-jobben och kunderna betalar sent."
+    },
+    {
+      "fraga": "Söndagskväll i Fortnox — det låter som veckans minst roliga stund. Vad mer än fakturorna brukar du göra själv under en vanlig vecka?",
+      "svar": "Ja du, det är tre-fyra hembesök i veckan för offerter, och de skriver jag på kvällarna i Word — tar en till två timmar styck. Sen beställa material hos Beijer, ringa kunder om tider, och Offerta skickar förfrågningar. Men kundkontakten på plats och prissättningen vill jag inte lämna ifrån mig, det är liksom där man tappar pengarna om man släpper det."
+    },
+    {
+      "fraga": "Kundkontakten och prissättningen håller du i — det hör jag. Vad blev ogjort förra veckan när allt det här drog ut på tiden?",
+      "svar": "Fakturorna, som vanligt. Låg kvar till söndag kväll, och ett par ÄTA-arbeten på badrummet i Vivalla hade jag glömt helt — det är ju rena pengarna som bara försvinner."
+    },
+    {
+      "fraga": "Rena pengar som bara försvinner — de ÄTA-jobben. Hur håller du reda på dem från att du är på plats tills de hamnar på en faktura?",
+      "svar": "Det är väl just det, det gör jag inte. Jag skriver nån anteckning i mobilen ibland, men oftast litar jag på minnet, och sen står jag där på söndag kväll och undrar vad fan vi kom överens om. Det är precis det här jag behöver nån som fångar upp."
+    },
+    {
+      "fraga": "Offerta skickar förfrågningar — vad är det som händer när en sån dimper ner, steg för steg?",
+      "svar": "De trillar in i mailen, sen sitter jag och knappar in dem manuellt i Offerta, kollar ritningar och grejer — det tar sin tid. Oftast blir det liggande till kvällen, för på dagarna är jag ju ute."
+    },
+    {
+      "fraga": "Två snickare och du — är det du själv som gör allt det här, eller är det något av det som någon annan redan tar hand om?",
+      "svar": "Nej, det är bara jag. Ali och Petter är ute på jobb hela dagarna, de ska inte sitta med papper. Så allt det här — offerter, fakturor, Offerta, inköp — landar på mig, och det är därför jag behöver nån."
+    }
+  ],
+  "slut": {
+    "redan_sagt": "Verksamhet: byggfirma i Örebro, badrum och tillbyggnader åt privatfolk, kunden + två snickare (Ali, Petter).\nMoment: fakturor i Fortnox söndagskväll; 3–4 hembesök/vecka för offerter, skrivs i Word på kvällarna, 1–2 h styck; beställa material hos Beijer; ringa kunder om tider; Offerta-förfrågningar via mail knappas in manuellt, kollas ritningar, blir liggande till kvällen.\nKlämmer: fakturorna ligger kvar till söndag kväll; ÄTA-arbeten glömda (t.ex. badrummet i Vivalla) — pengar försvinner; förlitar sig på minnet.\nAvgränsningar: kundkontakten på plats och prissättningen vill han inte lämna ifrån sig.\nSaknas: ingen avgörande lucka — nära klart.",
+    "status": "klart",
+    "replik": "Tack — jag har hört nog, och jag tar jobbet om ni vill ha mig. Tre-fyra hembesök, Offerta på kvällen och söndagarna i Fortnox; det är en vardag jag kan bygga kring.",
+    "intag": "företagsnamn:       okänt\nbransch:            bygg — badrum och tillbyggnader åt privatpersoner\nstorlek:            litet\nantal_personer:     3 (kunden + två snickare)\nkälla:              intervju\n\n## Vad företaget gör\nByggfirma i Örebro med kunden och två snickare, Ali och Petter. De gör badrum och tillbyggnader åt privatfolk. Kunden gör själv allt som inte är hantverk: offerter, fakturor, Offerta, inköp.\n\n## Återkommande moment\n- Fakturorna i Fortnox — görs varje söndagskväll.\n- Tre-fyra hembesök i veckan för offerter; offerterna skrivs på kvällarna i Word, en till två timmar styck.\n- Beställa material hos Beijer.\n- Ringa kunder om tider.\n- Offerta skickar förfrågningar som trillar in i mailen; dessa knappas in manuellt i Offerta och ritningar kollas — blir oftast liggande till kvällen, eftersom dagarna går åt ute.\n- Ali och Petter är ute på jobb hela dagarna; allt pappersarbete landar på kunden.\n\n## Var det klämmer\nFakturorna blir liggande till söndag kväll. Ett par ÄTA-arbeten på badrummet i Vivalla glömdes helt förra veckan — \"rena pengarna som bara försvinner\". ÄTA-jobb hålls oftast bara i minnet, ibland en anteckning i mobilen; på söndag kväll vet han inte vad som kom överens. Kunderna betalar sent.\n\n## Befintliga verktyg och vanor\nFortnox, Word, Offerta, mail, anteckningar i mobilen, Beijer (material).\n\n## Mål och ambition\nFå någon som fångar upp det han inte hinner — framför allt ÄTA-jobb och fakturering — så att pengar inte tappas och fakturorna inte hamnar på söndag kväll.\n\n## Avgränsningar\nKundkontakten på plats och prissättningen vill han inte lämna ifrån sig — \"det är liksom där man tappar pengarna om man släpper det\"."
+  },
+  "dom": {
+    "fragor": [
+      {
+        "nr": 1,
+        "amne": "verksamhet: byggfirma och fakturabehov",
+        "upprepar": false,
+        "varfor": "Inledande öppen fråga för att förstå kundens verksamhet och vad hjälpen gäller."
+      },
+      {
+        "nr": 2,
+        "amne": "moment: hela veckans egna arbetsuppgifter",
+        "upprepar": false,
+        "varfor": "Kartlägger övriga arbetsuppgifter utöver det redan nämnda fakturerandet."
+      },
+      {
+        "nr": 3,
+        "amne": "moment: vilket arbete som blev ogjort",
+        "upprepar": false,
+        "varfor": "Följer upp konsekvensen av tidsbristen för att bekräfta problemets allvar."
+      },
+      {
+        "nr": 4,
+        "amne": "moment: hantering av ÄTA-arbeten",
+        "upprepar": false,
+        "varfor": "Går på djupet i den specifika processen för ÄTA-arbeten från plats till faktura."
+      },
+      {
+        "nr": 5,
+        "amne": "moment: Offerta-förfrågningar steg för steg",
+        "upprepar": false,
+        "varor": "",
+        "varfor": "Ber om den konkreta arbetsgången för ett redan nämnt moment för att förstå tidsåtgången."
+      },
+      {
+        "nr": 6,
+        "amne": "verksamhet: vem som utför arbetsuppgifterna",
+        "upprepar": false,
+        "varfor": "Kontrollerar om uppgifterna redan är delegerade innan behovet fastställs."
+      }
+    ],
+    "sammanfattning": "Kandidaten ställer sex öppna och preciserande frågor som täcker kundens verksamhet, arbetsmoment, tidsbrist, ÄTA-hantering och vem som utför arbetet. Ingen fråga upprepar tidigare information; alla fördjupar förståelsen för kundens behov."
+  }
+}

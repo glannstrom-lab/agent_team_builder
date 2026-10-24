@@ -1,0 +1,62 @@
+[1] Kandidaten: Hej! Vad roligt att du ringde — jag är nyfiken redan. Innan jag tackar ja vill jag förstå er: är det här teamet till för dig personligen i ditt jobb, eller för hela verksamheten?
+[1] Kunden: Både och, typ — det är ju jag som drunknar i avbokningar och luckor i Bokadirekt, så det är för mig, men det gynnar ju Sara också när jag inte sitter i telefonen hela dagarna.
+
+[2] Kandidaten: Drunknar i avbokningar och luckor i Bokadirekt — den känner jag igen. Vad är det för verksamhet du och Sara driver?
+[2] Kunden: Frisörsalong i Västerås, bara vi två. Och varje gång nån avbokar med kort varsel står jag där med en tom stol — det är precis det jag behöver hjälp att täppa igen.
+
+[3] Kandidaten: En tom stol med kort varsel — den svider. När en lucka väl uppstår, vad gör du med den då?
+[3] Kunden: Just nu? Ingenting, typ — jag hinner inte ringa runt eller lägga ut nåt, det bara står tomt. Det är där jag tänker att du skulle kunna rycka in, ringa väntelistan eller vad som nu krävs.
+
+[4] Kandidaten: Då lämnar vi luckan där ett ögonblick. Jag vill höra om en helt vanlig vecka hos er — vad är det som tar tid, utöver just avbokningarna?
+[4] Kunden: Instagram skulle ju vara tre gånger i veckan, det blir typ en. Sen beställa från grossisten varannan vecka, skriva schema, och svara på alla DM om priser.
+
+[5] Kandidaten: Ett schema, en grossistbeställning och DM om priser — det låter som mer än två par händer hinner med. Om du tänker på förra veckan: vad hann du faktiskt inte göra?
+[5] Kunden: Instagram, helt klart. Och grossistbeställningen blev sen igen — jag gör det i panik på söndag kväll.
+
+[6] Kandidaten: Att beställningen landar i panik på söndag kväll — vem ringer du då, eller är det alltid du?
+[6] Kunden: Alltid jag. Sara är grym i stolen men jag vill inte att hon ska behöva rodda beställningar och sånt.
+
+[7] Kandidaten: Schemat och alla DM om priser — när under veckan görs de, och hur lång tid tar de?
+[7] Kunden: DM:na svarar jag mellan kunderna, lite hipp som happ. Schemat brukar jag sitta med på söndagar, tar väl en timme om jag får vara ifred.
+
+[8] Kandidaten: Då vet jag hur veckan ser ut — tack. En sista sak innan jag bestämmer mig: finns det något du inte vill lämna ifrån dig, något som ska förbli ditt?
+[8] Kunden: Färgresultat och klagomål, det svarar jag själv på — det går inte att lämpa över. Resten får du gärna ta.
+
+[slut] Färgresultat och klagomål behåller du — det hör jag, och det är klokt. Jag har hört nog: jag tar jobbet, om ni vill ha mig.
+
+--- INTAG ---
+teamet_för:             en enskild person i sitt jobb
+roll:                   frisör och den som rodda allt runt salongen — "jag som drunknar i avbokningar och luckor i Bokadirekt"
+arbetsplats:            frisörsalong i Västerås, två personer (kunden och Sara)
+arbetsplatsens_storlek: 2
+storlek:                solo
+antal_personer:         1
+källa:                  intervju
+
+## Vem teamet byggs för
+Kunden driver en frisörsalong i Västerås tillsammans med Sara och gör själv allt runt omkring klippandet: fyller tomma stolar när någon avbokar med kort varsel, sköter Instagram, beställer från grossisten, skriver schema och svarar på DM om priser. "Både och, typ — det är ju jag som drunknar, men det gynnar ju Sara också när jag inte sitter i telefonen hela dagarna."
+
+## Vad omgivningen förväntar sig
+Kunden vill inte belasta Sara med beställningar och sådant — "Sara är grym i stolen men jag vill inte att hon ska behöva rodda beställningar och sånt" — och kunderna förväntar sig svar på DM om priser och hjälp när de avbokar.
+
+## Vad företaget gör
+Frisörsalong i Västerås med två anställda. Kunden sköter både stolen och allt runtomkring; Sara arbetar i stolen.
+
+## Återkommande moment
+- Avbokningar och luckor i Bokadirekt: när någon avbokar med kort varsel står stolen tom — "Just nu? Ingenting, typ — jag hinner inte ringa runt eller lägga ut nåt, det bara står tomt."
+- Instagram: "skulle ju vara tre gånger i veckan, det blir typ en".
+- Beställa från grossisten: varannan vecka, "blev sen igen — jag gör det i panik på söndag kväll", alltid kunden själv.
+- Skriva schema: "brukar jag sitta med på söndagar, tar väl en timme om jag får vara ifred".
+- Svara på DM om priser: "mellan kunderna, lite hipp som happ".
+
+## Var det klämmer
+Avbokningar med kort varsel lämnar en tom stol som ingen hinner fylla — "det är precis det jag behöver hjälp att täppa igen". Instagram blir aldrig av ("Instagram, helt klart") och grossistbeställningen blir sen och görs i panik på söndag kväll.
+
+## Befintliga verktyg och vanor
+Bokadirekt (bokningar och avbokningar), Instagram och DM. Beställningar från grossist. "Alltid jag" — inget delegeras idag.
+
+## Mål och ambition
+Få bort de tomma stolarna genom att ringa väntelistan eller lägga ut luckan, och slippa sitta i telefonen hela dagarna så att Sara också gynnas. Instagram ska upp till tre gånger i veckan och beställningen ska inte bli liggande till söndag kväll.
+
+## Avgränsningar
+Färgresultat och klagomål svarar kunden själv på — "det går inte att lämpa över". Resten får lämnas över.

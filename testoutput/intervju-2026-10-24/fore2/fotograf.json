@@ -1,0 +1,124 @@
+{
+  "turer": [
+    {
+      "fraga": "Hej, vad roligt att du ringde — jag är kandidaten som söker jobbet som din VD-assistent. Innan jag tackar ja vill jag förstå er vardag, så: vad gör ni, och vad gör du på dagarna?",
+      "svar": "Ja, jag fotar bröllop och porträtt, mest bröllop — och sen sitter jag ju ihjäl mig i Lightroom, typ 20-30 timmar per bröllop, det är där skon klämmer. Resten är mejl med brudpar, offerter, Pixieset-gallerier och kvitton som jag gör i panik varje kvartal. Men det viktigaste för mig är att jag aldrig lämnar ifrån mig urvalet av bilder."
+    },
+    {
+      "fraga": "Tack — och jag fattar direkt att urvalet är ditt. Du nämnde Lightroom-sittningen: när du säger 20–30 timmar per bröllop, vad är det du faktiskt gör under de timmarna?",
+      "svar": "Urval först — sålla bort skräpet, sen färg, exponering, hudtoner, beskärning, allt sånt. Sen exporterar jag och lägger upp. Det är det som tar tid, och det är just därför jag behöver någon som kan ta allt runtomkring."
+    },
+    {
+      "fraga": "Så urvalet och fotandet är ditt — allt runtomkring vill du lämna ifrån dig. När du säger \"allt runtomkring\", vad är det du helst skulle slippa i en vanlig vecka?",
+      "svar": "Mejlen med brudpar, offerterna, gallerierna, kvittona — allt det där. Helst vill jag bara fota och redigera, resten är bara brus."
+    },
+    {
+      "fraga": "Där har vi själva kärnan — allt runtomkring är brus. Du nämnde kvittona som du gör i panik varje kvartal: vad innebär den paniken rent konkret, vad är det som ska hinnas med då?",
+      "svar": "Ja, alltså det är ju bokföringen — kvitton som ska sorteras, scannas, in i systemet, moms och skit. Jag skjuter på det i månader och sen sitter jag en helg och svär. Hatar det."
+    },
+    {
+      "fraga": "En helg med svordomar — den känner jag igen. Du nämnde offerter och mejl med brudpar: vad gjorde du konkret med dem förra veckan, och hur lång tid tog det?",
+      "svar": "Igår satt jag typ två timmar med ett brudpar om tidslinje för dagen, och skickade en offert till ett par i Skellefteå. Tog väl en timme. Det är sånt där jag borde kunna lämna över, jag tappar ju redigeringstimmar på det."
+    },
+    {
+      "fraga": "Två timmar med tidslinjen och en timme på offerten — och du tappar redigeringstimmar på det. När de där samtalen väl är igång, vad är det brudparen frågar om som tar längst tid att svara på?",
+      "svar": "Det är väl allt kring tider — när ska vi börja, hur länge, vad händer mellan ceremonin och festen. Och sen frågar de om bilder, om de får se allt, och där är jag stenhård: urvalet är mitt."
+    },
+    {
+      "fraga": "Två timmar på tider, och urvalet är stenhårt ditt — det hör jag. Nu tänker jag på allt runtomkring du vill lämna ifrån dig: finns det något där som ändå måste förbi dig eller som du inte vill lämna ifrån dig alls?",
+      "svar": "Urvalet, som sagt — där släpper jag inte. Och priset i offerterna vill jag nog ha koll på själv. Men mejlen och bokföringen kan någon annan ta."
+    },
+    {
+      "fraga": "Då vet jag var gränsen går — urvalet och priset är ditt. En sista sak om veckan: vad blev ogjort förra veckan, alltså sådant du sköt upp eller inte hann med?",
+      "svar": "Kvittona, förstås. Och bokföringen. Det ligger kvar."
+    },
+    {
+      "fraga": "Kvittona och bokföringen ligger kvar — det var det jag misstänkte. Du nämnde att du skjuter på det i månader och sen tar en helg: när satt du med det senast, och hur länge blev det då?",
+      "svar": "Förra kvartalet, alltså i... ja, det var väl en hel helg, lördag och söndag. Tror jag. Det är ju därför jag behöver nån."
+    },
+    {
+      "fraga": "En hel helg, lördag och söndag — och du behöver nån, det är därför jag är här. Du nämnde Pixieset-gallerierna: vad gör du konkret med dem, och hur ofta blir det i en vanlig vecka?",
+      "svar": "Jag laddar upp de färdiga bilderna och skickar länken till paret. Ett par gånger i veckan, när det är leverans. Det är inte det som tar tid, det är redigeringen innan."
+    },
+    {
+      "fraga": "Då är jag nästan nöjd — en sista pusselbit: finns det något du inte vill eller får lämna ifrån dig till någon utanför, utöver urvalet och priset?",
+      "svar": "Nä, det tror jag inte. Urvalet och priset, sen får du ta resten."
+    }
+  ],
+  "slut": {
+    "status": "klart",
+    "replik": "Tack — då har jag hört nog. Jag tar jobbet, om du vill ha mig.",
+    "intag": "teamet_för:             en enskild person i sitt jobb\nroll:                   fotograf (bröllop och porträtt, mest bröllop)\narbetsplats:            egen fotoverksamhet — bröllop och porträtt\narbetsplatsens_storlek: en person (solo)\nstorlek:                solo\nantal_personer:         1\nkälla:                  intervju\n\n## Vem teamet byggs för\nRollen är fotograf, mest bröllop och porträtt. En vanlig vecka fotar och redigerar hen: urval först — sålla bort skräpet, sen färg, exponering, hudtoner, beskärning — och sen exporterar och lägger upp. Redigeringen i Lightroom tar 20–30 timmar per bröllop. Resten av veckan går till mejl med brudpar, offerter, Pixieset-gallerier och kvitton.\n\n## Vad omgivningen förväntar sig\nBrudparen hör av sig med frågor, mest om tider: när de ska börja, hur länge, vad som händer mellan ceremonin och festen. De frågar också om bilder och om de får se allt.\n\n## Vad företaget gör\nEn enskild fotograf som fotar bröllop och porträtt och själv sköter allt runtomkring: redigering, mejl med brudpar, offerter, gallerier och bokföring.\n\n## Återkommande moment\n- Redigering/urval i Lightroom: 20–30 timmar per bröllop. Urval först (sålla bort skräpet), sen färg, exponering, hudtoner, beskärning, sedan export och uppladdning.\n- Mejl och samtal med brudpar: igår två timmar med ett brudpar om tidslinje för dagen.\n- Offerter: en offert till ett par i Skellefteå, tog väl en timme.\n- Pixieset-gallerier: laddar upp färdiga bilder och skickar länken till paret, ett par gånger i veckan vid leverans.\n- Kvitton och bokföring: sorteras, scannas, in i systemet, moms — skjuts upp i månader och görs sen i panik.\n\n## Var det klämmer\nRedigeringen tar tid, och allt runtomkring är \"bara brus\". Hen tappar redigeringstimmar på mejl och offerter. Kvittona och bokföringen skjuts upp i månader och görs sen i panik — en hel helg, lördag och söndag, senast förra kvartalet. \"Hatar det.\"\n\n## Befintliga verktyg och vanor\nLightroom (redigering), Pixieset (gallerier), mejl, offerter, kvitton/bokföringssystem. Urval och prissättning behåller hen själv.\n\n## Mål och ambition\nHen vill bara fota och redigera — lämna över allt runtomkring och slippa bruset, särskilt mejl, offerter, gallerier och bokföring.\n\n## Avgränsningar\nUrvalet av bilder lämnas aldrig ifrån sig — \"urvalet är mitt\", \"där är jag stenhård\". Priset i offerterna vill hen ha koll på själv. I övrigt inga uttryckliga avgränsningar — \"Urvalet och priset, sen får du ta resten.\""
+  },
+  "dom": {
+    "fragor": [
+      {
+        "nr": 1,
+        "amne": "verksamhet: vad kunden gör och dennes vardag",
+        "upprepar": false,
+        "varfor": "Inledande öppen fråga för att kartlägga verksamheten och kundens roll."
+      },
+      {
+        "nr": 2,
+        "amne": "moment: Lightroom-redigeringens innehåll",
+        "upprepar": false,
+        "varfor": "Fördjupar det kunden nämnde om 20–30 timmar redigering per bröllop."
+      },
+      {
+        "nr": 3,
+        "amne": "avgransning: vilka uppgifter kunden vill lämna ifrån sig",
+        "upprepar": false,
+        "varfor": "Begär konkretion kring 'allt runtomkring' som kunden nämnt."
+      },
+      {
+        "nr": 4,
+        "amne": "moment: kvartalsbokföring och kvittohantering",
+        "upprepar": false,
+        "varfor": "Utvecklar kundens egen beskrivning av kvartalspaniken."
+      },
+      {
+        "nr": 5,
+        "amne": "moment: mejl med brudpar och offerter, konkret exempel",
+        "upprepar": false,
+        "varfor": "Ber om konkret exempel och tidsåtgång från förra veckan."
+      },
+      {
+        "nr": 6,
+        "amne": "moment: brudparskommunikationens innehåll",
+        "upprepar": false,
+        "varfor": "Specificerar vad i brudparssamtalen som tar mest tid."
+      },
+      {
+        "nr": 7,
+        "amne": "avgransning: vad som måste förbi kunden",
+        "upprepar": false,
+        "varfor": "Frågar om undantag i det kunden vill delegera."
+      },
+      {
+        "nr": 8,
+        "amne": "moment: ogjorda uppgifter förra veckan",
+        "upprepar": false,
+        "varfor": "Kartlägger eftersatta uppgifter utifrån veckoperspektiv."
+      },
+      {
+        "nr": 9,
+        "amne": "moment: senaste bokföringstillfälle och tidsåtgång",
+        "upprepar": true,
+        "varfor": "Kunden har redan berättat att hen skjuter på bokföringen i månader och tar en helg — frågan upprepar samma sak."
+      },
+      {
+        "nr": 10,
+        "amne": "moment: Pixieset-gallerier, hantering och frekvens",
+        "upprepar": false,
+        "varfor": "Ny uppgift som inte tidigare beskrivits i detalj."
+      },
+      {
+        "nr": 11,
+        "amne": "avgransning: ytterligare sekretess eller undantag",
+        "upprepar": true,
+        "varfor": "Kunden har redan svarat att urval och pris är det enda som inte får lämnas ifrån sig."
+      }
+    ],
+    "sammanfattning": "Kandidaten ställer elva frågor som kartlägger kundens verksamhet, tidskrävande moment (redigering, mejl, offerter, bokföring) och avgränsningar för vad som får delegeras. De flesta frågor bygger vidare på kundens svar och är inte upprepningar, men frågorna 9 och 11 upprepar information kunden redan gett."
+  }
+}

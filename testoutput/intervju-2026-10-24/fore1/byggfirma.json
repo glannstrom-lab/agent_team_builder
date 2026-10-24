@@ -1,0 +1,105 @@
+{
+  "turer": [
+    {
+      "fraga": "Vad kul att du ringde — innan jag tackar ja vill jag förstå er vardag. Är det en verksamhet teamet ska byggas åt, eller är det du själv i ditt jobb?",
+      "svar": "Nej, det är jag och två snickare, Ali och Petter — vi kör badrum och tillbyggnader åt privatfolk här i Örebro. Så det är mitt lilla gäng, och det är framför allt jag som drunknar i fakturor och offerter."
+    },
+    {
+      "fraga": "Där har vi det — ett litet gäng som bygger badrum och tillbyggnader, och du som drunknar i fakturor och offerter. När du säger offerter, vad gjorde du konkret med dem förra veckan?",
+      "svar": "Fyra hembesök, sen satt jag och skrev offerterna i Word på kvällarna, typ en och en halv timme styck. Det är just det där som slukar mig — och sen på söndag sitter jag med Fortnox och fakturorna, och då har jag garanterat glömt nån ÄTA igen."
+    },
+    {
+      "fraga": "Åtta timmar på offerter och en söndag med Fortnox — och ändå slinker en ÄTA igenom. Vad var det som blev ogjort förra veckan när tiden inte räckte?",
+      "svar": "Beijer-beställningen sköts fram till torsdag, och jag ringde aldrig tillbaka två kunder om tider. Och så glömde jag lägga på en extra vägg för kunden i Brickebacken — det där med ÄTA:n igen, det är rena läckaget."
+    },
+    {
+      "fraga": "Beijer-beställningen framskjuten, två kunder utan återringning, och en extra vägg i Brickebacken som inte kom med — det är den där ÄTA:n som läcker pengar. När du satt med Fortnox i söndags, hur länge satt du då?",
+      "svar": "Satt väl från halv åtta till halv elva, ungefär. Det är ju det som är grejen — jag sitter där på söndagskvällen och fakturerar, och ändå slinker ÄTA-arbeten igenom för att jag inte fått in dem i underlaget."
+    },
+    {
+      "fraga": "Tre timmar på söndagskvällen, och ändå läcker ÄTA:na igenom — det skaver. Vad mer hade du velat få gjort förra veckan som inte blev av?",
+      "svar": "Hade velat få iväg Offerta-förfrågningarna och lagt Brickebacken-ÄTA:n direkt i Fortnox, för det är precis där pengarna försvinner. Men jag hinner inte, jag sitter ju med offerterna på kvällarna istället."
+    },
+    {
+      "fraga": "Så kvällarna går till offerter och söndagen till Fortnox — då är frågan hur mycket du gör själv och vad du faktiskt inte vill lämna ifrån dig. Finns det något kring det här som ska förbli ditt, som ingen annan ska röra?",
+      "svar": "Kundkontakten på plats och prissättningen — det släpper jag inte, det är jag som ska stå där i badrummet och sätta priset. Men själva skrivandet, fakturorna, ÄTA:na och beställningarna, det kan nån annan få ta."
+    },
+    {
+      "fraga": "Bra — kundkontakten och priset behåller du, och det är precis där du ska vara. Hur många offerter, fakturor och beställningar handlar det om under en vanlig månad?",
+      "svar": "Offertmässigt tre–fyra hembesök i veckan, så en tolv–femton i månaden kanske. Fakturorna rullar på rätt många, och Beijer-beställningar blir det ju några per projekt — det är där söndagskvällarna går."
+    },
+    {
+      "fraga": "Tolv–femton offerter i månaden och söndagarna till Fortnox — då börjar jag se konturerna. Finns det något arbetsgivaren eller någon annan sätter stopp för, något som inte får lämna huset eller måste godkännas av någon annan?",
+      "svar": "Nej, det är bara jag som bestämmer, det är mitt företag. Enda är väl att prissättningen vill jag sköta själv, men allt annat runt omkring kan du ta."
+    },
+    {
+      "fraga": "Då vet jag det — kundkontakt och pris är ditt, resten får någon annan ta. En sista sak: du nämnde Offerta-förfrågningarna och Beijer-beställningarna, vad är det som gör just dem trögast att få iväg?",
+      "svar": "Offerta-förfrågningarna är mest att de kommer mitt i allt annat, och Beijer är ju att jag måste sitta och jämka mängder mot ritningen innan jag beställer. Det är sån där småskit som jag skjuter upp till kvällen — och då blir det Fortnox istället."
+    }
+  ],
+  "slut": {
+    "status": "klart",
+    "replik": "Tack — nu har jag hört nog. Jag tar jobbet, om ni vill ha mig: kundkontakten och prissättningen är din, och resten ser jag fram emot att ta hand om.",
+    "intag": "företagsnamn:       okänt\nbransch:            bygg — badrum och tillbyggnader åt privatfolk\nstorlek:            litet\nantal_personer:     3\nkälla:              intervju\n\n## Vad företaget gör\nVi kör badrum och tillbyggnader åt privatfolk här i Örebro. Vi är jag och två snickare, Ali och Petter. Det är framför allt jag som drunknar i fakturor och offerter.\n\n## Återkommande moment\n- Fyra hembesök förra veckan, sen skrev jag offerterna i Word på kvällarna, typ en och en halv timme styck. Offertmässigt tre–fyra hembesök i veckan, så en tolv–femton i månaden kanske.\n- På söndag sitter jag med Fortnox och fakturorna. Satt från halv åtta till halv elva, ungefär. Fakturorna rullar på rätt många.\n- Beijer-beställningar blir det några per projekt; jag måste sitta och jämka mängder mot ritningen innan jag beställer.\n- Offerta-förfrågningarna kommer mitt i allt annat, och jag skjuter upp dem — Beijer-beställningen sköts fram till torsdag.\n\n## Var det klämmer\n\"Jag sitter där på söndagskvällen och fakturerar, och ändå slinker ÄTA-arbeten igenom för att jag inte fått in dem i underlaget.\" Glömde lägga på en extra vägg för kunden i Brickebacken — \"det är rena läckaget\", \"det är precis där pengarna försvinner\". Ringde aldrig tillbaka två kunder om tider. Hinner inte få iväg Offerta-förfrågningarna eller lägga Brickebacken-ÄTA:n direkt i Fortnox — sitter med offerterna på kvällarna istället.\n\n## Befintliga verktyg och vanor\nWord (offertskrivande), Fortnox (fakturor), ritningar (mängdjämkning inför Beijer-beställning). Beijer som leverantör.\n\n## Mål och ambition\nFå in ÄTA-arbetena i underlaget så att de inte slinker igenom, få iväg Offerta-förfrågningarna och lägga ÄTA:n direkt i Fortnox. Kvällarna och söndagskvällarna ska inte gå åt till skrivande och fakturor.\n\n## Avgränsningar\nKundkontakten på plats och prissättningen behåller kunden själv — \"det är jag som ska stå där i badrummet och sätta priset\". Själva skrivandet, fakturorna, ÄTA:na och beställningarna kan någon annan ta. Det är bara kunden som bestämmer, det är hans företag."
+  },
+  "dom": {
+    "fragor": [
+      {
+        "nr": 1,
+        "amne": "verksamhet: teamet ska byggas åt, eller för dig själv",
+        "upprepar": false,
+        "varfor": "Inledande fråga för att klargöra om uppdraget gäller ett team eller kandidatens egen roll."
+      },
+      {
+        "nr": 2,
+        "amne": "moment: offertskrivande förra veckan",
+        "upprepar": false,
+        "varfor": "Ber om konkret exempel på vad kunden gjorde med offerter förra veckan."
+      },
+      {
+        "nr": 3,
+        "amne": "moment: ogjorda uppgifter förra veckan",
+        "upprepar": false,
+        "varfor": "Frågar vad som blev ogjort när tiden inte räckte, ny information."
+      },
+      {
+        "nr": 4,
+        "amne": "moment: fakturering i Fortnox söndags",
+        "upprepar": false,
+        "varfor": "Frågar hur länge kunden satt med Fortnox i söndags, specifik tidsåtgång."
+      },
+      {
+        "nr": 5,
+        "amne": "moment: önskade men ej utförda uppgifter förra veckan",
+        "upprepar": false,
+        "varfor": "Frågar vad mer kunden velat göra förra veckan, ny information om prioriteringar."
+      },
+      {
+        "nr": 6,
+        "amne": "avgransning: vad som ska förbli kundens eget",
+        "upprepar": false,
+        "varor": null,
+        "varfor": "Frågar vilka arbetsuppgifter kunden vill behålla personligen."
+      },
+      {
+        "nr": 7,
+        "amne": "storlek: antal offerter, fakturor, beställningar per månad",
+        "upprepar": false,
+        "varfor": "Frågar om volym per månad, kvantitativ information."
+      },
+      {
+        "nr": 8,
+        "amne": "avgransning: arbetsgivarens begränsningar",
+        "upprepar": false,
+        "varfor": "Frågar om yttre begränsningar eller godkännandekrav."
+      },
+      {
+        "nr": 9,
+        "amne": "moment: Offerta-förfrågningar och Beijer-beställningar",
+        "upprepar": false,
+        "varfor": "Frågar vad som gör just dessa moment trögast, djupare förståelse."
+      }
+    ],
+    "sammanfattning": "Kandidaten ställer nio frågor som kartlägger kundens verksamhet, arbetsmoment, tidsåtgång, volymer och avgränsningar. Ingen fråga upprepas; alla söker ny information om kundens vardag och behov."
+  }
+}

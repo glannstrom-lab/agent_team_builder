@@ -1,0 +1,84 @@
+{
+  "turer": [
+    {
+      "fraga": "Hej! Vad roligt att du ringer — jag är kandidaten som vill bli er VD-assistent. Innan jag tackar ja vill jag förstå er, så: vem är det egentligen teamet ska byggas för?",
+      "svar": "Assistent, inte VD-assistent — jag är fotograf, inte nåt bolag. Det som ska byggas är egentligen bara att nån tar redigeringen från mig, för bröllopen ligger på 20–30 timmar i Lightroom och jag vill inte lämna ifrån mig urvalet."
+    },
+    {
+      "fraga": "Tack — då är du teamet, inte ett bolag. Du sa att bröllopen ligger på 20–30 timmar i Lightroom; vad gjorde du konkret förra veckan, utöver själva redigeringen?",
+      "svar": "Mejlade två brudpar om tider, skrev en offert, la upp ett galleri i Pixieset. Sen skulle kvittona in — gör det i panik varje kvartal, sitter säkert tre timmar i söndags."
+    },
+    {
+      "fraga": "Tre timmar i söndags för kvitton — det hör jag. När du skrev den där offerten, vad hade du uppe på skärmen då?",
+      "svar": "Bröllopsbilderna från i lördags, såklart — offerten skrevs i pauserna. Det är precis det här jag menar, allt krockar med redigeringen."
+    },
+    {
+      "fraga": "Där ser jag mönstret — redigeringen äter allt annat. När bröllopssäsongen är som värst, vad är det som blir ogjort?",
+      "svar": "Offertarna först, de kan ligga i en vecka. Och kvittona, de bara växer. Men det värsta är leveransen — paren väntar för länge på sina bilder, och det är mitt namn på det."
+    },
+    {
+      "fraga": "\"Paren väntar för länge på sina bilder\" — det tar jag med mig. Om ett brudpar eller en kollega skulle beskriva vad du är bra på, vad säger de då?",
+      "svar": "Att jag får folk att slappna av framför kameran, och att ljuset sitter. Sen att jag är långsam — men det säger de väl inte till mig direkt."
+    },
+    {
+      "fraga": "Då vet jag vem som sitter framför kameran — och att ljuset sitter. Hur många bröllop har du på en säsong, ungefär?",
+      "svar": "Runt 15–20. Och varje ett är 20–30 timmar i efterhand, det är där knuten sitter."
+    },
+    {
+      "fraga": "Femton till tjugo bröllop — och varje ett med en efterhand som ingen annan rör. Finns det något mer än urvalet som du inte vill lämna ifrån dig?",
+      "svar": "Nej, det är urvalet. Färg och kontrast kan nån annan få leka med, men vilka bilder som är med — det bestämmer jag."
+    }
+  ],
+  "slut": {
+    "redan_sagt": "Teamet: kunden själv, fotograf (solo). Gör: bröllopsfoto. Moment: redigering 20–30 h/bröllop i Lightroom, 15–20 bröllop/säsong; mejl om tider, offerter (kan ligga en vecka), galleri i Pixieset, kvitton ~3 h i söndags/varje kvartal. Klämmer: offerter och kvitton blir ogjorda; leveransen försenas, \"mitt namn på det\". Avgränsning: urvalet lämnas aldrig ifrån sig (färg/kontrast ok). Saknas: inget väsentligt utom vad \"långsam\" bedöms mot — har redan svar om omgivningens bild.",
+    "status": "klart",
+    "replik": "Jag har hört nog — jag tar jobbet, om du vill ha mig. Tack för att du berättade så rakt: urvalet är ditt, resten kan någon annan bära.",
+    "intag": "teamet_för:             en enskild person i sitt jobb\nroll:                   fotograf, i egna ord \"fotograf, inte nåt bolag\"\narbetsplats:            bröllopsfotograf (egen verksamhet)\narbetsplatsens_storlek: solo\nstorlek:                solo\nantal_personer:         1\nkälla:                  intervju\n\n## Vem teamet byggs för\nFotograf som fotograferar bröllop. En vanlig vecka går åt till efterhandsarbetet i Lightroom — 20–30 timmar per bröllop — och runt det: mejlar brudpar om tider, skriver offerter, lägger upp gallerier i Pixieset och gör kvitton.\n\n## Vad omgivningen förväntar sig\nBrudparen beskriver det hen är bra på som att få folk att slappna av framför kameran och att ljuset sitter. Hen själv säger att de också uppfattar hen som långsam, \"men det säger de väl inte till mig direkt\". Leveransen är det som bär hens namn: paren väntar för länge på sina bilder, och \"det är mitt namn på det\".\n\n## Vad företaget gör\nFotograferar bröllop — 15–20 per säsong — och står själv för hela kedjan från fotografering till färdig leverans av bilder.\n\n## Återkommande moment\n- Redigering i Lightroom: 20–30 timmar per bröllop, 15–20 bröllop per säsong.\n- Offertskrivning: sker i pauserna mellan redigeringen; kan ligga en vecka.\n- Kvitton: \"gör det i panik varje kvartal\", cirka tre timmar, \"sitter säkert tre timmar i söndags\".\n- Mejla brudpar om tider.\n- Lägga upp galleri i Pixieset.\n\n## Var det klämmer\n\"Allt krockar med redigeringen.\" Offertarna blir ogjorda först — kan ligga i en vecka — och kvittona \"bara växer\". Värst är leveransen: paren väntar för länge på sina bilder, och det är hens namn på det.\n\n## Befintliga verktyg och vanor\nLightroom (redigering), Pixieset (galleri). Offertskrivning sker i pauserna mellan redigeringen. Kvitton görs i panik varje kvartal.\n\n## Mål och ambition\nFå bort redigeringen från sig själv och slippa att allt annat krockar med den — utan att förlora urvalet. Leveransen ska inte försenas, eftersom det är hens namn på den.\n\n## Avgränsningar\nUrvalet lämnas aldrig ifrån sig — \"vilka bilder som är med — det bestämmer jag\". Färg och kontrast kan någon annan få arbeta med."
+  },
+  "dom": {
+    "fragor": [
+      {
+        "nr": 1,
+        "amne": "vem: teamet/uppdragsgivaren",
+        "upprepar": false,
+        "varfor": "Inledande fråga för att förstå vem kunden är och vad som ska byggas."
+      },
+      {
+        "nr": 2,
+        "amne": "moment: veckans arbetsuppgifter utöver redigering",
+        "upprepar": false,
+        "varfor": "Kartlägger kundens faktiska göromål bortom det redan nämnda för att hitta avlastningsbara moment."
+      },
+      {
+        "nr": 3,
+        "amne": "verktyg: vad som var uppe på skärmen vid offertskrivning",
+        "upprepar": false,
+        "varfor": "Frågar om arbetsmiljö/kontext kring ett specifikt moment för att förstå hur arbetsflödet krockar."
+      },
+      {
+        "nr": 4,
+        "amne": "moment: vad som blir ogjort under högsäsong",
+        "upprepar": false,
+        "varfor": "Identifierar konsekvenser och prioriteringar när tiden inte räcker."
+      },
+      {
+        "nr": 5,
+        "amne": "verksamhet: vad kunden är bra på enligt andra",
+        "upprepar": false,
+        "varfor": "Kartlägger styrkor och hur kunden uppfattas, relevant för matchning."
+      },
+      {
+        "nr": 6,
+        "amne": "storlek: antal bröllop per säsong",
+        "upprepar": false,
+        "varfor": "Mäter volymen för att bedöma omfattning och behov."
+      },
+      {
+        "nr": 7,
+        "amne": "moment: vad mer kunden inte vill lämna ifrån sig",
+        "upprepar": false,
+        "varfor": "Fördjupar avgränsningen av vad som får delegeras — mer specifik än tidigare svar om urvalet."
+      }
+    ]
+  }
+}

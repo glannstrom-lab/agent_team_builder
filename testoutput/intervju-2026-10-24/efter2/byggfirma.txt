@@ -1,0 +1,66 @@
+[1] Kandidaten: Hej! Vad roligt att du ringde — jag är nyfiken redan. Innan jag säger ja vill jag förstå er vardag: vem är teamet tänkt att jobba för, dig personligen eller hela verksamheten?
+[1] Kunden: Det är mig personligen i första hand — jag drunknar i fakturor och offerter, och det är där skon klämmer. Ali och Petter sköter ju snickeriet, men allt pappersjobb landar på mig, särskilt faktureringen på söndagskvällarna.
+
+[2] Kandidaten: Att allt pappersjobb landar på dig när Ali och Petter snickrar — det hör jag. Vad är det för slags verksamhet ni har?
+[2] Kunden: Badrum och tillbyggnader åt privatpersoner, mest i Örebro med kringliggande. Det är roligt hantverk, men offerterna och fakturorna tar kål på mig — jag sitter ju med Word på kvällarna istället.
+
+[3] Kandidaten: Badrum och tillbyggnader åt privatpersoner — då förstår jag att det är en del papper runt varje jobb. Om vi tar förra veckan: vad gjorde du konkret, steg för steg, när du satte dig med fakturorna?
+[3] Kunden: Ja, du... i söndags kväll satt jag med Fortnox och skulle fakturera veckans jobb, och då upptäckte jag att ett ÄTA-arbete på ett badrum i Brickebacken aldrig blev inlagt. Sånt där tappas hela tiden, och då blir det tjafs med kunden efteråt. Det är precis det här jag vill ha hjälp med.
+
+[4] Kandidaten: Ett ÄTA-arbete som aldrig blir inlagt och sen blir tjafs med kunden — det är ju precis den sortens sak som inte borde hända. När du satt där i söndags med Fortnox, hur länge satt du innan allt var klart?
+[4] Kunden: Ett par timmar, oftast mer — och då hade jag ändå glömt ÄTA:n. Det är ju själva grejen: jag borde lägga in det direkt på plats, men det blir inte av, och sen sitter jag där på söndag och kunderna betalar sent också.
+
+[5] Kandidaten: Ett par timmar på söndagskvällen och ÄTA:n ändå glömd — och kunderna betalar sent ovanpå det. Du nämnde offerterna också: hur går det arbetet till, från första kundkontakt till färdig offert?
+[5] Kunden: Kunden ringer, jag åker ut på hembesök — tre, fyra stycken i veckan — och sen skriver jag offerten i Word på kvällen, en till två timmar per styck. Det är där jag vill ha avlastning, men jag vill fortfarande göra hembesöken och prissättningen själv.
+
+[6] Kandidaten: Hembesöken och prissättningen behåller du själv — det antecknar jag. Är det bara du och de två snickarna, eller är ni fler i firman?
+[6] Kunden: Nej, det är bara vi tre — jag, Ali och Petter. Ingen administration alls, och det är väl därför allt hamnar på mig till slut.
+
+[7] Kandidaten: Då är ni tre och allt pappersarbete är ditt — jag hör dig. Utöver hembesöken och prissättningen: finns det något annat du inte vill lämna ifrån dig, eller något som måste godkännas av någon annan innan det går ut?
+[7] Kunden: Kundkontakten på plats vill jag sköta själv, den är helig. Sen är det Beijer-beställningarna och Offerta-förfrågningarna som bara måste bli gjorda — men där får du gärna ta över. Bara inte prissättningen.
+
+[8] Kandidaten: Beijer-beställningarna och Offerta-förfrågningarna får jag ta över — bra, då vet jag var gränsen går. Hur ofta blir det, och vad innebär de i praktiken för dig?
+[8] Kunden: Beijer blir väl ett par gånger i veckan, ibland oftare när ett jobb drar igång — det ska kollas av material och ringas och beställas. Offerta-förfrågningarna dimper in lite då och då, och jag hinner ju knappt svara på dem. Det är sånt som skaver, för det är ju faktiskt jobb som går förlorade om man inte svarar i tid.
+
+[9] Kandidaten: Jobb som går förlorade för att Offerta-frågorna inte hinner besvaras — det skaver, hör jag. Om jag tar över Beijer, Offerta och fakturorna: vad skulle du vilja lägga de timmarna på i stället?
+[9] Kunden: Då skulle jag äntligen kunna lägga in ÄTA-arbetena direkt och fakturera i tid, istället för att sitta på söndagskvällarna. Och kanske hinna med fler hembesök — det är ju där jobben finns.
+
+[slut] Nu vet jag var skon klämmer, var gränsen går och vad du helst vill göra i stället. Jag har hört nog — jag tar jobbet, om ni vill ha mig.
+
+--- INTAG ---
+teamet_för:             en enskild person i sitt jobb
+roll:                   allt pappersjobb i firman — fakturering, offerter, ÄTA, beställningar (kundens egna ord)
+arbetsplats:            badrums- och tillbyggnadsfirma åt privatpersoner, mest i Örebro med kringliggande
+arbetsplatsens_storlek: tre personer — kunden, Ali och Petter
+storlek:                solo
+antal_personer:         1
+källa:                  intervju
+
+## Vem teamet byggs för
+Kunden gör allt pappersjobb själv — "allt pappersjobb landar på mig" — medan Ali och Petter sköter snickeriet. En vanlig vecka: hembesök hos kunder (tre, fyra stycken i veckan), offertskrivande i Word på kvällarna (en till två timmar per styck), fakturering i Fortnox på söndagskvällarna ("ett par timmar, oftast mer"), Beijer-beställningar ("ett par gånger i veckan, ibland oftare när ett jobb drar igång — det ska kollas av material och ringas och beställas") och Offerta-förfrågningar som "dimper in lite då och då".
+
+## Vad omgivningen förväntar sig
+Kunderna: att ÄTA-arbeten blir inlagda och att fakturorna kommer i tid — annars blir det "tjafs med kunden efteråt" och kunderna "betalar sent också". Offerta-förfrågningarna är jobb som "går förlorade om man inte svarar i tid".
+
+## Vad företaget gör
+Badrum och tillbyggnader åt privatpersoner, mest i Örebro med kringliggande. Tre personer: kunden, Ali och Petter. "Ingen administration alls, och det är väl därför allt hamnar på mig till slut."
+
+## Återkommande moment
+- Fakturering i Fortnox på söndagskvällarna — "ett par timmar, oftast mer".
+- ÄTA-arbeten som borde läggas in direkt på plats men "blir inte av".
+- Hembesök — "tre, fyra stycken i veckan".
+- Offertskrivande i Word på kvällen — "en till två timmar per styck".
+- Beijer-beställningar — "ett par gånger i veckan, ibland oftare när ett jobb drar igång".
+- Offerta-förfrågningar — "dimper in lite då och då".
+
+## Var det klämmer
+Ett ÄTA-arbete på ett badrum i Brickebacken blev aldrig inlagt och upptäcktes först vid faktureringen: "Sånt där tappas hela tiden, och då blir det tjafs med kunden efteråt." Kunderna betalar sent. Offerta-förfrågningarna hinner knappt besvaras: "det är ju faktiskt jobb som går förlorade om man inte svarar i tid." Pappersjobbet sker på kvällar och söndagar i stället för på dagarna — "jag sitter ju med Word på kvällarna istället".
+
+## Befintliga verktyg och vanor
+Fortnox (fakturering), Word (offerter), Beijer (beställningar), Offerta (förfrågningar).
+
+## Mål och ambition
+"Lägga in ÄTA-arbetena direkt och fakturera i tid, istället för att sitta på söndagskvällarna" — och "kanske hinna med fler hembesök — det är ju där jobben finns".
+
+## Avgränsningar
+Hembesöken, prissättningen och kundkontakten på plats behåller kunden själv — kundkontakten "är helig", och "bara inte prissättningen". Beijer-beställningarna och Offerta-förfrågningarna "får du gärna ta över", liksom fakturorna.

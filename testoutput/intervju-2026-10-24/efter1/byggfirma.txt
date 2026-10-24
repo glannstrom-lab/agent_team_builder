@@ -1,0 +1,64 @@
+[1] Kandidaten: Hej! Vad roligt att du ringer — jag är nyfiken på det här jobbet. Innan jag tackar ja vill jag förstå er vardag: vad är det för verksamhet du sitter i?
+[1] Kunden: Ja alltså, vi är tre snickare som gör badrum och tillbyggnader åt privatfolk här i Örebro — jag, Ali och Petter. Det som suger musten ur mig är inte jobbet på plats utan alla fakturor, för jag sitter och skriver dem på söndagskvällar i Fortnox och glömmer ÄTA-arbeten stup i kvarten.
+
+[2] Kandidaten: Tre snickare — då är du alltså både hantverkare och kontor på samma gång? Vad är din roll av de tre, när du beskriver den själv?
+[2] Kunden: Jag är väl egentligen snickaren som råkar sitta med allt pappersjobb också — offerter, beställa hos Beijer, ringa kunder om tider, allt det där. Känns som jag jobbar heltid på kontoret på kvällarna och heltid i verkstan på dagarna. Och ändå är det fakturorna som aldrig blir gjorda i tid, det är rena söndagsmaratonet varje vecka.
+
+[3] Kandidaten: Där hör jag något: kontoret på kvällarna, verkstan på dagarna. Om vi tar förra veckan — vad hann du med där, och vad tog mest tid?
+[3] Kunden: Hembesök för offerter, tre stycken, och varje offert skriver jag på kvällen i Word — tar en till två timmar per styck, det är där tiden rinner iväg. Sen Offerta-förfrågningar och en massa telefonsnack om tider. Men det jag inte hann var fakturorna, de ligger fortfarande och väntar på söndag.
+
+[4] Kandidaten: Söndagsmaraton och ÄTA som glöms — det låter som att det som är gjort på plats inte alltid kommer med i pappret. Vad mer än fakturorna blev liggande förra veckan?
+[4] Kunden: Ja precis, det är ju det — ÄTA-arbeten glöms bort och då tappar vi pengar, det är där skon klämmer. Annars låg väl ett par offerter och skvalpade också, de jag skrev på kvällarna blev klara men inte mer.
+
+[5] Kandidaten: Söndagsmaraton som aldrig tar slut — och ÄTA som slinker undan. Är det du själv som gör allt pappersjobb, eller är Ali och Petter inblandade i något av det?
+[5] Kunden: Nej, det är jag som sitter med allt pappersjobb själv — Ali och Petter är på plats, de ska inte behöva hålla på med offerter och fakturor. Och det är väl lite därför jag söker nån, för det där med ÄTA och fakturor hinner jag liksom aldrig ikapp.
+
+[6] Kandidaten: Söndagsmaraton och ÄTA som slinker undan — då är vi nere i det som gör ont. Finns det något i pappersjobbet som du absolut inte vill lämna ifrån dig, något som ska förbli ditt?
+[6] Kunden: Kunderna på plats vill jag inte lämna ifrån mig, och inte prissättningen heller — det är jag som sätter priserna. Resten, allt runt omkring med fakturor och ÄTA och offerttexten, det kan nån annan få ta.
+
+[7] Kandidaten: Då vet jag vad som ska förbli ditt: kunderna och prissättningen. En sista sak jag är nyfiken på — om allt på kontoret flöt perfekt en månad framåt, vad skulle du lägga den tiden på i stället?
+[7] Kunden: Då skulle jag vara ute hos kunderna mer, göra fler offerter och faktiskt hinna med Beijer och tiderna — och förhoppningsvis slippa söndagskvällarna i Fortnox. Det är hela poängen, liksom.
+
+[slut] Tack — jag har hört nog. Jag tar jobbet, om ni vill ha mig.
+
+--- INTAG ---
+teamet_för:             en enskild person i sitt jobb
+roll:                   snickaren som råkar sitta med allt pappersjobb också
+toim:                   -- placeholder --
+
+Nej, skriv så här:
+
+teamet_för:             en enskild person i sitt jobb
+roll:                   "snickaren som råkar sitta med allt pappersjobb också"
+arbetsplats:            tre snickare som gör badrum och tillbyggnader åt privatfolk i Örebro
+arbetsplatsens_storlek: 3 personer
+storlek:                solo
+antal_personer:         1
+källa:                  intervju
+
+## Vem teamet byggs för
+Snickaren som gör allt pappersjobb själv: offerter, beställa hos Beijer, ringa kunder om tider, fakturor. "Heltid på kontoret på kvällarna och heltid i verkstan på dagarna." Ali och Petter är på plats och ska inte behöva hålla på med offerter och fakturor.
+
+## Vad omgivningen förväntar sig
+Okänt — inget uttalat om chef, kollegor eller kunder.
+
+## Vad företaget gör
+Tre snickare som gör badrum och tillbyggnader åt privatfolk i Örebro. Personen själv är snickare men sitter också med allt pappersjobb.
+
+## Återkommande moment
+- Offerter: hembesök för offerter, tre stycken förra veckan; varje offert skrivs på kvällen i Word, en till två timmar per styck.
+- Fakturor: skrivs på söndagskvällar i Fortnox; "söndagsmaratonet varje vecka"; fakturorna blev inte gjorda förra veckan.
+- Offerta-förfrågningar och "en massa telefonsnack om tider".
+- Beställa hos Beijer.
+
+## Var det klämmer
+ÄTA-arbeten glöms bort och då tappar de pengar — "det är där skon klämmer". Fakturorna blir aldrig gjorda i tid. Ett par offerter låg och skvalpade. "Det där med ÄTA och fakturor hinner jag liksom aldrig ikapp."
+
+## Befintliga verktyg och vanor
+Word (offerter), Fortnox (fakturor), Offerta (förfrågningar), Beijer (beställningar).
+
+## Mål och ambition
+Vara ute hos kunderna mer, göra fler offerter, hinna med Beijer och tiderna — och slippa söndagskvällarna i Fortnox.
+
+## Avgränsningar
+Kunderna på plats vill han inte lämna ifrån sig, och inte prissättningen — "det är jag som sätter priserna". Resten, allt runt omkring med fakturor och ÄTA och offerttexten, kan nån annan få ta.

@@ -1,0 +1,105 @@
+{
+  "turer": [
+    {
+      "fraga": "Vad kul att du ringde — jag är nyfiken på det här jobbet. Innan jag tackar ja vill jag förstå er vardag, så jag börjar enkelt: vad är det för verksamhet, och vad gör du där?",
+      "svar": "Jag fotar bröllop och porträtt, mest bröllop, och sen sitter jag... ja, alldeles för mycket i Lightroom och redigerar. Det är där skon klämmer faktiskt, leveransen drar ut på tiden för mig."
+    },
+    {
+      "fraga": "Bröllop — där finns det ju inga omtagningar. Är det du själv som gör allt från bokning till leverans, eller har du någon som hjälper dig?",
+      "svar": "Jag gör allt själv, från första mejlet till färdigt galleri, och det är precis det som inte håller längre. Redigeringen är boven — 20–30 timmar per bröllop."
+    },
+    {
+      "fraga": "20–30 timmar per bröllop — det är en hel arbetsvecka per kund. När du sitter där i Lightroom, vad är det konkreta du gör, steg för steg?",
+      "svar": "Urval, färg, hudtoner, beskärning, sen galleri och backup — det är där timmarna går. Men själva urvalet vill jag inte lämna ifrån mig, det är mitt öga liksom."
+    },
+    {
+      "fraga": "Då är urvalet ditt — det antecknar jag. Hur många bröllop har du ungefär per säsong, och hur ser en vanlig vecka ut när det är som mest?",
+      "svar": "Runt 15–20 per säsong, och på toppen är det bara bröllop, redigering och kaffe. Resterande dagar mejlar jag brudpar, skriver offerter, lägger upp gallerier... och kvittona, de gör jag i panik varje kvartal."
+    },
+    {
+      "fraga": "Kvitton i panik varje kvartal — den känner jag igen från mitt eget liv. När veckorna är som fullast, vad blir liggande ogjort?",
+      "svar": "Redigeringen, alltid redigeringen — den är det som skjuts fram. Brudparen väntar längre än de borde, och det är faktiskt enda anledningen att jag letar assistent."
+    },
+    {
+      "fraga": "Då är det klart varför du ringer — brudparen väntar på det som skjuts fram. Kvittona och offerterna: vad har du öppet på skärmen när du gör dem?",
+      "svar": "Excel för kvittona, sen de vanliga mejlen för offerterna — inget fancy. Kan vi inte prata om det här redigeringsberget istället? Det är där jag faktiskt behöver hjälp."
+    },
+    {
+      "fraga": "Redigeringsberget är precis det jag vill förstå — jag återkommer till det. En sak till bara: finns det något mer som du inte vill lämna ifrån dig, utöver urvalet?",
+      "svar": "Nej, bara urvalet — själva pillandet i Lightroom kan någon annan få. Men det sista ögat vill jag ha."
+    },
+    {
+      "fraga": "Det sista ögat — bra, då vet jag var gränsen går. Jag håller mig kvar vid redigeringsberget: när du väl har gjort urvalet, hur lång tid tar själva pillandet i Lightroom jämfört med urvalet?",
+      "svar": "Urvalet går på några timmar, pillandet tar resten — det är 80 procent av tiden där. Det är liksom där assistenten skulle spara mig en hel vecka."
+    },
+    {
+      "fraga": "Då vet jag var veckan tar vägen — och var den försvinner. En sista sak innan jag bestämmer mig: hur ser brudparens väntan ut i praktiken — vad händer när leveransen drar ut, och vad säger de till dig?",
+      "svar": "De mejlar och frågar \"hur går det?\", artigt först, sen lite otåligt — och jag skäms varje gång. Det är exakt det jag vill bort ifrån."
+    }
+  ],
+  "slut": {
+    "redan_sagt": "Gör allt själv, från mejl till galleri (1 person/solo). Fotar bröllop+porträtt, 15–20 bröllop/säsong. Moment: redigering 20–30 h/bröllop (urval några timmar, pillande 80% — färg, hudtoner, beskärning, galleri, backup), mejl till brudpar, offerter, gallerier, kvitton i Excel varje kvartal. Klämmer: redigeringen skjuts fram, brudpar väntar och mejlar otåligt, hen skäms. Avgränsning: urvalet — 'det sista ögat' — lämnas aldrig ifrån sig; pillandet får någon annan ta. Verktyg: Lightroom, Excel, mejl. Kvar: inget kritiskt — möjligen omgivningens förväntningar.",
+    "status": "klart",
+    "replik": "Tack — jag har hört nog. Jag tar jobbet, om ni vill ha mig. Det sista ögat stannar hos dig; resten av berget är mitt.",
+    "intag": "teamet_för:             en enskild person i sitt jobb\nroll:                   fotograf — \"jag fotar bröllop och porträtt, mest bröllop\"\narbetsplats:            egen verksamhet som fotograf, allt från första mejlet till färdigt galleri\narbetsplatsens_storlek: solo — \"jag gör allt själv\"\nstorlek:                solo\nantal_personer:         1\nkälla:                  intervju\n\n## Vem teamet byggs för\nRollen i personens egna ord: fotograf som fotar bröllop och porträtt, mest bröllop, och som \"sitter alldeles för mycket i Lightroom och redigerar\". Hen gör allt själv, från första mejlet till färdigt galleri — det är precis det som inte håller längre. En vanlig vecka på toppen är \"bara bröllop, redigering och kaffe\"; resterande dagar mejlas brudpar, skrivs offerter och gallerier läggs upp.\n\n## Vad omgivningen förväntar sig\nBrudparen väntar på leveransen och mejlar \"hur går det?\" — artigt först, sen lite otåligt. Personen skäms varje gång det händer.\n\n## Vad företaget gör\nEgen fotoverksamhet: bröllop och porträtt, mest bröllop, 15–20 bröllop per säsong. Allt sköts själv, från första mejlet till färdigt galleri.\n\n## Återkommande moment\n- Redigering: 20–30 timmar per bröllop. Urvalet tar några timmar, \"pillandet tar resten — det är 80 procent av tiden där\" (färg, hudtoner, beskärning, sen galleri och backup).\n- Urval.\n- Mejla brudpar, skriva offerter, lägga upp gallerier.\n- Kvitton i Excel — \"i panik varje kvartal\".\n\n## Var det klämmer\nRedigeringen skjuts alltid fram; \"brudparen väntar längre än de borde, och det är faktiskt enda anledningen att jag letar assistent\". Personen skäms när brudparen mejlar och frågar hur det går.\n\n## Befintliga verktyg och vanor\nLightroom för redigering, Excel för kvittona, \"de vanliga mejlen\" för offerterna — \"inget fancy\".\n\n## Mål och ambition\nAtt komma bort från brudparens väntan och skammen den väcker, och att slippa redigeringsberget som skjuts fram — assistenten \"skulle spara mig en hel vecka\".\n\n## Avgränsningar\nUrvalet lämnas aldrig ifrån sig — \"det är mitt öga liksom\" och \"det sista ögat vill jag ha\". Själva pillandet i Lightroom får någon annan ta."
+  },
+  "dom": {
+    "fragor": [
+      {
+        "nr": 1,
+        "amne": "verksamhet: vad kunden gör och kandidatens roll hos kunden",
+        "upprepar": false,
+        "varfor": "Inledande fråga för att förstå kundens verksamhet, ingen tidigare information finns."
+      },
+      {
+        "nr": 2,
+        "amne": "klammer: om kunden gör allt själv eller har hjälp",
+        "upprepar": false,
+        "varfor": "Kartlägger arbetsbördan och vem som utför momenten, ny information om kundens situation."
+      },
+      {
+        "nr": 3,
+        "amne": "moment: redigeringens steg i Lightroom",
+        "upprepar": false,
+        "varfor": "Fördjupar förståelsen för det mest tidskrävande momentet, inte tidigare beskrivet i detalj."
+      },
+      {
+        "nr": 4,
+        "amne": "storlek: antal bröllop per säsong och typisk vecka",
+        "upprepar": false,
+        "varfor": "Kvantifierar omfattningen av kundens verksamhet, ny information."
+      },
+      {
+        "nr": 5,
+        "amne": "klammer: vad som blir liggande ogjort vid hög belastning",
+        "upprepar": false,
+        "varor": "Identifierar prioriteringar och flaskhalsar, ny information."
+      },
+      {
+        "nr": 6,
+        "amne": "verktyg: program för kvitton och offerter",
+        "upprepar": false,
+        "varfor": "Frågar om verktyg för administrativa moment, ej tidigare besvarat; kunden uttrycker dock motstånd."
+      },
+      {
+        "nr": 7,
+        "amne": "avgransning: vad kunden inte vill lämna ifrån sig utöver urvalet",
+        "upprepar": false,
+        "varfor": "Förtydligar gränser för vad som kan delegeras, delvis ny men bygger på tidigare svar."
+      },
+      {
+        "nr": 8,
+        "amne": "moment: tidsfördelning mellan urval och redigering i Lightroom",
+        "upprepar": false,
+        "varfor": "Kvantifierar tid per moment, ny specifik information."
+      },
+      {
+        "nr": 9,
+        "amne": "moment: brudparens väntan och deras reaktioner",
+        "upprepar": false,
+        "varfor": "Utforskar konsekvenser av sen leverans, ny information om kundens upplevelse."
+      }
+    ],
+    "sammanfattning": "Kandidaten ställer genomgående relevanta frågor för att kartlägga kundens verksamhet, arbetsmoment, tidsåtgång och gränser. Ingen fråga upprepar tidigare information, utan varje fråga bygger vidare på kundens svar och fördjupar förståelsen för behovet av assistans, särskilt kring redigering."
+  }
+}

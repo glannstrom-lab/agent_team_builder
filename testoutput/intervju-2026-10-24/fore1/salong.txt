@@ -1,0 +1,79 @@
+[1] Kandidaten: Hej, vad roligt att du ringde — jag är kandidaten som är nyfiken på jobbet som din VD-assistent. Innan jag ens funderar på att tacka ja vill jag förstå er: vad gör ni, och är det du själv som ska jobba ihop med mig eller är ni flera?
+[1] Kunden: Vi är jag och Sara, jag driver salongen och hon klipper — så det är jag du skulle jobba med, mest hemifrån och lite i salongen. Och det jag behöver mest hjälp med är alla luckor som bara står tomma i Bokadirekt, de måste fyllas.
+
+[2] Kandidaten: Tack — då är du alltså den jag ska jobba med, och det är luckorna i Bokadirekt som bränner mest. Hur brukar det gå till när du märker att en lucka står tom — vad gör du då?
+[2] Kunden: Oftast märker jag det för sent, och då sitter jag och ringer folk i panik samtidigt som jag har kund i stolen. Det är liksom hela grejen — någon borde hålla koll på det innan det blir akut.
+
+[3] Kandidaten: Där känner jag igen mig — panik är sällan ett bra schema. Hur ser en vanlig vecka ut för dig i salongen, vad är det som återkommer och tar tid?
+[3] Kunden: Instagram ska ju vara tre inlägg i veckan, blir typ ett, och sen grossistbeställning varannan vecka och schema. Men det som tar mest tid är ändå alla DM om priser, folk frågar hela tiden.
+
+[4] Kandidaten: Tack — då vet jag lite mer: Instagram tre inlägg som blir ett, grossist varannan vecka, schema, och DM om priser. Vad gjorde du konkret i förra veckan när det gällde de tomma luckorna?
+[4] Kunden: Jag skickade ut ett inlägg i storyn och skrev till tre gamla kunder, men det blev ändå två tomma timmar i torsdags. Det är liksom det jag vill slippa — att det hänger på mig hela tiden.
+
+[5] Kandidaten: Det hänger alltså på dig hela tiden — de två tomma timmarna i torsdags blev aldrig fyllda. Vad blev ogjort mer förra veckan, något du sköt upp eller som bara inte hanns med?
+[5] Kunden: Beställningen till grossisten, den ligger kvar. Och jag hann inte svara på alla DM, det är sånt jag aldrig vill lägga över på någon annan egentligen.
+
+[6] Kandidaten: Grossistbeställningen ligger alltså kvar, och DM:en hanns inte med — men just DM:en vill du helst hålla i själv. Finns det något mer du inte vill lämna ifrån dig, något som ska förbli ditt?
+[6] Kunden: Färgresultat och klagomål — det svarar jag på själv, alltid. Resten får någon gärna ta.
+
+[7] Kandidaten: Färgresultat och klagomål håller du i egna händer — det antecknar jag. Du nämnde att du sitter och ringer folk i panik: hur många sådana samtal blir det på en vanlig vecka, och hur lång tid tar de?
+[7] Kunden: Ingen aning, jag räknar inte — kanske tio samtal, och varje tar en kvart för att folk ska bestämma sig. Bara ringandet är ju en halv dag i veckan.
+
+[8] Kandidaten: Tio samtal på en kvart styck — en halv dag bara i ringande, det antecknar jag. Du nämnde att det "hänger på dig hela tiden": om du fick önska, vad skulle du vilja att en vanlig vecka såg ut som i stället?
+[8] Kunden: Att någon fyllde luckorna utan att jag behövde tänka på det. Och att inläggen bara blev gjorda. Jag gör hellre kunder.
+
+[9] Kandidaten: Då är bilden nästan klar: någon fyller luckorna utan att du behöver tänka på det, och inläggen bara blir gjorda — medan du gör kunder. En sista sak innan jag bestämmer mig: finns det något arbetsgivaren eller salongen sätter gränser för, något som inte får lämna huset eller som Sara eller du måste godkänna?
+[9] Kunden: Svaren till kunder om färgresultat och klagomål, de stannar hos mig. Resten kan Sara och jag visa, men sånt går vi igenom innan.
+
+[10] Kandidaten: Då har jag bara en sista fråga kvar: du nämnde att du gör hellre kunder — hur många kunder sitter i stolen en vanlig vecka, och vad tar mest tid när du väl är där?
+[10] Kunden: Kanske 30–35 stycken, beroende på vecka. Färgerna tar längst, en sån kan lätt bli två timmar om det ska bli rätt.
+
+[slut] Jag har hört nog — jag tar jobbet, om ni vill ha mig. Tack för att du berättade så öppet om luckorna, DM:en och allt som hänger på dig.
+
+--- INTAG ---
+teamet_för:             en enskild person i sitt jobb
+roll:                   driver salongen (salongsägare/VD), klipper inte själv — Sara klipper
+arbetsplats:            salong; verksamheten består av kundens egen salong med Sara som klipper
+arbetsplatsens_storlek: två personer
+storlek:                solo
+antal_personer:         1
+källa:                  intervju
+
+## Vem teamet byggs för
+Kunden driver salongen och är den som teamet ska arbeta ihop med, mest hemifrån och lite i salongen. En vanlig vecka går åt till att fylla tomma luckor i Bokadirekt, göra Instagram-inlägg, grossistbeställningar, schema, svara på DM om priser och ringa kunder. Kunden säger själv: "Jag gör hellre kunder" — 30–35 kunder sitter i stolen en vanlig vecka och färgerna tar längst, en sån kan lätt bli två timmar om det ska bli rätt.
+
+## Vad omgivningen förväntar sig
+Kunden vill själv slippa att allt hänger på hen: att luckorna fylls utan att hen behöver tänka på det och att inläggen bara blir gjorda. Det som ska stanna hos kunden är svaren till kunder om färgresultat och klagomål; resten kan Sara och kunden visa, men sånt går de igenom innan.
+
+## Vad företaget gör
+Salong som består av kunden och Sara, där Sara klipper. Kunden driver salongen och behöver mest hjälp med att fylla luckor som står tomma i Bokadirekt.
+
+## Återkommande moment
+- Tomma luckor i Bokadirekt: kunden märker det oftast för sent och ringer då folk i panik samtidigt som hen har kund i stolen. Förra veckan blev ändå två timmar tomma i torsdags trots ett story-inlägg och meddelanden till tre gamla kunder.
+- Ringa kunder: kanske tio samtal i veckan, varje tar en kvart för att folk ska bestämma sig — "bara ringandet är ju en halv dag i veckan".
+- Instagram: ska vara tre inlägg i veckan, blir typ ett.
+- Grossistbeställning varannan vecka.
+- Schema.
+- DM om priser: folk frågar hela tiden; kunden hann inte svara på alla förra veckan.
+- Kunder i stolen: 30–35 i veckan beroende på vecka, färgerna tar längst.
+
+## Var det klämmer
+- Luckorna hänger på kunden hela tiden och märks oftast för sent; "det är liksom det jag vill slippa — att det hänger på mig hela tiden."
+- Två timmar stod tomma i torsdags och blev aldrig fyllda.
+- Grossistbeställningen ligger kvar — den blev ogjord förra veckan.
+- Alla DM hanns inte med, trots att kunden egentligen inte vill lägga över dem på någon annan.
+- Instagram blir ett inlägg i stället för tre.
+
+## Befintliga verktyg och vanor
+- Bokadirekt (bokning).
+- Instagram (inlägg och story).
+- DM för prisfrågor och kundkontakt.
+- Telefon för att ringa kunder.
+- Grossistbeställning.
+- Schema.
+
+## Mål och ambition
+Att luckorna fylls utan att kunden behöver tänka på det och att inläggen bara blir gjorda, så att kunden kan göra kunder i stället.
+
+## Avgränsningar
+Kunden håller själv alltid färgresultat och klagomål — det svarar hen på själv och det stannar hos hen. Resten kan Sara och kunden visa, men sånt går de igenom innan.

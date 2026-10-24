@@ -1,0 +1,120 @@
+{
+  "turer": [
+    {
+      "fraga": "Hej, vad roligt att du ringde — jag är kandidaten som är nyfiken på jobbet som din VD-assistent. Innan jag ens funderar på att tacka ja vill jag förstå er: vad gör ni, och är det du själv som ska jobba ihop med mig eller är ni flera?",
+      "svar": "Vi är jag och Sara, jag driver salongen och hon klipper — så det är jag du skulle jobba med, mest hemifrån och lite i salongen. Och det jag behöver mest hjälp med är alla luckor som bara står tomma i Bokadirekt, de måste fyllas."
+    },
+    {
+      "fraga": "Tack — då är du alltså den jag ska jobba med, och det är luckorna i Bokadirekt som bränner mest. Hur brukar det gå till när du märker att en lucka står tom — vad gör du då?",
+      "svar": "Oftast märker jag det för sent, och då sitter jag och ringer folk i panik samtidigt som jag har kund i stolen. Det är liksom hela grejen — någon borde hålla koll på det innan det blir akut."
+    },
+    {
+      "fraga": "Där känner jag igen mig — panik är sällan ett bra schema. Hur ser en vanlig vecka ut för dig i salongen, vad är det som återkommer och tar tid?",
+      "svar": "Instagram ska ju vara tre inlägg i veckan, blir typ ett, och sen grossistbeställning varannan vecka och schema. Men det som tar mest tid är ändå alla DM om priser, folk frågar hela tiden."
+    },
+    {
+      "fraga": "Tack — då vet jag lite mer: Instagram tre inlägg som blir ett, grossist varannan vecka, schema, och DM om priser. Vad gjorde du konkret i förra veckan när det gällde de tomma luckorna?",
+      "svar": "Jag skickade ut ett inlägg i storyn och skrev till tre gamla kunder, men det blev ändå två tomma timmar i torsdags. Det är liksom det jag vill slippa — att det hänger på mig hela tiden."
+    },
+    {
+      "fraga": "Det hänger alltså på dig hela tiden — de två tomma timmarna i torsdags blev aldrig fyllda. Vad blev ogjort mer förra veckan, något du sköt upp eller som bara inte hanns med?",
+      "svar": "Beställningen till grossisten, den ligger kvar. Och jag hann inte svara på alla DM, det är sånt jag aldrig vill lägga över på någon annan egentligen."
+    },
+    {
+      "fraga": "Grossistbeställningen ligger alltså kvar, och DM:en hanns inte med — men just DM:en vill du helst hålla i själv. Finns det något mer du inte vill lämna ifrån dig, något som ska förbli ditt?",
+      "svar": "Färgresultat och klagomål — det svarar jag på själv, alltid. Resten får någon gärna ta."
+    },
+    {
+      "fraga": "Färgresultat och klagomål håller du i egna händer — det antecknar jag. Du nämnde att du sitter och ringer folk i panik: hur många sådana samtal blir det på en vanlig vecka, och hur lång tid tar de?",
+      "svar": "Ingen aning, jag räknar inte — kanske tio samtal, och varje tar en kvart för att folk ska bestämma sig. Bara ringandet är ju en halv dag i veckan."
+    },
+    {
+      "fraga": "Tio samtal på en kvart styck — en halv dag bara i ringande, det antecknar jag. Du nämnde att det \"hänger på dig hela tiden\": om du fick önska, vad skulle du vilja att en vanlig vecka såg ut som i stället?",
+      "svar": "Att någon fyllde luckorna utan att jag behövde tänka på det. Och att inläggen bara blev gjorda. Jag gör hellre kunder."
+    },
+    {
+      "fraga": "Då är bilden nästan klar: någon fyller luckorna utan att du behöver tänka på det, och inläggen bara blir gjorda — medan du gör kunder. En sista sak innan jag bestämmer mig: finns det något arbetsgivaren eller salongen sätter gränser för, något som inte får lämna huset eller som Sara eller du måste godkänna?",
+      "svar": "Svaren till kunder om färgresultat och klagomål, de stannar hos mig. Resten kan Sara och jag visa, men sånt går vi igenom innan."
+    },
+    {
+      "fraga": "Då har jag bara en sista fråga kvar: du nämnde att du gör hellre kunder — hur många kunder sitter i stolen en vanlig vecka, och vad tar mest tid när du väl är där?",
+      "svar": "Kanske 30–35 stycken, beroende på vecka. Färgerna tar längst, en sån kan lätt bli två timmar om det ska bli rätt."
+    }
+  ],
+  "slut": {
+    "status": "klart",
+    "replik": "Jag har hört nog — jag tar jobbet, om ni vill ha mig. Tack för att du berättade så öppet om luckorna, DM:en och allt som hänger på dig.",
+    "intag": "teamet_för:             en enskild person i sitt jobb\nroll:                   driver salongen (salongsägare/VD), klipper inte själv — Sara klipper\narbetsplats:            salong; verksamheten består av kundens egen salong med Sara som klipper\narbetsplatsens_storlek: två personer\nstorlek:                solo\nantal_personer:         1\nkälla:                  intervju\n\n## Vem teamet byggs för\nKunden driver salongen och är den som teamet ska arbeta ihop med, mest hemifrån och lite i salongen. En vanlig vecka går åt till att fylla tomma luckor i Bokadirekt, göra Instagram-inlägg, grossistbeställningar, schema, svara på DM om priser och ringa kunder. Kunden säger själv: \"Jag gör hellre kunder\" — 30–35 kunder sitter i stolen en vanlig vecka och färgerna tar längst, en sån kan lätt bli två timmar om det ska bli rätt.\n\n## Vad omgivningen förväntar sig\nKunden vill själv slippa att allt hänger på hen: att luckorna fylls utan att hen behöver tänka på det och att inläggen bara blir gjorda. Det som ska stanna hos kunden är svaren till kunder om färgresultat och klagomål; resten kan Sara och kunden visa, men sånt går de igenom innan.\n\n## Vad företaget gör\nSalong som består av kunden och Sara, där Sara klipper. Kunden driver salongen och behöver mest hjälp med att fylla luckor som står tomma i Bokadirekt.\n\n## Återkommande moment\n- Tomma luckor i Bokadirekt: kunden märker det oftast för sent och ringer då folk i panik samtidigt som hen har kund i stolen. Förra veckan blev ändå två timmar tomma i torsdags trots ett story-inlägg och meddelanden till tre gamla kunder.\n- Ringa kunder: kanske tio samtal i veckan, varje tar en kvart för att folk ska bestämma sig — \"bara ringandet är ju en halv dag i veckan\".\n- Instagram: ska vara tre inlägg i veckan, blir typ ett.\n- Grossistbeställning varannan vecka.\n- Schema.\n- DM om priser: folk frågar hela tiden; kunden hann inte svara på alla förra veckan.\n- Kunder i stolen: 30–35 i veckan beroende på vecka, färgerna tar längst.\n\n## Var det klämmer\n- Luckorna hänger på kunden hela tiden och märks oftast för sent; \"det är liksom det jag vill slippa — att det hänger på mig hela tiden.\"\n- Två timmar stod tomma i torsdags och blev aldrig fyllda.\n- Grossistbeställningen ligger kvar — den blev ogjord förra veckan.\n- Alla DM hanns inte med, trots att kunden egentligen inte vill lägga över dem på någon annan.\n- Instagram blir ett inlägg i stället för tre.\n\n## Befintliga verktyg och vanor\n- Bokadirekt (bokning).\n- Instagram (inlägg och story).\n- DM för prisfrågor och kundkontakt.\n- Telefon för att ringa kunder.\n- Grossistbeställning.\n- Schema.\n\n## Mål och ambition\nAtt luckorna fylls utan att kunden behöver tänka på det och att inläggen bara blir gjorda, så att kunden kan göra kunder i stället.\n\n## Avgränsningar\nKunden håller själv alltid färgresultat och klagomål — det svarar hen på själv och det stannar hos hen. Resten kan Sara och kunden visa, men sånt går de igenom innan."
+  },
+  "dom": {
+    "fragor": [
+      {
+        "nr": 1,
+        "amne": "vem: vilka kandidaten ska jobba med",
+        "upprepar": false,
+        "varfor": "Inledande fråga om vem som är motpart, kunden svarar att det är hon och Sara."
+      },
+      {
+        "nr": 1,
+        "amne": "verksamhet: vad de gör",
+        "upprepar": false,
+        "varfor": "Inledande fråga om verksamheten, kunden beskriver salongen och Bokadirekt-luckorna."
+      },
+      {
+        "nr": 2,
+        "amne": "moment: hantering av tomma luckor i Bokadirekt",
+        "upprepar": false,
+        "varfor": "Frågar hur kunden gör när en lucka står tom — ny information om arbetssättet."
+      },
+      {
+        "nr": 3,
+        "amne": "moment: återkommande uppgifter i veckan",
+        "upprepar": false,
+        "varfor": "Frågar om veckans återkommande moment, breddar bilden bortom luckorna."
+      },
+      {
+        "nr": 4,
+        "amne": "moment: konkret exempel på tomma luckor förra veckan",
+        "upprepar": false,
+        "varfor": "Ber om en konkret situation som tidigare bara beskrivits allmänt — specificerande följdfråga."
+      },
+      {
+        "nr": 5,
+        "amne": "moment: ogjort arbete förra veckan",
+        "upprepar": false,
+        "varfor": "Frågar vad som sköts upp — ny information, inte upprepning av luckorna."
+      },
+      {
+        "nr": 6,
+        "amne": "avgransning: vad kunden inte vill lämna ifrån sig",
+        "upprepar": false,
+        "varfor": "Frågar om gränser för vad som ska förbli kundens ansvar."
+      },
+      {
+        "nr": 7,
+        "amne": "moment: antal och längd på samtal för tomma luckor",
+        "upprepar": false,
+        "varfor": "Kvantifierar det ringande som kunden nämnt men inte mätt — ny, specificerande info."
+      },
+      {
+        "nr": 8,
+        "amne": "moment: önskat veckoupplägg",
+        "upprepar": false,
+        "varfor": "Frågar efter kundens önskevecka, ny vinkling på vad som behövs."
+      },
+      {
+        "nr": 9,
+        "amne": "avgransning: vad som inte får lämna huset eller måste godkännas",
+        "upprepar": false,
+        "varfor": "Kompletterande avgränsningsfråga efter fråga 6, men gäller andra saker än vad som ska förbli kundens."
+      },
+      {
+        "nr": 10,
+        "amne": "verksamhet: antal kunder och tidsåtgång i stolen",
+        "upprepar": false,
+        "varfor": "Frågar om kundvolym och var tiden går — ny kvantitativ information."
+      }
+    ],
+    "sammanfattning": "Kandidaten ställer genomgående nya, specificerande frågor: om vem hon ska jobba med, verksamheten, de tomma luckorna i Bokadirekt, veckans återkommande moment, konkreta exempel från förra veckan, omfattningen av ringandet, kundens önskeläge samt vilka uppgifter som ska förbli kundens egna. Ingen fråga är en ren upprepning av något kunden redan besvarat — frågorna fördjupar och kvantifierar tidigare svar med ny information. Intervjun täcker de flesta dimensioner (vem, verksamhet, moment, avgränsning) men saknar helt frågor om storlek uttryckt i omsättning/antal anställda i vidare mening och om verktyg (t.ex. vilka system förutom Bokadirekt), vilket är den tydligaste luckan."
+  }
+}

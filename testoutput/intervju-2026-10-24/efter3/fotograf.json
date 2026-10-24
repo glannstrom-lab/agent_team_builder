@@ -1,0 +1,115 @@
+{
+  "turer": [
+    {
+      "fraga": "Hej! Vad roligt att du ringer — jag är nyfiken på det här jobbet. Innan jag tackar ja vill jag förstå er vardag: vad är det för verksamhet du sitter i?",
+      "svar": "Ja, jag är frilansfotograf, mest bröllop och porträtt här i Umeå — gör allt själv just nu. Och det som knäcker mig är redigeringen, 20–30 timmar i Lightroom per bröllop, så det är där jag behöver hjälp egentligen."
+    },
+    {
+      "fraga": "Ensam frilansfotograf i Umeå — då är det din vardag teamet ska byggas runt. När ett bröllop är klart och du sitter med redigeringen i 20–30 timmar, vad är det mer som ska hinnas med under de veckorna?",
+      "svar": "Det är allt runtomkring — mejla brudpar om planering, skriva offerter, lägga upp i Pixieset, och kvittona som jag gör i panik varje kvartal. Men det är redigeringen som drar ut på tiden, det är där skon klämmer."
+    },
+    {
+      "fraga": "Det låter som att redigeringen äter veckorna medan allt runtomkring staplas på hög. Hur ofta har du ett bröllop, och hur lång tid tar offerterna och Pixieset-uppladdningen när det väl är dags?",
+      "svar": "Det är väl sisådär ett till två bröllop i månaden under säsong. Offert och Pixieset är inte det som tar tid, det är ju själva redigeringen som äter allt."
+    },
+    {
+      "fraga": "Ett till två bröllop i månaden, och ett kvartal är kort när kvittona står i panik — vad blev ogjort förra veckan, det du hade tänkt men inte hann?",
+      "svar": "Fick inte klart ett bröllop från två veckor sen, det ligger och skaver. Och kvittohögen bara växer, men den tar jag i mars. Redigeringen först."
+    },
+    {
+      "fraga": "Ett bröllop som ligger och skaver, och kvittohögen som får vänta till mars — det är tydligt vad som gör ont. Finns det något i det här som du inte vill lämna ifrån dig, något som ska förbli ditt eget?",
+      "svar": "Urvalet av bilder, det lämnar jag inte ifrån mig — det är ju mitt öga. Men själva grundredigeringen kan någon annan få ta."
+    },
+    {
+      "fraga": "Urvalet behåller du — det är ditt öga, och grundredigeringen får någon annan. När du sitter med mejlen till brudparen och panik-kvittona, vad har du då öppet på skärmen?",
+      "svar": "Lightroom, alltid Lightroom. Det andra får liksom vänta."
+    },
+    {
+      "fraga": "Lightroom först, allt annat får vänta — det hör jag. När ett brudpar anlitar dig, vad är det de förväntar sig av dig som du helst vill fortsätta äga själv?",
+      "svar": "Det personliga — mötet med dem, känslan i bilderna. Själva ögat. Det lämnar jag inte bort."
+    },
+    {
+      "fraga": "Det personliga — mötet och ögat — det är alltså inte heller till salu. Ett till två bröllop i månaden under säsong: hur lång är säsongen, och vad händer med jobbet när den är över?",
+      "svar": "Maj till september ungefär, sen dör det. Då är det porträtt och allt eftersläp jag inte hann med under säsongen."
+    },
+    {
+      "fraga": "Maj till september, och sen porträtt och eftersläp — då är säsongen ändå ganska förutsägbar. Vad är det som gör att brudparen väljer just dig?",
+      "svar": "Det går inte att säga exakt, men jag tror det är lugn och att de känner sig sedda. Sen är det ju bilderna, ögat — och det är därför jag vill ha kvar urvalet själv."
+    },
+    {
+      "fraga": "Då är bilden ganska klar — men en sista sak om kvittona: du sa att du tar dem i mars, och sen kommer mars. Vad händer egentligen när mars är här och högen fortfarande finns kvar?",
+      "svar": "Panik, bokföring i tre dagar, och inga bröllop redigerade."
+    }
+  ],
+  "slut": {
+    "redan_sagt": "Verksamhet: frilansfotograf i Umeå, bröllop och porträtt, gör allt själv. Roll: fotograf, äger urvalet och det personliga mötet. Moment: redigering 20–30 h/bröllop, mejl/offert/Pixieset, kvitton i panik varje kvartal, 1–2 bröllop/mån maj–sep. Klämmer: redigeringen äter allt, bröllop ligger ogjort, kvittohögen växer. Avgränsning: urvalet och det personliga lämnar hon aldrig ifrån sig; grundredigering kan någon annan ta. Verktyg: Lightroom. Kvar: inget centralt — målet går att härleda.",
+    "status": "klart",
+    "replik": "Tre dagars panikbokföring och inga bröllop redigerade — jag har hört nog. Jag tar jobbet, om ni vill ha mig.",
+    "intag": "teamet_för:             en enskild person i sitt jobb\nroll:                   frilansfotograf, mest bröllop och porträtt, gör allt själv just nu\narbetsplats:            frilansverksamhet i Umeå — bröllops- och porträttfotografering\narbetsplatsens_storlek: solo (en person)\nstorlek:                solo\nantal_personer:         1\nkälla:                  intervju\n\n## Vem teamet byggs för\nFrilansfotograf i Umeå som fotograferar mest bröllop och porträtt och gör allt själv just nu. En vanlig säsongsvecka går till att redigera i Lightroom, mejla brudpar om planering, skriva offerter och lägga upp i Pixieset — och då och då göra kvitton.\n\n## Vad omgivningen förväntar sig\nBrudparen väljer henne för lugnet och för att de känner sig sedda, och för bilderna — ögat. Det personliga mötet med dem och känslan i bilderna är det hon bedöms på och vill fortsätta äga själv. Urvalet av bilder lämnar hon inte ifrån sig, \"det är ju mitt öga\".\n\n## Vad företaget gör\nHär: rollen och arbetsplatsen. Fotografen tar uppdrag i bröllop och porträtt, har ett till två bröllop i månaden under säsong (maj till september), och resten av året porträtt och allt eftersläp från säsongen.\n\n## Återkommande moment\n- Redigering i Lightroom: 20–30 timmar per bröllop, \"det är där skon klämmer\" och \"det som drar ut på tiden\".\n- Mejla brudpar om planering.\n- Skriva offerter.\n- Lägga upp i Pixieset.\n- Kvitton i panik varje kvartal — \"den tar jag i mars\".\n- Ett till två bröllop i månaden under säsong, maj till september.\n\n## Var det klämmer\nRedigeringen \"äter allt\". Ett bröllop från två veckor sen blev inte klart förra veckan och \"ligger och skaver\". Kvittohögen bara växer men får vänta. När mars kommer: \"Panik, bokföring i tre dagar, och inga bröllop redigerade.\" Allt utom Lightroom får vänta.\n\n## Befintliga verktyg och vanor\nLightroom, Pixieset. Kvittohantering (oklart i vilket program). \"Lightroom, alltid Lightroom. Det andra får liksom vänta.\"\n\n## Mål och ambition\nHärlett: få bukt med redigeringen som drar ut på tiden medan allt runtomkring staplas på hög — utan att lämna ifrån sig urvalet eller det personliga i mötet och bilderna. Ett tydligt uttalat mål utöver det framgick inte.\n\n## Avgränsningar\nUrvalet av bilder lämnas aldrig ifrån sig — \"det är ju mitt öga\". Det personliga — mötet med brudparen, känslan i bilderna, själva ögat — lämnas inte bort. Själva grundredigeringen kan någon annan få ta. Inga andra avgränsningar nämndes."
+  },
+  "dom": {
+    "fragor": [
+      {
+        "nr": 1,
+        "amne": "verksamhet: typ av verksamhet",
+        "upprepar": false,
+        "varfor": "Frågar efter kundens verksamhet för att förstå vardagen, vilket inte nämnts tidigare."
+      },
+      {
+        "nr": 2,
+        "amne": "moment: andra arbetsuppgifter",
+        "upprepar": false,
+        "varfor": "Frågar efter vilka andra moment som ingår under veckorna med redigering, ny information."
+      },
+      {
+        "nr": 3,
+        "amne": "moment: frekvens och tidsåtgång",
+        "upprepar": false,
+        "varfor": "Frågar om frekvens av bröllop och tid för offerter/Pixieset, vilket inte angetts tidigare."
+      },
+      {
+        "nr": 4,
+        "amne": "moment: ogjorda uppgifter",
+        "upprepar": false,
+        "varfor": "Frågar efter specifika ogjorda uppgifter från förra veckan, konkret exempel som inte getts."
+      },
+      {
+        "nr": 5,
+        "amne": "avgransning: vad som inte ska delegeras",
+        "upprepar": true,
+        "varfor": "Frågar om vad kunden vill behålla själv, men kunden har redan sagt att urvalet inte lämnas ifrån sig."
+      },
+      {
+        "nr": 6,
+        "amne": "verktyg: programvara vid mejl/kvitton",
+        "upprepar": false,
+        "varfor": "Frågar vilka program som används samtidigt, vilket inte specifikt nämnts tidigare."
+      },
+      {
+        "nr": 7,
+        "amne": "avgransning: vad kunden vill äga själv",
+        "upprepar": true,
+        "varfor": "Frågar igen vad kunden vill fortsätta äga själv, men kunden har redan svarat att det personliga/ögat inte lämnas bort."
+      },
+      {
+        "nr": 8,
+        "amne": "verksamhet: säsong och lågsäsong",
+        "upprepar": false,
+        "varfor": "Frågar om säsongens längd och vad som händer efter, vilket inte besvarats tidigare."
+      },
+      {
+        "nr": 9,
+        "amne": "annat: kundens unika säljpunkt",
+        "upprepar": false,
+        "varfor": "Frågar varför brudpar väljer kunden, ny information om kundens värdeerbjudande."
+      },
+      {
+        "nr": 10,
+        "amne": "moment: konsekvenser av kvittohantering",
+        "upprepar": false,
+        "varfor": "Frågar vad som händer i mars när kvittohögen kvarstår, specifik situation inte utforskad tidigare."
+      }
+    ],
+    "sammanfattning": "Intervjun kartlägger kundens verksamhet som frilansfotograf med fokus på tidskrävande redigering och eftersatta administrativa uppgifter. Kandidaten ställer frågor om arbetsmoment, verktyg, avgränsningar och säsongsvariationer. Två frågor (nr 5 och 7) upprepas eftersom de berör vad kunden vill behålla själv, vilket redan besvarats. Övriga frågor söker ny information om vardag, ogjorda uppgifter och kundvärde."
+  }
+}

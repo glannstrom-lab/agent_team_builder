@@ -1,0 +1,115 @@
+{
+  "turer": [
+    {
+      "fraga": "Hej! Vad roligt att du ringer — jag är nyfiken på det här jobbet redan innan vi börjat. Är teamet tänkt för dig personligen i ditt jobb, eller för hela verksamheten?",
+      "svar": "Alltså det är ju för mig, för mina luckor mest — jag är ju själv i salongen hela dagarna och folk avbokar hela tiden, det är typ det största problemet. Så det är inte hela teamet, det är Sara och jag och sen nån som hjälper mig."
+    },
+    {
+      "fraga": "Då vet jag vem jag jobbar för — skönt att slippa gissa på den punkten. Hur skulle du själv beskriva din roll där i salongen, om du fick säga det rakt ut?",
+      "svar": "Jag är frisör, det är liksom grunden — står bakom stolen mest hela dagarna. Sen är jag ju allt annat också, försöker få in folk i dom där tomma tiderna i Bokadirekt men det går inte, det är där jag behöver hjälp."
+    },
+    {
+      "fraga": "Frisör bakom stolen mest hela dagarna, och allt runtomkring däremellan. När en kund avbokar mitt i en klippning — vad gör du då, rent konkret?",
+      "svar": "Då är det kört liksom, jag kan ju inte släppa kunden i stolen. Jag ser luckan i telefonen efteråt och så står den bara där tom, det är precis det här jag menar. Nån måste ju kunna ringa dom där och fylla på."
+    },
+    {
+      "fraga": "Luckan som bara står där — den bilden är svår att bli av med. Hur många är ni som jobbar i salongen, du och Sara och den som hjälper dig?",
+      "svar": "Två som klipper, jag och Sara. Den tredje är ju den här som ska hjälpa till, alltså assistenten — det är där du kommer in."
+    },
+    {
+      "fraga": "Två som klipper och en assistent som ska in — då är bilden klarare. Om vi tar förra veckan: vad var det du satt med när du inte stod bakom stolen?",
+      "svar": "Instagram, skulle lagt upp tre gånger, blev ett. Och så beställa från grossisten, det skulle varit förra veckan. Och DM:en om priser som bara ligger."
+    },
+    {
+      "fraga": "DM:en om priser som bara ligger — och tre inlägg som blev ett. Hur mycket tid skulle du säga att allt det där utanför stolen tar en vanlig vecka?",
+      "svar": "För mycket. Det är ju det, jag hinner inte med och då blir det inget av det. Instagram faller först, sen grossisten, och luckorna fylls ju inte av sig själva direkt."
+    },
+    {
+      "fraga": "Instagram faller först, sen grossisten — och luckorna fylls inte av sig själva. Finns det något av det där som du absolut vill hålla i själv, som ska förbli ditt?",
+      "svar": "Klagomål och färgresultat, det tar jag. Ingen annan svarar på det, aldrig. Resten får nån gärna ta."
+    },
+    {
+      "fraga": "Klagomål och färgresultat stannar hos dig — det hör jag, och det låter klokt. När du ska fylla en lucka i Bokadirekt, vad är det du öppnar och tittar i då, rent konkret?",
+      "svar": "Bokadirekt, bara. Scrollar i kalendern och kollar vad som är tomt, det är ju där det syns. Sen ringer jag, eller ska ringa, men det blir oftast inte av."
+    },
+    {
+      "fraga": "Luckan syns i kalendern, och sen blir det oftast inte av att ringa. Om du fick önska rakt ut: hur ser en bra vecka ut, när allt det där är gjort?",
+      "svar": "Då är kalendern full, inga hål nånstans. Och tre inlägg ute och grossisten beställd. Det är väl drömmen, haha."
+    },
+    {
+      "fraga": "Full kalender, tre inlägg ute och grossisten beställd — det är en tydlig dröm, haha. Innan jag tackar ja: hur brukar en avbokning komma in, är det via Bokadirekt, telefon eller DM?",
+      "svar": "Bokadirekt mest, SMS ibland. Och DM om priser är ju en annan grej, det är inte avbokningar. Men inget av det hinner jag ju med ändå."
+    }
+  ],
+  "slut": {
+    "redan_sagt": "Teamet: för Sara (frisör) personligen, assistent ska in. Roll: frisör bakom stolen + allt runtomkring. Salong: Sara + klippare, en tillkommande assistent. Verktyg: Bokadirekt, telefon/SMS, Instagram, DM; grossist. Moment: fyll luckor i Bokadirekt, Instagram (3 inlägg, blev 1), beställa från grossist, svara på pris-DM. Klämmer: hinner inte, luckor står tomma, Instagram faller först. Avgränsning: klagomål och färgresultat behåller Sara själv. Kvar: inget mer — avbokningens kanal besvarad.",
+    "status": "klart",
+    "replik": "Tack — då har jag hört nog. Jag tar jobbet, om ni vill ha mig.",
+    "intag": "teamet_för:             en enskild person i sitt jobb\nroll:                   frisör — \"står bakom stolen mest hela dagarna\", gör \"allt annat också\"\narbetsplats:            frisörsalong\narbetsplatsens_storlek: två som klipper (Sara och kunden), plus en tillkommande assistent\nstorlek:                solo\nantal_personer:         1\nkälla:                  intervju\n\n## Vem teamet byggs för\nKunden är frisör i en salong. Grunden är att stå bakom stolen, men runt omkring sköter hen allt annat själv: försöker fylla tomma tider i Bokadirekt, lägga upp på Instagram, beställa från grossisten och svara på DM. Teamet byggs för kundens egna luckor i vardagen, inte för hela salongen.\n\n## Vad omgivningen förväntar sig\nOkänt — inget om chef, kollegor eller kunders förväntningar sades uttryckligen.\n\n## Vad företaget gör\nEn frisörsalong med två som klipper (kunden och Sara) och en assistent som ska in.\n\n## Återkommande moment\n- Fylla tomma luckor i Bokadirekt: scrollar i kalendern och kollar vad som är tomt, \"sen ringer jag, eller ska ringa, men det blir oftast inte av\".\n- Instagram: \"skulle lagt upp tre gånger, blev ett\" förra veckan.\n- Beställa från grossisten: \"det skulle varit förra veckan\" — blev inte av.\n- DM om priser: \"som bara ligger\".\n\n## Var det klämmer\n\"För mycket. Det är ju det, jag hinner inte med och då blir det inget av det.\" Instagram faller först, sen grossisten, och luckorna fylls inte av sig själva. Vid avbokning mitt i en klippning \"är det kört\" — kunden kan inte släppa kunden i stolen, ser luckan i telefonen efteråt och \"så står den bara där tom\". Avbokningar kommer mest via Bokadirekt, ibland SMS.\n\n## Befintliga verktyg och vanor\nBokadirekt (kalender), telefon/SMS, Instagram, DM. Grossist för beställningar.\n\n## Mål och ambition\nEn bra vecka är: \"kalendern full, inga hål nånstans. Och tre inlägg ute och grossisten beställd.\"\n\n## Avgränsningar\nKlagomål och färgresultat tar kunden själv — \"ingen annan svarar på det, aldrig\". Resten får någon gärna ta."
+  },
+  "dom": {
+    "fragor": [
+      {
+        "nr": 1,
+        "amne": "vem: teamet tänkt för dig personligen eller hela verksamheten",
+        "upprepar": false,
+        "varfor": "Inledande fråga för att klargöra vem lösningen är till för."
+      },
+      {
+        "nr": 2,
+        "amne": "verksamhet: kundens roll i salongen",
+        "upprepar": false,
+        "varfor": "Frågar om kundens roll, som inte tidigare beskrivits explicit."
+      },
+      {
+        "nr": 3,
+        "amne": "moment: hantering av avbokning mitt i en klippning",
+        "upprepar": false,
+        "varfor": "Ber om konkret beteende vid avbokning, ny information."
+      },
+      {
+        "nr": 4,
+        "amne": "storlek: antal personer i salongen",
+        "upprepar": false,
+        "varfor": "Frågar om antal anställda, inte tidigare specificerat."
+      },
+      {
+        "nr": 5,
+        "amne": "moment: vad kunden gjorde förra veckan utanför stolen",
+        "upprepar": false,
+        "varfor": "Efterfrågar konkreta exempel på uppgifter, ny information."
+      },
+      {
+        "nr": 6,
+        "amne": "moment: tidsåtgång för uppgifter utanför stolen per vecka",
+        "upprepar": false,
+        "varfor": "Frågar om omfattning i tid, inte tidigare besvarat."
+      },
+      {
+        "nr": 7,
+        "amne": "avgransning: vad kunden vill behålla själv",
+        "upprepar": false,
+        "varfor": "Frågar om ansvarsfördelning, ny information."
+      },
+      {
+        "nr": 8,
+        "amne": "verktyg: vad kunden använder för att fylla luckor i Bokadirekt",
+        "upprepar": false,
+        "varfor": "Ber om konkret verktyg och tillvägagångssätt, ny information."
+      },
+      {
+        "nr": 9,
+        "amne": "moment: önskad bra vecka",
+        "upprepar": false,
+        "varfor": "Frågar om målbild, inte tidigare beskrivet."
+      },
+      {
+        "nr": 10,
+        "amne": "moment: hur avbokningar kommer in",
+        "upprepar": false,
+        "varfor": "Frågar om kanaler för avbokningar, ny information."
+      }
+    ],
+    "sammanfattning": "Kandidaten ställer tio frågor som kartlägger kundens roll, verksamhetens storlek, specifika moment, verktyg, avgränsningar och mål. Ingen fråga upprepas; alla söker ny information för att förstå behovet."
+  }
+}

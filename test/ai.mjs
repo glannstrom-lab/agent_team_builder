@@ -803,7 +803,7 @@ test("prompten är skriven för ett strikt schema och nämner Avgränsningar", (
   const p = readFileSync("prompts/shared/interview.md", "utf8");
   // Golvet i läsPrompt är 500 tecken — en kortare fil avvisas i drift.
   assert.ok(p.length > 2000, "prompten är misstänkt kort");
-  for (const ord of ['"fraga"', '"klart"', "replik", "intag", "## Avgränsningar", "källa:              intervju"]) {
+  for (const ord of ['"fraga"', '"klart"', "replik", "intag", "redan_sagt", "## Avgränsningar", "källa:              intervju"]) {
     assert.ok(p.includes(ord), `interview.md nämner inte ${ord}`);
   }
 });
@@ -815,7 +815,11 @@ test("intervjun får serverns schema i strict-läge — fråga eller klart, inge
   assert.equal(rf.json_schema.strict, true);
   const s = rf.json_schema.schema;
   assert.equal(s.additionalProperties, false);
-  assert.deepEqual(Object.keys(s.properties).sort(), ["intag", "replik", "status"]);
+  assert.deepEqual(Object.keys(s.properties).sort(), ["intag", "redan_sagt", "replik", "status"]);
+  // Avstämningen mot transkriptet ska genereras FÖRE repliken (mätt
+  // 2026-10-24: 6 upprepade frågor på 6 intervjuer utan den, 3 på 9 med).
+  assert.equal(Object.keys(s.properties)[0], "redan_sagt");
+  assert.ok(s.required.includes("redan_sagt"));
   assert.deepEqual(s.properties.status.enum, ["fraga", "klart"]);
 });
 

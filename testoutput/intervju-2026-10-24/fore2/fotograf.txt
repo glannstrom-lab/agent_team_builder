@@ -1,0 +1,71 @@
+[1] Kandidaten: Hej, vad roligt att du ringde — jag är kandidaten som söker jobbet som din VD-assistent. Innan jag tackar ja vill jag förstå er vardag, så: vad gör ni, och vad gör du på dagarna?
+[1] Kunden: Ja, jag fotar bröllop och porträtt, mest bröllop — och sen sitter jag ju ihjäl mig i Lightroom, typ 20-30 timmar per bröllop, det är där skon klämmer. Resten är mejl med brudpar, offerter, Pixieset-gallerier och kvitton som jag gör i panik varje kvartal. Men det viktigaste för mig är att jag aldrig lämnar ifrån mig urvalet av bilder.
+
+[2] Kandidaten: Tack — och jag fattar direkt att urvalet är ditt. Du nämnde Lightroom-sittningen: när du säger 20–30 timmar per bröllop, vad är det du faktiskt gör under de timmarna?
+[2] Kunden: Urval först — sålla bort skräpet, sen färg, exponering, hudtoner, beskärning, allt sånt. Sen exporterar jag och lägger upp. Det är det som tar tid, och det är just därför jag behöver någon som kan ta allt runtomkring.
+
+[3] Kandidaten: Så urvalet och fotandet är ditt — allt runtomkring vill du lämna ifrån dig. När du säger "allt runtomkring", vad är det du helst skulle slippa i en vanlig vecka?
+[3] Kunden: Mejlen med brudpar, offerterna, gallerierna, kvittona — allt det där. Helst vill jag bara fota och redigera, resten är bara brus.
+
+[4] Kandidaten: Där har vi själva kärnan — allt runtomkring är brus. Du nämnde kvittona som du gör i panik varje kvartal: vad innebär den paniken rent konkret, vad är det som ska hinnas med då?
+[4] Kunden: Ja, alltså det är ju bokföringen — kvitton som ska sorteras, scannas, in i systemet, moms och skit. Jag skjuter på det i månader och sen sitter jag en helg och svär. Hatar det.
+
+[5] Kandidaten: En helg med svordomar — den känner jag igen. Du nämnde offerter och mejl med brudpar: vad gjorde du konkret med dem förra veckan, och hur lång tid tog det?
+[5] Kunden: Igår satt jag typ två timmar med ett brudpar om tidslinje för dagen, och skickade en offert till ett par i Skellefteå. Tog väl en timme. Det är sånt där jag borde kunna lämna över, jag tappar ju redigeringstimmar på det.
+
+[6] Kandidaten: Två timmar med tidslinjen och en timme på offerten — och du tappar redigeringstimmar på det. När de där samtalen väl är igång, vad är det brudparen frågar om som tar längst tid att svara på?
+[6] Kunden: Det är väl allt kring tider — när ska vi börja, hur länge, vad händer mellan ceremonin och festen. Och sen frågar de om bilder, om de får se allt, och där är jag stenhård: urvalet är mitt.
+
+[7] Kandidaten: Två timmar på tider, och urvalet är stenhårt ditt — det hör jag. Nu tänker jag på allt runtomkring du vill lämna ifrån dig: finns det något där som ändå måste förbi dig eller som du inte vill lämna ifrån dig alls?
+[7] Kunden: Urvalet, som sagt — där släpper jag inte. Och priset i offerterna vill jag nog ha koll på själv. Men mejlen och bokföringen kan någon annan ta.
+
+[8] Kandidaten: Då vet jag var gränsen går — urvalet och priset är ditt. En sista sak om veckan: vad blev ogjort förra veckan, alltså sådant du sköt upp eller inte hann med?
+[8] Kunden: Kvittona, förstås. Och bokföringen. Det ligger kvar.
+
+[9] Kandidaten: Kvittona och bokföringen ligger kvar — det var det jag misstänkte. Du nämnde att du skjuter på det i månader och sen tar en helg: när satt du med det senast, och hur länge blev det då?
+[9] Kunden: Förra kvartalet, alltså i... ja, det var väl en hel helg, lördag och söndag. Tror jag. Det är ju därför jag behöver nån.
+
+[10] Kandidaten: En hel helg, lördag och söndag — och du behöver nån, det är därför jag är här. Du nämnde Pixieset-gallerierna: vad gör du konkret med dem, och hur ofta blir det i en vanlig vecka?
+[10] Kunden: Jag laddar upp de färdiga bilderna och skickar länken till paret. Ett par gånger i veckan, när det är leverans. Det är inte det som tar tid, det är redigeringen innan.
+
+[11] Kandidaten: Då är jag nästan nöjd — en sista pusselbit: finns det något du inte vill eller får lämna ifrån dig till någon utanför, utöver urvalet och priset?
+[11] Kunden: Nä, det tror jag inte. Urvalet och priset, sen får du ta resten.
+
+[slut] Tack — då har jag hört nog. Jag tar jobbet, om du vill ha mig.
+
+--- INTAG ---
+teamet_för:             en enskild person i sitt jobb
+roll:                   fotograf (bröllop och porträtt, mest bröllop)
+arbetsplats:            egen fotoverksamhet — bröllop och porträtt
+arbetsplatsens_storlek: en person (solo)
+storlek:                solo
+antal_personer:         1
+källa:                  intervju
+
+## Vem teamet byggs för
+Rollen är fotograf, mest bröllop och porträtt. En vanlig vecka fotar och redigerar hen: urval först — sålla bort skräpet, sen färg, exponering, hudtoner, beskärning — och sen exporterar och lägger upp. Redigeringen i Lightroom tar 20–30 timmar per bröllop. Resten av veckan går till mejl med brudpar, offerter, Pixieset-gallerier och kvitton.
+
+## Vad omgivningen förväntar sig
+Brudparen hör av sig med frågor, mest om tider: när de ska börja, hur länge, vad som händer mellan ceremonin och festen. De frågar också om bilder och om de får se allt.
+
+## Vad företaget gör
+En enskild fotograf som fotar bröllop och porträtt och själv sköter allt runtomkring: redigering, mejl med brudpar, offerter, gallerier och bokföring.
+
+## Återkommande moment
+- Redigering/urval i Lightroom: 20–30 timmar per bröllop. Urval först (sålla bort skräpet), sen färg, exponering, hudtoner, beskärning, sedan export och uppladdning.
+- Mejl och samtal med brudpar: igår två timmar med ett brudpar om tidslinje för dagen.
+- Offerter: en offert till ett par i Skellefteå, tog väl en timme.
+- Pixieset-gallerier: laddar upp färdiga bilder och skickar länken till paret, ett par gånger i veckan vid leverans.
+- Kvitton och bokföring: sorteras, scannas, in i systemet, moms — skjuts upp i månader och görs sen i panik.
+
+## Var det klämmer
+Redigeringen tar tid, och allt runtomkring är "bara brus". Hen tappar redigeringstimmar på mejl och offerter. Kvittona och bokföringen skjuts upp i månader och görs sen i panik — en hel helg, lördag och söndag, senast förra kvartalet. "Hatar det."
+
+## Befintliga verktyg och vanor
+Lightroom (redigering), Pixieset (gallerier), mejl, offerter, kvitton/bokföringssystem. Urval och prissättning behåller hen själv.
+
+## Mål och ambition
+Hen vill bara fota och redigera — lämna över allt runtomkring och slippa bruset, särskilt mejl, offerter, gallerier och bokföring.
+
+## Avgränsningar
+Urvalet av bilder lämnas aldrig ifrån sig — "urvalet är mitt", "där är jag stenhård". Priset i offerterna vill hen ha koll på själv. I övrigt inga uttryckliga avgränsningar — "Urvalet och priset, sen får du ta resten."

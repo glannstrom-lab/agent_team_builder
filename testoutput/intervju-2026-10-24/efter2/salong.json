@@ -1,0 +1,75 @@
+{
+  "turer": [
+    {
+      "fraga": "Hej! Vad roligt att du ringde — jag är nyfiken på jobbet som er VD-assistent. Innan jag tackar ja vill jag förstå er vardag: vem är det jag skulle jobba för?",
+      "svar": "Alltså jag är ju frisör, inte nån stor direktör, haha. Du skulle jobba för mig — jag har salongen i Västerås med Sara som anställd, och det är mest bokningar och DM som ska tas om hand. Det största problemet är alla avbokningar som lämnar hål i kalendern i Bokadirekt som ingen fyller."
+    },
+    {
+      "fraga": "Frisör med egen salong — då är det dig jag ska avlasta, inte någon direktör i kostym. När ett sådant där hål uppstår i Bokadirekt, vad gör du då — sitter du och ringer eller messar folk själv?",
+      "svar": "Jag messar folk själv när jag hinner, men det är liksom det som inte hinns med — jag står ju i stolen hela dagarna. Det är precis därför jag behöver nån. Kan du hålla koll på luckorna och fylla dem, då är mycket vunnet."
+    },
+    {
+      "fraga": "Att stå i stolen hela dagarna och ändå vara den som ska fylla varje lucka — det låter som två jobb i ett. Om vi tar förra veckan: hur många sådana hål uppstod, och vad hände med dem?",
+      "svar": "Åh, jag vet knappt — fyra, fem stycken kanske? Ett par fick jag in nån på, resten bara stod tomma och då försvinner ju pengarna. Det är exakt det här jag vill slippa hålla i själv."
+    },
+    {
+      "fraga": "Fyra, fem hål och bara några blev fyllda — då försvinner pengarna, som du sa. Du nämnde också DM: vad är det som ska tas om hand där, och när på dygnet gör du det?",
+      "svar": "Det är mest priser och \"har ni tid imorgon\" och sånt, men färgresultat och klagomål vill jag ta själv — det ska ingen annan svara på. Jag sitter med DM på kvällarna när jag egentligen borde sova, typ."
+    },
+    {
+      "fraga": "Färgresultat och klagomål håller du i egna händer — det hör jag. Utöver luckorna och DM:arna, vad mer tar tid i salongen under en vanlig vecka, och är det du eller Sara som gör det?",
+      "svar": "Instagram ska ju upp tre gånger i veckan men det blir typ en, och sen är det beställa från grossisten varannan vecka och skriva schema. Det mesta hamnar på mig, Sara kör mest i stolen."
+    },
+    {
+      "fraga": "Schema och grossistbeställning låter som sådant som görs i skymundan. Hur lång tid tar schemat och beställningen när du väl sitter med dem — och när på veckan gör du det?",
+      "svar": "Schema tar väl en timme om jag får sitta ostört, grossisten går ganska fort. Jag gör det oftast söndag kväll eller nån kväll efter stängning. Grejen är att det jag helst vill slippa är att jaga in folk i de där luckorna."
+    }
+  ],
+  "slut": {
+    "redan_sagt": "Teamet för: kunden själv (frisör, egen salong i Västerås, Sara anställd).\nVerksamhet: salong, mest bokningar och DM.\nMoment: avbokningar/luckor i Bokadirekt (4–5 förra veckan, några fyllda, tidigare messade hon själv); DM kvällar (priser, tider; färgresultat/klagomål behåller hon); Instagram 3 ggr/vecka men blir 1; grossist varannan vecka (går fort); schema ~1 timme söndag kväll/efter stängning.\nKlämmer: luckor står tomma, pengar försvinner, hinns inte med, DM på kvällar när hon borde sova; vill slippa jaga in folk i luckorna.\nAvgränsning: färgresultat och klagomål tar hon själv.\nSaknas: — (tillräckligt för intag).",
+    "status": "klart",
+    "replik": "Nu har jag hört nog — och jag tar jobbet, om du vill ha mig. Tack för att du ringde, det var precis den här vardagen jag ville förstå.",
+    "intag": "teamet_för:             en enskild person i sitt jobb\nroll:                   frisör med egen salong\narbetsplats:            salong i Västerås\narbetsplatsens_storlek: kunden själv och Sara (2 personer)\nstorlek:                solo\nantal_personer:         1\nkälla:                  intervju\n\n## Vem teamet byggs för\nKunden är frisör med egen salong i Västerås, med Sara som anställd. En vanlig vecka står hon i stolen hela dagarna, och det mesta utöver att klippa hamnar på henne: avbokningar som lämnar hål i kalendern i Bokadirekt, DM, Instagram, grossistbeställning och schema. Hon beskriver det själv som att hon behöver nån som tar hand om bokningar och DM.\n\n## Vad omgivningen förväntar sig\nKunderna hör av sig i DM med priser och \"har ni tid imorgon\"; färgresultat och klagomål förväntas hon svara på själv. Sara kör mest i stolen.\n\n## Vad företaget gör\nSalong i Västerås. Det största problemet är alla avbokningar som lämnar hål i kalendern i Bokadirekt som ingen fyller.\n\n## Återkommande moment\n- Avbokningar/luckor i Bokadirekt: fyra, fem stycken förra veckan; ett par fick hon in nån på, resten stod tomma.\n- Messa folk själv när luckor uppstår — det som inte hinns med.\n- DM: mest priser och \"har ni tid imorgon\"; hon sitter med det på kvällarna när hon egentligen borde sova.\n- Instagram ska upp tre gånger i veckan men det blir typ en.\n- Beställa från grossisten varannan vecka — går ganska fort.\n- Skriva schema: tar väl en timme om hon får sitta ostört; görs oftast söndag kväll eller nån kväll efter stängning.\n\n## Var det klämmer\nLuckorna står tomma och \"då försvinner ju pengarna\". Hon hinner inte messa folk eftersom hon står i stolen hela dagarna. DM på kvällarna när hon egentligen borde sova. Det hon helst vill slippa är att jaga in folk i de där luckorna.\n\n## Befintliga verktyg och vanor\nBokadirekt (kalender/bokningar). Instagram. Grossistbeställning. Schema.\n\n## Mål och ambition\nSlippa hålla i luckorna själv, få dem fyllda så pengarna inte försvinner, och få bokningar och DM omhändertaget.\n\n## Avgränsningar\nFärgresultat och klagomål vill hon ta själv — \"det ska ingen annan svara på\"."
+  },
+  "dom": {
+    "fragor": [
+      {
+        "nr": 1,
+        "amne": "vem: uppdragsgivare/arbetsgivare",
+        "upprepar": false,
+        "varfor": "Kandidaten vill veta vem hon ska arbeta för, vilket är centralt för att förstå rollen."
+      },
+      {
+        "nr": 2,
+        "amne": "moment: fylla luckor i Bokadirekt",
+        "upprepar": false,
+        "varfor": "Kandidaten utforskar hur kunden hanterar avbokningshål i kalendern, ett nytt konkret moment."
+      },
+      {
+        "nr": 3,
+        "amne": "moment: antal hål i Bokadirekt förra veckan",
+        "upprepar": false,
+        "varfor": "Kandidaten ber om ett konkret exempel med frekvens och utfall för att förstå omfattningen."
+      },
+      {
+        "nr": 4,
+        "amne": "moment: DM-hantering",
+        "upprepar": false,
+        "varfor": "Kandidaten frågar vad som ska tas om hand i DM och när det görs, ny information om ett annat moment."
+      },
+      {
+        "nr": 5,
+        "amne": "verksamhet: övriga arbetsuppgifter och ansvarsfördelning",
+        "upprepar": false,
+        "varfor": "Kandidaten kartlägger fler tidskrävande uppgifter och vem som utför dem, breddar bilden av verksamheten."
+      },
+      {
+        "nr": 6,
+        "amne": "moment: schemaläggning och grossistbeställning",
+        "upprepar": false,
+        "varfor": "Kandidaten vill veta tidsåtgång och när på veckan dessa uppgifter utförs, ny detaljerad information."
+      }
+    ],
+    "sammanfattning": "Kandidaten ställer sex frågor som alla är relevanta och icke-upprepande. Frågorna täcker vem uppdragsgivaren är, konkreta moment som att fylla luckor, DM-hantering, schemaläggning och grossistbeställning, samt övriga arbetsuppgifter och ansvarsfördelning. Kandidaten ber om konkreta exempel och tidsåtgång, vilket ger en tydlig bild av kundens vardag och behov."
+  }
+}

@@ -1,0 +1,78 @@
+[1] Kandidaten: Hej, vad roligt att du ringde — jag heter ... och är nyfiken på det här jobbet. Innan jag säger ja vill jag förstå er vardag ordentligt: vem är det egentligen jag ska assistera, och vad gör den personen om dagarna?
+[1] Kunden: Det är jag som är fotografen, Erik. Jag fotar bröllop och porträtt, och sen sitter jag typ dygnet runt i Lightroom och redigerar — det är där skon klämmer, 20–30 timmar per bröllop.
+
+[2] Kandidaten: 20–30 timmar per bröllop — det är en hel arbetsvecka för en enda fest. Är det du själv som gör allt, eller har du någon som hjälper dig?
+[2] Kunden: Just nu gör jag allt själv, och det är ju det som är problemet. Redigeringen är flaskhalsen — jag vill inte lämna ifrån mig urvalet, men själva pillandet med bilderna skulle jag kunna släppa.
+
+[3] Kandidaten: Att du håller urvalet själv men kan släppa pillandet — det låter som en tydlig gräns. Hur många bröllop och porträtt blir det under en vanlig månad?
+[3] Kunden: Det varierar, men kanske 2–3 bröllop i månaden under säsong plus lite porträtt emellan. Och varje bröllop landar ju på dom där 20–30 timmarna i Lightroom, så du hör ju själv.
+
+[4] Kandidaten: Två till tre bröllop i månaden och var och ett drar iväg 20–30 timmar — då är kvällarna inte dina egna. Om vi bortser från själva redigeringen en stund: vad mer gör du kring ett bröllop, från att paret bokar till att bilderna är levererade?
+[4] Kunden: Mejl med brudparen om planering, skriva offerter, och sen lägga upp i Pixieset-galleriet när det väl är klart. Och kvittona... dom gör jag i panik varje kvartal, det borde någon ta.
+
+[5] Kandidaten: Kvittona i panik varje kvartal — den känner jag igen. Ungefär hur lång tid tar de där sakerna som inte är fotografering eller redigering under en månad?
+[5] Kunden: Ingen aning faktiskt, det bara flyter på mellan varven. Men det är inte där skon klämmer — det är redigeringen som äter all tid, och den vill jag fortfarande hålla i själv.
+
+[6] Kandidaten: Då lämnar jag tidräkningen där — du har varit tydlig med att det är redigeringen som äter allt. Tänk på förra veckan: vad blev liggande ogjort när dagarna tog slut?
+[6] Kunden: Leveransen till ett par från i mars, den ligger kvar. Och så några offerter jag borde svarat på. Det är alltid redigeringen som stjäl tiden från allt annat.
+
+[7] Kandidaten: Att leveransen från mars och ett gäng offerter ligger kvar — då är det inte bara tid som försvinner. Vad händer med ett par som väntar sedan mars, hör de av sig?
+[7] Kunden: Jodå, dom hör av sig, och det är ju skitjobbigt. Det är precis det här jag vill få bukt med — redigeringen tar för lång tid, så leveransen drar ut.
+
+[8] Kandidaten: Skönt att höra att de hör av sig — även om det är skitjobbigt. När ett par väntar sedan mars, vad är det de förväntar sig av dig — svar inom ett par dagar, eller att bilderna bara ska komma?
+[8] Kunden: Dom vill ju ha bilderna, så klart, och lite svar på vägen. Jag skäms varje gång jag öppnar en sån mejl, det är liksom därför jag behöver nån som tar resten så jag kan fokusera på redigeringen.
+
+[9] Kandidaten: Jag hör att det inte är bara timmar som försvinner, utan också något du skäms över. Om jag ska ta "resten" — vad vill du absolut fortfarande göra själv, utöver urvalet?
+[9] Kunden: Själva fotandet, så klart. Och mötena med brudparen innan — det är där jag bygger förtroendet. Men urvalet är heligt, det är mitt öga som gäller.
+
+[10] Kandidaten: Då vet jag var gränsen går: fotandet, mötena och urvalet är dina. Men om någon annan skulle svara brudparen och sköta offerterna medan du redigerar — vad är det första du skulle vilja att den personen gjorde?
+[10] Kunden: Svara på dom där mejlen som ligger och skräpar, framför allt från paret i mars. Och offerterna. Det skulle lyfta en sten från bröstet, alltså.
+
+[slut] Tack, Erik — nu vet jag var skon klämmer, vad som är heligt och vad du helst aldrig vill öppna igen. Jag har hört nog; jag tar jobbet, om du vill ha mig.
+
+--- INTAG ---
+teamet_för:            en enskild person i sitt jobb
+roll:                  fotograf
+arbetsplats:           fotografverksamhet — bröllop och porträtt
+arbetsplatsens_storlek: solo
+storlek:               solo
+antal_personer:        1
+källa:                 intervju
+
+## Vem teamet byggs för
+Erik, fotograf. Fotar bröllop och porträtt. Gör just nu allt själv — fotografering,
+redigering i Lightroom, mejl med brudparen om planering, offerter, kvitton och
+uppladdning till Pixieset-galleriet när det är klart.
+
+## Vad omgivningen förväntar sig
+Brudparen vill ha bilderna och lite svar på vägen; de hör av sig när leveransen
+drar ut — ett par väntar sedan i mars. Erik skäms varje gång han öppnar en sån mejl.
+
+## Vad företaget gör
+Enskild fotografverksamhet: 2–3 bröllop i månaden under säsong plus lite porträtt
+emellan. Varje bröllop landar på 20–30 timmar i Lightroom.
+
+## Återkommande moment
+- Redigering i Lightroom: 20–30 timmar per bröllop, 2–3 bröllop i månaden under säsong.
+- Mejl med brudparen om planering.
+- Skriva offerter.
+- Lägga upp i Pixieset-galleriet när det är klart.
+- Kvitton: görs i panik varje kvartal (tid okänd).
+- Leverans av bilder till brudparen.
+
+## Var det klämmer
+Redigeringen är flaskhalsen och äter all tid. Leveransen till ett par från i mars
+ligger kvar, och några offerter borde ha besvarats. "Det är alltid redigeringen som
+stjäl tiden från allt annat." Skäms över att öppna mejl från väntande par.
+
+## Befintliga verktyg och vanor
+Lightroom, Pixieset, mejl, offerter, kvitton. Kvittohanteringen sker i panik varje
+kvartal.
+
+## Mål och ambition
+Få bukt med att redigeringen tar för lång tid så att leveransen inte drar ut.
+Vill ha någon som tar "resten" så han kan fokusera på redigeringen.
+
+## Avgränsningar
+Fotandet, mötena med brudparen innan och urvalet behåller han själv — "urvalet är
+heligt, det är mitt öga som gäller". Själva pillandet med bilderna kan han släppa.

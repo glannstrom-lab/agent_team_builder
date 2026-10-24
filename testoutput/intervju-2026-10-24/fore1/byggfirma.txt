@@ -1,0 +1,56 @@
+[1] Kandidaten: Vad kul att du ringde — innan jag tackar ja vill jag förstå er vardag. Är det en verksamhet teamet ska byggas åt, eller är det du själv i ditt jobb?
+[1] Kunden: Nej, det är jag och två snickare, Ali och Petter — vi kör badrum och tillbyggnader åt privatfolk här i Örebro. Så det är mitt lilla gäng, och det är framför allt jag som drunknar i fakturor och offerter.
+
+[2] Kandidaten: Där har vi det — ett litet gäng som bygger badrum och tillbyggnader, och du som drunknar i fakturor och offerter. När du säger offerter, vad gjorde du konkret med dem förra veckan?
+[2] Kunden: Fyra hembesök, sen satt jag och skrev offerterna i Word på kvällarna, typ en och en halv timme styck. Det är just det där som slukar mig — och sen på söndag sitter jag med Fortnox och fakturorna, och då har jag garanterat glömt nån ÄTA igen.
+
+[3] Kandidaten: Åtta timmar på offerter och en söndag med Fortnox — och ändå slinker en ÄTA igenom. Vad var det som blev ogjort förra veckan när tiden inte räckte?
+[3] Kunden: Beijer-beställningen sköts fram till torsdag, och jag ringde aldrig tillbaka två kunder om tider. Och så glömde jag lägga på en extra vägg för kunden i Brickebacken — det där med ÄTA:n igen, det är rena läckaget.
+
+[4] Kandidaten: Beijer-beställningen framskjuten, två kunder utan återringning, och en extra vägg i Brickebacken som inte kom med — det är den där ÄTA:n som läcker pengar. När du satt med Fortnox i söndags, hur länge satt du då?
+[4] Kunden: Satt väl från halv åtta till halv elva, ungefär. Det är ju det som är grejen — jag sitter där på söndagskvällen och fakturerar, och ändå slinker ÄTA-arbeten igenom för att jag inte fått in dem i underlaget.
+
+[5] Kandidaten: Tre timmar på söndagskvällen, och ändå läcker ÄTA:na igenom — det skaver. Vad mer hade du velat få gjort förra veckan som inte blev av?
+[5] Kunden: Hade velat få iväg Offerta-förfrågningarna och lagt Brickebacken-ÄTA:n direkt i Fortnox, för det är precis där pengarna försvinner. Men jag hinner inte, jag sitter ju med offerterna på kvällarna istället.
+
+[6] Kandidaten: Så kvällarna går till offerter och söndagen till Fortnox — då är frågan hur mycket du gör själv och vad du faktiskt inte vill lämna ifrån dig. Finns det något kring det här som ska förbli ditt, som ingen annan ska röra?
+[6] Kunden: Kundkontakten på plats och prissättningen — det släpper jag inte, det är jag som ska stå där i badrummet och sätta priset. Men själva skrivandet, fakturorna, ÄTA:na och beställningarna, det kan nån annan få ta.
+
+[7] Kandidaten: Bra — kundkontakten och priset behåller du, och det är precis där du ska vara. Hur många offerter, fakturor och beställningar handlar det om under en vanlig månad?
+[7] Kunden: Offertmässigt tre–fyra hembesök i veckan, så en tolv–femton i månaden kanske. Fakturorna rullar på rätt många, och Beijer-beställningar blir det ju några per projekt — det är där söndagskvällarna går.
+
+[8] Kandidaten: Tolv–femton offerter i månaden och söndagarna till Fortnox — då börjar jag se konturerna. Finns det något arbetsgivaren eller någon annan sätter stopp för, något som inte får lämna huset eller måste godkännas av någon annan?
+[8] Kunden: Nej, det är bara jag som bestämmer, det är mitt företag. Enda är väl att prissättningen vill jag sköta själv, men allt annat runt omkring kan du ta.
+
+[9] Kandidaten: Då vet jag det — kundkontakt och pris är ditt, resten får någon annan ta. En sista sak: du nämnde Offerta-förfrågningarna och Beijer-beställningarna, vad är det som gör just dem trögast att få iväg?
+[9] Kunden: Offerta-förfrågningarna är mest att de kommer mitt i allt annat, och Beijer är ju att jag måste sitta och jämka mängder mot ritningen innan jag beställer. Det är sån där småskit som jag skjuter upp till kvällen — och då blir det Fortnox istället.
+
+[slut] Tack — nu har jag hört nog. Jag tar jobbet, om ni vill ha mig: kundkontakten och prissättningen är din, och resten ser jag fram emot att ta hand om.
+
+--- INTAG ---
+företagsnamn:       okänt
+bransch:            bygg — badrum och tillbyggnader åt privatfolk
+storlek:            litet
+antal_personer:     3
+källa:              intervju
+
+## Vad företaget gör
+Vi kör badrum och tillbyggnader åt privatfolk här i Örebro. Vi är jag och två snickare, Ali och Petter. Det är framför allt jag som drunknar i fakturor och offerter.
+
+## Återkommande moment
+- Fyra hembesök förra veckan, sen skrev jag offerterna i Word på kvällarna, typ en och en halv timme styck. Offertmässigt tre–fyra hembesök i veckan, så en tolv–femton i månaden kanske.
+- På söndag sitter jag med Fortnox och fakturorna. Satt från halv åtta till halv elva, ungefär. Fakturorna rullar på rätt många.
+- Beijer-beställningar blir det några per projekt; jag måste sitta och jämka mängder mot ritningen innan jag beställer.
+- Offerta-förfrågningarna kommer mitt i allt annat, och jag skjuter upp dem — Beijer-beställningen sköts fram till torsdag.
+
+## Var det klämmer
+"Jag sitter där på söndagskvällen och fakturerar, och ändå slinker ÄTA-arbeten igenom för att jag inte fått in dem i underlaget." Glömde lägga på en extra vägg för kunden i Brickebacken — "det är rena läckaget", "det är precis där pengarna försvinner". Ringde aldrig tillbaka två kunder om tider. Hinner inte få iväg Offerta-förfrågningarna eller lägga Brickebacken-ÄTA:n direkt i Fortnox — sitter med offerterna på kvällarna istället.
+
+## Befintliga verktyg och vanor
+Word (offertskrivande), Fortnox (fakturor), ritningar (mängdjämkning inför Beijer-beställning). Beijer som leverantör.
+
+## Mål och ambition
+Få in ÄTA-arbetena i underlaget så att de inte slinker igenom, få iväg Offerta-förfrågningarna och lägga ÄTA:n direkt i Fortnox. Kvällarna och söndagskvällarna ska inte gå åt till skrivande och fakturor.
+
+## Avgränsningar
+Kundkontakten på plats och prissättningen behåller kunden själv — "det är jag som ska stå där i badrummet och sätta priset". Själva skrivandet, fakturorna, ÄTA:na och beställningarna kan någon annan ta. Det är bara kunden som bestämmer, det är hans företag.

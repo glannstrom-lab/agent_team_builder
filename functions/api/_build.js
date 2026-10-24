@@ -382,10 +382,18 @@ SISTA TUREN: kunden har gett sitt sista svar. Du ställer inga fler frågor. Sä
 // svar i fri text är precis vad en chatt ger. `intag` är text och inte ett
 // objekt — research.md läser ett textblock, och det är den formen intervjun
 // ska lämna ifrån sig, så att research/skalning/förslag körs oförändrat.
+//
+// `redan_sagt` står FÖRST, med flit (mätt 2026-10-24): utan den frågade
+// kandidaten om sådant kunden redan svarat på — sex upprepningar på sex
+// intervjuer, oftast avgränsningen som kunden sagt självmant i första svaret.
+// Fältet tvingar fram en avstämning mot transkriptet innan frågan skrivs, och
+// eftersom fälten genereras i schemats ordning kommer avstämningen före
+// repliken. Klienten läser det inte; det kostar runt hundra tokens per tur.
 const intervjuSchema = (statusar, intagTyp) => ({
   type: "object", additionalProperties: false,
-  required: ["status", "replik", "intag"],
+  required: ["redan_sagt", "status", "replik", "intag"],
   properties: {
+    redan_sagt: { type: "string" },
     status: { type: "string", enum: statusar },
     replik: { type: "string" },
     intag: { type: intagTyp },

@@ -1,0 +1,59 @@
+[1] Kandidaten: Hej! Vad roligt att du ringer — jag är kandidaten som vill bli er VD-assistent. Innan jag tackar ja vill jag förstå er, så: vem är det egentligen teamet ska byggas för?
+[1] Kunden: Assistent, inte VD-assistent — jag är fotograf, inte nåt bolag. Det som ska byggas är egentligen bara att nån tar redigeringen från mig, för bröllopen ligger på 20–30 timmar i Lightroom och jag vill inte lämna ifrån mig urvalet.
+
+[2] Kandidaten: Tack — då är du teamet, inte ett bolag. Du sa att bröllopen ligger på 20–30 timmar i Lightroom; vad gjorde du konkret förra veckan, utöver själva redigeringen?
+[2] Kunden: Mejlade två brudpar om tider, skrev en offert, la upp ett galleri i Pixieset. Sen skulle kvittona in — gör det i panik varje kvartal, sitter säkert tre timmar i söndags.
+
+[3] Kandidaten: Tre timmar i söndags för kvitton — det hör jag. När du skrev den där offerten, vad hade du uppe på skärmen då?
+[3] Kunden: Bröllopsbilderna från i lördags, såklart — offerten skrevs i pauserna. Det är precis det här jag menar, allt krockar med redigeringen.
+
+[4] Kandidaten: Där ser jag mönstret — redigeringen äter allt annat. När bröllopssäsongen är som värst, vad är det som blir ogjort?
+[4] Kunden: Offertarna först, de kan ligga i en vecka. Och kvittona, de bara växer. Men det värsta är leveransen — paren väntar för länge på sina bilder, och det är mitt namn på det.
+
+[5] Kandidaten: "Paren väntar för länge på sina bilder" — det tar jag med mig. Om ett brudpar eller en kollega skulle beskriva vad du är bra på, vad säger de då?
+[5] Kunden: Att jag får folk att slappna av framför kameran, och att ljuset sitter. Sen att jag är långsam — men det säger de väl inte till mig direkt.
+
+[6] Kandidaten: Då vet jag vem som sitter framför kameran — och att ljuset sitter. Hur många bröllop har du på en säsong, ungefär?
+[6] Kunden: Runt 15–20. Och varje ett är 20–30 timmar i efterhand, det är där knuten sitter.
+
+[7] Kandidaten: Femton till tjugo bröllop — och varje ett med en efterhand som ingen annan rör. Finns det något mer än urvalet som du inte vill lämna ifrån dig?
+[7] Kunden: Nej, det är urvalet. Färg och kontrast kan nån annan få leka med, men vilka bilder som är med — det bestämmer jag.
+
+[slut] Jag har hört nog — jag tar jobbet, om du vill ha mig. Tack för att du berättade så rakt: urvalet är ditt, resten kan någon annan bära.
+
+--- INTAG ---
+teamet_för:             en enskild person i sitt jobb
+roll:                   fotograf, i egna ord "fotograf, inte nåt bolag"
+arbetsplats:            bröllopsfotograf (egen verksamhet)
+arbetsplatsens_storlek: solo
+storlek:                solo
+antal_personer:         1
+källa:                  intervju
+
+## Vem teamet byggs för
+Fotograf som fotograferar bröllop. En vanlig vecka går åt till efterhandsarbetet i Lightroom — 20–30 timmar per bröllop — och runt det: mejlar brudpar om tider, skriver offerter, lägger upp gallerier i Pixieset och gör kvitton.
+
+## Vad omgivningen förväntar sig
+Brudparen beskriver det hen är bra på som att få folk att slappna av framför kameran och att ljuset sitter. Hen själv säger att de också uppfattar hen som långsam, "men det säger de väl inte till mig direkt". Leveransen är det som bär hens namn: paren väntar för länge på sina bilder, och "det är mitt namn på det".
+
+## Vad företaget gör
+Fotograferar bröllop — 15–20 per säsong — och står själv för hela kedjan från fotografering till färdig leverans av bilder.
+
+## Återkommande moment
+- Redigering i Lightroom: 20–30 timmar per bröllop, 15–20 bröllop per säsong.
+- Offertskrivning: sker i pauserna mellan redigeringen; kan ligga en vecka.
+- Kvitton: "gör det i panik varje kvartal", cirka tre timmar, "sitter säkert tre timmar i söndags".
+- Mejla brudpar om tider.
+- Lägga upp galleri i Pixieset.
+
+## Var det klämmer
+"Allt krockar med redigeringen." Offertarna blir ogjorda först — kan ligga i en vecka — och kvittona "bara växer". Värst är leveransen: paren väntar för länge på sina bilder, och det är hens namn på det.
+
+## Befintliga verktyg och vanor
+Lightroom (redigering), Pixieset (galleri). Offertskrivning sker i pauserna mellan redigeringen. Kvitton görs i panik varje kvartal.
+
+## Mål och ambition
+Få bort redigeringen från sig själv och slippa att allt annat krockar med den — utan att förlora urvalet. Leveransen ska inte försenas, eftersom det är hens namn på den.
+
+## Avgränsningar
+Urvalet lämnas aldrig ifrån sig — "vilka bilder som är med — det bestämmer jag". Färg och kontrast kan någon annan få arbeta med.

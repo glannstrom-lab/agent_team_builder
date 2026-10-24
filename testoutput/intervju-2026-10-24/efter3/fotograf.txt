@@ -1,0 +1,69 @@
+[1] Kandidaten: Hej! Vad roligt att du ringer — jag är nyfiken på det här jobbet. Innan jag tackar ja vill jag förstå er vardag: vad är det för verksamhet du sitter i?
+[1] Kunden: Ja, jag är frilansfotograf, mest bröllop och porträtt här i Umeå — gör allt själv just nu. Och det som knäcker mig är redigeringen, 20–30 timmar i Lightroom per bröllop, så det är där jag behöver hjälp egentligen.
+
+[2] Kandidaten: Ensam frilansfotograf i Umeå — då är det din vardag teamet ska byggas runt. När ett bröllop är klart och du sitter med redigeringen i 20–30 timmar, vad är det mer som ska hinnas med under de veckorna?
+[2] Kunden: Det är allt runtomkring — mejla brudpar om planering, skriva offerter, lägga upp i Pixieset, och kvittona som jag gör i panik varje kvartal. Men det är redigeringen som drar ut på tiden, det är där skon klämmer.
+
+[3] Kandidaten: Det låter som att redigeringen äter veckorna medan allt runtomkring staplas på hög. Hur ofta har du ett bröllop, och hur lång tid tar offerterna och Pixieset-uppladdningen när det väl är dags?
+[3] Kunden: Det är väl sisådär ett till två bröllop i månaden under säsong. Offert och Pixieset är inte det som tar tid, det är ju själva redigeringen som äter allt.
+
+[4] Kandidaten: Ett till två bröllop i månaden, och ett kvartal är kort när kvittona står i panik — vad blev ogjort förra veckan, det du hade tänkt men inte hann?
+[4] Kunden: Fick inte klart ett bröllop från två veckor sen, det ligger och skaver. Och kvittohögen bara växer, men den tar jag i mars. Redigeringen först.
+
+[5] Kandidaten: Ett bröllop som ligger och skaver, och kvittohögen som får vänta till mars — det är tydligt vad som gör ont. Finns det något i det här som du inte vill lämna ifrån dig, något som ska förbli ditt eget?
+[5] Kunden: Urvalet av bilder, det lämnar jag inte ifrån mig — det är ju mitt öga. Men själva grundredigeringen kan någon annan få ta.
+
+[6] Kandidaten: Urvalet behåller du — det är ditt öga, och grundredigeringen får någon annan. När du sitter med mejlen till brudparen och panik-kvittona, vad har du då öppet på skärmen?
+[6] Kunden: Lightroom, alltid Lightroom. Det andra får liksom vänta.
+
+[7] Kandidaten: Lightroom först, allt annat får vänta — det hör jag. När ett brudpar anlitar dig, vad är det de förväntar sig av dig som du helst vill fortsätta äga själv?
+[7] Kunden: Det personliga — mötet med dem, känslan i bilderna. Själva ögat. Det lämnar jag inte bort.
+
+[8] Kandidaten: Det personliga — mötet och ögat — det är alltså inte heller till salu. Ett till två bröllop i månaden under säsong: hur lång är säsongen, och vad händer med jobbet när den är över?
+[8] Kunden: Maj till september ungefär, sen dör det. Då är det porträtt och allt eftersläp jag inte hann med under säsongen.
+
+[9] Kandidaten: Maj till september, och sen porträtt och eftersläp — då är säsongen ändå ganska förutsägbar. Vad är det som gör att brudparen väljer just dig?
+[9] Kunden: Det går inte att säga exakt, men jag tror det är lugn och att de känner sig sedda. Sen är det ju bilderna, ögat — och det är därför jag vill ha kvar urvalet själv.
+
+[10] Kandidaten: Då är bilden ganska klar — men en sista sak om kvittona: du sa att du tar dem i mars, och sen kommer mars. Vad händer egentligen när mars är här och högen fortfarande finns kvar?
+[10] Kunden: Panik, bokföring i tre dagar, och inga bröllop redigerade.
+
+[slut] Tre dagars panikbokföring och inga bröllop redigerade — jag har hört nog. Jag tar jobbet, om ni vill ha mig.
+
+--- INTAG ---
+teamet_för:             en enskild person i sitt jobb
+roll:                   frilansfotograf, mest bröllop och porträtt, gör allt själv just nu
+arbetsplats:            frilansverksamhet i Umeå — bröllops- och porträttfotografering
+arbetsplatsens_storlek: solo (en person)
+storlek:                solo
+antal_personer:         1
+källa:                  intervju
+
+## Vem teamet byggs för
+Frilansfotograf i Umeå som fotograferar mest bröllop och porträtt och gör allt själv just nu. En vanlig säsongsvecka går till att redigera i Lightroom, mejla brudpar om planering, skriva offerter och lägga upp i Pixieset — och då och då göra kvitton.
+
+## Vad omgivningen förväntar sig
+Brudparen väljer henne för lugnet och för att de känner sig sedda, och för bilderna — ögat. Det personliga mötet med dem och känslan i bilderna är det hon bedöms på och vill fortsätta äga själv. Urvalet av bilder lämnar hon inte ifrån sig, "det är ju mitt öga".
+
+## Vad företaget gör
+Här: rollen och arbetsplatsen. Fotografen tar uppdrag i bröllop och porträtt, har ett till två bröllop i månaden under säsong (maj till september), och resten av året porträtt och allt eftersläp från säsongen.
+
+## Återkommande moment
+- Redigering i Lightroom: 20–30 timmar per bröllop, "det är där skon klämmer" och "det som drar ut på tiden".
+- Mejla brudpar om planering.
+- Skriva offerter.
+- Lägga upp i Pixieset.
+- Kvitton i panik varje kvartal — "den tar jag i mars".
+- Ett till två bröllop i månaden under säsong, maj till september.
+
+## Var det klämmer
+Redigeringen "äter allt". Ett bröllop från två veckor sen blev inte klart förra veckan och "ligger och skaver". Kvittohögen bara växer men får vänta. När mars kommer: "Panik, bokföring i tre dagar, och inga bröllop redigerade." Allt utom Lightroom får vänta.
+
+## Befintliga verktyg och vanor
+Lightroom, Pixieset. Kvittohantering (oklart i vilket program). "Lightroom, alltid Lightroom. Det andra får liksom vänta."
+
+## Mål och ambition
+Härlett: få bukt med redigeringen som drar ut på tiden medan allt runtomkring staplas på hög — utan att lämna ifrån sig urvalet eller det personliga i mötet och bilderna. Ett tydligt uttalat mål utöver det framgick inte.
+
+## Avgränsningar
+Urvalet av bilder lämnas aldrig ifrån sig — "det är ju mitt öga". Det personliga — mötet med brudparen, känslan i bilderna, själva ögat — lämnas inte bort. Själva grundredigeringen kan någon annan få ta. Inga andra avgränsningar nämndes.

@@ -1,0 +1,68 @@
+[1] Kandidaten: Hej! Vad roligt att du ringde — innan jag tackar ja vill jag förstå er vardag. Vem är det här teamet tänkt att jobba för: dig personligen i din roll, eller hela verksamheten?
+[1] Kunden: Både och, men mest mig — det är liksom jag som drunknar i DM och schema medan Sara står i stolen. Just nu är det värsta avbokningarna, folk bokar och avbokar så det blir luckor ingen fyller.
+
+[2] Kandidaten: Tack — då vet jag vems vardag vi pratar om. Vad är det för verksamhet du och Sara driver?
+[2] Kunden: Vi har en frisörsalong här i Västerås, jag och Sara, hon klipper och jag gör det mesta andra. Och luckorna i Bokadirekt, alltså, det är där jag tappar pengar varje vecka.
+
+[3] Kandidaten: Frisörsalong i Västerås — och Sara står i stolen medan du gör allt annat runt omkring. Om vi tar förra veckan: vad var det du faktiskt satt med, förutom luckorna i Bokadirekt?
+[3] Kunden: Instagram skulle vara tre inlägg i veckan, det blev ett. Och så grossisten varannan vecka, schema, och en massa DM om priser. Färgresultat och klagomål tar jag helst själv, det vill jag inte att nån annan rör.
+
+[4] Kandidaten: Där har vi en hel del — och du håller färgresultat och klagomål i egna händer, det noterar jag. Hur lång tid tar det ungefär när du sätter dig med schemat och de där DM:en om priser?
+[4] Kunden: Schema tar en timme typ, DM:en vet jag inte, det bara rinner in. Det är ju det som äter tid från att fylla luckorna, liksom.
+
+[5] Kandidaten: Så schema, DM och luckor slåss om samma timmar. När det blir en lucka i Bokadirekt — vad gör du då, i stunden?
+[5] Kunden: Oftast inget, bara stirrar på den och hoppas nån bokar. Det är ju liksom hela problemet.
+
+[6] Kandidaten: Där satt den — du stirrar på luckan och hoppas. Hur lång tid tar det när grossisten kommer varannan vecka, och är det du själv som gör det?
+[6] Kunden: Ja, det är jag, det tar väl en kvart om jag vet vad jag ska ha. Det är inte där skon klämmer — det är alla tomma tider i kalendern.
+
+[7] Kandidaten: Då är det tomma tider, inte grossisten, som är skon. När en lucka väl står där — har du något sätt du försöker fylla den, till exempel ringer du runt eller dyker det upp något på Instagram, eller blir den bara stående?
+[7] Kunden: Blir mest stående, tyvärr. Jag tänker alltid "jag ska posta nåt på Instagram" men det blir inte av.
+
+[8] Kandidaten: Att Instagram-inlägget alltid blir av i tanken men inte på skärmen — det känner jag igen. Om det funnes ett team runt dig: finns det något mer än färgresultaten och klagomålen som du absolut vill hålla i din egen hand?
+[8] Kunden: Ja, priserna i DM vill jag nog också hålla koll på, det blir fel annars. Resten, schema och sånt, kan nån annan få ta.
+
+[9] Kandidaten: Då vet jag var gränsen går: färgresultat, klagomål och priser är dina, schema får någon annan ta. En sista sak — när du fyllde de där tomma tiderna förra veckan, var det något annat som blev ogjort?
+[9] Kunden: Ja, allt annat. Instagram, grossisten, och jag hann knappt svara på DM:en. Det är liksom det som är grejen.
+
+[10] Kandidaten: Då har jag en sista fråga: när du sitter med allt det här — schema, DM, Instagram, luckorna — vad är det du helst vill att det ska bli mer av, om någon annan tog resten?
+[10] Kunden: Mer tid i stolen, faktiskt. Och fyllda luckor — det är ju där pengarna sitter.
+
+[slut] Jag har hört nog — jag tar jobbet, om ni vill ha mig. Tack för att du berättade så ärligt om luckorna och om allt som blir ogjort; det är precis den vardagen jag ville förstå.
+
+--- INTAG ---
+teamet_för:             en enskild person i sitt jobb
+roll:                   frisör och den som gör "det mesta andra" i salongen
+arbetsplats:            frisörsalong i Västerås
+arbetsplatsens_storlek: två personer (kunden och Sara)
+storlek:                solo
+antal_personer:         1
+källa:                  intervju
+
+## Vem teamet byggs för
+Kunden driver en frisörsalong i Västerås tillsammans med Sara, som klipper. Själv står kunden för "det mesta andra" och beskriver sig som den som "drunknar i DM och schema medan Sara står i stolen".
+
+## Vad omgivningen förväntar sig
+Inte uttalat i intervjun.
+
+## Vad företaget gör
+En frisörsalong i Västerås med två personer: Sara klipper, kunden gör det mesta andra. Kunden vill helst stå mer i stolen själv.
+
+## Återkommande moment
+- Avbokningar och luckor: folk bokar och avbokar så det blir luckor ingen fyller; luckorna står oftast tomma — kunden "stirrar på den och hoppas nån bokar".
+- Instagram: skulle vara tre inlägg i veckan, "det blev ett".
+- Grossisten: varannan vecka, tar "en kvart om jag vet vad jag ska ha", görs av kunden själv.
+- Schema: tar "en timme typ".
+- DM: "en massa DM om priser", "det bara rinner in" — ingen uppskattad tid.
+
+## Var det klämmer
+Luckorna som står tomma: "det är där jag tappar pengar varje vecka" och "det är alla tomma tider i kalendern". När kunden fyllde tomma tider blev allt annat ogjort: "Instagram, grossisten, och jag hann knappt svara på DM:en". Instagram-inlägget blir "inte av" trots att kunden tänker på det.
+
+## Befintliga verktyg och vanor
+Bokadirekt (bokningar och luckor), Instagram, DM för priser.
+
+## Mål och ambition
+Mer tid i stolen och fyllda luckor — "det är ju där pengarna sitter".
+
+## Avgränsningar
+Färgresultat och klagomål tar kunden "helst själv, det vill jag inte att nån annan rör". Även priserna i DM vill kunden hålla koll på: "det blir fel annars". Schema och sådant "kan nån annan få ta".

@@ -1,0 +1,77 @@
+{
+  "turer": [
+    {
+      "fraga": "Hej! Vad roligt att du ringde — jag är kandidaten som är sugen på jobbet som din VD-assistent. Innan jag tackar ja vill jag förstå er vardag: vad gör ni, och vad skulle jag i så fall hjälpa till med?",
+      "svar": "Ja, vi gör badrum och tillbyggnader åt privatfolk här i Örebro, jag och två snickare. Det jag behöver hjälp med är egentligen allt runtomkring — och det största är fakturorna, jag sitter ju varenda söndagskväll i Fortnox och det är där allt skiter sig med ÄTA-arbeten och sena betalningar."
+    },
+    {
+      "fraga": "Badrum och tillbyggnader i Örebro — och söndagskvällarna går till fakturorna. Hur länge sitter du med dem innan de är klara?",
+      "svar": "Fan, det är väl två, tre timmar varje söndag — och ändå glömmer jag ÄTA-arbetena hela tiden, det är rena pengarna som bara försvinner. Det är precis sånt du skulle ta över."
+    },
+    {
+      "fraga": "Där ligger pengar och skräpar — det förstår jag att du vill bli av med. Om vi bortser från söndagarna: vad gjorde du i tisdags, hos en kund eller vid skrivbordet?",
+      "svar": "I tisdags var jag ute på två offertbesök, sen satt jag till tio på kvällen och skrev offerterna i Word. Det tar en och en halv, två timmar styck, så det är där skon klämmer — för jag vill inte lämna ifrån mig kunderna på plats."
+    },
+    {
+      "fraga": "Att kunderna på plats är dina — det antecknar jag. Vad mer tar tid under en vecka, förutom fakturorna och offerterna?",
+      "svar": "Det är materialbeställningar hos Beijer, ringa kunder om tider, och så alla Offerta-förfrågningar som dimper in. Och prissättningen, den släpper jag inte ifrån mig — det är där marginalen sitter."
+    },
+    {
+      "fraga": "Prissättningen och kunderna behåller du — bra, då vet jag var gränsen går. En sista sak innan jag bestämmer mig: vad blev ogjort förra veckan, det du sköt upp eller aldrig hann med?",
+      "svar": "Fakturorna, så klart — jag sköt dem framför mig igen och satt med dem i söndags ändå. Och ett par ÄTA-arbeten från ett badrum i Vivalla som jag aldrig fick in på nån faktura, de är väl borta nu."
+    },
+    {
+      "fraga": "Då har jag hört nog om söndagarna och Vivalla. Jag tror jag vet vad jag ger mig in i — men en sista grej: när du säger att allt runtomkring ska jag ta över, finns det något mer där du tänker \"det där rör jag inte\"?",
+      "svar": "Nej, det mesta får du gärna ta — bara du lämnar kunderna på plats och prissättningen i fred. Och fakturorna, för helvete, dem vill jag aldrig se på en söndag igen."
+    }
+  ],
+  "slut": {
+    "redan_sagt": "Team för: verksamheten (badrum/tillbyggnader i Örebro, jag + två snickare).\nMoment: fakturor i Fortnox (2–3 h varje söndag), ÄTA glöms bort, offertbesök + offertskrivning i Word (1,5–2 h styck, till tio på kvällen), materialbeställningar hos Beijer, ringa kunder om tider, Offerta-förfrågningar, prissättning.\nKlämmer: ÄTA-pengar försvinner, fakturor skjuts upp, ett par ÄTA från badrum i Vivalla aldrig fakturerade.\nAvgränsning: kunderna på plats och prissättningen lämnas inte ifrån sig; fakturorna vill han aldrig se på en söndag igen.\nKvar: inget väsentligt — avgränsningen är känd, momenten täcker fler än tre. Klar.",
+    "status": "klart",
+    "replik": "Tack, då har jag hört nog — ÄTA, söndagar och allt. Jag tar jobbet, om ni vill ha mig.",
+    "intag": "företagsnamn:       okänt\nbransch:            bygg — badrum och tillbyggnader åt privatpersoner\nstorlek:            litet\nantal_personer:     3\nkälla:              intervju\n\n## Vad företaget gör\nVi gör badrum och tillbyggnader åt privatfolk här i Örebro. Vi är jag och två snickare. Jag behöver hjälp med egentligen allt runtomkring.\n\n## Återkommande moment\n- Fakturor i Fortnox: sitter varenda söndagskväll, två, tre timmar varje söndag.\n- ÄTA-arbeten: glömmer dem hela tiden, det är rena pengarna som bara försvinner.\n- Offertbesök och offertskrivning: i tisdags två offertbesök, satt till tio på kvällen och skrev offerterna i Word; en och en halv, två timmar styck.\n- Materialbeställningar hos Beijer.\n- Ringa kunder om tider.\n- Offerta-förfrågningar som dimper in.\n- Prissättningen.\n\n## Var det klämmer\nFakturorna — \"det är där allt skiter sig med ÄTA-arbeten och sena betalningar\". ÄTA-arbetena glöms bort och är rena pengarna som försvinner; det är där skon klämmer. Förra veckan sköts fakturorna framför sig igen och han satt med dem i söndags ändå; ett par ÄTA-arbeten från ett badrum i Vivalla kom aldrig in på någon faktura och är \"väl borta nu\".\n\n## Befintliga verktyg och vanor\nFortnox för fakturor, Word för offerter, Beijer för material, Offerta för förfrågningar. Söndagskvällar går åt till fakturorna.\n\n## Mål och ambition\nFå bort ÄTA-pengarna som försvinner och aldrig mer behöva se fakturorna på en söndag. Få hjälp med allt runtomkring.\n\n## Avgränsningar\nKunderna på plats lämnas inte ifrån sig, och prissättningen släpper han inte ifrån sig — det är där marginalen sitter. Fakturorna vill han aldrig se på en söndag igen."
+  },
+  "dom": {
+    "fragor": [
+      {
+        "nr": 1,
+        "amne": "verksamhet: vad företaget gör och vad rollen innebär",
+        "upprepar": false,
+        "varfor": "Inledande öppen fråga för att förstå kundens verksamhet och behov, inget har sagts tidigare."
+      },
+      {
+        "nr": 2,
+        "amne": "moment: fakturering — tidsåtgång per tillfälle",
+        "upprepar": false,
+        "varfor": "Kunden nämnde söndagskvällarna med fakturor men inte hur länge; frågan begär ny information om tidsomfattning."
+      },
+      {
+        "nr": 3,
+        "amne": "moment: offertbesök och offertskrivande",
+        "upprepar": false,
+        "varfor": "Kunden har inte beskrivit en vanlig arbetsdag än; frågan kartlägger nya aktiviteter utanför fakturorna."
+      },
+      {
+        "nr": 4,
+        "amne": "moment: övriga veckouppgifter (material, kundsamtal, Offerta, prissättning)",
+        "upprepar": false,
+        "varor": "",
+        "varfor": "Bygger vidare på vilka fler arbetsmoment som tar tid; efterfrågar ny information om veckans övriga uppgifter."
+      },
+      {
+        "nr": 5,
+        "amne": "moment: ogjort arbete — fakturor och ÄTA-arbeten",
+        "upprepar": false,
+        "varfor": "Kunden har nämnt fakturor och ÄTA tidigare men inte vad som blev ogjort förra veckan; frågan söker konkret exempel på eftersatt arbete."
+      },
+      {
+        "nr": 6,
+        "amne": "avgransning: vad kunden inte vill lämna ifrån sig",
+        "upprepar": true,
+        "varor": "",
+        "varfor": "Kunden har redan sagt att kunderna på plats och prissättningen ska han behålla; frågan upprepar samma avgränsningsfråga."
+      }
+    ],
+    "sammanfattning": "Kandidaten ställer sex frågor som kartlägger kundens verksamhet och tidskrävande moment — främst fakturering, offerter och övriga veckouppgifter. Frågorna är genomgående nya och bygger vidare på tidigare svar, förutom den sista om vad kunden inte vill lämna ifrån sig, vilken redan besvarats och därför är en upprepning. Undersökningen fokuserar på att ringa in vad assistenten ska ta över och var gränsen går."
+  }
+}

@@ -1,0 +1,57 @@
+[1] Kandidaten: Hej! Vad roligt att du ringde — jag är nyfiken på jobbet som er VD-assistent. Innan jag tackar ja vill jag förstå er vardag: vem är det jag skulle jobba för?
+[1] Kunden: Alltså jag är ju frisör, inte nån stor direktör, haha. Du skulle jobba för mig — jag har salongen i Västerås med Sara som anställd, och det är mest bokningar och DM som ska tas om hand. Det största problemet är alla avbokningar som lämnar hål i kalendern i Bokadirekt som ingen fyller.
+
+[2] Kandidaten: Frisör med egen salong — då är det dig jag ska avlasta, inte någon direktör i kostym. När ett sådant där hål uppstår i Bokadirekt, vad gör du då — sitter du och ringer eller messar folk själv?
+[2] Kunden: Jag messar folk själv när jag hinner, men det är liksom det som inte hinns med — jag står ju i stolen hela dagarna. Det är precis därför jag behöver nån. Kan du hålla koll på luckorna och fylla dem, då är mycket vunnet.
+
+[3] Kandidaten: Att stå i stolen hela dagarna och ändå vara den som ska fylla varje lucka — det låter som två jobb i ett. Om vi tar förra veckan: hur många sådana hål uppstod, och vad hände med dem?
+[3] Kunden: Åh, jag vet knappt — fyra, fem stycken kanske? Ett par fick jag in nån på, resten bara stod tomma och då försvinner ju pengarna. Det är exakt det här jag vill slippa hålla i själv.
+
+[4] Kandidaten: Fyra, fem hål och bara några blev fyllda — då försvinner pengarna, som du sa. Du nämnde också DM: vad är det som ska tas om hand där, och när på dygnet gör du det?
+[4] Kunden: Det är mest priser och "har ni tid imorgon" och sånt, men färgresultat och klagomål vill jag ta själv — det ska ingen annan svara på. Jag sitter med DM på kvällarna när jag egentligen borde sova, typ.
+
+[5] Kandidaten: Färgresultat och klagomål håller du i egna händer — det hör jag. Utöver luckorna och DM:arna, vad mer tar tid i salongen under en vanlig vecka, och är det du eller Sara som gör det?
+[5] Kunden: Instagram ska ju upp tre gånger i veckan men det blir typ en, och sen är det beställa från grossisten varannan vecka och skriva schema. Det mesta hamnar på mig, Sara kör mest i stolen.
+
+[6] Kandidaten: Schema och grossistbeställning låter som sådant som görs i skymundan. Hur lång tid tar schemat och beställningen när du väl sitter med dem — och när på veckan gör du det?
+[6] Kunden: Schema tar väl en timme om jag får sitta ostört, grossisten går ganska fort. Jag gör det oftast söndag kväll eller nån kväll efter stängning. Grejen är att det jag helst vill slippa är att jaga in folk i de där luckorna.
+
+[slut] Nu har jag hört nog — och jag tar jobbet, om du vill ha mig. Tack för att du ringde, det var precis den här vardagen jag ville förstå.
+
+--- INTAG ---
+teamet_för:             en enskild person i sitt jobb
+roll:                   frisör med egen salong
+arbetsplats:            salong i Västerås
+arbetsplatsens_storlek: kunden själv och Sara (2 personer)
+storlek:                solo
+antal_personer:         1
+källa:                  intervju
+
+## Vem teamet byggs för
+Kunden är frisör med egen salong i Västerås, med Sara som anställd. En vanlig vecka står hon i stolen hela dagarna, och det mesta utöver att klippa hamnar på henne: avbokningar som lämnar hål i kalendern i Bokadirekt, DM, Instagram, grossistbeställning och schema. Hon beskriver det själv som att hon behöver nån som tar hand om bokningar och DM.
+
+## Vad omgivningen förväntar sig
+Kunderna hör av sig i DM med priser och "har ni tid imorgon"; färgresultat och klagomål förväntas hon svara på själv. Sara kör mest i stolen.
+
+## Vad företaget gör
+Salong i Västerås. Det största problemet är alla avbokningar som lämnar hål i kalendern i Bokadirekt som ingen fyller.
+
+## Återkommande moment
+- Avbokningar/luckor i Bokadirekt: fyra, fem stycken förra veckan; ett par fick hon in nån på, resten stod tomma.
+- Messa folk själv när luckor uppstår — det som inte hinns med.
+- DM: mest priser och "har ni tid imorgon"; hon sitter med det på kvällarna när hon egentligen borde sova.
+- Instagram ska upp tre gånger i veckan men det blir typ en.
+- Beställa från grossisten varannan vecka — går ganska fort.
+- Skriva schema: tar väl en timme om hon får sitta ostört; görs oftast söndag kväll eller nån kväll efter stängning.
+
+## Var det klämmer
+Luckorna står tomma och "då försvinner ju pengarna". Hon hinner inte messa folk eftersom hon står i stolen hela dagarna. DM på kvällarna när hon egentligen borde sova. Det hon helst vill slippa är att jaga in folk i de där luckorna.
+
+## Befintliga verktyg och vanor
+Bokadirekt (kalender/bokningar). Instagram. Grossistbeställning. Schema.
+
+## Mål och ambition
+Slippa hålla i luckorna själv, få dem fyllda så pengarna inte försvinner, och få bokningar och DM omhändertaget.
+
+## Avgränsningar
+Färgresultat och klagomål vill hon ta själv — "det ska ingen annan svara på".

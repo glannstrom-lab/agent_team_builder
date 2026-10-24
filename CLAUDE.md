@@ -896,9 +896,10 @@ ny kund dyker upp i både galleri och portal automatiskt.
 > installationsguiden och OL8 reglerna i `/mcp`. 523 gröna. Passet 2026-10-23
 > gick ut i samma deploy — **SP17 omätt, på Mikaels order**.
 >
-> **Nästa pass enda uppgift:** mät VD-assistenten (SP17) ordentligt — och skärp
-> intervjun (kandidaten frågade samma sak tre gånger trots en följdfråga per
-> ämne). OL1 (konsultpaketet) väntar på Mikaels pris. Mätningen: 3 körningar
+> **Intervjun är skärpt 2026-10-24** (`redan_sagt` i schemat, mätt 6→3 upprepningar på
+> 6 resp. 9 simulerade intervjuer, `testoutput/intervju-2026-10-24/`).
+>
+> **Nästa pass enda uppgift:** mät VD-assistenten (SP17) ordentligt. OL1 (konsultpaketet) väntar på Mikaels pris. Mätningen: 3 körningar
 > × byggfirma/salong/fotograf lokalt, emulatorn omstartad efter varje
 > promptändring, ≈ $0,90 — och rätta prompten tills hon inte lånar specialistens
 > blick och inte hittar på namn.

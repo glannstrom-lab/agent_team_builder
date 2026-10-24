@@ -1,0 +1,75 @@
+{
+  "turer": [
+    {
+      "fraga": "Hej, vad roligt att du ringer — jag är kandidaten som är nyfiken på jobbet som din VD-assistent. Innan jag tackar ja vill jag förstå er vardag, så jag börjar enkelt: vad gör ni, och vad är din roll där?",
+      "svar": "Vi är tre gubbar som bygger badrum och tillbyggnader åt folk här i Örebro, jag är snickarn som också sköter allt runtomkring. Och det där runtomkring är mitt problem — jag sitter varenda söndagskväll med fakturorna i Fortnox och ändå glömmer vi ÄTA-jobben, folk betalar sent, det är rena cirkusen."
+    },
+    {
+      "fraga": "Tack — tre gubbar, badrum och tillbyggnader, och du är snickarn som dessutom håller i allt runtomkring. Fakturorna på söndagskvällarna, vad mer hamnar på ditt bord en vanlig vecka?",
+      "svar": "Det mesta, känns det som. Jag är ute på tre-fyra hembesök i veckan och offerterna skriver jag på kvällarna i Word, en till två timmar styck, plus Beijer-beställningar, ringa kunder om tider och Offerta-förfrågningar. Det är just fakturorna och ÄTA:na som alltid blir liggande."
+    },
+    {
+      "fraga": "Där har vi redan en hel del: hembesöken, offerterna, beställningarna. Om vi tar förra veckan — vad hann du inte med, och vad var det som sköts upp?",
+      "svar": "Fakturorna blev liggande till måndag, och två ÄTA-arbeten från badrummet i Brickebacken glömde jag helt skriva in. Sen sket det sig med en Beijer-beställning så Ali fick vänta en halvdag — sånt där som bara rinner iväg."
+    },
+    {
+      "fraga": "Två ÄTA-arbeten som bara försvann och Ali som väntade — det är den sortens saker jag vill vara med och stoppa. Finns det något i det här du absolut inte vill lämna ifrån dig, något som ska förbli ditt eget?",
+      "svar": "Kundkontakten på plats och prissättningen rör jag inte — det är mitt jobb, jag vet vad grejerna kostar och jag vill se rummet själv. Resten, mejl, tider, beställningar och de där jäkla fakturorna, får någon gärna ta."
+    },
+    {
+      "fraga": "Då vet jag var gränsen går — kundkontakten och prissättningen är dina. Beijer-beställningarna och Offerta-förfrågningarna, hur ofta dyker de upp under en vecka?",
+      "svar": "Beställningar blir väl ett par tre gånger i veckan, ibland mer när vi rivit nåt och upptäcker att det fattas grejer. Offerta-förfrågningarna dimper in lite hipp som happ, kanske två-tre i veckan, och de måste ju besvaras innan de försvinner. Det är mest det att allt ska göras på kvällarna."
+    },
+    {
+      "fraga": "Kunderna som betalar sent — hur märks det i vardagen?",
+      "svar": "Det är mest att jag sitter och jagar påminnelser istället för att fakturera nya jobb, och kassan blir skev. ÄTA:na glöms ju bort och då fattas det pengar, sen kommer kunden och tjafsar om en faktura jag skickade för sent. Det är den cirkusen jag vill slippa."
+    }
+  ],
+  "slut": {
+    "redan_sagt": "Verksamhet: tre snickare i Örebro, badrum och tillbyggnader. Roll: snickare som sköter allt runtomkring. Moment: hembesök 3-4/v, offerter i Word kvällstid 1-2 h styck, Beijer-beställningar 2-3/v, Offerta-förfrågningar 2-3/v, fakturor och ÄTA. Klämmer: fakturor liggande, ÄTA glöms, sena betalningar, kassan skev. Avgränsning: kundkontakt på plats och prissättning. Saknas: inget avgörande.",
+    "status": "klart",
+    "replik": "Tack — nu har jag hört nog, och det här jobbet vill jag ha. Jag tar det, om ni vill ha mig.",
+    "intag": "företagsnamn:       okänt\nbransch:            bygg — badrum och tillbyggnader\nstorlek:            litet\nantal_personer:     3\nkälla:              intervju\n\n## Vad företaget gör\nTre snickare i Örebro som bygger badrum och tillbyggnader åt folk. En av dem, snickarn, sköter också allt runtomkring.\n\n## Återkommande moment\n- Hembesök: tre–fyra i veckan.\n- Offerter skrivs på kvällarna i Word, en till två timmar styck.\n- Beijer-beställningar: ett par tre gånger i veckan, ibland mer när de rivit nåt och upptäcker att det fattas grejer.\n- Offerta-förfrågningar: två–tre i veckan, dimper in lite hipp som happ och måste besvaras innan de försvinner.\n- Fakturor i Fortnox: sitter varenda söndagskväll med dem.\n- ÄTA-arbeten ska skrivas in.\n- Ringa kunder om tider.\n\n## Var det klämmer\nFakturorna blev liggande till måndag och två ÄTA-arbeten från badrummet i Brickebacken glömdes helt skriva in. En Beijer-beställning sket sig så Ali fick vänta en halvdag. Sitter och jagar påminnelser istället för att fakturera nya jobb, kassan blir skev, ÄTA glöms bort och då fattas det pengar, sen kommer kunden och tjafsar om en faktura som skickades för sent. Allt ska göras på kvällarna.\n\n## Befintliga verktyg och vanor\nFortnox, Word, Beijer, Offerta.\n\n## Mål och ambition\nSlippa cirkusen — få bort sena betalningar, liggande fakturor och bortglömda ÄTA-arbeten.\n\n## Avgränsningar\nKundkontakten på plats och prissättningen rör han inte — han vet vad grejerna kostar och vill se rummet själv. Resten: mejl, tider, beställningar och fakturorna får någon gärna ta."
+  },
+  "dom": {
+    "fragor": [
+      {
+        "nr": 1,
+        "amne": "verksamhet: vad företaget gör och kundens roll",
+        "upprepar": false,
+        "varfor": "Öppningsfråga för att förstå verksamheten och kundens roll."
+      },
+      {
+        "nr": 2,
+        "amne": "moment: vad mer som hamnar på kundens bord",
+        "upprepar": false,
+        "varfor": "Följdfråga för att kartlägga fler arbetsuppgifter utöver fakturering."
+      },
+      {
+        "nr": 3,
+        "amne": "moment: vad som inte hanns med förra veckan",
+        "upprepar": false,
+        "varfor": "Ber om konkreta exempel på eftersatta uppgifter."
+      },
+      {
+        "nr": 4,
+        "amne": "avgransning: vad kunden inte vill lämna ifrån sig",
+        "upprepar": false,
+        "varfor": "Frågar om ansvarsgränser och vad som ska förbli kundens eget."
+      },
+      {
+        "nr": 5,
+        "amne": "moment: frekvens för beställningar och Offerta-förfrågningar",
+        "upprepar": false,
+        "varfor": "Specificerande följdfråga om hur ofta dessa moment förekommer."
+      },
+      {
+        "nr": 6,
+        "amne": "moment: hur sena betalningar märks i vardagen",
+        "upprepar": false,
+        "varfor": "Utforskar konsekvenserna av sena betalningar i vardagen."
+      }
+    ],
+    "sammanfattning": "Kandidaten ställer sex frågor som kartlägger verksamheten, kundens roll, arbetsmoment som fakturering, offerter, beställningar och ÄTA, ansvarsgränser samt frekvens och konsekvenser av sena betalningar. Ingen fråga upprepar tidigare information; alla är relevanta och bygger vidare på kundens svar."
+  }
+}

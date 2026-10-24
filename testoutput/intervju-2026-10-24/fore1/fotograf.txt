@@ -1,0 +1,77 @@
+[1] Kandidaten: Hej, vad kul att du ringde — jag är kandidaten som gärna vill bli er VD-assistent. Innan jag tackar ja vill jag förstå er. Vem är teamet till för: är det verksamheten, eller är det du själv i ditt jobb?
+[1] Kunden: Assistent, ja — kalla det vad du vill, men för mig handlar det om att någon tar över redigeringen så jag slipper sitta till två på natten med Lightroom. Skulle aldrig lämna ifrån mig urvalet av bilder, det är mitt öga — men allt runt omkring, galleri, mejl, bokföring, det kan någon annan göra.
+
+[2] Kandidaten: Skönt att höra — då vet jag att urvalet är ditt. Du nämner redigering i Lightroom och att det blir till två på natten; berättar du vad du fotar och hur en vanlig vecka ser ut för dig?
+[2] Kunden: Bröllop och porträtt, mest bröllop — ett bröllop är ju 20–30 timmar i Lightroom efteråt, och det är där allt skiter sig. I veckan är det brudpar som mejlar om planering, offerter, lägga upp i Pixieset, och sen kvittona som jag gör i panik varje kvartal.
+
+[3] Kandidaten: Där kom en rad saker jag vill förstå bättre: brudparen som mejlar, offerter, Pixieset, kvittona. Är det du själv som gör allt det där, eller är ni fler?
+[3] Kunden: Jag är ensam, det är liksom hela problemet. Allt det där gör jag själv mellan fotograferingarna, och då blir redigeringen liggande och leveransen drar ut på tiden.
+
+[4] Kandidaten: Ensam mellan fotograferingarna — då förstår jag att det blir mycket på en gång. När du sätter dig med brudparets mejl och offerter, vad har du öppet på skärmen då?
+[4] Kunden: Mejlen, en offert jag halvfärdig, och oftast Lightroom bakom allt — för jag tänker att jag ska hinna redigera lite emellan, vilket jag aldrig gör. Det är precis det jag behöver hjälp med.
+
+[5] Kandidaten: Där känner jag igen mig — Lightroom öppet "för säkerhets skull" och så blir det inget. Du nämnde kvittona som görs i panik varje kvartal: vad är det konkret du gör när paniken slår till?
+[5] Kunden: Då sitter jag en hel kväll och matchar kvitton mot kontoutdrag och slår in allt manuellt, fast det borde göras löpande. Suck. Det är typ sån skit jag vill lämna över.
+
+[6] Kandidaten: En hel kväll med kvitton mot kontoutdrag — den känner jag igen. Tänker du på bröllopet i efterhand: vad är det som blir ogjort när veckan inte räcker till?
+[6] Kunden: Redigeringen, framför allt — brudparen väntar för länge på sina bilder, och det är det jag mår sämst över. Sen blir det ju att kvittona och allt pappersjox hamnar på hög.
+
+[7] Kandidaten: Att brudparen väntar för länge, det hörs att det svider mest. Vad sa du till ett brudpar förra veckan när de hörde av sig om sina bilder?
+[7] Kunden: Jag skämdes och sa att det är på gång, att de ska få galleriet i veckan — men jag vet ju att det inte stämmer riktigt. Det är därför du sitter här.
+
+[8] Kandidaten: Att säga "på gång" när det inte är det — den känslan vill jag hjälpa dig slippa. Finns det något du inte vill lämna ifrån dig alls, förutom urvalet av bilderna?
+[8] Kunden: Nej, det mesta annat kan du ta. Men urvalet är mitt — det är mitt öga som ska bestämma vilka bilder som får leva.
+
+[9] Kandidaten: Tack — då vet jag att ögat är ditt och resten är förhandlingsbart. När brudparet väl väntar på galleriet: hur många bröllop har du liggande just nu som inte är levererade?
+[9] Kunden: Två, och det är två för många.
+
+[10] Kandidaten: Två liggande bröllop och ett galleri som väntar — det är det som gör mest ont. Om du ser tillbaka på förra veckan, vilken dag och vilka timmar gick åt till saker som inte var fotografering eller redigering?
+[10] Kunden: Typ torsdag — halva dagen gick till mejl och offerter, och sen kvittona på kvällen. Inget foto, ingen redigering.
+
+[11] Kandidaten: Halva torsdagen på mejl och offerter, och så kvittona på kvällen — det var hela dagen utan foto. Hur mycket tid lägger du på att svara brudparen, och vem mejlar de egentligen — du eller någon annan?
+[11] Kunden: De mejlar mig, alltid mig — jag är ju ensam. Det tar säkert en timme om dagen, mer när det är många bröllop på gång.
+
+[slut] De mejlar dig, alltid dig — och det tar en timme om dagen. Jag har hört nog: jag tar jobbet, om ni vill ha mig.
+
+--- INTAG ---
+teamet_för:             en enskild person i sitt jobb
+roll:                   fotograf — bröllop och porträtt, mest bröllop
+arbetsplats:            egen fotoverksamhet
+arbetsplatsens_storlek: solo — "Jag är ensam, det är liksom hela problemet"
+storlek:                solo
+antal_personer:         1
+källa:                  intervju
+
+## Vem teamet byggs för
+Fotograf som fotar bröllop och porträtt, mest bröllop. "Ett bröllop är ju 20–30 timmar i Lightroom efteråt." Utöver fotograferingen gör personen själv allt runt omkring: brudpar som mejlar om planering, offerter, lägga upp i Pixieset, och kvittona. "Allt det där gör jag själv mellan fotograferingarna, och då blir redigeringen liggande och leveransen drar ut på tiden." Personen är ensam — "det är liksom hela problemet" — och det är brudparen som mejlar, "alltid mig".
+
+## Vad omgivningen förväntar sig
+Brudparen väntar på sina bilder; personen skäms över förseningen och säger "att det är på gång, att de ska få galleriet i veckan — men jag vet ju att det inte stämmer riktigt." Personen mår sämst över att brudparen väntar för länge på sina bilder.
+
+## Vad företaget gör
+Ensam fotograf inom bröllop och porträtt, mest bröllop. Mellan fotograferingarna sköts planering med brudpar, offerter, gallerier i Pixieset och kvittohantering — allt av personen själv.
+
+## Återkommande moment
+- Redigering i Lightroom: "ett bröllop är ju 20–30 timmar i Lightroom efteråt".
+- Brudpar som mejlar om planering och offerter: "Typ torsdag — halva dagen gick till mejl och offerter".
+- Mejlen tar "säkert en timme om dagen, mer när det är många bröllop på gång".
+- Lägga upp i Pixieset (gallerier till brudparen).
+- Kvittona: "gör i panik varje kvartal" — "sitter jag en hel kväll och matchar kvitton mot kontoutdrag och slår in allt manuellt, fast det borde göras löpande" (förra veckan låg kvittona på kvällen efter torsdagens mejl- och offertdag).
+
+## Var det klämmer
+- Redigeringen blir liggande: "brudparen väntar för länge på sina bilder, och det är det jag mår sämst över".
+- Leveransen drar ut på tiden när allt annat görs mellan fotograferingarna.
+- Lightroom står öppet "för jag tänker att jag ska hinna redigera lite emellan, vilket jag aldrig gör".
+- Kvittona och "allt pappersjox" hamnar på hög.
+- Två bröllop ligger olevererade: "Två, och det är två för många."
+- Förra veckan: "Typ torsdag — halva dagen gick till mejl och offerter, och sen kvittona på kvällen. Inget foto, ingen redigering."
+- Skammen mot brudparet: "Jag skämdes och sa att det är på gång ... men jag vet ju att det inte stämmer riktigt."
+
+## Befintliga verktyg och vanor
+Lightroom, Pixieset, mejl, offerter, kvitton matchade mot kontoutdrag för hand.
+
+## Mål och ambition
+Att slippa sitta till två på natten med Lightroom och att brudparen inte ska behöva vänta för länge på sina bilder. "Det är precis det jag behöver hjälp med" — få redigeringen och allt runt omkring (gallerier, mejl, bokföring) gjort, medan urvalet förblir personens eget.
+
+## Avgränsningar
+Urvalet av bilder lämnas inte ifrån sig: "Skulle aldrig lämna ifrån mig urvalet av bilder, det är mitt öga" och "urvalet är mitt — det är mitt öga som ska bestämma vilka bilder som får leva." I övrigt: "Nej, det mesta annat kan du ta."

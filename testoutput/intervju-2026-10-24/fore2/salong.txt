@@ -1,0 +1,70 @@
+[1] Kandidaten: Hej! Vad roligt att du ringde — jag är nyfiken redan. Innan jag tackar ja vill jag förstå er vardag: vem är det teamet skulle jobba för, du själv i din roll eller hela verksamheten?
+[1] Kunden: Både jag och Sara, men mest jag — det är jag som har koll på färg och klagomål, det vill jag inte lämna ifrån mig. Grejen är att jag får avbokningar hela tiden och då står stolen tom i Bokadirekt, det är där du hade gjort mest nytta.
+
+[2] Kandidaten: Tack, det säger en hel del — du vill behålla färg och klagomål själv, men avbokningarna är där det gör ont. Vad är det du och Sara gör, i vilken typ av verksamhet?
+[2] Kunden: Frisörsalong i Västerås, bara jag och Sara. Och just nu sitter jag med Instagram som skulle vara tre gånger i veckan och blir typ en, så det är ett annat hål jag inte hinner fylla.
+
+[3] Kandidaten: Instagram tre gånger i veckan som blir en — det känner jag igen. Vad gjorde du konkret där förra veckan, när det väl blev av?
+[3] Kunden: Ett inlägg, en bild på en balayage jag var nöjd med. Sen kom det tre DM om priser och då rann allt ut i sanden, som vanligt.
+
+[4] Kandidaten: Ett inlägg och sen tre DM — och så rann det ut. Blir de DM:en liggande, eller svarar du på dem någon gång senare?
+[4] Kunden: Jag svarar, men det tar ett dygn eller två, och då har de oftast bokat nån annan. Det är liksom samma sak hela tiden — folk hör av sig och sen fyller jag inte luckorna.
+
+[5] Kandidaten: Samma sak hela tiden — folk hör av sig och luckorna fylls inte. När en avbokning plötsligt står där, vad gör du då — och hur lång tid tar det innan stolen är fylld igen?
+[5] Kunden: Oftast ingenting, jag bara suckar och hoppas att nån ska boka. Och då står den tom i en dag eller två, ibland längre. Det är exakt det jag vill ha hjälp med.
+
+[6] Kandidaten: Oftast ingenting — du suckar och hoppas att nån ska boka, och stolen står tom i en dag eller två. Vad hade du öppet på skärmen när avbokningen kom in?
+[6] Kunden: Bokadirekt, alltid. Och typ inköpslistan till grossisten, jag ska beställa varannan vecka och det skjuts också fram. Men Bokadirekt är där det blöder.
+
+[7] Kandidaten: Bokadirekt är där det blöder — och inköpslistan skjuts fram, den med. Vad förra veckan hann du inte med, när allt annat kom emellan?
+[7] Kunden: Schemat, framförallt. Och så blev det inget med grossisten alls, det skulle varit förra veckan. Hade du varit här hade du nog kunnat ta det.
+
+[8] Kandidaten: Schemat och grossisten — och Instagram som rann ut i sanden igen. Finns det något du inte vill att någon annan rör, eller något du måste hålla kvar hos dig själv?
+[8] Kunden: Färgresultat och klagomål, det sa jag ju — det rör jag själv, punkt. Resten får nån gärna ta, särskilt luckorna i kalendern.
+
+[9] Kandidaten: Färgresultat och klagomål — de rör du själv, punkt. Men grossistbeställningen, är det något som måste godkännas av någon innan den går iväg, eller är det du som bestämmer själv?
+[9] Kunden: Jag bestämmer själv, det är bara jag. Det är kanske därför det inte blir av, ingen som puffar på.
+
+[10] Kandidaten: Du bestämmer själv, och det är kanske just därför det inte blir av — ingen som puffar på. Om jag fick fråga en sista sak: hur ser en vanlig vecka ut för dig, från måndag till söndag, när blir det som stressigast?
+[10] Kunden: Måndag till torsdag är fullt med kunder, fredag stänger jag tidigt. Lördag är kaos, söndag är när jag sitter med allt det andra och inser att inget blev gjort. Det är där du skulle komma in.
+
+[slut] Tack — nu vet jag nog var stolen står tom och varför. Jag har hört nog, jag tar jobbet om ni vill ha mig.
+
+--- INTAG ---
+teamet_för:             verksamheten (i praktiken mest salongens ägare, med Sara som kollega)
+roll:                   frisör/salongägare — "det är jag som har koll på färg och klagomål"
+arbetsplats:            frisörsalong i Västerås
+arbetsplatsens_storlek: 2 personer (ägaren och Sara)
+storlek:                mikro
+antal_personer:         2
+källa:                  intervju
+
+## Vem teamet byggs för
+Teamet byggs för verksamheten — frisörsalongen i Västerås med ägaren och Sara — men i praktiken mest för ägaren, som har koll på färg och klagomål och som sitter med Instagram, grossistbeställningar och kalenderluckor. En vanlig vecka: måndag till torsdag fullt med kunder, fredag stänger de tidigt, lördag är kaos, och söndag sitter ägaren med "allt det andra" och inser att inget blev gjort.
+
+## Vad företaget gör
+Frisörsalong i Västerås, bara ägaren och Sara. De tar emot kunder hela veckan, fredag stänger de tidigt, och lördag är det som mest kaos.
+
+## Återkommande moment
+- Instagram: "skulle vara tre gånger i veckan och blir typ en". Förra veckan blev det ett inlägg — en bild på en balayage — och sen kom det tre DM om priser och "då rann allt ut i sanden".
+- Svara på DM: svarar, men "det tar ett dygn eller två, och då har de oftast bokat nån annan".
+- Avbokningar i Bokadirekt: "får avbokningar hela tiden och då står stolen tom i Bokadirekt". Oftast görs ingenting, stolen står tom "i en dag eller två, ibland längre".
+- Grossistbeställning: beställs varannan vecka, men skjuts fram — "blev det inget med grossisten alls" förra veckan.
+- Schemat: hanns inte med förra veckan.
+- Veckorytmen: mån–tors fullt med kunder, fredag stänger tidigt, lördag kaos, söndag sitter ägaren med allt det andra.
+
+## Var det klämmer
+- Stolen står tom i Bokadirekt när folk avbokar — "det är exakt det jag vill ha hjälp med", "Bokadirekt är där det blöder".
+- DM om priser besvaras för sent, och kunden har då oftast bokat någon annan.
+- Instagram blir en gång i veckan i stället för tre — "ett annat hål jag inte hinner fylla".
+- Grossistbeställningen blir inte av: "det är bara jag ... ingen som puffar på".
+- Söndagen: "sitter med allt det andra och inser att inget blev gjort".
+
+## Befintliga verktyg och vanor
+Bokadirekt (bokning, alltid öppet på skärmen). Instagram (inlägg och DM). Inköpslista till grossisten, beställs varannan vecka.
+
+## Mål och ambition
+Få bukt med de tomma stolarna i kalendern — det ägaren själv pekar ut som där mest nytta hade gjorts. Få Instagram att bli tre gånger i veckan och DM besvarade i tid. Få grossistbeställningen och schemat att bli av.
+
+## Avgränsningar
+Färgresultat och klagomål rör ägaren själv, "punkt". Resten får någon annan gärna ta, "särskilt luckorna i kalendern". Grossistbeställningen kräver inget godkännande — ägaren bestämmer själv.

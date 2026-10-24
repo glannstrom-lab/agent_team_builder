@@ -1,0 +1,64 @@
+[1] Kandidaten: Vad kul att du ringde — jag är nyfiken på det här jobbet. Innan jag tackar ja vill jag förstå er vardag, så jag börjar enkelt: vad är det för verksamhet, och vad gör du där?
+[1] Kunden: Jag fotar bröllop och porträtt, mest bröllop, och sen sitter jag... ja, alldeles för mycket i Lightroom och redigerar. Det är där skon klämmer faktiskt, leveransen drar ut på tiden för mig.
+
+[2] Kandidaten: Bröllop — där finns det ju inga omtagningar. Är det du själv som gör allt från bokning till leverans, eller har du någon som hjälper dig?
+[2] Kunden: Jag gör allt själv, från första mejlet till färdigt galleri, och det är precis det som inte håller längre. Redigeringen är boven — 20–30 timmar per bröllop.
+
+[3] Kandidaten: 20–30 timmar per bröllop — det är en hel arbetsvecka per kund. När du sitter där i Lightroom, vad är det konkreta du gör, steg för steg?
+[3] Kunden: Urval, färg, hudtoner, beskärning, sen galleri och backup — det är där timmarna går. Men själva urvalet vill jag inte lämna ifrån mig, det är mitt öga liksom.
+
+[4] Kandidaten: Då är urvalet ditt — det antecknar jag. Hur många bröllop har du ungefär per säsong, och hur ser en vanlig vecka ut när det är som mest?
+[4] Kunden: Runt 15–20 per säsong, och på toppen är det bara bröllop, redigering och kaffe. Resterande dagar mejlar jag brudpar, skriver offerter, lägger upp gallerier... och kvittona, de gör jag i panik varje kvartal.
+
+[5] Kandidaten: Kvitton i panik varje kvartal — den känner jag igen från mitt eget liv. När veckorna är som fullast, vad blir liggande ogjort?
+[5] Kunden: Redigeringen, alltid redigeringen — den är det som skjuts fram. Brudparen väntar längre än de borde, och det är faktiskt enda anledningen att jag letar assistent.
+
+[6] Kandidaten: Då är det klart varför du ringer — brudparen väntar på det som skjuts fram. Kvittona och offerterna: vad har du öppet på skärmen när du gör dem?
+[6] Kunden: Excel för kvittona, sen de vanliga mejlen för offerterna — inget fancy. Kan vi inte prata om det här redigeringsberget istället? Det är där jag faktiskt behöver hjälp.
+
+[7] Kandidaten: Redigeringsberget är precis det jag vill förstå — jag återkommer till det. En sak till bara: finns det något mer som du inte vill lämna ifrån dig, utöver urvalet?
+[7] Kunden: Nej, bara urvalet — själva pillandet i Lightroom kan någon annan få. Men det sista ögat vill jag ha.
+
+[8] Kandidaten: Det sista ögat — bra, då vet jag var gränsen går. Jag håller mig kvar vid redigeringsberget: när du väl har gjort urvalet, hur lång tid tar själva pillandet i Lightroom jämfört med urvalet?
+[8] Kunden: Urvalet går på några timmar, pillandet tar resten — det är 80 procent av tiden där. Det är liksom där assistenten skulle spara mig en hel vecka.
+
+[9] Kandidaten: Då vet jag var veckan tar vägen — och var den försvinner. En sista sak innan jag bestämmer mig: hur ser brudparens väntan ut i praktiken — vad händer när leveransen drar ut, och vad säger de till dig?
+[9] Kunden: De mejlar och frågar "hur går det?", artigt först, sen lite otåligt — och jag skäms varje gång. Det är exakt det jag vill bort ifrån.
+
+[slut] Tack — jag har hört nog. Jag tar jobbet, om ni vill ha mig. Det sista ögat stannar hos dig; resten av berget är mitt.
+
+--- INTAG ---
+teamet_för:             en enskild person i sitt jobb
+roll:                   fotograf — "jag fotar bröllop och porträtt, mest bröllop"
+arbetsplats:            egen verksamhet som fotograf, allt från första mejlet till färdigt galleri
+arbetsplatsens_storlek: solo — "jag gör allt själv"
+storlek:                solo
+antal_personer:         1
+källa:                  intervju
+
+## Vem teamet byggs för
+Rollen i personens egna ord: fotograf som fotar bröllop och porträtt, mest bröllop, och som "sitter alldeles för mycket i Lightroom och redigerar". Hen gör allt själv, från första mejlet till färdigt galleri — det är precis det som inte håller längre. En vanlig vecka på toppen är "bara bröllop, redigering och kaffe"; resterande dagar mejlas brudpar, skrivs offerter och gallerier läggs upp.
+
+## Vad omgivningen förväntar sig
+Brudparen väntar på leveransen och mejlar "hur går det?" — artigt först, sen lite otåligt. Personen skäms varje gång det händer.
+
+## Vad företaget gör
+Egen fotoverksamhet: bröllop och porträtt, mest bröllop, 15–20 bröllop per säsong. Allt sköts själv, från första mejlet till färdigt galleri.
+
+## Återkommande moment
+- Redigering: 20–30 timmar per bröllop. Urvalet tar några timmar, "pillandet tar resten — det är 80 procent av tiden där" (färg, hudtoner, beskärning, sen galleri och backup).
+- Urval.
+- Mejla brudpar, skriva offerter, lägga upp gallerier.
+- Kvitton i Excel — "i panik varje kvartal".
+
+## Var det klämmer
+Redigeringen skjuts alltid fram; "brudparen väntar längre än de borde, och det är faktiskt enda anledningen att jag letar assistent". Personen skäms när brudparen mejlar och frågar hur det går.
+
+## Befintliga verktyg och vanor
+Lightroom för redigering, Excel för kvittona, "de vanliga mejlen" för offerterna — "inget fancy".
+
+## Mål och ambition
+Att komma bort från brudparens väntan och skammen den väcker, och att slippa redigeringsberget som skjuts fram — assistenten "skulle spara mig en hel vecka".
+
+## Avgränsningar
+Urvalet lämnas aldrig ifrån sig — "det är mitt öga liksom" och "det sista ögat vill jag ha". Själva pillandet i Lightroom får någon annan ta.

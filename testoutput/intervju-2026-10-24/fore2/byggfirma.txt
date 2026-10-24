@@ -1,0 +1,66 @@
+[1] Kandidaten: Hej, vad roligt att du ringde — jag är nyfiken redan. Innan jag tackar ja vill jag förstå er vardag, så jag börjar enkelt: vem är det här teamet till för, är det en verksamhet eller är det du själv i ditt jobb?
+[1] Kunden: Det är firman, men ärligt talat – det är jag. Ali och Petter snickrar, jag gör allt annat, och det är just allt annat som drunknar. Fakturorna skriver jag på söndagskvällar, och jag är rätt säker på att jag tappat ÄTA-arbeten på vägen.
+
+[2] Kandidaten: Där ligger min första fråga: vad gör firman — alltså vad snickrar Ali och Petter, och vad säljer ni till vem?
+[2] Kunden: Badrum och tillbyggnader, nästan bara privatpersoner här i Örebro. Jag är ute på tre, fyra hembesök i veckan och offerten skriver jag på kvällen i Word, en till två timmar per styck.
+
+[3] Kandidaten: Badrum och tillbyggnader, tre–fyra hembesök i veckan och offerter i Word på kvällarna — då börjar jag förstå "allt annat". Du nämnde ÄTA-arbeten: vad är det du tappat, och hur märker du det?
+[3] Kunden: Det är ju det klassiska — kunden vill ändra nåt på plats, vi gör det, och sen kommer det aldrig med på fakturan. Jag märker det oftast för sent, när marginalen är borta. Det är precis därför jag behöver nån som fångar det, för fakturorna sitter jag med på söndagskvällarna ändå.
+
+[4] Kandidaten: Där satt den — "drunknar" är ordet jag kommer bära med mig. Vad mer står på söndagskvällarna, förutom fakturorna?
+[4] Kunden: Fakturorna, och sen allt jag skjutit upp i veckan — ringa kunder om tider, kolla Offerta-förfrågningar, jaga folk som inte betalt. Det är liksom aldrig slut.
+
+[5] Kandidaten: Fakturor, kunder, Offerta-förfrågningar och folk som inte betalt — söndagarna låter som en hel arbetsvecka i miniatyr. Vad var det du sköt upp förra veckan som du helst hade velat få gjort i tid?
+[5] Kunden: Tre offerter som borde gått ut i tisdags, och två kunder som väntar på nya tider. Men det jag verkligen borde gjort i tid var att få iväg sista fakturan innan månaden stängde — nu ligger den och skräpar.
+
+[6] Kandidaten: Sista fakturan som skräpar säger mig mycket — den borde varit inne innan månaden stängde. Vad är det som gör att just fakturorna hamnar i sista stund, vad är det trögaste i dem?
+[6] Kunden: Trögast är att få ihop vad som faktiskt gjorts — ÄTA-arbeten och smågrejer som ingen skrivit upp. När jag väl sitter där går det rätt fort, men det är alla dagar innan som saknas.
+
+[7] Kandidaten: Där har jag hela problemet i en mening: "alla dagar innan som saknas". Om du fick bestämma – finns det något du inte vill lämna ifrån dig, något som ska förbli ditt?
+[7] Kunden: Ja, kunderna på plats och prissättningen. Offertbesöken och vad vi tar — det vill jag hålla i. Resten får nån gärna ta.
+
+[8] Kandidaten: Då vet jag var gränsen går — kunderna på plats och prissättningen är dina. En sista sak jag är nyfiken på: när du tittar tillbaka på förra veckan, vad var det tråkigaste du gjorde?
+[8] Kunden: Ringa folk som inte betalt. Och jaga Beijer om material som inte kommit. Det tar en halv dag och ger ingenting.
+
+[slut] Där har jag allt jag behöver — tack för att du tog dig tid. Jag har hört nog: jag tar jobbet, om ni vill ha mig.
+
+--- INTAG ---
+teamet_för:             en enskild person i sitt jobb
+roll:                   "gör allt annat" — allt utom snickeriet
+arbetsplats:            snickerifirma som gör badrum och tillbyggnader, nästan bara privatpersoner i Örebro
+arbetsplatsens_storlek: mikro — Ali och Petter snickrar, kunden gör allt annat
+storlek:                solo
+antal_personer:         1
+källa:                  intervju
+
+## Vem teamet byggs för
+Kunden är den i firman som "gör allt annat" medan Ali och Petter snickrar — och det är just allt annat som drunknar. En vanlig vecka: tre, fyra hembesök hos kunder, offerter som skrivs på kvällen i Word (en till en två timmar per styck), fakturor som skrivs på söndagskvällar, plus allt som skjutits upp under veckan.
+
+## Vad omgivningen förväntar sig
+Kunderna väntar på besked och nya tider, och offerter som borde gått ut. Marginalen hänger på att ÄTA-arbeten kommer med på fakturan. Kunden beskriver själv att offertbesök och prissättning är sådant hen vill hålla i.
+
+## Vad företaget gör
+Snickerifirma som gör badrum och tillbyggnader, nästan bara privatpersoner i Örebro. Ali och Petter snickrar; kunden gör allt annat.
+
+## Återkommande moment
+- Fakturor skrivs på söndagskvällar.
+- Allt som skjutits upp under veckan tas igen på söndagarna: ringa kunder om tider, kolla Offerta-förfrågningar, jaga folk som inte betalt.
+- Hembesök hos kunder tre, fyra gånger i veckan.
+- Offertskrivande i Word på kvällarna, en till två timmar per offert.
+- Ringa folk som inte betalt och jaga Beijer om material som inte kommit — tar en halv dag.
+
+## Var det klämmer
+- ÄTA-arbeten: kunden vill ändra något på plats, jobbet görs, men kommer aldrig med på fakturan — märks oftast för sent, när marginalen är borta.
+- Tre offerter som borde gått ut i tisdags, och två kunder som väntar på nya tider.
+- Sista fakturan innan månaden stängde blev inte iväg — den "ligger och skräpar".
+- Trögast i fakturorna: få ihop vad som faktiskt gjorts — ÄTA-arbeten och smågrejer som ingen skrivit upp. "Det är alla dagar innan som saknas."
+- Tråkigast: ringa folk som inte betalt och jaga Beijer om material — "tar en halv dag och ger ingenting".
+
+## Befintliga verktyg och vanor
+Word för offerter. Offerta-förfrågningar. Beijer som materialleverantör.
+
+## Mål och ambition
+Att slippa drunkna i "allt annat" — få iväg fakturor och offerter i tid, och framför allt fånga ÄTA-arbetena så att marginalen inte försvinner.
+
+## Avgränsningar
+Kunderna på plats och prissättningen — offertbesöken och vad de tar — vill kunden hålla i själv. Resten får någon annan gärna ta.

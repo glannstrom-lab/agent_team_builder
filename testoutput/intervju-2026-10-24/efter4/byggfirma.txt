@@ -1,0 +1,50 @@
+[1] Kandidaten: Hej! Vad roligt att du ringde — jag är kandidaten som är sugen på jobbet som din VD-assistent. Innan jag tackar ja vill jag förstå er vardag: vad gör ni, och vad skulle jag i så fall hjälpa till med?
+[1] Kunden: Ja, vi gör badrum och tillbyggnader åt privatfolk här i Örebro, jag och två snickare. Det jag behöver hjälp med är egentligen allt runtomkring — och det största är fakturorna, jag sitter ju varenda söndagskväll i Fortnox och det är där allt skiter sig med ÄTA-arbeten och sena betalningar.
+
+[2] Kandidaten: Badrum och tillbyggnader i Örebro — och söndagskvällarna går till fakturorna. Hur länge sitter du med dem innan de är klara?
+[2] Kunden: Fan, det är väl två, tre timmar varje söndag — och ändå glömmer jag ÄTA-arbetena hela tiden, det är rena pengarna som bara försvinner. Det är precis sånt du skulle ta över.
+
+[3] Kandidaten: Där ligger pengar och skräpar — det förstår jag att du vill bli av med. Om vi bortser från söndagarna: vad gjorde du i tisdags, hos en kund eller vid skrivbordet?
+[3] Kunden: I tisdags var jag ute på två offertbesök, sen satt jag till tio på kvällen och skrev offerterna i Word. Det tar en och en halv, två timmar styck, så det är där skon klämmer — för jag vill inte lämna ifrån mig kunderna på plats.
+
+[4] Kandidaten: Att kunderna på plats är dina — det antecknar jag. Vad mer tar tid under en vecka, förutom fakturorna och offerterna?
+[4] Kunden: Det är materialbeställningar hos Beijer, ringa kunder om tider, och så alla Offerta-förfrågningar som dimper in. Och prissättningen, den släpper jag inte ifrån mig — det är där marginalen sitter.
+
+[5] Kandidaten: Prissättningen och kunderna behåller du — bra, då vet jag var gränsen går. En sista sak innan jag bestämmer mig: vad blev ogjort förra veckan, det du sköt upp eller aldrig hann med?
+[5] Kunden: Fakturorna, så klart — jag sköt dem framför mig igen och satt med dem i söndags ändå. Och ett par ÄTA-arbeten från ett badrum i Vivalla som jag aldrig fick in på nån faktura, de är väl borta nu.
+
+[6] Kandidaten: Då har jag hört nog om söndagarna och Vivalla. Jag tror jag vet vad jag ger mig in i — men en sista grej: när du säger att allt runtomkring ska jag ta över, finns det något mer där du tänker "det där rör jag inte"?
+[6] Kunden: Nej, det mesta får du gärna ta — bara du lämnar kunderna på plats och prissättningen i fred. Och fakturorna, för helvete, dem vill jag aldrig se på en söndag igen.
+
+[slut] Tack, då har jag hört nog — ÄTA, söndagar och allt. Jag tar jobbet, om ni vill ha mig.
+
+--- INTAG ---
+företagsnamn:       okänt
+bransch:            bygg — badrum och tillbyggnader åt privatpersoner
+storlek:            litet
+antal_personer:     3
+källa:              intervju
+
+## Vad företaget gör
+Vi gör badrum och tillbyggnader åt privatfolk här i Örebro. Vi är jag och två snickare. Jag behöver hjälp med egentligen allt runtomkring.
+
+## Återkommande moment
+- Fakturor i Fortnox: sitter varenda söndagskväll, två, tre timmar varje söndag.
+- ÄTA-arbeten: glömmer dem hela tiden, det är rena pengarna som bara försvinner.
+- Offertbesök och offertskrivning: i tisdags två offertbesök, satt till tio på kvällen och skrev offerterna i Word; en och en halv, två timmar styck.
+- Materialbeställningar hos Beijer.
+- Ringa kunder om tider.
+- Offerta-förfrågningar som dimper in.
+- Prissättningen.
+
+## Var det klämmer
+Fakturorna — "det är där allt skiter sig med ÄTA-arbeten och sena betalningar". ÄTA-arbetena glöms bort och är rena pengarna som försvinner; det är där skon klämmer. Förra veckan sköts fakturorna framför sig igen och han satt med dem i söndags ändå; ett par ÄTA-arbeten från ett badrum i Vivalla kom aldrig in på någon faktura och är "väl borta nu".
+
+## Befintliga verktyg och vanor
+Fortnox för fakturor, Word för offerter, Beijer för material, Offerta för förfrågningar. Söndagskvällar går åt till fakturorna.
+
+## Mål och ambition
+Få bort ÄTA-pengarna som försvinner och aldrig mer behöva se fakturorna på en söndag. Få hjälp med allt runtomkring.
+
+## Avgränsningar
+Kunderna på plats lämnas inte ifrån sig, och prissättningen släpper han inte ifrån sig — det är där marginalen sitter. Fakturorna vill han aldrig se på en söndag igen.

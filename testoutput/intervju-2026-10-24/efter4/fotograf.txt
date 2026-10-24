@@ -1,0 +1,58 @@
+[1] Kandidaten: Hej! Vad roligt att du ringde — jag är nyfiken på den här rollen. Innan jag tackar ja vill jag förstå er: är teamet tänkt för dig personligen i ditt jobb, eller för en hel verksamhet?
+[1] Kunden: Det är bara jag, ingen studio — det här är mina egna bröllop och porträtt. Så det handlar om att avlasta mig, framför allt med redigeringen, för där sitter jag 20–30 timmar per bröllop och leveranserna drar ut på tiden.
+
+[2] Kandidaten: Bröllop och porträtt, och 20–30 timmar i redigeringen per bröllop — då förstår jag att leveranserna drar ut. Hur många bröllop har du under en vanlig säsong?
+[2] Kunden: Runt 15–20 per säsong, plus lite porträtt emellan. Det är ju just det — jag vill inte lämna ifrån mig själva urvalet av bilderna, men själva redigeringen skulle jag kunna släppa.
+
+[3] Kandidaten: Där satte du fingret på något viktigt — urvalet är ditt, redigeringen kan släppas. Om vi bortser från redigeringen en stund: vad gjorde du förra veckan, rent konkret, när du inte satt vid bilderna?
+[3] Kunden: Mejlade brudpar om planering, skrev ett par offerter, la upp ett galleri i Pixieset... och så satt jag med kvittona, för bokföringen gör jag ju i panik varje kvartal.
+
+[4] Kandidaten: Kvittona i panik varje kvartal — den känner jag igen. Hur lång tid brukar den paniken ta, när den väl är där?
+[4] Kunden: Ett par timmar, typ. Oftast en hel kväll med kaffe och dåligt humör. Sen är det glömt — tills nästa kvartal.
+
+[5] Kandidaten: Då har jag bilden av kvällarna med kaffe och dåligt humör. Mejlen och offerterna — är det något du gör löpande varje vecka, eller blossar det upp kring bokningarna?
+[5] Kunden: Det blossar upp kring bokningarna, absolut. Men om jag ska vara ärlig är det där inget jag behöver hjälp med — det är redigeringen som äter mig.
+
+[6] Kandidaten: Då lämnar vi mejlen därhän — redigeringen är kärnan. Var sitter du när du redigerar, och vad har du öppet på skärmen då?
+[6] Kunden: Hemma vid skrivbordet, Lightroom uppe och oftast en podcast i öronen. Det är där jag försvinner i timmar, det är liksom där skon klämmer.
+
+[7] Kandidaten: Där skon klämmer, säger du — och det är redigeringen som försvinner i timmar. När du ser tillbaka på förra veckan: vad blev ogjort, det som du hade tänkt få klart men inte hann?
+[7] Kunden: Ett bröllop från i augusti ligger fortfarande och väntar på sista redigeringen — paret har börjat höra av sig. Och sen en massa småsaker jag skjutit upp. Det är alltid leveransen som blir lidande.
+
+[slut] Tack — nu vet jag vad jobbet är, och det är redigeringen som ska bort från ditt skrivbord, inte urvalet. Jag har hört nog. Jag tar jobbet, om ni vill ha mig.
+
+--- INTAG ---
+teamet_för:             en enskild person i sitt jobb
+roll:                   fotograf med egna bröllop och porträtt
+arbetsplats:            egen fotoverksamhet — bröllop och porträtt
+arbetsplatsens_storlek: solo
+storlek:                solo
+antal_personer:         1
+källa:                  intervju
+
+## Vem teamet byggs för
+Fotograf som gör sina egna bröllop och porträtt. En vanlig vecka: redigering (20–30 timmar per bröllop, "där jag försvinner i timmar"), mejl till brudpar om planering, offerter, gallerier i Pixieset och kvitton för bokföringen.
+
+## Vad omgivningen förväntar sig
+Brudparen förväntar sig leverans — ett paret från augusti har börjat höra av sig eftersom sista redigeringen inte är klar. "Det är alltid leveransen som blir lidande."
+
+## Vad företaget gör
+Rollen och arbetsplatsen: ensam fotograf, egna bröllop och porträtt, runt 15–20 bröllop per säsong plus lite porträtt emellan. Redigeringen görs hemma vid skrivbordet med Lightroom uppe.
+
+## Återkommande moment
+- Redigering: 20–30 timmar per bröllop, "där jag försvinner i timmar".
+- Kvitton/bokföring: görs i panik varje kvartal, ett par timmar — "en hel kväll med kaffe och dåligt humör".
+- Mejl till brudpar om planering och offerter: blossar upp kring bokningarna (personen vill inte ha hjälp med detta).
+- Lägga upp galleri i Pixieset.
+
+## Var det klämmer
+Redigeringen äter upp tiden och leveranserna drar ut på tiden. Ett bröllop från augusti ligger fortfarande och väntar på sista redigeringen, och paret har börjat höra av sig. Mycket "småsaker" skjuts upp.
+
+## Befintliga verktyg och vanor
+Lightroom, Pixieset. Redigerar hemma vid skrivbordet, oftast med podcast i öronen. Bokföringen görs i panik varje kvartal.
+
+## Mål och ambition
+Att bli avlastad, framför allt med redigeringen, så att leveranserna inte drar ut på tiden. Vill inte lämna ifrån sig urvalet men kan släppa själva redigeringen.
+
+## Avgränsningar
+Urvalet av bilderna lämnas aldrig ifrån sig. Mejlen och offerterna vill personen sköta själv — "det är redigeringen som äter mig".

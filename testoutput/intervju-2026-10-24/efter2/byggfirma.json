@@ -1,0 +1,106 @@
+{
+  "turer": [
+    {
+      "fraga": "Hej! Vad roligt att du ringde — jag är nyfiken redan. Innan jag säger ja vill jag förstå er vardag: vem är teamet tänkt att jobba för, dig personligen eller hela verksamheten?",
+      "svar": "Det är mig personligen i första hand — jag drunknar i fakturor och offerter, och det är där skon klämmer. Ali och Petter sköter ju snickeriet, men allt pappersjobb landar på mig, särskilt faktureringen på söndagskvällarna."
+    },
+    {
+      "fraga": "Att allt pappersjobb landar på dig när Ali och Petter snickrar — det hör jag. Vad är det för slags verksamhet ni har?",
+      "svar": "Badrum och tillbyggnader åt privatpersoner, mest i Örebro med kringliggande. Det är roligt hantverk, men offerterna och fakturorna tar kål på mig — jag sitter ju med Word på kvällarna istället."
+    },
+    {
+      "fraga": "Badrum och tillbyggnader åt privatpersoner — då förstår jag att det är en del papper runt varje jobb. Om vi tar förra veckan: vad gjorde du konkret, steg för steg, när du satte dig med fakturorna?",
+      "svar": "Ja, du... i söndags kväll satt jag med Fortnox och skulle fakturera veckans jobb, och då upptäckte jag att ett ÄTA-arbete på ett badrum i Brickebacken aldrig blev inlagt. Sånt där tappas hela tiden, och då blir det tjafs med kunden efteråt. Det är precis det här jag vill ha hjälp med."
+    },
+    {
+      "fraga": "Ett ÄTA-arbete som aldrig blir inlagt och sen blir tjafs med kunden — det är ju precis den sortens sak som inte borde hända. När du satt där i söndags med Fortnox, hur länge satt du innan allt var klart?",
+      "svar": "Ett par timmar, oftast mer — och då hade jag ändå glömt ÄTA:n. Det är ju själva grejen: jag borde lägga in det direkt på plats, men det blir inte av, och sen sitter jag där på söndag och kunderna betalar sent också."
+    },
+    {
+      "fraga": "Ett par timmar på söndagskvällen och ÄTA:n ändå glömd — och kunderna betalar sent ovanpå det. Du nämnde offerterna också: hur går det arbetet till, från första kundkontakt till färdig offert?",
+      "svar": "Kunden ringer, jag åker ut på hembesök — tre, fyra stycken i veckan — och sen skriver jag offerten i Word på kvällen, en till två timmar per styck. Det är där jag vill ha avlastning, men jag vill fortfarande göra hembesöken och prissättningen själv."
+    },
+    {
+      "fraga": "Hembesöken och prissättningen behåller du själv — det antecknar jag. Är det bara du och de två snickarna, eller är ni fler i firman?",
+      "svar": "Nej, det är bara vi tre — jag, Ali och Petter. Ingen administration alls, och det är väl därför allt hamnar på mig till slut."
+    },
+    {
+      "fraga": "Då är ni tre och allt pappersarbete är ditt — jag hör dig. Utöver hembesöken och prissättningen: finns det något annat du inte vill lämna ifrån dig, eller något som måste godkännas av någon annan innan det går ut?",
+      "svar": "Kundkontakten på plats vill jag sköta själv, den är helig. Sen är det Beijer-beställningarna och Offerta-förfrågningarna som bara måste bli gjorda — men där får du gärna ta över. Bara inte prissättningen."
+    },
+    {
+      "fraga": "Beijer-beställningarna och Offerta-förfrågningarna får jag ta över — bra, då vet jag var gränsen går. Hur ofta blir det, och vad innebär de i praktiken för dig?",
+      "svar": "Beijer blir väl ett par gånger i veckan, ibland oftare när ett jobb drar igång — det ska kollas av material och ringas och beställas. Offerta-förfrågningarna dimper in lite då och då, och jag hinner ju knappt svara på dem. Det är sånt som skaver, för det är ju faktiskt jobb som går förlorade om man inte svarar i tid."
+    },
+    {
+      "fraga": "Jobb som går förlorade för att Offerta-frågorna inte hinner besvaras — det skaver, hör jag. Om jag tar över Beijer, Offerta och fakturorna: vad skulle du vilja lägga de timmarna på i stället?",
+      "svar": "Då skulle jag äntligen kunna lägga in ÄTA-arbetena direkt och fakturera i tid, istället för att sitta på söndagskvällarna. Och kanske hinna med fler hembesök — det är ju där jobben finns."
+    }
+  ],
+  "slut": {
+    "redan_sagt": "Person: kunden själv. Verksamhet: badrum/tillbyggnader åt privatpersoner, Örebro med omnejd. Antal: tre (kunden, Ali, Petter). Verktyg: Fortnox, Word, Beijer, Offerta. Moment: fakturering söndagskväll (par timmar, oftare mer), ÄTA-arbeten läggs in för sent, hembesök 3–4/v, offert i Word 1–2 h/styck, Beijer-beställningar par gånger i veckan, Offerta-förfrågningar då och då. Klämmer: ÄTA tappas → tjafs med kund, sena betalningar, förlorade jobb. Avgränsningar: hembesök, prissättning, kundkontakt på plats behåller han själv; Beijer/Offerta/fakturor får lämnas över. Saknas: inget väsentligt — kan avsluta.",
+    "status": "klart",
+    "replik": "Nu vet jag var skon klämmer, var gränsen går och vad du helst vill göra i stället. Jag har hört nog — jag tar jobbet, om ni vill ha mig.",
+    "intag": "teamet_för:             en enskild person i sitt jobb\nroll:                   allt pappersjobb i firman — fakturering, offerter, ÄTA, beställningar (kundens egna ord)\narbetsplats:            badrums- och tillbyggnadsfirma åt privatpersoner, mest i Örebro med kringliggande\narbetsplatsens_storlek: tre personer — kunden, Ali och Petter\nstorlek:                solo\nantal_personer:         1\nkälla:                  intervju\n\n## Vem teamet byggs för\nKunden gör allt pappersjobb själv — \"allt pappersjobb landar på mig\" — medan Ali och Petter sköter snickeriet. En vanlig vecka: hembesök hos kunder (tre, fyra stycken i veckan), offertskrivande i Word på kvällarna (en till två timmar per styck), fakturering i Fortnox på söndagskvällarna (\"ett par timmar, oftast mer\"), Beijer-beställningar (\"ett par gånger i veckan, ibland oftare när ett jobb drar igång — det ska kollas av material och ringas och beställas\") och Offerta-förfrågningar som \"dimper in lite då och då\".\n\n## Vad omgivningen förväntar sig\nKunderna: att ÄTA-arbeten blir inlagda och att fakturorna kommer i tid — annars blir det \"tjafs med kunden efteråt\" och kunderna \"betalar sent också\". Offerta-förfrågningarna är jobb som \"går förlorade om man inte svarar i tid\".\n\n## Vad företaget gör\nBadrum och tillbyggnader åt privatpersoner, mest i Örebro med kringliggande. Tre personer: kunden, Ali och Petter. \"Ingen administration alls, och det är väl därför allt hamnar på mig till slut.\"\n\n## Återkommande moment\n- Fakturering i Fortnox på söndagskvällarna — \"ett par timmar, oftast mer\".\n- ÄTA-arbeten som borde läggas in direkt på plats men \"blir inte av\".\n- Hembesök — \"tre, fyra stycken i veckan\".\n- Offertskrivande i Word på kvällen — \"en till två timmar per styck\".\n- Beijer-beställningar — \"ett par gånger i veckan, ibland oftare när ett jobb drar igång\".\n- Offerta-förfrågningar — \"dimper in lite då och då\".\n\n## Var det klämmer\nEtt ÄTA-arbete på ett badrum i Brickebacken blev aldrig inlagt och upptäcktes först vid faktureringen: \"Sånt där tappas hela tiden, och då blir det tjafs med kunden efteråt.\" Kunderna betalar sent. Offerta-förfrågningarna hinner knappt besvaras: \"det är ju faktiskt jobb som går förlorade om man inte svarar i tid.\" Pappersjobbet sker på kvällar och söndagar i stället för på dagarna — \"jag sitter ju med Word på kvällarna istället\".\n\n## Befintliga verktyg och vanor\nFortnox (fakturering), Word (offerter), Beijer (beställningar), Offerta (förfrågningar).\n\n## Mål och ambition\n\"Lägga in ÄTA-arbetena direkt och fakturera i tid, istället för att sitta på söndagskvällarna\" — och \"kanske hinna med fler hembesök — det är ju där jobben finns\".\n\n## Avgränsningar\nHembesöken, prissättningen och kundkontakten på plats behåller kunden själv — kundkontakten \"är helig\", och \"bara inte prissättningen\". Beijer-beställningarna och Offerta-förfrågningarna \"får du gärna ta över\", liksom fakturorna."
+  },
+  "dom": {
+    "fragor": [
+      {
+        "nr": 1,
+        "amne": "vem: teamet ska jobba för (dig personligen eller hela verksamheten)",
+        "upprepar": false,
+        "varfor": "Öppningsfråga som identifierar vem kandidaten ska avlasta — grundläggande för hela uppdraget."
+      },
+      {
+        "nr": 2,
+        "amne": "verksamhet: bransch och inriktning",
+        "upprepar": false,
+        "varfor": "Frågar vad firman gör, vilket inte framgått tidigare."
+      },
+      {
+        "nr": 3,
+        "amne": "moment: fakturering steg för steg (konkret exempel)",
+        "upprepar": false,
+        "varfor": "Ber om konkret sekvens av ett ännu ej beskrivet moment — faktureringen nämndes bara som problemområde."
+      },
+      {
+        "nr": 4,
+        "amne": "moment: fakturering — tidsåtgång",
+        "upprepar": false,
+        "varfor": "Specificerande följdfråga om hur länge arbetet tar, ny information som inte givits."
+      },
+      {
+        "nr": 5,
+        "amne": "moment: offertprocessen från kundkontakt till färdig offert",
+        "upprepar": false,
+        "varfor": "Offertarbetet har nämnts som problem men inte beskrivits i detalj tidigare."
+      },
+      {
+        "nr": 6,
+        "amne": "storlek: antal personer i firman",
+        "upprepar": false,
+        "varfor": "Frågar om teamets storlek, vilket inte framgått trots att Ali och Petter nämnts."
+      },
+      {
+        "nr": 7,
+        "amne": "avgransning: vad kunden inte vill lämna ifrån sig / godkännandeflöden",
+        "upprepar": false,
+        "varor": "",
+        "varfor": "Klarifierar gränser för uppdraget utöver det redan nämnda (hembesök, prissättning)."
+      },
+      {
+        "nr": 8,
+        "amne": "moment: Beijer-beställningar och Offerta-förfrågningar — frekvens och innebörd",
+        "upprepar": false,
+        "varfor": "Dessa moment nämndes precis av kunden men är inte beskrivna — frågan ber om frekvens och praktik, ny information."
+      },
+      {
+        "nr": 9,
+        "amne": "annat: vad kunden vill lägga frigjord tid på",
+        "upprepar": false,
+        "varfor": "Framåtblickande fråga om önskad användning av tid — inte efterfrågat tidigare."
+      }
+    ],
+    "sammanfattning": "Kandidaten ställer nio frågor som systematiskt kartlägger uppdraget: vem som ska avlastas, verksamhetens art, konkreta arbetsmoment (fakturering, offert, Beijer, Offerta), firmans storlek, gränser för vad kunden behåller, samt vad frigjord tid ska användas till. Ingen fråga upprepar tidigare svar — samtliga bygger vidare på kundens information med nya specificerande infallsvinklar."
+  }
+}

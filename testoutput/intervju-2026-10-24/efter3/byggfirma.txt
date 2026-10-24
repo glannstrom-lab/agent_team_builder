@@ -1,0 +1,49 @@
+[1] Kandidaten: Hej! Vad roligt att du ringde — jag är nyfiken på det här jobbet, men innan jag tackar ja vill jag förstå er vardag. Vad är det för verksamhet du vill ha hjälp i?
+[1] Kunden: Tja! Ja, det är byggfirma här i Örebro, jag och två snickare, vi gör badrum och tillbyggnader åt privatfolk. Och det jag behöver mest hjälp med är fakturorna, för fan, jag sitter varje söndagskväll i Fortnox och då har man glömt ÄTA-jobben och kunderna betalar sent.
+
+[2] Kandidaten: Söndagskväll i Fortnox — det låter som veckans minst roliga stund. Vad mer än fakturorna brukar du göra själv under en vanlig vecka?
+[2] Kunden: Ja du, det är tre-fyra hembesök i veckan för offerter, och de skriver jag på kvällarna i Word — tar en till två timmar styck. Sen beställa material hos Beijer, ringa kunder om tider, och Offerta skickar förfrågningar. Men kundkontakten på plats och prissättningen vill jag inte lämna ifrån mig, det är liksom där man tappar pengarna om man släpper det.
+
+[3] Kandidaten: Kundkontakten och prissättningen håller du i — det hör jag. Vad blev ogjort förra veckan när allt det här drog ut på tiden?
+[3] Kunden: Fakturorna, som vanligt. Låg kvar till söndag kväll, och ett par ÄTA-arbeten på badrummet i Vivalla hade jag glömt helt — det är ju rena pengarna som bara försvinner.
+
+[4] Kandidaten: Rena pengar som bara försvinner — de ÄTA-jobben. Hur håller du reda på dem från att du är på plats tills de hamnar på en faktura?
+[4] Kunden: Det är väl just det, det gör jag inte. Jag skriver nån anteckning i mobilen ibland, men oftast litar jag på minnet, och sen står jag där på söndag kväll och undrar vad fan vi kom överens om. Det är precis det här jag behöver nån som fångar upp.
+
+[5] Kandidaten: Offerta skickar förfrågningar — vad är det som händer när en sån dimper ner, steg för steg?
+[5] Kunden: De trillar in i mailen, sen sitter jag och knappar in dem manuellt i Offerta, kollar ritningar och grejer — det tar sin tid. Oftast blir det liggande till kvällen, för på dagarna är jag ju ute.
+
+[6] Kandidaten: Två snickare och du — är det du själv som gör allt det här, eller är det något av det som någon annan redan tar hand om?
+[6] Kunden: Nej, det är bara jag. Ali och Petter är ute på jobb hela dagarna, de ska inte sitta med papper. Så allt det här — offerter, fakturor, Offerta, inköp — landar på mig, och det är därför jag behöver nån.
+
+[slut] Tack — jag har hört nog, och jag tar jobbet om ni vill ha mig. Tre-fyra hembesök, Offerta på kvällen och söndagarna i Fortnox; det är en vardag jag kan bygga kring.
+
+--- INTAG ---
+företagsnamn:       okänt
+bransch:            bygg — badrum och tillbyggnader åt privatpersoner
+storlek:            litet
+antal_personer:     3 (kunden + två snickare)
+källa:              intervju
+
+## Vad företaget gör
+Byggfirma i Örebro med kunden och två snickare, Ali och Petter. De gör badrum och tillbyggnader åt privatfolk. Kunden gör själv allt som inte är hantverk: offerter, fakturor, Offerta, inköp.
+
+## Återkommande moment
+- Fakturorna i Fortnox — görs varje söndagskväll.
+- Tre-fyra hembesök i veckan för offerter; offerterna skrivs på kvällarna i Word, en till två timmar styck.
+- Beställa material hos Beijer.
+- Ringa kunder om tider.
+- Offerta skickar förfrågningar som trillar in i mailen; dessa knappas in manuellt i Offerta och ritningar kollas — blir oftast liggande till kvällen, eftersom dagarna går åt ute.
+- Ali och Petter är ute på jobb hela dagarna; allt pappersarbete landar på kunden.
+
+## Var det klämmer
+Fakturorna blir liggande till söndag kväll. Ett par ÄTA-arbeten på badrummet i Vivalla glömdes helt förra veckan — "rena pengarna som bara försvinner". ÄTA-jobb hålls oftast bara i minnet, ibland en anteckning i mobilen; på söndag kväll vet han inte vad som kom överens. Kunderna betalar sent.
+
+## Befintliga verktyg och vanor
+Fortnox, Word, Offerta, mail, anteckningar i mobilen, Beijer (material).
+
+## Mål och ambition
+Få någon som fångar upp det han inte hinner — framför allt ÄTA-jobb och fakturering — så att pengar inte tappas och fakturorna inte hamnar på söndag kväll.
+
+## Avgränsningar
+Kundkontakten på plats och prissättningen vill han inte lämna ifrån sig — "det är liksom där man tappar pengarna om man släpper det".

@@ -1,0 +1,114 @@
+{
+  "turer": [
+    {
+      "fraga": "Hej! Vad roligt att du ringde — jag är nyfiken redan. Innan jag tackar ja vill jag förstå er vardag: vem är det teamet skulle jobba för, du själv i din roll eller hela verksamheten?",
+      "svar": "Både jag och Sara, men mest jag — det är jag som har koll på färg och klagomål, det vill jag inte lämna ifrån mig. Grejen är att jag får avbokningar hela tiden och då står stolen tom i Bokadirekt, det är där du hade gjort mest nytta."
+    },
+    {
+      "fraga": "Tack, det säger en hel del — du vill behålla färg och klagomål själv, men avbokningarna är där det gör ont. Vad är det du och Sara gör, i vilken typ av verksamhet?",
+      "svar": "Frisörsalong i Västerås, bara jag och Sara. Och just nu sitter jag med Instagram som skulle vara tre gånger i veckan och blir typ en, så det är ett annat hål jag inte hinner fylla."
+    },
+    {
+      "fraga": "Instagram tre gånger i veckan som blir en — det känner jag igen. Vad gjorde du konkret där förra veckan, när det väl blev av?",
+      "svar": "Ett inlägg, en bild på en balayage jag var nöjd med. Sen kom det tre DM om priser och då rann allt ut i sanden, som vanligt."
+    },
+    {
+      "fraga": "Ett inlägg och sen tre DM — och så rann det ut. Blir de DM:en liggande, eller svarar du på dem någon gång senare?",
+      "svar": "Jag svarar, men det tar ett dygn eller två, och då har de oftast bokat nån annan. Det är liksom samma sak hela tiden — folk hör av sig och sen fyller jag inte luckorna."
+    },
+    {
+      "fraga": "Samma sak hela tiden — folk hör av sig och luckorna fylls inte. När en avbokning plötsligt står där, vad gör du då — och hur lång tid tar det innan stolen är fylld igen?",
+      "svar": "Oftast ingenting, jag bara suckar och hoppas att nån ska boka. Och då står den tom i en dag eller två, ibland längre. Det är exakt det jag vill ha hjälp med."
+    },
+    {
+      "fraga": "Oftast ingenting — du suckar och hoppas att nån ska boka, och stolen står tom i en dag eller två. Vad hade du öppet på skärmen när avbokningen kom in?",
+      "svar": "Bokadirekt, alltid. Och typ inköpslistan till grossisten, jag ska beställa varannan vecka och det skjuts också fram. Men Bokadirekt är där det blöder."
+    },
+    {
+      "fraga": "Bokadirekt är där det blöder — och inköpslistan skjuts fram, den med. Vad förra veckan hann du inte med, när allt annat kom emellan?",
+      "svar": "Schemat, framförallt. Och så blev det inget med grossisten alls, det skulle varit förra veckan. Hade du varit här hade du nog kunnat ta det."
+    },
+    {
+      "fraga": "Schemat och grossisten — och Instagram som rann ut i sanden igen. Finns det något du inte vill att någon annan rör, eller något du måste hålla kvar hos dig själv?",
+      "svar": "Färgresultat och klagomål, det sa jag ju — det rör jag själv, punkt. Resten får nån gärna ta, särskilt luckorna i kalendern."
+    },
+    {
+      "fraga": "Färgresultat och klagomål — de rör du själv, punkt. Men grossistbeställningen, är det något som måste godkännas av någon innan den går iväg, eller är det du som bestämmer själv?",
+      "svar": "Jag bestämmer själv, det är bara jag. Det är kanske därför det inte blir av, ingen som puffar på."
+    },
+    {
+      "fraga": "Du bestämmer själv, och det är kanske just därför det inte blir av — ingen som puffar på. Om jag fick fråga en sista sak: hur ser en vanlig vecka ut för dig, från måndag till söndag, när blir det som stressigast?",
+      "svar": "Måndag till torsdag är fullt med kunder, fredag stänger jag tidigt. Lördag är kaos, söndag är när jag sitter med allt det andra och inser att inget blev gjort. Det är där du skulle komma in."
+    }
+  ],
+  "slut": {
+    "status": "klart",
+    "replik": "Tack — nu vet jag nog var stolen står tom och varför. Jag har hört nog, jag tar jobbet om ni vill ha mig.",
+    "intag": "teamet_för:             verksamheten (i praktiken mest salongens ägare, med Sara som kollega)\nroll:                   frisör/salongägare — \"det är jag som har koll på färg och klagomål\"\narbetsplats:            frisörsalong i Västerås\narbetsplatsens_storlek: 2 personer (ägaren och Sara)\nstorlek:                mikro\nantal_personer:         2\nkälla:                  intervju\n\n## Vem teamet byggs för\nTeamet byggs för verksamheten — frisörsalongen i Västerås med ägaren och Sara — men i praktiken mest för ägaren, som har koll på färg och klagomål och som sitter med Instagram, grossistbeställningar och kalenderluckor. En vanlig vecka: måndag till torsdag fullt med kunder, fredag stänger de tidigt, lördag är kaos, och söndag sitter ägaren med \"allt det andra\" och inser att inget blev gjort.\n\n## Vad företaget gör\nFrisörsalong i Västerås, bara ägaren och Sara. De tar emot kunder hela veckan, fredag stänger de tidigt, och lördag är det som mest kaos.\n\n## Återkommande moment\n- Instagram: \"skulle vara tre gånger i veckan och blir typ en\". Förra veckan blev det ett inlägg — en bild på en balayage — och sen kom det tre DM om priser och \"då rann allt ut i sanden\".\n- Svara på DM: svarar, men \"det tar ett dygn eller två, och då har de oftast bokat nån annan\".\n- Avbokningar i Bokadirekt: \"får avbokningar hela tiden och då står stolen tom i Bokadirekt\". Oftast görs ingenting, stolen står tom \"i en dag eller två, ibland längre\".\n- Grossistbeställning: beställs varannan vecka, men skjuts fram — \"blev det inget med grossisten alls\" förra veckan.\n- Schemat: hanns inte med förra veckan.\n- Veckorytmen: mån–tors fullt med kunder, fredag stänger tidigt, lördag kaos, söndag sitter ägaren med allt det andra.\n\n## Var det klämmer\n- Stolen står tom i Bokadirekt när folk avbokar — \"det är exakt det jag vill ha hjälp med\", \"Bokadirekt är där det blöder\".\n- DM om priser besvaras för sent, och kunden har då oftast bokat någon annan.\n- Instagram blir en gång i veckan i stället för tre — \"ett annat hål jag inte hinner fylla\".\n- Grossistbeställningen blir inte av: \"det är bara jag ... ingen som puffar på\".\n- Söndagen: \"sitter med allt det andra och inser att inget blev gjort\".\n\n## Befintliga verktyg och vanor\nBokadirekt (bokning, alltid öppet på skärmen). Instagram (inlägg och DM). Inköpslista till grossisten, beställs varannan vecka.\n\n## Mål och ambition\nFå bukt med de tomma stolarna i kalendern — det ägaren själv pekar ut som där mest nytta hade gjorts. Få Instagram att bli tre gånger i veckan och DM besvarade i tid. Få grossistbeställningen och schemat att bli av.\n\n## Avgränsningar\nFärgresultat och klagomål rör ägaren själv, \"punkt\". Resten får någon annan gärna ta, \"särskilt luckorna i kalendern\". Grossistbeställningen kräver inget godkännande — ägaren bestämmer själv."
+  },
+  "dom": {
+    "fragor": [
+      {
+        "nr": 1,
+        "amne": "vem: teamet skulle jobba för",
+        "upprepar": false,
+        "varfor": "Inledande fråga för att klargöra vem tjänsten är till för, med två alternativ: du själv eller hela verksamheten."
+      },
+      {
+        "nr": 2,
+        "amne": "verksamhet: typ av verksamhet",
+        "upprepar": false,
+        "varfor": "Frågar om vilken typ av verksamhet kunden driver, efter att ha bekräftat vad kunden vill behålla."
+      },
+      {
+        "nr": 3,
+        "amne": "moment: Instagram-inlägg förra veckan",
+        "upprepar": false,
+        "varfor": "Ber om ett konkret exempel på vad kunden gjorde förra veckan med Instagram, för att förstå omfattningen."
+      },
+      {
+        "nr": 4,
+        "amne": "moment: hantering av DM",
+        "upprepar": false,
+        "varfor": "Följer upp vad som händer med DM som kunden inte svarar på direkt, för att kartlägga rutiner."
+      },
+      {
+        "nr": 5,
+        "amne": "moment: hantering av avbokningar",
+        "upprepar": false,
+        "varfor": "Frågar om vad kunden gör vid en avbokning och hur lång tid det tar att fylla stolen, vilket är kärnproblemet."
+      },
+      {
+        "nr": 6,
+        "amne": "verktyg: Bokadirekt och inköpslista",
+        "upprepar": false,
+        "varfor": "Frågar vilka verktyg som var öppna när avbokningen kom, för att förstå arbetsflödet."
+      },
+      {
+        "nr": 7,
+        "amne": "moment: vad som inte hanns med förra veckan",
+        "upprepar": false,
+        "varfor": "Ber om exempel på vad som prioriterades bort förra veckan, för att identifiera tidsbrister."
+      },
+      {
+        "nr": 8,
+        "amne": "avgransning: vad kunden inte vill delegera",
+        "upprepar": true,
+        "varfor": "Frågar igen om vad kunden vill behålla själv, vilket kunden redan svarade på i första svaret (färgresultat och klagomål)."
+      },
+      {
+        "nr": 9,
+        "amne": "moment: godkännande av grossistbeställning",
+        "upprepar": false,
+        "varfor": "Klargör beslutsprocessen för grossistbeställningen, om någon annan måste godkänna."
+      },
+      {
+        "nr": 10,
+        "amne": "moment: typisk vecka",
+        "upprepar": false,
+        "varfor": "Ber om en övergripande bild av veckan för att förstå stresspunkter och tidsfördelning."
+      }
+    ],
+    "sammanfattning": "Kandidaten ställer tio frågor för att kartlägga kundens behov och vardag. Frågorna täcker vem som ska få hjälp, verksamhetens art, konkreta moment som Instagram, DM, avbokningar, grossist, samt avgränsningar. En fråga (nr 8) upprepas eftersom kunden redan angett vad denne vill behålla själv. Frågorna syftar till att förstå problemomfattning och potentiella lösningar."
+  }
+}

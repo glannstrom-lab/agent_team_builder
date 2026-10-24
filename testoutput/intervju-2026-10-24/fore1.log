@@ -1,0 +1,11 @@
+byggfirma: 9 svar · upprepningar 0 · avgränsning ja · intag 2048 tecken
+file:///C:/Users/Mikael/Desktop/AI%20PROJEKT/agent-team-builder/testoutput/intervju-2026-10-24/mat.mjs:47
+    if (!r.ok) throw new Error(`${r.status} ${raw.slice(0, 200)}`);
+                     ^
+
+Error: 429 {"error":"För många anrop just nu. Vänta en kvart och försök igen.","code":"rate_limited"}
+    at kandidaten (file:///C:/Users/Mikael/Desktop/AI%20PROJEKT/agent-team-builder/testoutput/intervju-2026-10-24/mat.mjs:47:22)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async file:///C:/Users/Mikael/Desktop/AI%20PROJEKT/agent-team-builder/testoutput/intervju-2026-10-24/mat.mjs:81:15
+
+Node.js v24.14.0

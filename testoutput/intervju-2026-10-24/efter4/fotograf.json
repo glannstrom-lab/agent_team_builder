@@ -1,0 +1,85 @@
+{
+  "turer": [
+    {
+      "fraga": "Hej! Vad roligt att du ringde — jag är nyfiken på den här rollen. Innan jag tackar ja vill jag förstå er: är teamet tänkt för dig personligen i ditt jobb, eller för en hel verksamhet?",
+      "svar": "Det är bara jag, ingen studio — det här är mina egna bröllop och porträtt. Så det handlar om att avlasta mig, framför allt med redigeringen, för där sitter jag 20–30 timmar per bröllop och leveranserna drar ut på tiden."
+    },
+    {
+      "fraga": "Bröllop och porträtt, och 20–30 timmar i redigeringen per bröllop — då förstår jag att leveranserna drar ut. Hur många bröllop har du under en vanlig säsong?",
+      "svar": "Runt 15–20 per säsong, plus lite porträtt emellan. Det är ju just det — jag vill inte lämna ifrån mig själva urvalet av bilderna, men själva redigeringen skulle jag kunna släppa."
+    },
+    {
+      "fraga": "Där satte du fingret på något viktigt — urvalet är ditt, redigeringen kan släppas. Om vi bortser från redigeringen en stund: vad gjorde du förra veckan, rent konkret, när du inte satt vid bilderna?",
+      "svar": "Mejlade brudpar om planering, skrev ett par offerter, la upp ett galleri i Pixieset... och så satt jag med kvittona, för bokföringen gör jag ju i panik varje kvartal."
+    },
+    {
+      "fraga": "Kvittona i panik varje kvartal — den känner jag igen. Hur lång tid brukar den paniken ta, när den väl är där?",
+      "svar": "Ett par timmar, typ. Oftast en hel kväll med kaffe och dåligt humör. Sen är det glömt — tills nästa kvartal."
+    },
+    {
+      "fraga": "Då har jag bilden av kvällarna med kaffe och dåligt humör. Mejlen och offerterna — är det något du gör löpande varje vecka, eller blossar det upp kring bokningarna?",
+      "svar": "Det blossar upp kring bokningarna, absolut. Men om jag ska vara ärlig är det där inget jag behöver hjälp med — det är redigeringen som äter mig."
+    },
+    {
+      "fraga": "Då lämnar vi mejlen därhän — redigeringen är kärnan. Var sitter du när du redigerar, och vad har du öppet på skärmen då?",
+      "svar": "Hemma vid skrivbordet, Lightroom uppe och oftast en podcast i öronen. Det är där jag försvinner i timmar, det är liksom där skon klämmer."
+    },
+    {
+      "fraga": "Där skon klämmer, säger du — och det är redigeringen som försvinner i timmar. När du ser tillbaka på förra veckan: vad blev ogjort, det som du hade tänkt få klart men inte hann?",
+      "svar": "Ett bröllop från i augusti ligger fortfarande och väntar på sista redigeringen — paret har börjat höra av sig. Och sen en massa småsaker jag skjutit upp. Det är alltid leveransen som blir lidande."
+    }
+  ],
+  "slut": {
+    "redan_sagt": "Teamet: en enskild person (fotograf, egna bröllop/porträtt). Roll: bröllops- och porträttfotograf, solo. Verksamhet: egna bröllop och porträtt, 15–20 bröllop/säsong + porträtt. Redigering: 20–30 tim/bröllop, kärnan. Kvitton/bokföring: ett par tim, en kväll i panik varje kvartal. Mejl/offerter: kring bokningar — vill inte ha hjälp. Verktyg: Lightroom, Pixieset. Klämmer: leveranser drar ut, bröllop från augusti väntar, paret hör av sig. Avgränsning: urvalet lämnas aldrig ifrån sig. Saknas: inget givet — tillräckligt för klart.",
+    "status": "klart",
+    "replik": "Tack — nu vet jag vad jobbet är, och det är redigeringen som ska bort från ditt skrivbord, inte urvalet. Jag har hört nog. Jag tar jobbet, om ni vill ha mig.",
+    "intag": "teamet_för:             en enskild person i sitt jobb\nroll:                   fotograf med egna bröllop och porträtt\narbetsplats:            egen fotoverksamhet — bröllop och porträtt\narbetsplatsens_storlek: solo\nstorlek:                solo\nantal_personer:         1\nkälla:                  intervju\n\n## Vem teamet byggs för\nFotograf som gör sina egna bröllop och porträtt. En vanlig vecka: redigering (20–30 timmar per bröllop, \"där jag försvinner i timmar\"), mejl till brudpar om planering, offerter, gallerier i Pixieset och kvitton för bokföringen.\n\n## Vad omgivningen förväntar sig\nBrudparen förväntar sig leverans — ett paret från augusti har börjat höra av sig eftersom sista redigeringen inte är klar. \"Det är alltid leveransen som blir lidande.\"\n\n## Vad företaget gör\nRollen och arbetsplatsen: ensam fotograf, egna bröllop och porträtt, runt 15–20 bröllop per säsong plus lite porträtt emellan. Redigeringen görs hemma vid skrivbordet med Lightroom uppe.\n\n## Återkommande moment\n- Redigering: 20–30 timmar per bröllop, \"där jag försvinner i timmar\".\n- Kvitton/bokföring: görs i panik varje kvartal, ett par timmar — \"en hel kväll med kaffe och dåligt humör\".\n- Mejl till brudpar om planering och offerter: blossar upp kring bokningarna (personen vill inte ha hjälp med detta).\n- Lägga upp galleri i Pixieset.\n\n## Var det klämmer\nRedigeringen äter upp tiden och leveranserna drar ut på tiden. Ett bröllop från augusti ligger fortfarande och väntar på sista redigeringen, och paret har börjat höra av sig. Mycket \"småsaker\" skjuts upp.\n\n## Befintliga verktyg och vanor\nLightroom, Pixieset. Redigerar hemma vid skrivbordet, oftast med podcast i öronen. Bokföringen görs i panik varje kvartal.\n\n## Mål och ambition\nAtt bli avlastad, framför allt med redigeringen, så att leveranserna inte drar ut på tiden. Vill inte lämna ifrån sig urvalet men kan släppa själva redigeringen.\n\n## Avgränsningar\nUrvalet av bilderna lämnas aldrig ifrån sig. Mejlen och offerterna vill personen sköta själv — \"det är redigeringen som äter mig\"."
+  },
+  "dom": {
+    "fragor": [
+      {
+        "nr": 1,
+        "amne": "verksamhet: teamet tänkt för dig personligen eller hel verksamhet",
+        "upprepar": false,
+        "varfor": "Första frågan — kartlägger omfattningen av verksamheten."
+      },
+      {
+        "nr": 2,
+        "amne": "storlek: antal bröllop per säsong",
+        "upprepar": false,
+        "varfor": "Ny information om volymen som styr arbetsbelastningen."
+      },
+      {
+        "nr": 3,
+        "amne": "moment: vad kunden gjorde förra veckan utanför redigeringen",
+        "upprepar": false,
+        "varfor": "Kartlägger vilka moment som finns utöver redigeringen."
+      },
+      {
+        "nr": 4,
+        "amne": "moment: tidsåtgång för bokföringen",
+        "upprepar": false,
+        "varfor": "Följdfråga som kvantifierar ett nyss nämnt moment."
+      },
+      {
+        "nr": 5,
+        "amne": "moment: om mejl och offerter sker löpande eller kring bokningar",
+        "upprepar": false,
+        "varfor": "Specificerar frekvensen för redan nämnda moment."
+      },
+      {
+        "nr": 6,
+        "amne": "verktyg: var och vad kunden har öppet vid redigering",
+        "upprepar": false,
+        "varfor": "Kartlägger arbetsmiljö och verktyg kring kärnmomentet."
+      },
+      {
+        "nr": 7,
+        "amne": "moment: vad som blev ogjort förra veckan",
+        "upprepar": false,
+        "varfor": "Konkretiserar konsekvenserna av flaskhalsen."
+      }
+    ],
+    "sammanfattning": "Kandidaten kartlägger en ensam bröllops- och porträttfotograf med 15–20 bröllop per säsong, där redigeringen tar 20–30 timmar per bröllop och leveranserna drar ut. Fokus ligger på att ringa in redigeringen som kärnmoment, med sidospår kring mejl, offerter och kvartalsvis bokföring. Frågorna är öppna, konkreta och bygger vidare utan att upprepa; kunden har själv avgränsat att mejl/offerter inte behöver hjälp."
+  }
+}

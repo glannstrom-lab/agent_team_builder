@@ -1,0 +1,125 @@
+{
+  "turer": [
+    {
+      "fraga": "Hej! Vad roligt att du ringde — jag är nyfiken redan. Innan jag tackar ja vill jag förstå er vardag; är det här teamet till för dig personligen i ditt jobb, eller för hela verksamheten?",
+      "svar": "Det är för mig personligen, absolut — jag drunknar i avbokningar och luckor i Bokadirekt som ingen fyller, det är mitt största problem. Så du skulle hjälpa mig hålla koll på sånt, inte hela salongen."
+    },
+    {
+      "fraga": "Då är det du och jag, alltså. Vad är din roll på salongen — hur skulle du själv beskriva vad du gör?",
+      "svar": "Jag är frisör, jag klipper och färgar, men typ halva tiden går åt till admin som jag inte hinner med. Det är därför jag behöver nån som fångar upp avbokningarna innan de blir tomma stolar."
+    },
+    {
+      "fraga": "Admin som tar halva tiden — då är det en hel del vi ska få undan. Vad gjorde du konkret förra veckan när du sa admin?",
+      "svar": "Jag jagade folk som avbokat, skrev schema, och skulle egentligen lagt upp tre Instagraminlägg men det blev ett. Och så skulle jag beställt produkter från grossisten, men det sket sig."
+    },
+    {
+      "fraga": "Instagraminlägget som inte blev av och grossistbeställningen som sket sig — det hör jag. Är det du själv som gör det där, eller är ni fler på salongen?",
+      "svar": "Jag har Sara anställd, men hon klipper, hon gör inte mitt admin. Så det är jag själv på allt sånt, tyvärr."
+    },
+    {
+      "fraga": "Att jaga avbokningar är alltså ditt och inte Saras — då får jag fråga hur det går till i praktiken. När du satt och jagade folk som avbokat, vad hade du uppe på skärmen då?",
+      "svar": "Bokadirekt, hela tiden. Jag sitter och kollar luckor och skickar ut till folk som kan tänkas fylla dem — men folk svarar ju inte direkt."
+    },
+    {
+      "fraga": "Bokadirekt hela tiden, och folk svarar inte direkt — det låter som en jakt utan ände. Ungefär hur många timmar i veckan går åt till att jaga de där luckorna?",
+      "svar": "Jag vet inte ens, några timmar säkert, det är ju därför jag vill ha hjälp. Det är det som äter upp mig — luckorna som står tomma."
+    },
+    {
+      "fraga": "Att luckorna står tomma är det som äter upp dig — det är den sorgen jag ska bära, alltså. Nu till schemat: hur ofta sätter du det, och vad är det som krånglar när du gör det?",
+      "svar": "En gång i veckan ungefär, men det krockar alltid med Sara och hennes tider. Och sen blir det fel, folk bokar fel… ja, du fattar."
+    },
+    {
+      "fraga": "Instagram och grossistbeställningen sket sig båda förra veckan — vad av allt det där blev helt ogjort, när veckan var slut?",
+      "svar": "Instagram blev väl typ ett inlägg, det skulle varit tre. Och produkterna — jag får beställa varannan vecka och jag missade det helt. Så nu är det ju… panik på det också."
+    },
+    {
+      "fraga": "Instagram och produkterna blev liggande — nu vet jag var skon klämmer. Finns det något i det här du vill hålla helt i din egen hand, som du inte vill lämna ifrån dig?",
+      "svar": "Ja, kunder som klagar eller frågar om färgresultat — det tar jag själv. Ingen annan svarar på det."
+    },
+    {
+      "fraga": "Då vet jag att klagomål och färgresultat är ditt — det rör jag inte. En sista sak: du sa att folk bokar fel och att det krockar med Sara — hur får du reda på att det blivit fel, och när?",
+      "svar": "Det märks oftast när kunden står i dörren och det inte finns nån tid. Alltså för sent. Just därför jag vill ha nån som håller koll i Bokadirekt."
+    },
+    {
+      "fraga": "Tack — du har gett mig en väldigt levande bild. Innan jag säger ja vill jag bara veta en sak: är det något i jobbet som salongen eller din arbetsgivare inte tillåter att jag rör — något som måste stanna huset?",
+      "svar": "Nej, inget sånt. Bara det jag sa — klagomål och färgresultat, det är mitt. Resten får du gärna ta."
+    }
+  ],
+  "slut": {
+    "redan_sagt": "Teamet: för kunden personligen som frisör, inte hela salongen. Roll: frisör som klipper/färgar, halva tiden admin. Företag: salong, en anställd (Sara) som klipper — kunden gör allt admin själv. Verktyg: Bokadirekt, Instagram, grossist. Moment: jaga avbokningar/luckor (några timmar/v, okänt exakt), schema 1 g/v (krockar med Sara, felbokningar), Instagram 3 inlägg/v (blev 1), produkter varannan vecka (missades). Klämmer: tomma luckor äter upp henne, fel upptäcks först när kunden står i dörren. Avgränsning: klagomål/färgresultat behåller hon själv; inget arbetsgivaren förbjuder. Saknas: inget väsentligt — avslutar.",
+    "status": "klart",
+    "replik": "Tack — nu har jag hört nog. Jag tar jobbet, om ni vill ha mig.",
+    "intag": "teamet_för:             en enskild person i sitt jobb\nroll:                   frisör — klipper och färgar, men ungefär halva tiden går åt till admin\narbetsplats:            salong (Bokadirekt-bokningar, Instagram, grossistinköp)\narbetsplatsens_storlek: kunden själv plus en anställd, Sara\nstorlek:                solo\nantal_personer:         1\nkälla:                  intervju\n\n## Vem teamet byggs för\nFrisör som klipper och färgar, men där ungefär halva tiden går åt till admin som hon inte hinner med. Hon beskriver sitt största problem som avbokningar och luckor i Bokadirekt som ingen fyller. Sara är anställd men klipper — hon gör inte admint, så kunden står själv på allt sådant.\n\n## Vad omgivningen förväntar sig\nKunder som klagar eller frågar om färgresultat förväntar sig att hon svarar själv — ingen annan svarar på det. Felbokningar och krockar med Sara märks först när kunden står i dörren.\n\n## Vad företaget gör\nSalong. Kunden är frisör och gör allt admin själv utöver klippning och färgning.\n\n## Återkommande moment\n- Jaga folk som avbokat och skicka ut luckor till folk som kan tänkas fylla dem, i Bokadirekt — några timmar i veckan (exakt antal okänt).\n- Skriva schema — ungefär en gång i veckan; det krockar alltid med Sara och hennes tider, och det blir fel, folk bokar fel.\n- Instagraminlägg — tre i veckan var tanken, förra veckan blev det ett.\n- Beställa produkter från grossisten — varannan vecka, förra veckan missades det helt.\n\n## Var det klämmer\nLuckorna som står tomma äter upp henne. Instagram och produkterna blev liggande — \"panik\" på produkterna. Felbokningar upptäcks först när kunden står i dörren, alltså för sent.\n\n## Befintliga verktyg och vanor\nBokadirekt (\"hela tiden\"), Instagram, grossistbeställningar.\n\n## Mål och ambition\nFå någon som fångar upp avbokningarna innan de blir tomma stolar och som håller koll i Bokadirekt — hon vill slippa det som äter upp henne.\n\n## Avgränsningar\nKunder som klagar eller frågar om färgresultat tar hon själv; ingen annan svarar på det. Inget som salongen eller arbetsgivaren förbjuder — \"resten får du gärna ta\"."
+  },
+  "dom": {
+    "fragor": [
+      {
+        "nr": 1,
+        "amne": "avgransning: teamet till för dig personligen eller hela verksamheten",
+        "upprepar": false,
+        "varfor": "Frågar för att avgränsa uppdragets omfattning, vilket är relevant för att förstå rollen."
+      },
+      {
+        "nr": 2,
+        "amne": "vem: kundens roll på salongen",
+        "upprepar": false,
+        "varfor": "Frågar om kundens roll för att förstå vad kunden gör och hur uppdraget passar in."
+      },
+      {
+        "nr": 3,
+        "amne": "moment: admin-uppgifter förra veckan",
+        "upprepar": false,
+        "varfor": "Frågar om konkreta admin-uppgifter för att kartlägga vilka moment som ingår."
+      },
+      {
+        "nr": 4,
+        "amne": "verksamhet: vem som utför admin, kunden eller andra",
+        "upprepar": true,
+        "varfor": "Frågar igen om vem som gör admin, vilket kunden redan besvarat i fråga 2."
+      },
+      {
+        "nr": 5,
+        "amne": "verktyg: vad kunden hade uppe på skärmen vid avbokningsjakt",
+        "upprepar": false,
+        "varfor": "Frågar om vilka verktyg som används i arbetet, specifikt Bokadirekt."
+      },
+      {
+        "nr": 6,
+        "amne": "moment: antal timmar per vecka för avbokningsjakt",
+        "upprepar": false,
+        "varfor": "Frågar om tidsåtgång för att förstå omfattningen av momentet."
+      },
+      {
+        "nr": 7,
+        "amne": "moment: schemaläggning och problem",
+        "upprepar": false,
+        "varfor": "Frågar om schemaläggningens frekvens och utmaningar för att kartlägga momentet."
+      },
+      {
+        "nr": 8,
+        "amne": "moment: vad som blev ogjort förra veckan",
+        "upprepar": false,
+        "varfor": "Frågar om konsekvenser av ogjorda uppgifter för att förstå prioriteringar."
+      },
+      {
+        "nr": 9,
+        "amne": "avgransning: vad kunden vill behålla själv",
+        "upprepar": false,
+        "varfor": "Frågar om gränser för uppdraget för att undvika överträdelser."
+      },
+      {
+        "nr": 10,
+        "amne": "moment: hur och när fel i bokningar upptäcks",
+        "upprepar": false,
+        "varfor": "Frågar om processen för att upptäcka bokningsfel för att förstå behovet av övervakning."
+      },
+      {
+        "nr": 11,
+        "amne": "avgransning: vad arbetsgivaren inte tillåter",
+        "upprepar": false,
+        "varfor": "Frågar om externa begränsningar för uppdraget för att säkerställa efterlevnad."
+      }
+    ],
+    "sammanfattning": "Intervjun kartlägger kundens administrativa börda, särskilt avbokningar och schemaläggning, samt verktyg som Bokadirekt. Kandidaten ställer frågor om roll, moment och avgränsningar. Fråga 4 upprepar information om vem som utför admin, medan övriga frågor är nya och specificerande."
+  }
+}

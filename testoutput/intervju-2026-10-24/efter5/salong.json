@@ -1,0 +1,115 @@
+{
+  "turer": [
+    {
+      "fraga": "Hej! Vad roligt att du ringde — innan jag tackar ja vill jag förstå er vardag. Vem är det här teamet tänkt att jobba för: dig personligen i din roll, eller hela verksamheten?",
+      "svar": "Både och, men mest mig — det är liksom jag som drunknar i DM och schema medan Sara står i stolen. Just nu är det värsta avbokningarna, folk bokar och avbokar så det blir luckor ingen fyller."
+    },
+    {
+      "fraga": "Tack — då vet jag vems vardag vi pratar om. Vad är det för verksamhet du och Sara driver?",
+      "svar": "Vi har en frisörsalong här i Västerås, jag och Sara, hon klipper och jag gör det mesta andra. Och luckorna i Bokadirekt, alltså, det är där jag tappar pengar varje vecka."
+    },
+    {
+      "fraga": "Frisörsalong i Västerås — och Sara står i stolen medan du gör allt annat runt omkring. Om vi tar förra veckan: vad var det du faktiskt satt med, förutom luckorna i Bokadirekt?",
+      "svar": "Instagram skulle vara tre inlägg i veckan, det blev ett. Och så grossisten varannan vecka, schema, och en massa DM om priser. Färgresultat och klagomål tar jag helst själv, det vill jag inte att nån annan rör."
+    },
+    {
+      "fraga": "Där har vi en hel del — och du håller färgresultat och klagomål i egna händer, det noterar jag. Hur lång tid tar det ungefär när du sätter dig med schemat och de där DM:en om priser?",
+      "svar": "Schema tar en timme typ, DM:en vet jag inte, det bara rinner in. Det är ju det som äter tid från att fylla luckorna, liksom."
+    },
+    {
+      "fraga": "Så schema, DM och luckor slåss om samma timmar. När det blir en lucka i Bokadirekt — vad gör du då, i stunden?",
+      "svar": "Oftast inget, bara stirrar på den och hoppas nån bokar. Det är ju liksom hela problemet."
+    },
+    {
+      "fraga": "Där satt den — du stirrar på luckan och hoppas. Hur lång tid tar det när grossisten kommer varannan vecka, och är det du själv som gör det?",
+      "svar": "Ja, det är jag, det tar väl en kvart om jag vet vad jag ska ha. Det är inte där skon klämmer — det är alla tomma tider i kalendern."
+    },
+    {
+      "fraga": "Då är det tomma tider, inte grossisten, som är skon. När en lucka väl står där — har du något sätt du försöker fylla den, till exempel ringer du runt eller dyker det upp något på Instagram, eller blir den bara stående?",
+      "svar": "Blir mest stående, tyvärr. Jag tänker alltid \"jag ska posta nåt på Instagram\" men det blir inte av."
+    },
+    {
+      "fraga": "Att Instagram-inlägget alltid blir av i tanken men inte på skärmen — det känner jag igen. Om det funnes ett team runt dig: finns det något mer än färgresultaten och klagomålen som du absolut vill hålla i din egen hand?",
+      "svar": "Ja, priserna i DM vill jag nog också hålla koll på, det blir fel annars. Resten, schema och sånt, kan nån annan få ta."
+    },
+    {
+      "fraga": "Då vet jag var gränsen går: färgresultat, klagomål och priser är dina, schema får någon annan ta. En sista sak — när du fyllde de där tomma tiderna förra veckan, var det något annat som blev ogjort?",
+      "svar": "Ja, allt annat. Instagram, grossisten, och jag hann knappt svara på DM:en. Det är liksom det som är grejen."
+    },
+    {
+      "fraga": "Då har jag en sista fråga: när du sitter med allt det här — schema, DM, Instagram, luckorna — vad är det du helst vill att det ska bli mer av, om någon annan tog resten?",
+      "svar": "Mer tid i stolen, faktiskt. Och fyllda luckor — det är ju där pengarna sitter."
+    }
+  ],
+  "slut": {
+    "redan_sagt": "Teamet: mest kunden själv (frisör, Västerås), verksamhet med Sara som klipper. Verktyg: Bokadirekt, Instagram, DM. Moment: avbokningar/luckor (står tomma), Instagram 3 inlägg/vecka (blev ett), grossist varannan vecka (kvart), schema (1 timme), DM om priser (rinner in). Klämmer: luckor står tomma, allt annat blir ogjort. Avgränsning: färgresultat, klagomål, priser i DM hålls själv; schema får annan ta. Saknas: inget väsentligt.",
+    "status": "klart",
+    "replik": "Jag har hört nog — jag tar jobbet, om ni vill ha mig. Tack för att du berättade så ärligt om luckorna och om allt som blir ogjort; det är precis den vardagen jag ville förstå.",
+    "intag": "teamet_för:             en enskild person i sitt jobb\nroll:                   frisör och den som gör \"det mesta andra\" i salongen\narbetsplats:            frisörsalong i Västerås\narbetsplatsens_storlek: två personer (kunden och Sara)\nstorlek:                solo\nantal_personer:         1\nkälla:                  intervju\n\n## Vem teamet byggs för\nKunden driver en frisörsalong i Västerås tillsammans med Sara, som klipper. Själv står kunden för \"det mesta andra\" och beskriver sig som den som \"drunknar i DM och schema medan Sara står i stolen\".\n\n## Vad omgivningen förväntar sig\nInte uttalat i intervjun.\n\n## Vad företaget gör\nEn frisörsalong i Västerås med två personer: Sara klipper, kunden gör det mesta andra. Kunden vill helst stå mer i stolen själv.\n\n## Återkommande moment\n- Avbokningar och luckor: folk bokar och avbokar så det blir luckor ingen fyller; luckorna står oftast tomma — kunden \"stirrar på den och hoppas nån bokar\".\n- Instagram: skulle vara tre inlägg i veckan, \"det blev ett\".\n- Grossisten: varannan vecka, tar \"en kvart om jag vet vad jag ska ha\", görs av kunden själv.\n- Schema: tar \"en timme typ\".\n- DM: \"en massa DM om priser\", \"det bara rinner in\" — ingen uppskattad tid.\n\n## Var det klämmer\nLuckorna som står tomma: \"det är där jag tappar pengar varje vecka\" och \"det är alla tomma tider i kalendern\". När kunden fyllde tomma tider blev allt annat ogjort: \"Instagram, grossisten, och jag hann knappt svara på DM:en\". Instagram-inlägget blir \"inte av\" trots att kunden tänker på det.\n\n## Befintliga verktyg och vanor\nBokadirekt (bokningar och luckor), Instagram, DM för priser.\n\n## Mål och ambition\nMer tid i stolen och fyllda luckor — \"det är ju där pengarna sitter\".\n\n## Avgränsningar\nFärgresultat och klagomål tar kunden \"helst själv, det vill jag inte att nån annan rör\". Även priserna i DM vill kunden hålla koll på: \"det blir fel annars\". Schema och sådant \"kan nån annan få ta\"."
+  },
+  "dom": {
+    "fragor": [
+      {
+        "nr": 1,
+        "amne": "vem: vem teamet ska jobba för",
+        "upprepar": false,
+        "varfor": "Inledande fråga för att förstå vem som är mottagare och avgränsa uppdraget."
+      },
+      {
+        "nr": 2,
+        "amne": "verksamhet: vad för verksamhet",
+        "upprepar": false,
+        "varfor": "Frågar om verksamheten, som inte tidigare beskrivits."
+      },
+      {
+        "nr": 3,
+        "amne": "moment: vad kunden gjorde förra veckan förutom luckorna",
+        "upprepar": false,
+        "varfor": "Kartlägger aktuella arbetsuppgifter, vilket inte tidigare efterfrågats."
+      },
+      {
+        "nr": 4,
+        "amne": "moment: tidsåtgång för schema och DM om priser",
+        "upprepar": false,
+        "varfor": "Frågar om tidsomfattning, vilket inte angetts tidigare."
+      },
+      {
+        "nr": 5,
+        "amne": "moment: hantering av lucka i Bokadirekt",
+        "upprepar": false,
+        "varfor": "Frågar om beteende vid lucka, ny information."
+      },
+      {
+        "nr": 6,
+        "amne": "moment: grossistens tidsåtgång och utförare",
+        "upprepar": false,
+        "varfor": "Tidigare nämndes grossisten men inte tid eller utförare."
+      },
+      {
+        "nr": 7,
+        "amne": "moment: sätt att fylla lucka",
+        "upprepar": false,
+        "varfor": "Frågar om åtgärder för att fylla luckor, ej tidigare beskrivet."
+      },
+      {
+        "nr": 8,
+        "amne": "avgransning: vad kunden vill hålla i egen hand utöver färg och klagomål",
+        "upprepar": false,
+        "varfor": "Utforskar avgränsning, nytt område."
+      },
+      {
+        "nr": 9,
+        "amne": "moment: vad som blev ogjort förra veckan",
+        "upprepar": false,
+        "varfor": "Frågar om konsekvenser, inte tidigare efterfrågat."
+      },
+      {
+        "nr": 10,
+        "amne": "annat: vad kunden vill ha mer av om annan tar resten",
+        "upprepar": false,
+        "varfor": "Frågar om önskat framtida fokus, ny information."
+      }
+    ],
+    "sammanfattning": "Kandidaten ställer tio frågor som kartlägger kundens roll, verksamhet, arbetsuppgifter, tidsåtgång, beteenden och gränser. Ingen fråga upprepar tidigare svar; alla bidrar med ny information för att förstå behovet av ett team runt kunden."
+  }
+}

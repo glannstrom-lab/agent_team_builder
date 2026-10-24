@@ -1,0 +1,85 @@
+{
+  "turer": [
+    {
+      "fraga": "Hej! Vad roligt att du ringer — jag är nyfiken på det här jobbet. Innan jag tackar ja vill jag förstå er vardag: vad är det för verksamhet du sitter i?",
+      "svar": "Ja alltså, vi är tre snickare som gör badrum och tillbyggnader åt privatfolk här i Örebro — jag, Ali och Petter. Det som suger musten ur mig är inte jobbet på plats utan alla fakturor, för jag sitter och skriver dem på söndagskvällar i Fortnox och glömmer ÄTA-arbeten stup i kvarten."
+    },
+    {
+      "fraga": "Tre snickare — då är du alltså både hantverkare och kontor på samma gång? Vad är din roll av de tre, när du beskriver den själv?",
+      "svar": "Jag är väl egentligen snickaren som råkar sitta med allt pappersjobb också — offerter, beställa hos Beijer, ringa kunder om tider, allt det där. Känns som jag jobbar heltid på kontoret på kvällarna och heltid i verkstan på dagarna. Och ändå är det fakturorna som aldrig blir gjorda i tid, det är rena söndagsmaratonet varje vecka."
+    },
+    {
+      "fraga": "Där hör jag något: kontoret på kvällarna, verkstan på dagarna. Om vi tar förra veckan — vad hann du med där, och vad tog mest tid?",
+      "svar": "Hembesök för offerter, tre stycken, och varje offert skriver jag på kvällen i Word — tar en till två timmar per styck, det är där tiden rinner iväg. Sen Offerta-förfrågningar och en massa telefonsnack om tider. Men det jag inte hann var fakturorna, de ligger fortfarande och väntar på söndag."
+    },
+    {
+      "fraga": "Söndagsmaraton och ÄTA som glöms — det låter som att det som är gjort på plats inte alltid kommer med i pappret. Vad mer än fakturorna blev liggande förra veckan?",
+      "svar": "Ja precis, det är ju det — ÄTA-arbeten glöms bort och då tappar vi pengar, det är där skon klämmer. Annars låg väl ett par offerter och skvalpade också, de jag skrev på kvällarna blev klara men inte mer."
+    },
+    {
+      "fraga": "Söndagsmaraton som aldrig tar slut — och ÄTA som slinker undan. Är det du själv som gör allt pappersjobb, eller är Ali och Petter inblandade i något av det?",
+      "svar": "Nej, det är jag som sitter med allt pappersjobb själv — Ali och Petter är på plats, de ska inte behöva hålla på med offerter och fakturor. Och det är väl lite därför jag söker nån, för det där med ÄTA och fakturor hinner jag liksom aldrig ikapp."
+    },
+    {
+      "fraga": "Söndagsmaraton och ÄTA som slinker undan — då är vi nere i det som gör ont. Finns det något i pappersjobbet som du absolut inte vill lämna ifrån dig, något som ska förbli ditt?",
+      "svar": "Kunderna på plats vill jag inte lämna ifrån mig, och inte prissättningen heller — det är jag som sätter priserna. Resten, allt runt omkring med fakturor och ÄTA och offerttexten, det kan nån annan få ta."
+    },
+    {
+      "fraga": "Då vet jag vad som ska förbli ditt: kunderna och prissättningen. En sista sak jag är nyfiken på — om allt på kontoret flöt perfekt en månad framåt, vad skulle du lägga den tiden på i stället?",
+      "svar": "Då skulle jag vara ute hos kunderna mer, göra fler offerter och faktiskt hinna med Beijer och tiderna — och förhoppningsvis slippa söndagskvällarna i Fortnox. Det är hela poängen, liksom."
+    }
+  ],
+  "slut": {
+    "redan_sagt": "Verksamhet: tre snickare (själv, Ali, Petter) i Örebro — badrum och tillbyggnader åt privatfolk. Roll: snickaren som gör allt pappersjobb själv. Moment: hembesök/offerter (3 st, 1–2 h per styck i Word på kvällen), Offerta-förfrågningar, telefonsnack om tider, beställa hos Beijer, fakturor i Fortnox på söndagar, ÄTA glöms. Klämmer: fakturor blir inte gjorda i tid, ÄTA tappar pengar, fler offerter skulle hinnas. Avgränsning: kunder på plats och prissättningen. Verktyg: Fortnox, Word, Offerta, Beijer. Saknas: inget väsentligt — tillräckligt för intag.",
+    "status": "klart",
+    "replik": "Tack — jag har hört nog. Jag tar jobbet, om ni vill ha mig.",
+    "intag": "teamet_för:             en enskild person i sitt jobb\nroll:                   snickaren som råkar sitta med allt pappersjobb också\ntoim:                   -- placeholder --\n\nNej, skriv så här:\n\nteamet_för:             en enskild person i sitt jobb\nroll:                   \"snickaren som råkar sitta med allt pappersjobb också\"\narbetsplats:            tre snickare som gör badrum och tillbyggnader åt privatfolk i Örebro\narbetsplatsens_storlek: 3 personer\nstorlek:                solo\nantal_personer:         1\nkälla:                  intervju\n\n## Vem teamet byggs för\nSnickaren som gör allt pappersjobb själv: offerter, beställa hos Beijer, ringa kunder om tider, fakturor. \"Heltid på kontoret på kvällarna och heltid i verkstan på dagarna.\" Ali och Petter är på plats och ska inte behöva hålla på med offerter och fakturor.\n\n## Vad omgivningen förväntar sig\nOkänt — inget uttalat om chef, kollegor eller kunder.\n\n## Vad företaget gör\nTre snickare som gör badrum och tillbyggnader åt privatfolk i Örebro. Personen själv är snickare men sitter också med allt pappersjobb.\n\n## Återkommande moment\n- Offerter: hembesök för offerter, tre stycken förra veckan; varje offert skrivs på kvällen i Word, en till två timmar per styck.\n- Fakturor: skrivs på söndagskvällar i Fortnox; \"söndagsmaratonet varje vecka\"; fakturorna blev inte gjorda förra veckan.\n- Offerta-förfrågningar och \"en massa telefonsnack om tider\".\n- Beställa hos Beijer.\n\n## Var det klämmer\nÄTA-arbeten glöms bort och då tappar de pengar — \"det är där skon klämmer\". Fakturorna blir aldrig gjorda i tid. Ett par offerter låg och skvalpade. \"Det där med ÄTA och fakturor hinner jag liksom aldrig ikapp.\"\n\n## Befintliga verktyg och vanor\nWord (offerter), Fortnox (fakturor), Offerta (förfrågningar), Beijer (beställningar).\n\n## Mål och ambition\nVara ute hos kunderna mer, göra fler offerter, hinna med Beijer och tiderna — och slippa söndagskvällarna i Fortnox.\n\n## Avgränsningar\nKunderna på plats vill han inte lämna ifrån sig, och inte prissättningen — \"det är jag som sätter priserna\". Resten, allt runt omkring med fakturor och ÄTA och offerttexten, kan nån annan få ta."
+  },
+  "dom": {
+    "fragor": [
+      {
+        "nr": 1,
+        "amne": "verksamhet: verksamhetens art",
+        "upprepar": false,
+        "varfor": "Inledande fråga för att förstå kundens bransch och dagliga arbete."
+      },
+      {
+        "nr": 2,
+        "amne": "annat: kundens roll i företaget",
+        "upprepar": false,
+        "varfor": "Klarlägger kundens egen roll och ansvar i verksamheten."
+      },
+      {
+        "nr": 3,
+        "amne": "moment: tidsåtgång för uppgifter förra veckan",
+        "upprepar": false,
+        "varfor": "Ber om konkret exempel på vad som tog mest tid, ny information."
+      },
+      {
+        "nr": 4,
+        "amne": "annat: vad som blev liggande förra veckan",
+        "upprepar": true,
+        "varfor": "Frågar igen vad som inte blev gjort, vilket kunden redan nämnt (fakturor, offerter)."
+      },
+      {
+        "nr": 5,
+        "amne": "annat: fördelning av pappersarbete mellan kollegor",
+        "upprepar": true,
+        "varfor": "Kunden har redan sagt att han gör allt pappersjobb själv, frågan upprepar detta."
+      },
+      {
+        "nr": 6,
+        "amne": "avgransning: vad kunden inte vill delegera",
+        "upprepar": false,
+        "varfor": "Frågar om gränser för vad som kan lämnas bort, ny avgränsningsinformation."
+      },
+      {
+        "nr": 7,
+        "amne": "annat: önskad användning av frigjord tid",
+        "upprepar": false,
+        "varfor": "Frågar om framtida prioriteringar om kontoret underlättas, ny information."
+      }
+    ],
+    "sammanfattning": "Intervjun utforskar kundens verksamhet och utmaningar med pappersarbete. Kandidaten ställer frågor om verksamhetens art, kundens roll, tidsåtgång för uppgifter, vad som blev liggande, fördelning av arbete, avgränsningar för delegering och önskad framtid. Två frågor (4 och 5) upprepar information som kunden redan gett, medan övriga ger ny insikt."
+  }
+}
