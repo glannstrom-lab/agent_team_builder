@@ -5619,6 +5619,7 @@ function kopplingsRuta() {
   const kop = el("button", "jb-knapp", "Kopiera"); kop.type = "button";
   kop.onclick = async () => { try { await navigator.clipboard.writeText(adress); kop.textContent = "Kopierad"; } catch (_) { fält.select(); } };
   rad.append(fält, kop); d.appendChild(rad);
+  d.appendChild(el("div", "ovl-label", "1 · Koppla"));
   const steg = el("ol", "jb-steg");
   [
     "Claude: Inställningar → Anpassa → Kopplingar → Lägg till anpassad koppling. Klistra in adressen. Fungerar på alla abonnemang, även gratis.",
@@ -5626,7 +5627,45 @@ function kopplingsRuta() {
     "Logga in med samma e-post som här, och säg ja på sidan som visar vad kopplingen får göra.",
   ].forEach((s) => steg.appendChild(el("li", null, s)));
   d.appendChild(steg);
+
+  // OL4/OL5: teamet installerat i kundens egen AI. Ingen fil att ladda upp per
+  // agent — kopplingen bär teamet, minnet och reglerna live. Det som behövs är
+  // en kort projektinstruktion som säger åt plattformen att använda den.
+  d.appendChild(el("div", "ovl-label", "2 · Ge den ett projekt för " + team.company));
+  d.appendChild(el("p", "ovl-note", "Skapa ett projekt i Claude eller ChatGPT och klistra in texten nedan som projektets instruktioner. "
+    + "Då läser den firman först i varje samtal, svarar i rätt kollegas roll och sparar det du berättar hit. "
+    + "Texten är kort med flit: allt annat hämtar den genom kopplingen, så den blir aldrig inaktuell."));
+  const instr = el("textarea", "ovl-ta jb-instr"); instr.readOnly = true; instr.rows = 9; instr.value = projektInstruktion();
+  instr.setAttribute("aria-label", "Projektinstruktion att klistra in");
+  d.appendChild(instr);
+  const kopI = el("button", "jb-knapp", "Kopiera instruktionen"); kopI.type = "button";
+  kopI.onclick = async () => { try { await navigator.clipboard.writeText(instr.value); kopI.textContent = "Kopierad"; } catch (_) { instr.select(); } };
+  d.appendChild(kopI);
+
+  d.appendChild(el("div", "ovl-label", "3 · Prova att det fungerar"));
+  d.appendChild(el("p", "ovl-note", "Fråga i projektet: \"Vilka är vi i teamet, och vad står i vårt företagsminne?\" "
+    + "Svarar den med era kollegor och det ni sparat här är allt rätt installerat. Ber den dig logga in eller säger att den inte hittar något: gör om steg 1."));
   return d;
+}
+
+// Projektinstruktionen (OL4). Byggs ur teamet, men nämner bara namn och roller —
+// instruktionerna, minnet och reglerna hämtas live via kopplingen, så att en
+// ändring i portalen slår igenom utan att kunden klistrar om något.
+function projektInstruktion() {
+  const entry = agentById(team.entryAgent);
+  const kollegor = team.agents.concat(team.pending || []).map((a) =>
+    `  - ${a.name}${a.id === team.entryAgent ? " (VD-assistent)" : ""}:${a.tagline || a.role || ""}`).join("\n");
+  return [
+    `Du arbetar åt ${team.company} genom kopplingen Mitt AI-team. Där finns vårt team av AI-kollegor, företagsminnet, underlagen, kunderna och jobben.`,
+    "",
+    "- Läs firman (verktyget firman) i början av varje samtal om verksamheten. Fråga inte om sådant som står där.",
+    `- Teamet:\n${kollegor}`,
+    `  Ber jag att få prata med någon av dem: hämta instruktionen med hamta_agent och svara i den rollen. Annars svarar du som ${entry ? entry.name : "VD-assistenten"}.`,
+    "- När jag berättar något bestående om verksamheten — ett beslut, ett pris, en kund, en kontakt — spara det med spara_minne, spara_organisation eller spara_kontakt och säg kort vad du sparat. Spara inget jag inte sagt.",
+    "- Svenska regler, belopp och datum: slå upp med svenska_regler först och ange källan. Står regeln inte där, säg att du inte är säker.",
+    "- Jobb: hämta med hamta_jobb och lämna resultatet med lamna_leverans. Jag godkänner i Mitt AI-team.",
+    "- Svara på svenska, kort och konkret.",
+  ].join("\n");
 }
 
 // ---------- veckobrev ----------

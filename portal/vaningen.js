@@ -373,6 +373,13 @@
     });
   }
 
+  // OL4/OL5: teamet i kundens egen AI — kopplingen, projektinstruktionen och provet.
+  function oppnaInstallera() {
+    const box = openOverlay("Teamet i din egen Claude eller ChatGPT");
+    const k = kopplingsRuta(); k.open = true;
+    box.appendChild(k);
+  }
+
   // Den gamla arbetsytan som en låda: allt som fanns där finns kvar.
   function oppnaLada() {
     const d = q("#vn-lada"); if (!d) return;
@@ -597,7 +604,7 @@
     pk.appendChild(el("span", null, "Gunnars gamla passerkort ligger kvar i lådan. Det var där det började."));
     tbox.appendChild(pk);
     const verktyg = el("div", "vn-verktyg");
-    [["Veckomötet", startWeek], ["Minne & underlag", openMemory], ["Alla jobb", openJobs.original || openJobs], ["Hela arbetsytan", oppnaLada]].forEach(([t, fn]) => {
+    [["Teamet i Claude & ChatGPT", oppnaInstallera], ["Veckomötet", startWeek], ["Minne & underlag", openMemory], ["Alla jobb", openJobs.original || openJobs], ["Hela arbetsytan", oppnaLada]].forEach(([t, fn]) => {
       const b = el("button", "vn-knapp-ghost", t); b.type = "button"; b.onclick = fn; verktyg.appendChild(b);
     });
     inn.appendChild(verktyg);

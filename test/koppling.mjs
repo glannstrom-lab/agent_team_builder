@@ -442,7 +442,7 @@ test("delat: en koppling från före SP23 når inte minnet förrän kunden koppl
   // Simulera en äldre nyckel: samtycket gällde bara jobben.
   db.raw.prepare("UPDATE oauth_tokens SET scope = 'jobb'").run();
   const lista = (await rpc(env, access_token, "tools/list")).body.result.tools.map((t) => t.name);
-  assert.deepEqual(lista, ["lista_jobb", "hamta_jobb", "lamna_leverans"]);
+  assert.deepEqual(lista, ["lista_jobb", "hamta_jobb", "lamna_leverans", "svenska_regler"], "reglerna är offentliga — de når också en äldre koppling");
   const svar = await verktyg(env, access_token, "firman", {});
   assert.equal(svar.isError, true);
   assert.match(svar.content[0].text, /koppla bort och lägga till Mitt AI-team igen/);
@@ -494,3 +494,41 @@ test("middlewaren känner /api/firma, och samtycket säger vad som delas", async
   assert.match(auth, /organisationer och kontakter/);
   assert.match(auth, /scope: BEVILJAT/);
 });
+
+// ── OL8: reglerna i kundens egen AI ───────────────────────────────────────
+test("svenska_regler: hittar regeln, anger källan, och säger ifrån när den saknas", async () => {
+  const { env, kakor } = await värld();
+  const { access_token } = await koppla(env, kakor.u1, await registrera(env));
+  const rot = (await verktyg(env, access_token, "svenska_regler", { fraga: "rotavdrag i bostadsrätt" })).content[0].text;
+  assert.match(rot, /## ROT-avdrag i bostadsrätt/);
+  assert.match(rot, /Källa: https:\/\/www\.skatteverket\.se\//);
+  const moms = (await verktyg(env, access_token, "svenska_regler", { fraga: "när ska jag deklarera momsen" })).content[0].text;
+  assert.ok(moms.indexOf("## Momsdeklaration") >= 0 && moms.indexOf("## Momsdeklaration") === moms.indexOf("## "), "momsdeklarationen ska komma först");
+  assert.match((await verktyg(env, access_token, "svenska_regler", { fraga: "ränta på sen betalning" })).content[0].text, /## Dröjsmålsränta/);
+  const saknas = (await verktyg(env, access_token, "svenska_regler", { fraga: "hundvalp" })).content[0].text;
+  assert.match(saknas, /inte är säker/, "en regel som saknas ska inte gissas fram");
+  const alla = (await verktyg(env, access_token, "svenska_regler", {})).content[0].text;
+  assert.match(alla, /- Julgåva till anställda/);
+});
+
+test("svenska_regler varnar när faktabasen är äldre än 13 månader", () => {
+  const gammal = mcp.svenskaRegler({ fraga: "julgåva" }, Date.parse("2028-06-01")).content[0].text;
+  assert.match(gammal, /för mer än ett år sedan/);
+  const färsk = mcp.svenskaRegler({ fraga: "julgåva" }, Date.parse("2026-10-24")).content[0].text;
+  assert.doesNotMatch(färsk, /för mer än ett år sedan/);
+});
+
+// OL4: projektinstruktionen som kunden klistrar in i Claude/ChatGPT får bara
+// nämna verktyg som finns. Ett felstavat eller borttaget namn i texten ger en
+// plattform som letar efter ett verktyg den aldrig hittar — tyst, hos kunden.
+test("projektinstruktionen nämner bara verktyg som /mcp har", () => {
+  const app = readFileSync("portal/app.js", "utf8");
+  const i = app.indexOf("function projektInstruktion()");
+  assert.ok(i > 0, "projektInstruktion saknas i portal/app.js");
+  const kropp = app.slice(i, app.indexOf("\n}\n", i));
+  const nämnda = new Set([...kropp.matchAll(/\b([a-z]+_[a-z_]+|firman)\b/g)].map((m) => m[1]));
+  const finns = new Set([...mcp.VERKTYG, ...mcp.VERKTYG_FIRMA].map((v) => v.name));
+  assert.ok(nämnda.size >= 6, "hittade för få verktygsnamn — läser testet fortfarande rätt?");
+  for (const n of nämnda) assert.ok(finns.has(n), `instruktionen nämner ${n}, som /mcp inte har`);
+});
+

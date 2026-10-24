@@ -788,6 +788,14 @@ test("KA15: faktabasen är kontrollerad inom 13 månader — belopp och gränser
   assert.ok(ålder < 396, `portal/fakta-se.js kontrollerades för ${Math.round(ålder)} dagar sedan. Kontrollera varje regel mot källan igen (julgåva, ROT/RUT, friskvård och momsdatum ändras) och uppdatera "kontrollerad".`);
 });
 
+// OL8: en källa, två utdata. Portalens fil genereras ur functions/api/_fakta.js
+// — som /mcp läser — och får inte glida isär från den.
+test("OL8: portal/fakta-se.js är genererad ur samma källa som /mcp läser", async () => {
+  const { portalFil } = await import("../scripts/fakta.mjs");
+  assert.equal(readFileSync("portal/fakta-se.js", "utf8").replace(/\r\n/g, "\n"), portalFil(),
+    "portal/fakta-se.js stämmer inte med functions/api/_fakta.js — ändra källan och kör `npm run fakta`");
+});
+
 // ── Firman växer: bokföringen (SP19) och anställ en i taget (SP9) ───────────
 //
 // Två löften står här. (1) Firman levlar bara på de fem uttryckliga

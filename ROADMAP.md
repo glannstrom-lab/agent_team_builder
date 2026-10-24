@@ -117,7 +117,7 @@ Från genomgången 2026-09-01 · sex parallella linser + egen verifiering.
 
 ### Ben 2 — teamet i kundens egen AI
 
-- [ ] **OL4** **Export per plattform — börja med en.** I dag ger
+- [x] **OL4** *(gjord 2026-10-24 på ett annat sätt än planen: kopplingen (SP21/SP23) bär teamet live, så ingen fil per agent behövs. Kunden kopplar Mitt AI-team och klistrar in en kort projektinstruktion som `projektInstruktion()` i `portal/app.js` bygger ur teamet; agenternas instruktioner, minnet och reglerna hämtas via `/mcp` och blir därför aldrig inaktuella. Fungerar i både Claude och ChatGPT. Ett test fäller bygget om instruktionen nämner ett verktyg `/mcp` inte har. Kvar: Copilot, och en kontroll av plattformarnas menyvägar mot deras aktuella gränssnitt — de står ur minnet i guiden)* **Export per plattform — börja med en.** I dag ger
   `downloadConfig()` (`builder/builder.js:2110`) en JSON-fil som ingen kund kan
   använda. Behövs: per agent ett färdigt paket för plattformen — namn,
   instruktion, startförslag (`starters`), rutinerna och första projektet
@@ -130,7 +130,7 @@ Från genomgången 2026-09-01 · sex parallella linser + egen verifiering.
   här. Lägg exportformaterna i `functions/api/_build.js` bredvid `TEAM_SCHEMA`,
   så att ett fält i schemat inte kan saknas i exporten (samma fälla som
   `starters` 2026-08-16) · `läst i koden` · ~1 pass per plattform
-- [ ] **OL5** **Installationen som en guide, inte en fil.** Steg för steg med
+- [x] **OL5** *(gjord 2026-10-24: kopplingsrutan är en guide i tre steg — koppla, projektinstruktionen, provfrågan — och nås från VD-kontoret som "Teamet i Claude & ChatGPT". Skärmbilder per plattform saknas)* **Installationen som en guide, inte en fil.** Steg för steg med
   skärmbilder per plattform, på kundens språk, och en kontroll på slutet ("fråga
   agenten X — svarar den Y är det rätt installerat"). Arbetsledarläget (**PR1**)
   är samma leverans för den vars AI saknar agentstöd · `builder/` · ~1 pass
@@ -147,7 +147,7 @@ Från genomgången 2026-09-01 · sex parallella linser + egen verifiering.
 
 ### Ben 3 — svenska regler som stämmer
 
-- [ ] **OL8** **Faktabasen ut ur portalen och in i leveransen.** `portal/fakta-se.js`
+- [x] **OL8** *(gjord 2026-10-24: källan är `functions/api/_fakta.js`; `portal/fakta-se.js` genereras med `npm run fakta` och ett test fäller bygget om de skiljer sig. Verktyget `svenska_regler` i `/mcp` ger kundens egen Claude/ChatGPT samma belagda regler med källa och datum, varnar när basen är äldre än 13 månader och säger ifrån när regeln saknas. Kvar: bilagan till konsultleveransen (OL1))* **Faktabasen ut ur portalen och in i leveransen.** `portal/fakta-se.js`
   (16 regler, kontrollerade mot primärkälla, 13-månadersvakt — **KA15**) når i
   dag bara portalens systemprompter. Gör den till ett dokument per bransch —
   regel, belopp, giltighetsår, källa — som följer med exporten som kunskapsfil

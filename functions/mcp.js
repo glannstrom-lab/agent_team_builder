@@ -33,6 +33,7 @@ import {
   jsonOut, preflight, STATUS_TEXT, LEVERANS_MAX, SCOPE, harFirma,
 } from "./api/_koppling.js";
 import { läsFirma, läggTillMinne, sparaPost, nyttId, UNDERLAG_MAX } from "./api/_firma.js";
+import { FAKTA_SE } from "./api/_fakta.js";
 
 const PROTOKOLL = ["2025-11-25", "2025-06-18", "2025-03-26"];
 
@@ -43,7 +44,8 @@ const INSTRUKTIONER =
   "(2) När kunden berättar något bestående om verksamheten — ett beslut, en kund, ett pris, en vana — spara det med spara_minne, " +
   "spara_organisation eller spara_kontakt, och säg kort att du gjort det. Spara inget kunden inte sagt. " +
   "(3) Ett jobb hör till en agent och görs i agentens roll: hämta jobbkortet med hamta_jobb, följ instruktionen, bocka av 'Klart när' " +
-  "och lämna resultatet med lamna_leverans. Kunden godkänner leveransen i Mitt AI-team — säg det när du är klar.";
+  "och lämna resultatet med lamna_leverans. Kunden godkänner leveransen i Mitt AI-team — säg det när du är klar. " +
+  "(4) Gäller frågan svenska regler, belopp eller datum (ROT, moms, representation, påminnelseavgift …): slå upp med svenska_regler först och ange källan. Står regeln inte där, säg att du inte är säker.";
 
 export const VERKTYG = [
   {
@@ -86,6 +88,15 @@ export const VERKTYG = [
       additionalProperties: false,
     },
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+  },
+  {
+    // OL8: ben 3 i kundens egen AI. Offentliga regler, inga kunddata — därför
+    // öppet för varje koppling, också en från före SP23.
+    name: "svenska_regler",
+    title: "Svenska regler (kontrollerade)",
+    description: "Slår upp svenska regler för småföretag — ROT/RUT, moms, representation, påminnelseavgift, dröjsmålsränta, förmåner, deklarationsdatum m.m. — kontrollerade mot Skatteverket, riksdagen.se och andra primärkällor, med källa och datum. Använd före du svarar på en fråga om svenska belopp, gränser eller datum, och ange källan. Står regeln inte här: säg att du inte är säker i stället för att gissa.",
+    inputSchema: { type: "object", properties: { fraga: { type: "string", description: "Vad det gäller, t.ex. 'rotavdrag bostadsrätt' eller 'julgåva'. Tomt = lista alla ämnen." } }, additionalProperties: false },
+    annotations: { readOnlyHint: true, openWorldHint: false },
   },
   {
     name: "skapa_jobb",
@@ -254,6 +265,7 @@ async function hantera(ctx, msg) {
         if (namn === "lista_jobb") return ok(id, await listaJobb(ctx, args));
         if (namn === "hamta_jobb") return ok(id, await hamtaJobb(ctx, args));
         if (namn === "lamna_leverans") return ok(id, await lamnaLeverans(ctx, args));
+        if (namn === "svenska_regler") return ok(id, svenskaRegler(args));
         const firmaFn = FIRMA_VERKTYG[namn];
         if (firmaFn) {
           if (!harFirma(ctx.vem)) return ok(id, text("Kopplingen gjordes innan Mitt AI-team delade minnet, underlagen och kunderna. Be kunden koppla bort och lägga till Mitt AI-team igen i inställningarna — då ser hen vad som delas och kan säga ja.", true));
@@ -537,3 +549,45 @@ const FIRMA_VERKTYG = {
   firman, hamta_agent: hamtaAgent, hamta_underlag: hamtaUnderlag, spara_minne: sparaMinneV, spara_underlag: sparaUnderlagV,
   lista_kunder: listaKunder, spara_organisation: (ctx, a) => sparaOrg(ctx, a, false), spara_kontakt: sparaKontakt, skapa_jobb: skapaJobb,
 };
+
+// ── svenska regler (OL8) ──────────────────────────────────────────────────
+// Samma faktabas som portalens systemprompter (functions/api/_fakta.js). En
+// enkel ordmatchning räcker: sexton regler, och plattformen formulerar frågan.
+// Ämnet väger tyngre än texten, så att "julgåva" hittar julgåvan och inte
+// varje regel som nämner ordet i förbigående.
+const FAKTA_ÅLDER_MAX = 396; // dagar — samma vakt som test/portal.mjs (13 månader)
+const SMÅORD = new Set(["när", "ska", "jag", "för", "och", "det", "som", "med", "kan", "hur", "vad", "får", "till", "man", "vår", "våra", "min", "mitt", "mina", "inte", "har", "hos"]);
+const ordI = (s) => String(s || "").toLowerCase().replace(/[^a-zåäöé0-9]+/g, " ").split(" ").filter((w) => w.length >= 3 && !SMÅORD.has(w));
+
+export function svenskaRegler(args, nu = Date.now()) {
+  const f = FAKTA_SE;
+  const ålder = (nu - Date.parse(f.kontrollerad)) / 86_400_000;
+  const varning = ålder > FAKTA_ÅLDER_MAX
+    ? `> Reglerna kontrollerades ${f.kontrollerad}, för mer än ett år sedan. Belopp kan ha ändrats vid årsskiftet — kontrollera mot källan innan du använder dem.\n\n`
+    : "";
+  const fråga = ordI(args && args.fraga);
+  const rad = (r) => `## ${r.amne}\n${r.text}\nKälla: ${r.kalla}`;
+  if (!fråga.length) {
+    return text(`${varning}# Svenska regler — kontrollerade ${f.kontrollerad}\n\nÄmnen:\n${f.regler.map((r) => `- ${r.amne}`).join("\n")}\n\nSlå upp ett ämne med fraga.`);
+  }
+  const träffar = f.regler
+    .map((r) => {
+      const amne = ordI(r.amne), txt = ordI(r.text);
+      let p = 0;
+      for (const w of fråga) {
+        // Stammen tar böjningarna: "momsen" → moms, "deklarera" → deklar.
+        const stam = w.slice(0, Math.max(4, w.length - 3));
+        if (amne.some((a) => a.startsWith(w) || w.startsWith(a))) p += 3;
+        else if (stam.length >= 4 && amne.some((a) => a.includes(stam))) p += 3;
+        else if (stam.length >= 4 && txt.some((t) => t.includes(stam))) p += 1;
+      }
+      return { r, p };
+    })
+    .filter((x) => x.p >= 2)
+    .sort((a, b) => b.p - a.p)
+    .slice(0, 4);
+  if (!träffar.length) {
+    return text(`${varning}Ingen kontrollerad regel i Mitt AI-teams faktabas matchar "${args.fraga}". Säg till kunden att du inte är säker, och hänvisa till Skatteverket eller lagtexten på riksdagen.se i stället för att gissa. Ämnen som finns: ${f.regler.map((r) => r.amne).join(", ")}.`);
+  }
+  return text(`${varning}# Svenska regler — kontrollerade ${f.kontrollerad}\n\n${träffar.map((x) => rad(x.r)).join("\n\n")}\n\nAnvänd uppgifterna exakt och ange källan.`);
+}
