@@ -842,6 +842,8 @@ Med i deployen är allt från passen 2026-10-23 och 2026-10-24: KA14, SP1–SP3,
 "`. Tre tester föll i deployens egen testkörning, och grinden höll. Skriv filer med `newline=""` eller via Node.
 - `wrangler d1 --remote` kräver Global API Key (`CLOUDFLARE_API_KEY` + `CLOUDFLARE_EMAIL`). OAuth-inloggningen ger 7403.
 
+**Andra deployen samma dag (Pages `7ed9160b`, taggen `deploy-2026-10-24b`): SP22.** Verifierat i drift: `/` är öppningsscenen och svarar 200. `/om.html` 308-omdirigeras till `/om`, som visar 290 kr. `/site/`, `/site/coachonline`, `/verticals/` och `/verticals/hantverkare` ger 301 till `/`. `/site/showcase.css` svarar 200 och en påhittad sida 404. Hälsan är frisk. I emulatorn: inloggad besökare på `/` hamnar i sitt team, `?team=coachonline` leder till `/`, och `?intern=1` öppnar demot.
+
 **Kvar, och vems:** att koppla en riktig Claude till `https://mittaiteam.se/mcp` med sitt konto är Mikaels. ChatGPT likaså. Texten i `integritet.html` om jobbkortet till plattformen är Mikaels.
 
 ## Driftsatt 2026-09-26
