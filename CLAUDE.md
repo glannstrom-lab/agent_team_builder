@@ -890,12 +890,15 @@ ny kund dyker upp i både galleri och portal automatiskt.
 > OpenRouter-nyckel ligger nu i `.dev.vars`. Se blockcitatet överst i *Omläggning
 > 2026-10-23* i `ROADMAP.md`.
 >
-> **Passet 2026-10-23 kväll är committat men INTE pushat eller driftsatt** (20
-> commits före `origin/main`). Gjort: KA14, SP1–SP3, SP8 (server), SP9, SP17
-> (prompt), SP19, skisser SP15/SP16. 480 gröna. Drift kör fortfarande de gamla
-> prompterna — driftsätt inte förrän punkten nedan är mätt.
+> **Passet 2026-10-24 är driftsatt** (taggarna `deploy-2026-10-24` … `-24f`):
+> SP21 kopplingen, SP22 startsidan, SP7 mötesrummet, SP9 kandidaten i teamet,
+> SP16/SP20 Våningen, SP23 det delade (migration 0009 körd skarpt), OL4/OL5
+> installationsguiden och OL8 reglerna i `/mcp`. 523 gröna. Passet 2026-10-23
+> gick ut i samma deploy — **SP17 omätt, på Mikaels order**.
 >
-> **Nästa pass enda uppgift:** mät VD-assistenten (SP17) ordentligt — 3 körningar
+> **Nästa pass enda uppgift:** mät VD-assistenten (SP17) ordentligt — och skärp
+> intervjun (kandidaten frågade samma sak tre gånger trots en följdfråga per
+> ämne). OL1 (konsultpaketet) väntar på Mikaels pris. Mätningen: 3 körningar
 > × byggfirma/salong/fotograf lokalt, emulatorn omstartad efter varje
 > promptändring, ≈ $0,90 — och rätta prompten tills hon inte lånar specialistens
 > blick och inte hittar på namn.
