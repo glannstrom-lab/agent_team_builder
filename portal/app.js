@@ -206,17 +206,153 @@ function saveMemory(text) {
     });
   }
   try { localStorage.setItem(MEM_PREFIX + state.slug, text); } catch (e) { storeWarn("företagsminnet", e); }
+  firmaSkickaMinne(text); // SP23: minnet delas med kundens egen AI
 }
 function loadLocalDocs() {
   try { const d = JSON.parse(localStorage.getItem(DOCS_PREFIX + state.slug) || "[]"); return Array.isArray(d) ? d : []; }
   catch (_) { return []; }
 }
-function saveDocs(docs) { try { localStorage.setItem(DOCS_PREFIX + state.slug, JSON.stringify(docs)); } catch (e) { storeWarn("underlagen", e); } }
+function saveDocs(docs) {
+  // Varje underlag får ett id, så att det kan delas och tas bort hos oss (SP23).
+  docs.forEach((d) => { if (d && !d.id) d.id = lokaltId("u_"); });
+  try { localStorage.setItem(DOCS_PREFIX + state.slug, JSON.stringify(docs)); } catch (e) { storeWarn("underlagen", e); }
+  firmaSpegla("underlag", Object.fromEntries(docs.filter((d) => d && !d.file).map((d) => [d.id, d])));
+}
 function loadDocToggles() {
   try { return JSON.parse(localStorage.getItem(DOCSON_PREFIX + state.slug) || "{}") || {}; }
   catch (_) { return {}; }
 }
 function saveDocToggles(t) { try { localStorage.setItem(DOCSON_PREFIX + state.slug, JSON.stringify(t)); } catch (e) { storeWarn("valet av underlag", e); } }
+// ---------- delat med kundens egen AI (SP23) ----------
+// Mikael 2026-10-24: "claude och chatgpt behöver kunna komma åt allt på vår
+// sida ... vill inte behöva skriva samma saker till båda sidorna." Minnet,
+// underlagen och kundregistret bor därför hos oss (/api/firma, tabellen
+// firma_poster) för köpta team, och plattformarna når samma sak via /mcp.
+// localStorage står kvar som kopia: portalen ritar ur den direkt, och servern
+// är sanningen som läses vid varje laddning.
+//
+// Flödet:
+//   firmaSynk()   vid laddning: första gången flyttas det som legat i
+//                 webbläsaren upp; sedan skrivs serverns läge till kopian.
+//   saveMemory/saveDocs/sparaRegister (vaningen.js) skickar ändringen upp.
+//   Minnet slås ihop på servern rad för rad (slåIhopMinne i _firma.js), så
+//   att en rad Claude lagt till under tiden inte skrivs över.
+const FIRMASYNK_PREFIX = "atb_firmasynk_"; // + slug → "1" när webbläsarens data flyttats upp
+const KUNDER_PREFIX = "atb_kunder_";       // + slug → kundregistret (läses av vaningen.js)
+const firmaDelas = () => harJobb();
+const lokaltId = (p) => p + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+const firmaPostData = {
+  underlag: (d) => ({ title: d.title || "", text: d.text || "", on: d.on !== false }),
+  org: (d) => ({ namn: d.namn || "", typ: d.typ || "", not: d.not || "" }),
+  kontakt: (d) => ({ namn: d.namn || "", roll: d.roll || "", org: d.org || "", not: d.not || "" }),
+};
+
+// Skickar skillnaden mellan `karta` (id → data) och det som senast synkades.
+async function firmaSpegla(typ, karta) {
+  if (!firmaDelas() || !state.firmaSynkad) return;
+  const snap = state.firmaSnap[typ] || {};
+  const poster = [];
+  Object.entries(karta).forEach(([id, d]) => {
+    const data = firmaPostData[typ](d);
+    if (snap[id] !== JSON.stringify(data)) poster.push({ typ, id, data });
+  });
+  Object.keys(snap).forEach((id) => { if (!karta[id]) poster.push({ typ, id, data: null }); });
+  if (!poster.length) return;
+  try {
+    for (let i = 0; i < poster.length; i += 100) {
+      await jobbApi("/api/firma", { op: "poster", poster: poster.slice(i, i + 100) });
+    }
+    poster.forEach((p) => { if (p.data === null) delete snap[p.id]; else snap[p.id] = JSON.stringify(p.data); });
+    state.firmaSnap[typ] = snap;
+  } catch (e) { storeWarn(typ === "underlag" ? "underlagen hos oss" : "kundregistret hos oss", e); }
+}
+function firmaSpeglaKunder(reg) {
+  firmaSpegla("org", reg.org || {});
+  firmaSpegla("kontakt", reg.pers || {});
+}
+
+let firmaMinneTimer = null;
+function firmaSkickaMinne(text) {
+  if (!firmaDelas() || !state.firmaSynkad) return;
+  clearTimeout(firmaMinneTimer);
+  firmaMinneTimer = setTimeout(async () => {
+    try {
+      const r = await jobbApi("/api/firma", { op: "minne", text, bas: state.firmaMinneBas });
+      state.firmaMinneBas = r.minne.text;
+      // Servern slog ihop med något som kommit in under tiden — visa det.
+      if (r.minne.text !== text && !folderActive()) {
+        try { localStorage.setItem(MEM_PREFIX + state.slug, r.minne.text); } catch (_) { /* full lagring */ }
+        paintFactCount();
+      }
+    } catch (e) { storeWarn("företagsminnet hos oss", e); }
+  }, 800);
+}
+
+async function firmaSynk() {
+  if (!firmaDelas()) return;
+  const hämta = () => jobbApi(`/api/firma?team=${encodeURIComponent(state.slug)}`);
+  let f;
+  try { f = await hämta(); } catch (_) { return; } // utan server gäller kopian som förut
+  const flagga = FIRMASYNK_PREFIX + state.slug;
+  let flyttad = false;
+  try { flyttad = !!localStorage.getItem(flagga); } catch (_) { /* läsfel */ }
+
+  // Första gången: det som legat i webbläsaren flyttas upp. Inget skrivs över —
+  // finns något redan på servern (t.ex. från en kollega) läggs det lokala till.
+  if (!flyttad) {
+    try {
+      const lokaltMinne = (localStorage.getItem(MEM_PREFIX + state.slug) || "").trim();
+      if (lokaltMinne) {
+        const har = new Set(f.minne.text.split("\n").map((r) => r.trim()));
+        const nya = lokaltMinne.split("\n").filter((r) => r.trim() && !har.has(r.trim()));
+        if (nya.length) await jobbApi("/api/firma", { op: "minne", text: (f.minne.text ? f.minne.text.replace(/\s+$/, "") + "\n" : "") + nya.join("\n"), bas: f.minne.text });
+      }
+      const poster = [];
+      const titlar = new Set(f.underlag.map((u) => u.title + "\u0000" + u.text.length));
+      loadLocalDocs().forEach((d) => {
+        if (!d || !d.text || titlar.has(d.title + "\u0000" + d.text.length)) return;
+        poster.push({ typ: "underlag", id: d.id || lokaltId("u_"), data: firmaPostData.underlag(d) });
+      });
+      let reg = null;
+      try { reg = JSON.parse(localStorage.getItem(KUNDER_PREFIX + state.slug) || "null"); } catch (_) { reg = null; }
+      const finns = (typ, id) => f[typ].some((p) => p.id === id);
+      if (reg && reg.org) Object.entries(reg.org).forEach(([id, d]) => { if (!finns("org", id)) poster.push({ typ: "org", id, data: firmaPostData.org(d) }); });
+      if (reg && reg.pers) Object.entries(reg.pers).forEach(([id, d]) => { if (!finns("kontakt", id)) poster.push({ typ: "kontakt", id, data: firmaPostData.kontakt(d) }); });
+      for (let i = 0; i < poster.length; i += 100) await jobbApi("/api/firma", { op: "poster", poster: poster.slice(i, i + 100) });
+      try { localStorage.setItem(flagga, "1"); } catch (_) { /* full lagring */ }
+      f = await hämta();
+    } catch (e) { storeWarn("flytten till delat minne", e); return; }
+  }
+
+  // Serverns läge till kopian.
+  state.firmaMinneBas = f.minne.text;
+  if (folderActive()) {
+    // Mappen (minne.md) är sanningen lokalt; rader som kommit in från en
+    // plattform läggs till där, och åker sedan upp igen via saveMemory.
+    const lokalt = loadMemory();
+    const har = new Set(lokalt.split("\n").map((r) => r.trim()));
+    const nya = f.minne.text.split("\n").filter((r) => r.trim() && !har.has(r.trim()));
+    state.firmaSynkad = true;
+    if (nya.length) saveMemory((lokalt ? lokalt.replace(/\s+$/, "") + "\n" : "") + nya.join("\n"));
+  } else {
+    try { localStorage.setItem(MEM_PREFIX + state.slug, f.minne.text); } catch (_) { /* full lagring */ }
+  }
+  const docs = f.underlag.map((u) => ({ id: u.id, title: u.title, text: u.text, on: u.on !== false, via: u.updatedBy }));
+  try { localStorage.setItem(DOCS_PREFIX + state.slug, JSON.stringify(docs)); } catch (e) { storeWarn("underlagen", e); }
+  const reg = { org: {}, pers: {} };
+  f.org.forEach((o) => { reg.org[o.id] = firmaPostData.org(o); });
+  f.kontakt.forEach((k) => { reg.pers[k.id] = firmaPostData.kontakt(k); });
+  try { localStorage.setItem(KUNDER_PREFIX + state.slug, JSON.stringify(reg)); } catch (_) { /* full lagring */ }
+  state.firmaSnap = {
+    underlag: Object.fromEntries(f.underlag.map((u) => [u.id, JSON.stringify(firmaPostData.underlag(u))])),
+    org: Object.fromEntries(f.org.map((o) => [o.id, JSON.stringify(firmaPostData.org(o))])),
+    kontakt: Object.fromEntries(f.kontakt.map((k) => [k.id, JSON.stringify(firmaPostData.kontakt(k))])),
+  };
+  state.firmaSynkad = true;
+  paintFactCount();
+  if (window.ATBVaning) window.ATBVaning.omrita();
+}
+
 // Alla underlag agenterna ser: mappens filer (om kopplad) + inklistrade.
 function loadDocs() {
   const local = loadLocalDocs();
@@ -1675,6 +1811,7 @@ function renderPortal() {
     }
   }
   if (harJobb()) hämtaJobbVantar(); // async: leveranser som väntar på godkännande (SP21)
+  if (harJobb()) firmaSynk();      // async: minne, underlag och kunder delade med kundens egen AI (SP23)
   // Våningen (SP16/SP20): kontorsvåningen blir portalens första vy, och
   // chatten flyttar in i agentens rum. portal/vaningen.js.
   if (window.ATBVaning) window.ATBVaning.start();
@@ -1979,7 +2116,7 @@ function renderSidebar() {
 function wipeAll() {
   // Samma skäl som i "Rensa samtal": ett strömmande svar är betald output.
   if (state.streaming) { alert("Ett svar strömmar just nu. Stoppa det först."); return; }
-  if (!confirm("Ta bort ALLT sparat från den här webbläsaren?\n\n• All chatthistorik (alla team)\n• Företagsminne och underlag\n• Mappkopplingen (filerna i mappen rörs INTE)\n• Team-utkast från Builder och branschsidorna\n\nInloggningen och själva teamet ligger hos oss och påverkas inte.")) return;
+  if (!confirm("Ta bort ALLT sparat från den här webbläsaren?\n\n• All chatthistorik (alla team)\n• Företagsminne och underlag (kopian här — det som delas med din egen AI ligger kvar hos oss)\n• Mappkopplingen (filerna i mappen rörs INTE)\n• Team-utkast från Builder och branschsidorna\n\nInloggningen och själva teamet ligger hos oss och påverkas inte.")) return;
   const doomed = [];
   for (let i = 0; i < localStorage.length; i++) {
     const k = localStorage.key(i);
@@ -5473,8 +5610,10 @@ function kopplingsRuta() {
   const d = el("details", "jb-koppla");
   d.appendChild(el("summary", null, "Koppla din egen Claude eller ChatGPT"));
   const adress = location.origin + "/mcp";
-  d.appendChild(el("p", "ovl-note", "Lägg till Mitt AI-team som en koppling en gång. Sedan kan du säga till exempel "
-    + "\"ta nästa jobb från Mitt AI-team\" så hämtar den jobbkortet, gör jobbet och lämnar leveransen här."));
+  d.appendChild(el("p", "ovl-note", "Lägg till Mitt AI-team som en koppling en gång. Då ser din Claude eller ChatGPT samma sak som portalen: "
+    + "teamet, företagsminnet, underlagen, kunderna och jobben — och det du berättar där om verksamheten sparas hit, så att du inte behöver skriva det två gånger. "
+    + "Säg till exempel \"ta nästa jobb från Mitt AI-team\", eller \"spara Maria Lind på Brf Ekbacken som kontakt\"."));
+  d.appendChild(el("p", "ovl-note", "Kopplade du före den 24 oktober 2026? Koppla bort och lägg till igen, så får den tillgång till minnet och kunderna också."));
   const rad = el("div", "jb-adress");
   const fält = el("input", "ovl-input"); fält.readOnly = true; fält.value = adress; fält.setAttribute("aria-label", "Kopplingens adress");
   const kop = el("button", "jb-knapp", "Kopiera"); kop.type = "button";
@@ -5834,7 +5973,10 @@ function closeOverlay() {
 // ---------- minne & underlag (UI) ----------
 function openMemory() {
   const box = openOverlay("🧠 Minne & underlag");
-  box.appendChild(el("p", "ovl-lead", "Det här ser alla agenter i varje samtal — teamets delade projektminne. Skriv hur ni jobbar och vad ni beslutat; klistra in material teamet ska kunna använda. Allt sparas lokalt i den här webbläsaren."));
+  box.appendChild(el("p", "ovl-lead", "Det här ser alla agenter i varje samtal — teamets delade projektminne. Skriv hur ni jobbar och vad ni beslutat; klistra in material teamet ska kunna använda. " + (firmaDelas()
+    // SP23: köpta team delar minnet och underlagen med kundens egen Claude/ChatGPT.
+    ? "Det sparas hos oss och delas med din egen Claude eller ChatGPT om du kopplat dem — det du lägger in här behöver du inte skriva där, och det de sparar syns här."
+    : "Allt sparas lokalt i den här webbläsaren.")));
 
   box.appendChild(el("div", "ovl-label", "Företagsminne — korta, viktiga instruktioner"));
   const ta = el("textarea", "ovl-ta"); ta.rows = 7; ta.value = loadMemory();

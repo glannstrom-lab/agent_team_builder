@@ -607,15 +607,21 @@
   // Organisationer (kommuner, föreningar, företag, privatpersoner) och
   // kontakter (människor). Mikael 2026-10-24: "det är det man gör som
   // företagare i B2B". Affärerna kommer ur jobben — kunden på ett jobb ÄR en
-  // organisation, även innan någon fört in den — och registret ligger hos
-  // kunden som resten av arbetsytan (atb_kunder_<slug>), aldrig hos oss.
+  // organisation, även innan någon fört in den — och registret delas sedan SP23 med
+  // kundens egen AI: kopian ligger i atb_kunder_<slug>, sanningen i /api/firma
+  // (firmaSynk och firmaSpeglaKunder i app.js).
   const ORGTYPER = ["Företag", "Förening", "Kommun", "Myndighet", "Privatperson", "Annan"];
   const regKey = () => "atb_kunder_" + state.slug;
   function register() {
     try { const r = JSON.parse(localStorage.getItem(regKey()) || "null"); if (r && r.org && r.pers) return r; } catch (_) { /* trasig post */ }
     return { org: {}, pers: {} };
   }
-  function sparaRegister(r) { try { localStorage.setItem(regKey(), JSON.stringify(r)); return true; } catch (_) { toast("Kunde inte spara — webbläsarens lagring är full."); return false; } }
+  function sparaRegister(r) {
+    try { localStorage.setItem(regKey(), JSON.stringify(r)); } catch (_) { toast("Kunde inte spara — webbläsarens lagring är full."); return false; }
+    // SP23: registret delas med kundens egen AI — Claude och ChatGPT ser samma kunder.
+    firmaSpeglaKunder(r);
+    return true;
+  }
   const nyckel = (namn) => String(namn || "").trim().toLowerCase().replace(/\s+/g, " ");
   const nyttId = (p) => p + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
   // Alla organisationer: registret plus jobbens kunder som ingen fört in.

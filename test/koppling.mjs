@@ -22,6 +22,8 @@ import * as asMeta from "../functions/.well-known/oauth-authorization-server.js"
 import * as prMeta from "../functions/.well-known/oauth-protected-resource/[[rest]].js";
 import * as jobb from "../functions/api/jobb/index.js";
 import * as handling from "../functions/api/jobb/handling.js";
+import * as firma from "../functions/api/firma.js";
+import { slåIhopMinne, MINNE_MAX } from "../functions/api/_firma.js";
 
 const O = "https://mittaiteam.se";
 const CLAUDE_CB = "https://claude.ai/api/mcp/auth_callback";
@@ -169,7 +171,10 @@ test("hela vägen: koppla, lista, hämta, leverera, godkänn i portalen", async 
   assert.equal((await rpc(env, access_token, "notifications/initialized")).status, 202);
 
   const lista = (await rpc(env, access_token, "tools/list")).body.result.tools.map((t) => t.name);
-  assert.deepEqual(lista, ["lista_jobb", "hamta_jobb", "lamna_leverans"]);
+  // SP23: en ny koppling får också det delade — firman, minnet, underlagen, kunderna.
+  for (const v of ["lista_jobb", "hamta_jobb", "lamna_leverans", "skapa_jobb", "firman", "spara_minne", "spara_underlag", "hamta_underlag", "lista_kunder", "spara_organisation", "spara_kontakt", "hamta_agent"]) {
+    assert.ok(lista.includes(v), "verktyget saknas: " + v);
+  }
 
   const l = await verktyg(env, access_token, "lista_jobb", {});
   assert.match(l.content[0].text, new RegExp(id));
@@ -348,4 +353,144 @@ test("middlewaren känner jobbrutterna", () => {
   const src = readFileSync("functions/_middleware.js", "utf8");
   assert.match(src, /\\\/api\\\/jobb\\\/\?\$/);
   assert.match(src, /\\\/api\\\/jobb\\\/handling/);
+});
+
+// ── det delade (SP23) ─────────────────────────────────────────────────────
+// Mikael 2026-10-24: "claude och chatgpt behöver kunna komma åt allt på vår
+// sida ... vill inte behöva skriva samma saker till båda sidorna." Testerna
+// nedan går åt båda hållen: det portalen sparar ska plattformen se, och det
+// plattformen sparar ska portalen se.
+
+const firmaGet = async (env, kaka, slug = SLUG) =>
+  firma.onRequestGet({ request: req("/api/firma?team=" + slug, { headers: { cookie: kaka } }), env });
+const firmaPost = async (env, kaka, body) =>
+  firma.onRequestPost({ request: req("/api/firma", { method: "POST", headers: { cookie: kaka, "content-type": "application/json" }, body: JSON.stringify({ team: SLUG, ...body }) }), env });
+
+test("delat: det portalen sparar ser plattformen", async () => {
+  const { env, kakor } = await värld();
+  assert.equal((await firmaPost(env, kakor.u1, { op: "minne", text: "Vi tar aldrig jobb under 20 000 kr.", bas: "" })).status, 200);
+  const p = await firmaPost(env, kakor.u1, { op: "poster", poster: [
+    { typ: "underlag", id: "u_pris", data: { title: "Prislista 2026", text: "Timpris 650 kr exkl. moms.", on: true } },
+    { typ: "org", id: "o_ek", data: { namn: "Brf Ekbacken", typ: "Förening", not: "Styrelsemöte tisdagar" } },
+    { typ: "kontakt", id: "p_maria", data: { namn: "Maria Lind", roll: "Ordförande", org: "o_ek", not: "Föredrar sms" } },
+  ] });
+  assert.equal(p.status, 200);
+
+  const { access_token } = await koppla(env, kakor.u1, await registrera(env));
+  const f = (await verktyg(env, access_token, "firman", {})).content[0].text;
+  assert.match(f, /# Rönnbergs Bygg/);
+  assert.match(f, /Vi tar aldrig jobb under 20 000 kr/, "minnet ska stå i översikten");
+  assert.match(f, /Prislista 2026.*u_pris/);
+  assert.match(f, /Robin.*VD-assistent|Robin/);
+  assert.match((await verktyg(env, access_token, "hamta_underlag", { underlag_id: "u_pris" })).content[0].text, /Timpris 650 kr/);
+  const k = (await verktyg(env, access_token, "lista_kunder", {})).content[0].text;
+  assert.match(k, /Brf Ekbacken \(Förening\)/);
+  assert.match(k, /Maria Lind, Ordförande — Föredrar sms/);
+  assert.match((await verktyg(env, access_token, "hamta_agent", { agent: "offertskrivaren" })).content[0].text, /Du skriver offerter som en privatperson förstår/);
+});
+
+test("delat: det plattformen sparar ser portalen, märkt med vem", async () => {
+  const { env, kakor } = await värld();
+  const { access_token } = await koppla(env, kakor.u1, await registrera(env));
+  assert.ok(!(await verktyg(env, access_token, "spara_minne", { rader: ["Kim bestämmer om priser över 100 000 kr."] })).isError);
+  assert.match((await verktyg(env, access_token, "spara_minne", { rader: ["Kim bestämmer om priser över 100 000 kr."] })).content[0].text, /redan/, "samma rad sparas inte två gånger");
+  assert.ok(!(await verktyg(env, access_token, "spara_kontakt", { namn: "Johan Persson", roll: "Förvaltare", organisation: "Väsby Fastigheter AB", anteckning: "Bestämmer under 250 000 kr själv" })).isError);
+  assert.ok(!(await verktyg(env, access_token, "spara_underlag", { titel: "Offertmall", text: "# Offert\n..." })).isError);
+  const nytt = await verktyg(env, access_token, "skapa_jobb", { agent: "Offertskrivaren", titel: "Offert: fasad Kvarngatan 4", uppdrag: "Fasadrenovering.", kund: "Väsby Fastigheter AB", klart_nar: ["Pris inkl. moms"] });
+  assert.ok(!nytt.isError);
+
+  const f = await (await firmaGet(env, kakor.u1)).json();
+  assert.match(f.minne.text, /Kim bestämmer om priser/);
+  assert.equal(f.minne.updatedBy, "Claude");
+  const org = f.org.find((o) => o.namn === "Väsby Fastigheter AB");
+  assert.ok(org, "organisationen skapas av kontakten");
+  const johan = f.kontakt.find((p) => p.namn === "Johan Persson");
+  assert.equal(johan.org, org.id);
+  assert.equal(johan.updatedBy, "Claude");
+  assert.equal(f.underlag[0].title, "Offertmall");
+  const jobben = await (await jobb.onRequestGet({ request: req("/api/jobb?team=" + SLUG, { headers: { cookie: kakor.u1 } }), env })).json();
+  const j = jobben.jobb.find((x) => x.title === "Offert: fasad Kvarngatan 4");
+  assert.equal(j.agentId, "offert");
+  assert.equal(j.kund, "Väsby Fastigheter AB");
+
+  // En anteckning till samma kontakt läggs till, den skriver inte över.
+  await verktyg(env, access_token, "spara_kontakt", { namn: "johan persson", anteckning: "Ring efter lunch" });
+  const f2 = await (await firmaGet(env, kakor.u1)).json();
+  const j2 = f2.kontakt.filter((p) => p.namn.toLowerCase() === "johan persson");
+  assert.equal(j2.length, 1, "samma namn är samma kontakt");
+  assert.match(j2[0].not, /250 000[\s\S]*Ring efter lunch/);
+});
+
+test("delat: minnet slås ihop när portalen och plattformen skrivit samtidigt", async () => {
+  const { env, kakor } = await värld();
+  await firmaPost(env, kakor.u1, { op: "minne", text: "Rad A\nRad B", bas: "" });
+  const { access_token } = await koppla(env, kakor.u1, await registrera(env));
+  await verktyg(env, access_token, "spara_minne", { rader: ["Rad från Claude"] });
+  // Portalen såg "Rad A\nRad B", tar bort B och lägger till C — utan att veta om Claudes rad.
+  const r = await (await firmaPost(env, kakor.u1, { op: "minne", text: "Rad A\nRad C", bas: "Rad A\nRad B" })).json();
+  assert.match(r.minne.text, /Rad från Claude/, "plattformens rad får inte skrivas över");
+  assert.match(r.minne.text, /Rad C/);
+  assert.doesNotMatch(r.minne.text, /Rad B/, "det kunden tog bort ska vara borta");
+  // Den rena funktionen, för sig.
+  assert.equal(slåIhopMinne("x\ny", "x\ny", "x"), "x");
+  assert.equal(slåIhopMinne("x\ny\nz", "x\ny", "x\ny\nw"), "x\ny\nz\nw");
+});
+
+test("delat: en koppling från före SP23 når inte minnet förrän kunden kopplat om", async () => {
+  const { env, kakor, db } = await värld();
+  const { access_token } = await koppla(env, kakor.u1, await registrera(env));
+  // Simulera en äldre nyckel: samtycket gällde bara jobben.
+  db.raw.prepare("UPDATE oauth_tokens SET scope = 'jobb'").run();
+  const lista = (await rpc(env, access_token, "tools/list")).body.result.tools.map((t) => t.name);
+  assert.deepEqual(lista, ["lista_jobb", "hamta_jobb", "lamna_leverans"]);
+  const svar = await verktyg(env, access_token, "firman", {});
+  assert.equal(svar.isError, true);
+  assert.match(svar.content[0].text, /koppla bort och lägga till Mitt AI-team igen/);
+  assert.equal((await verktyg(env, access_token, "skapa_jobb", { agent: "Robin", titel: "x", uppdrag: "y" })).isError, true);
+});
+
+test("delat: ingen når en annan kunds firma", async () => {
+  const { env, kakor } = await värld();
+  await firmaPost(env, kakor.u1, { op: "minne", text: "Hemligt för Rönnbergs", bas: "" });
+  assert.equal((await firmaGet(env, kakor.u2)).status, 404, "u2 når inte u1:s team");
+  const { access_token } = await koppla(env, kakor.u2, await registrera(env));
+  const f = (await verktyg(env, access_token, "firman", {})).content[0].text;
+  assert.match(f, /# Annan AB/);
+  assert.doesNotMatch(f, /Hemligt för Rönnbergs/);
+  const fel = await verktyg(env, access_token, "firman", { foretag: "Rönnbergs Bygg" });
+  assert.equal(fel.isError, true, "att ange ett annat företags namn ger inget");
+  assert.equal((await firmaGet(env, "")).status, 401);
+});
+
+test("delat: taken håller", async () => {
+  const { env, kakor } = await värld();
+  const lång = await firmaPost(env, kakor.u1, { op: "minne", text: "x".repeat(MINNE_MAX + 1), bas: "" });
+  assert.equal(lång.status, 413);
+  const typ = await firmaPost(env, kakor.u1, { op: "poster", poster: [{ typ: "samtal", id: "s1", data: { text: "hej" } }] });
+  assert.equal(typ.status, 400, "samtalen delas inte — bara minne, underlag, org och kontakt");
+  const id = await firmaPost(env, kakor.u1, { op: "poster", poster: [{ typ: "org", id: "har mellanslag", data: { namn: "X" } }] });
+  assert.equal(id.status, 400);
+  const många = await firmaPost(env, kakor.u1, { op: "poster", poster: Array.from({ length: 101 }, (_, i) => ({ typ: "org", id: "o" + i, data: { namn: "O" + i } })) });
+  assert.equal(många.status, 413);
+});
+
+test("delat: borttagen organisation lämnar inga kontakter som pekar på ingenting", async () => {
+  const { env, kakor } = await värld();
+  await firmaPost(env, kakor.u1, { op: "poster", poster: [
+    { typ: "org", id: "o1", data: { namn: "Org" } },
+    { typ: "kontakt", id: "p1", data: { namn: "Pia", org: "o1" } },
+  ] });
+  await firmaPost(env, kakor.u1, { op: "poster", poster: [{ typ: "org", id: "o1", data: null }] });
+  const f = await (await firmaGet(env, kakor.u1)).json();
+  assert.equal(f.org.length, 0);
+  assert.equal(f.kontakt[0].org, "");
+});
+
+test("middlewaren känner /api/firma, och samtycket säger vad som delas", async () => {
+  const src = readFileSync("functions/_middleware.js", "utf8");
+  assert.match(src, /\\\/api\\\/firma\\\/\?\$/);
+  const auth = readFileSync("functions/oauth/authorize.js", "utf8");
+  assert.match(auth, /företagsminne/);
+  assert.match(auth, /organisationer och kontakter/);
+  assert.match(auth, /scope: BEVILJAT/);
 });

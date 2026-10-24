@@ -25,7 +25,7 @@ const LÅNADE = [
   "nastaStegFor", "nastaStegHandling", "panelOppen", "openHire", "hiringReason", "harJobb", "jobbApi",
   "renderMarkdown", "firmanBokaOchRita", "byggJobbForm", "kopplingsRuta", "openOverlay", "closeOverlay",
   "openMeeting", "runRoutine", "routineDone", "todayDayNo", "dayName", "startWeek", "openMemory",
-  "openJobs", "refreshSidebar",
+  "openJobs", "refreshSidebar", "firmaSpeglaKunder",
 ];
 
 test("varje namn Våningen lånar finns på app.js toppnivå", () => {
@@ -61,8 +61,7 @@ test("demoläget får inte Våningen — exempelteamen har inga jobb och ingen t
   assert.match(VAN, /const aktiv = \(\) => !state\.demo/);
 });
 
-test("kundregistret stannar hos kunden: inget anrop till servern med det", () => {
-  const reg = VAN.slice(VAN.indexOf("const regKey"), VAN.indexOf("function organisationer"));
-  assert.match(reg, /localStorage/);
-  assert.doesNotMatch(reg, /fetch|jobbApi/);
+test("kundregistret delas: varje sparning går vidare till /api/firma (SP23)", () => {
+  const spara = VAN.slice(VAN.indexOf("function sparaRegister"), VAN.indexOf("function organisationer"));
+  assert.match(spara, /firmaSpeglaKunder\(r\)/, "en kund som sparas i portalen når annars aldrig Claude eller ChatGPT");
 });

@@ -25,6 +25,12 @@ import { randomHex, sha256Hex, nowMs } from "./auth/_lib.js";
 import { planState } from "./_plan.js";
 
 export const SCOPE = "jobb";
+// SP23: "firma" = minnet, underlagen och kunderna. Ett nytt samtycke ger
+// båda; en nyckel från före SP23 bär bara "jobb" och når inte det nya förrän
+// kunden kopplat om — hon sa ja till jobben, inte till minnet.
+export const SCOPE_FIRMA = "firma";
+export const BEVILJAT = SCOPE + " " + SCOPE_FIRMA;
+export const harFirma = (vem) => !!vem && String(vem.scope || "").split(/\s+/).includes(SCOPE_FIRMA);
 export const CODE_TTL_MS = 5 * 60 * 1000;                // engångskoden: fem minuter
 export const ACCESS_TTL_MS = 60 * 60 * 1000;             // åtkomstnyckeln: en timme
 export const REFRESH_TTL_MS = 30 * 24 * 60 * 60 * 1000;  // förnyelsenyckeln: 30 dagar
@@ -41,7 +47,7 @@ export function protectedResourceMetadata(request) {
   return {
     resource: resourceUrl(request),
     authorization_servers: [origin(request)],
-    scopes_supported: [SCOPE],
+    scopes_supported: [SCOPE, SCOPE_FIRMA],
     bearer_methods_supported: ["header"],
     resource_name: "Mitt AI-team",
   };
@@ -59,7 +65,7 @@ export function authServerMetadata(request) {
     code_challenge_methods_supported: ["S256"],
     token_endpoint_auth_methods_supported: ["none"],
     client_id_metadata_document_supported: true,
-    scopes_supported: [SCOPE],
+    scopes_supported: [SCOPE, SCOPE_FIRMA],
     authorization_response_iss_parameter_supported: true,
     service_documentation: o + "/villkor.html",
   };
@@ -266,14 +272,17 @@ export async function bearer(db, request) {
 // en spärrad plan ger inga jobb, varken i portalen eller via en plattform.
 export async function aktivaTeam(db, userId, now = nowMs()) {
   const { results } = await db.prepare(
-    "SELECT t.slug, t.config, t.plan, t.created_at FROM teams t JOIN team_access a ON a.team_slug = t.slug WHERE a.user_id = ?1"
+    "SELECT t.slug, t.config, t.plan, t.created_at FROM teams t JOIN team_access a ON a.team_slug = t.slug WHERE a.user_id = ?1 ORDER BY t.created_at DESC"
   ).bind(userId).all();
   const ut = [];
   for (const row of results || []) {
     if (!planState(row, now).ok) continue;
     let cfg = {};
     try { cfg = JSON.parse(row.config) || {}; } catch (_) { cfg = {}; }
-    ut.push({ slug: row.slug, company: cfg.company || "Teamet", agents: Array.isArray(cfg.agents) ? cfg.agents : [] });
+    ut.push({
+      slug: row.slug, company: cfg.company || "Teamet", agents: Array.isArray(cfg.agents) ? cfg.agents : [],
+      routines: Array.isArray(cfg.routines) ? cfg.routines : [], entryAgent: cfg.entryAgent || null, createdAt: row.created_at,
+    });
   }
   return ut;
 }

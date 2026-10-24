@@ -20,7 +20,7 @@
 
 import { sessionUser, sha256Hex, timingSafeEqual, randomHex } from "../api/auth/_lib.js";
 import {
-  SCOPE, lookupClient, redirectMatches, clientLabel, createCode, aktivaTeam, origin,
+  SCOPE, SCOPE_FIRMA, BEVILJAT, lookupClient, redirectMatches, clientLabel, createCode, aktivaTeam, origin,
 } from "../api/_koppling.js";
 
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -70,7 +70,7 @@ export async function onRequestGet({ request, env }) {
   if (!p.code_challenge || p.code_challenge_method !== "S256") {
     return back(p, { error: "invalid_request", error_description: "PKCE med S256 krävs." });
   }
-  if (p.scope && !p.scope.split(/\s+/).every((s) => s === SCOPE || s === "offline_access")) {
+  if (p.scope && !p.scope.split(/\s+/).every((s) => s === SCOPE || s === SCOPE_FIRMA || s === "offline_access")) {
     return back(p, { error: "invalid_scope" });
   }
 
@@ -95,9 +95,9 @@ export async function onRequestGet({ request, env }) {
     redirect: p.redirect_uri,
     body: `<p class="ingress">Inloggad som <b>${esc(user.email)}</b>. Kopplingen gäller ${team.length === 1 ? "teamet" : "teamen"} <b>${team.map((t) => esc(t.company)).join(", ")}</b>.</p>
       <div class="ruta"><div class="etikett">${esc(vem)} kommer att kunna</div>
-        <ul><li>se de jobb ni lagt upp åt teamet</li><li>läsa ett jobbkort: uppdraget, vem det är åt, "Klart när" och agentens instruktion</li><li>lämna en leverans på ett jobb</li></ul>
+        <ul><li>läsa teamet: agenterna, deras instruktioner och era rutiner</li><li>läsa och lägga till i ert företagsminne och era underlag</li><li>läsa och lägga till organisationer och kontakter</li><li>se jobben, lägga upp nya och lämna leveranser</li></ul>
         <div class="etikett" style="margin-top:14px">men inte</div>
-        <ul><li>godkänna en leverans: det gör du i portalen</li><li>läsa era samtal, ert företagsminne eller era underlag</li><li>ta bort något</li></ul></div>
+        <ul><li>godkänna en leverans: det gör du i portalen</li><li>läsa era samtal med agenterna i portalen</li><li>ta bort något</li></ul></div>
       <p class="dim">Efter ja skickas du tillbaka till <b>${esc(host)}</b>. Du kan koppla bort ${esc(vem)} när som helst i ${esc(vem)}s inställningar.</p>
       <form method="post" class="knappar">${hidden(p)}<input type="hidden" name="csrf" value="${await csrfFor(user, p)}">
         <button name="svar" value="ja">Ja, koppla ${esc(vem)}</button><button name="svar" value="nej" class="sek">Nej</button></form>`,
@@ -127,7 +127,7 @@ export async function onRequestPost({ request, env }) {
 
   const code = await createCode(env.DB, {
     clientId: client.client_id, userId: user.id, redirectUri: p.redirect_uri,
-    codeChallenge: p.code_challenge, scope: SCOPE, resource: p.resource,
+    codeChallenge: p.code_challenge, scope: BEVILJAT, resource: p.resource,
   });
   return back(p, { code, iss: origin(request) });
 }

@@ -58,6 +58,8 @@ const METHOD_RULES = [
   // Jobben (SP21). Listan läses, jobb läggs upp och handlingar görs med POST.
   { match: /^\/api\/jobb\/?$/, allow: ["GET", "POST"] },
   { match: /^\/api\/jobb\/handling\/?$/, allow: ["POST"] },
+  // Det delade med kundens egen AI (SP23): minne, underlag, organisationer, kontakter.
+  { match: /^\/api\/firma\/?$/, allow: ["GET", "POST"] },
 ];
 
 export async function onRequest(context) {

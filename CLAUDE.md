@@ -219,10 +219,8 @@ MCP-server: `https://mittaiteam.se/mcp`, med en egen OAuth-server under `/oauth/
 och `/.well-known/*` (bägge UTANFÖR `/api/` — samtyckessidan är HTML, och
 middlewaren byter HTML under `/api/` mot 404). Kunden lägger till adressen som
 anpassad koppling i Claude eller ChatGPT och loggar in med samma engångskod.
-Tre verktyg: `lista_jobb`, `hamta_jobb`, `lamna_leverans` — plattformen gör
-jobbet, portalen visar läget, kunden godkänner (panelen **📋 Jobben**). Jobben
-är den enda delen av arbetsytan som bor i D1 (`jobs`, migration 0008); samtal,
-minne och underlag ligger kvar hos kunden. Ledstången (Mikael 2026-10-24):
+Jobben: `lista_jobb`, `hamta_jobb`, `lamna_leverans`, `skapa_jobb` — plattformen gör
+jobbet, portalen visar läget, kunden godkänner. **Sedan SP23 (2026-10-24, Mikael: "claude och chatgpt behöver kunna komma åt allt på vår sida ... vill inte behöva skriva samma saker till båda sidorna") delas också företagsminnet, underlagen, organisationerna och kontakterna:** tabellen `firma_poster` (migration 0009), `/api/firma` för portalen och verktygen `firman`, `hamta_agent`, `hamta_underlag`, `spara_minne`, `spara_underlag`, `lista_kunder`, `spara_organisation`, `spara_kontakt` i `/mcp`. Logiken (tak, sammanslagning av minnet rad för rad) bor i `functions/api/_firma.js` och används av båda. Portalen behåller localStorage som kopia och läser serverns läge vid varje laddning (`firmaSynk()` i `portal/app.js`); första gången flyttas webbläsarens data upp. **Samtalen med agenterna delas inte** — de ligger kvar i webbläsaren. Det nya kräver ett samtycke från efter SP23 (scope `firma`, `BEVILJAT` i `_koppling.js`); en äldre koppling ser bara jobben och får beskedet att koppla om. **`integritet.html` säger inte detta än — det är Mikaels text.** Ledstången (Mikael 2026-10-24):
 *begriplighet och översikt, inte funktionalitet* — fler verktyg i `/mcp` kräver
 ett skäl av det slaget. Kraven från Claudes dokumentation står överst i
 `functions/api/_koppling.js`; testerna (`test/koppling.mjs`) kör mot riktig

@@ -821,6 +821,10 @@ Från genomgången 2026-09-01 · sex parallella linser + egen verifiering.
 - [ ] **P2** Gratisbygget fångar ingen e-post — övergiven körning är borta för alltid · `builder/builder.js:1432-1493` · `läst i koden` · ~4 h
 - [x] **P3** *(lagad 2026-09-26: functions/api/_provmanad.js mejlar teamets ägare när fem dagar återstår (dag 25), via veckobrevets timklocka men efter timgolvet — ett test hittade att den först låg före golvet och hade mejlat på natten. En gång per team (markering i ai_usage), omförsök nästa timme om mejlet fallerar. Fyra tester mot riktig SQLite. Skarpa D1 har i dag inga provmånader, så inget mejl gick ut vid driftsättningen)* Provmånaden har ingen utgående livlina utanför portalen · `functions/api/_plan.js:65-86` · `mätt` · ~6 h
 
+## SP23 — det delade med kundens egen AI (2026-10-24)
+
+- [x] **SP23** *(byggd och driftsatt 2026-10-24)* **Claude och ChatGPT når allt som inte är samtal.** Mikael: "claude och chatgpt behöver kunna komma åt allt på vår sida, för användaren använder sig av både och och vill inte behöva skriva samma saker till båda sidorna." Företagsminnet, underlagen, organisationerna och kontakterna flyttar från webbläsaren till D1 (`firma_poster`, migration 0009); portalen synkar (`firmaSynk`), `/mcp` får nio verktyg till. Minnet slås ihop rad för rad så att varken portalen eller plattformen skriver över den andra. Ett nytt samtycke krävs (scope `firma`). Tester: 8 nya i `test/koppling.mjs` mot riktig SQLite, två sabotage fångade; synken provad i webbläsare mot emulatorn åt båda hållen. **Kvar:** (a) `integritet.html` — kundens minne, underlag och kunder lagras nu hos oss och kan läsas av den plattform kunden kopplat; Mikaels text. (b) Samtalen delas inte. (c) Mappens filer (`minne.md` delas; övriga filer i mappen gör det inte). (d) Firmans nivå räknas fortfarande i webbläsaren och syns inte för plattformarna.
+
 ## Driftsatt 2026-10-24
 
 Pages `374122f0`, commit `ee5df78`, taggen `deploy-2026-10-24`. Migration 0008 körd skarpt efter `npm run db:backup` (186 kB). 498 gröna.
