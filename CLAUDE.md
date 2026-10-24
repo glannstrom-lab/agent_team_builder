@@ -212,6 +212,8 @@ egna tester. Källfilerna ligger kvar.
 - **Branscher** (`verticals/`) — datadrivna branschlandningssidor
   (`?v=<slug>` från `verticals.js`); varje bransch har en live-demo utan nyckel.
 
+**Våningen är portalens första vy (SP16/SP20, 2026-10-24, Mikael: "bygg in nya").** `portal/vaningen.js` + `vaningen.css` gör skiss 14 skarp: kontorsvåningen ovanifrån där varje anställd har ett rum, jobben (D1) ligger som mappar på skrivbordet och en röd prick betyder att något väntar på kunden; VD-kontoret (kunden är VD:n, KA14) samlar det som väntar plus trappan; de som inte är anställda står som streckade rum ur rekryteringsplanen; Mötesrummet och Pentryt (rutinerna) låses upp av trappan; Kunderna är en andra lins — affärer ur jobbens `kund`, organisationer och kontakter i `atb_kunder_<slug>` hos kunden. **Inget nytt tillstånd för logiken:** rummen läser `team`, nivån `firmanLage()`, nästa steg `nastaStegFor()`, och samtalet är portalens gamla chatt (`.main`) flyttad in i rummet. Sidopanelen blir lådan "Arbetsytan", så allt som fanns finns kvar. Filen läser app.js:s toppnivå utan import och kopplar om `selectAgent`/`openJobs`/`openHire` så att allt som väljer en agent leder in i hens rum — `test/vaningen.mjs` fäller bygget om ett lånat namn försvinner ur app.js. Demoläget har den gamla vyn kvar.
+
 **Kopplingen till kundens egen AI (SP21, 2026-10-24).** Mitt AI-team är också en
 MCP-server: `https://mittaiteam.se/mcp`, med en egen OAuth-server under `/oauth/*`
 och `/.well-known/*` (bägge UTANFÖR `/api/` — samtyckessidan är HTML, och

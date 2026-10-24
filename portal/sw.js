@@ -24,7 +24,7 @@ const CACHE = "atb-portal-v28";
 // rekryteringsplan.
 // Typsnitten är självhostade sedan 2026-08-05 — utan dem i skalet renderar en
 // offline-öppnad PWA fallback-sans tills runtime-cachen hunnit hämta dem.
-const SHELL = ["./", "./index.html", "./app.js", "./firman.js", "./portal.css", "./teams/index.js", "./manifest.webmanifest", "./icon.svg", "../avatars.js", "../atb-claude.js", "../fonts/fonts.css", "../fonts/archivo-var-latin.woff2", "../fonts/karla-var-latin.woff2", "../fonts/ibm-plex-mono-400-latin.woff2", "../fonts/ibm-plex-mono-500-latin.woff2"];
+const SHELL = ["./", "./index.html", "./app.js", "./firman.js", "./vaningen.js", "./portal.css", "./vaningen.css", "./teams/index.js", "./manifest.webmanifest", "./icon.svg", "../avatars.js", "../atb-claude.js", "../fonts/fonts.css", "../fonts/archivo-var-latin.woff2", "../fonts/karla-var-latin.woff2", "../fonts/ibm-plex-mono-400-latin.woff2", "../fonts/ibm-plex-mono-500-latin.woff2"];
 
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()).catch(() => {}));

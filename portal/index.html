@@ -23,6 +23,7 @@
 <link rel="preload" href="/fonts/archivo-var-latin.woff2" as="font" type="font/woff2" crossorigin />
 <link rel="stylesheet" href="/fonts/fonts.css" />
 <link rel="stylesheet" href="portal.css" />
+<link rel="stylesheet" href="vaningen.css" />
 <!-- PWA: installerbar app -->
 <link rel="manifest" href="manifest.webmanifest" />
 <meta name="theme-color" content="#F1ECE3" />
@@ -46,6 +47,9 @@
      ren logik (window.ATBFirman). Före app.js, som läser den. -->
 <script src="firman.js"></script>
 <script src="app.js"></script>
+<!-- Våningen (SP16/SP20): kontorsvåningen ovanifrån, rummen, kunderna. Efter
+     app.js, vars toppnivå den läser. -->
+<script src="vaningen.js"></script>
 <script>
   // Registrera service worker så portalen blir installerbar och funkar offline.
   if ("serviceWorker" in navigator) {

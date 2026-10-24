@@ -429,7 +429,7 @@ Från genomgången 2026-09-01 · sex parallella linser + egen verifiering.
   valet av kandidat sparat så att det följer med in i portalen (**SP9**) · mätpunkt:
   andelen som når intervjufrågan, mätt med P1 när den är påslagen · skiss gjord;
   ~1 pass till drift
-- [ ] **SP16** *(skiss gjord 2026-10-23: `design/13-kontoren.html`, <https://claude.ai/artifact/KmhAPAnvnJnVThfs4dBLrD>; KA14 obesvarad)* **Kontoren är vyerna.** *Mikael 2026-10-23: "sen ska det finnas ett
+- [x] **SP16** *(byggd och driftsatt 2026-10-24 som Våningen, `portal/vaningen.js` — se CLAUDE.md. Provad i webbläsare mot emulatorn: våning, rum med jobb, godkännande som tar firman till nästa nivå, samtalet i rummet, VD-kontoret, kunderna med pärm och kontakter, lådan, mobil. Kvar: introduktionsrundan och "Därför detta team" öppnas fortfarande som de gamla modalerna ovanpå våningen; Mötesrummet öppnar den gamla mötesdialogen)* *(skiss gjord 2026-10-23: `design/13-kontoren.html`, <https://claude.ai/artifact/KmhAPAnvnJnVThfs4dBLrD>; KA14 obesvarad)* **Kontoren är vyerna.** *Mikael 2026-10-23: "sen ska det finnas ett
   VD-kontor och ett kontor till VD-assistenten, detta ska vara vyer."* Portalen blir
   rum i stället för paneler — samma grepp som "värld och platser" i stället för en
   översikt:

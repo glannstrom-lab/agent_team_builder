@@ -1,0 +1,248 @@
+/* ============================================================
+   VÅNINGEN (SP16/SP20, skiss 14 gjord skarp 2026-10-24)
+   Våningen = spelet (mörk ram, isometri). Rummen = arbetet (papper).
+   Portalens gamla layout (.app) står kvar i DOM:en men syns inte: chatten
+   flyttas in i agentens rum och sidopanelen blir lådan "Arbetsytan".
+   Samma tokens som portal.css (--bg, --surface, --text, --accent …); de
+   mörka tonerna nedan finns bara här.
+   ============================================================ */
+body.vn-pa { --vn-natt: #17130F; --vn-natt-2: #221C16; --vn-natt-linje: #3A3128; --vn-natt-text: #B9AE9C; --vn-stampel: #9C3B2E; --vn-salvia: #4F7A54; }
+html:has(body.vn-pa), body.vn-pa, body.vn-pa #root { height: auto; min-height: 100%; }
+body.vn-pa { background: var(--bg); }
+body.vn-pa .app { display: none; }
+body.vn-pa [hidden] { display: none !important; }
+.vn-etikett { font: 500 .68rem/1.2 var(--font-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--accent-2); }
+.vn-dim { color: var(--text-dim); }
+.vn-knapp { background: var(--text); color: var(--surface); border: 0; border-radius: 6px; padding: 10px 16px; font: 700 .92rem var(--font-body); cursor: pointer; }
+.vn-knapp:hover { background: #3a3128; }
+.vn-knapp:disabled { opacity: .5; cursor: default; }
+.vn-ockra { background: var(--accent); color: #fff; }
+.vn-ockra:hover { background: var(--accent-2); }
+.vn-knapp-ghost { background: transparent; border: 1px solid var(--border); border-radius: 6px; padding: 8px 14px; font: 700 .9rem var(--font-body); color: var(--text); cursor: pointer; }
+.vn-knapp-ghost:hover { border-color: var(--accent); }
+.vn-lank { background: none; border: 0; padding: 0; color: var(--accent-2); font: inherit; text-decoration: underline; cursor: pointer; }
+
+/* HUD */
+.vn-hud { position: sticky; top: 0; z-index: 30; background: var(--vn-natt); color: var(--surface); border-bottom: 1px solid var(--vn-natt-linje); }
+.vn-hud-inre { max-width: 1320px; margin: 0 auto; display: flex; align-items: center; gap: 18px; padding: 10px 16px; flex-wrap: wrap; }
+.vn-firma { font: 800 1rem var(--font-display); letter-spacing: -.01em; color: var(--surface); text-decoration: none; }
+.vn-firma small { display: block; font: 500 .62rem var(--font-mono); letter-spacing: .14em; color: var(--vn-natt-text); text-transform: uppercase; }
+.vn-niva { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+.vn-niva-txt { text-align: right; font: 500 .64rem/1.3 var(--font-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--vn-natt-text); }
+.vn-niva-txt b { display: block; font: 700 .9rem var(--font-body); letter-spacing: 0; text-transform: none; color: var(--surface); }
+.vn-pips { display: flex; gap: 4px; }
+.vn-pips i { width: 22px; height: 8px; border-radius: 2px; background: var(--vn-natt-linje); }
+.vn-pips i.full { background: var(--accent); }
+.vn-pips i.nu { background: linear-gradient(90deg, var(--accent) 40%, var(--vn-natt-linje) 40%); }
+.vn-hudnav { display: flex; gap: 8px; flex-wrap: wrap; }
+.vn-firma + .vn-hudnav { margin-left: auto; }
+.vn-hudknapp { background: transparent; border: 1px solid var(--vn-natt-linje); color: var(--surface); border-radius: 6px; padding: 7px 12px; font: 700 .86rem var(--font-body); cursor: pointer; }
+.vn-hudknapp:hover, .vn-hudknapp.akt { border-color: var(--accent); }
+.vn-hudknapp.vn-ghost { color: var(--vn-natt-text); }
+.vn-prick { display: inline-block; min-width: 18px; padding: 0 5px; margin-left: 6px; border-radius: 9px; background: var(--vn-stampel); color: #fff; font: 700 .72rem/18px var(--font-mono); text-align: center; }
+
+/* våningen */
+.vn-vaning { background: radial-gradient(ellipse at 50% 35%, #2a231c 0%, var(--vn-natt) 70%); color: var(--surface); min-height: calc(100vh - 58px); display: flex; flex-direction: column; }
+.vn-scen { position: relative; flex: 1; max-width: 1320px; width: 100%; margin: 0 auto; padding: 8px 16px 0; box-sizing: border-box; }
+.vn-scen svg { display: block; width: 100%; height: auto; max-height: 70vh; }
+.vn-rutnat { position: absolute; inset: 0; pointer-events: none; opacity: .07; background-image: linear-gradient(var(--vn-natt-text) 1px, transparent 1px), linear-gradient(90deg, var(--vn-natt-text) 1px, transparent 1px); background-size: 32px 32px; }
+.vn-rum { cursor: pointer; }
+.vn-rum .golv { transition: filter .15s; }
+.vn-rum:hover .golv, .vn-rum:focus .golv { filter: brightness(1.08); }
+.vn-rum:focus { outline: none; }
+.vn-rum:focus .golvkant { stroke: var(--accent); stroke-width: 2.5; }
+.vn-tagg rect.bas { fill: var(--surface); }
+.vn-tagg text { font-family: var(--font-body); fill: var(--text); }
+.vn-tagg .namn { font-weight: 700; font-size: 13px; }
+.vn-tagg .status { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: .06em; fill: var(--text-dim); text-transform: uppercase; }
+.vn-tagg.last rect.bas { fill: transparent; stroke: var(--vn-natt-text); stroke-dasharray: 4 3; }
+.vn-tagg.last text { fill: var(--vn-natt-text); }
+.vn-puls { animation: vnPuls 1.8s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+@keyframes vnPuls { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.25); } }
+.vn-bygg { animation: vnBygg .9s ease-out both; }
+@keyframes vnBygg { from { opacity: 0; transform: translateY(-30px); } to { opacity: 1; transform: none; } }
+.vn-blink { animation: vnBlink 1.4s ease-in-out infinite; }
+@keyframes vnBlink { 50% { opacity: .35; } }
+.vn-nasta { max-width: 1320px; width: 100%; margin: 0 auto; padding: 10px 16px 22px; box-sizing: border-box; }
+.vn-nasta-kort { display: flex; align-items: center; gap: 18px; background: var(--vn-natt-2); border: 1px solid var(--vn-natt-linje); border-left: 3px solid var(--accent); border-radius: 6px; padding: 14px 18px; }
+.vn-nasta-kort .vn-etikett { color: var(--accent); }
+.vn-nasta-kort h2 { font: 800 1.15rem/1.2 var(--font-display); margin: 3px 0 0; }
+.vn-nasta-kort p { color: var(--vn-natt-text); font-size: .92rem; margin: 2px 0 0; }
+.vn-nasta-kort .vn-knapp { margin-left: auto; white-space: nowrap; }
+.vn-nasta-ljus { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; padding-top: 6px; }
+.vn-nasta-ljus h2 { font: 800 1.05rem/1.25 var(--font-display); margin: 2px 0 0; }
+.vn-nasta-ljus p { margin: 0; color: var(--text-dim); font-size: .9rem; }
+.vn-rumlista { display: none; }
+
+/* rummet (papper) */
+.vn-arbete { max-width: 1320px; margin: 0 auto; padding: 18px 16px 60px; display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 24px; }
+.vn-plan { position: sticky; top: 76px; align-self: start; }
+.vn-plan .vn-etikett { margin-bottom: 8px; }
+.vn-miniplan { position: relative; width: 100%; background: var(--text); border-radius: 6px; box-sizing: border-box; }
+.vn-miniplan button { position: absolute; margin: 4px 0 0 4px; border: 1px solid #4a4036; background: #3a2f22; color: #fff; border-radius: 3px; font: 500 .6rem/1.15 var(--font-mono); letter-spacing: .03em; padding: 3px; text-align: left; overflow: hidden; cursor: pointer; }
+.vn-miniplan button:hover { border-color: var(--accent); }
+.vn-miniplan button.akt { background: var(--accent); border-color: var(--accent); }
+.vn-miniplan button.last { border-style: dashed; background: transparent; color: var(--vn-natt-text); opacity: .7; }
+.vn-miniplan button .r { position: absolute; right: 3px; top: 3px; width: 7px; height: 7px; border-radius: 50%; background: var(--vn-stampel); }
+.vn-tillbaka { margin-top: 12px; width: 100%; }
+.vn-rumhuvud { display: flex; gap: 16px; align-items: center; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+.vn-portratt { width: 64px; height: 64px; border-radius: 6px; object-fit: cover; background: var(--border); flex: none; }
+.vn-du-ikon { width: 64px; height: 64px; border-radius: 6px; background: var(--text); color: var(--surface); display: grid; place-items: center; font: 800 1.6rem var(--font-display); flex: none; }
+.vn-rumhuvud h1 { font: 800 1.7rem/1.1 var(--font-display); letter-spacing: -.015em; margin: 2px 0; }
+.vn-rumhuvud p { color: var(--text-dim); margin: 0; max-width: 70ch; }
+.vn-skrivbord { margin-top: 18px; }
+.vn-mappar { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 12px; margin-top: 12px; }
+.vn-mapp { position: relative; text-align: left; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 14px 14px 12px; font: inherit; color: inherit; cursor: pointer; transition: border-color .12s, transform .12s; }
+.vn-mapp::before { content: ""; position: absolute; left: 12px; top: -7px; width: 54px; height: 8px; border: 1px solid var(--border); border-bottom: 0; border-radius: 4px 4px 0 0; background: var(--surface); }
+.vn-mapp:hover { border-color: var(--accent); transform: translateY(-2px); }
+.vn-mapp.akt { border-color: var(--text); box-shadow: inset 0 0 0 1px var(--text); }
+.vn-mapp b { display: block; font-size: .98rem; line-height: 1.3; }
+.vn-mapp .s { font: 500 .66rem var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--text-dim); margin-top: 6px; }
+.vn-mapp .vantar { color: var(--vn-stampel); }
+.vn-stapel { height: 4px; background: var(--border); border-radius: 2px; margin-top: 10px; overflow: hidden; }
+.vn-stapel i { display: block; height: 100%; background: var(--accent); }
+.vn-mapp.ny { border-style: dashed; color: var(--text-dim); display: grid; place-items: center; min-height: 80px; font-weight: 700; }
+.vn-klara { font-size: .86rem; margin: 10px 0 0; }
+.vn-yta { margin-top: 22px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; }
+.vn-yta-topp { padding: 16px 20px 14px; border-bottom: 1px solid var(--border); }
+.vn-yta-topp h2 { font: 800 1.35rem/1.2 var(--font-display); margin: 4px 0 0; }
+.vn-steg { display: flex; margin-top: 14px; flex-wrap: wrap; }
+.vn-steg span { font: 500 .7rem var(--font-mono); letter-spacing: .06em; text-transform: uppercase; padding: 6px 14px 6px 20px; background: var(--bg); color: var(--text-dim); clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 50%, calc(100% - 8px) 100%, 0 100%, 8px 50%); }
+.vn-steg span:first-child { padding-left: 12px; clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 50%, calc(100% - 8px) 100%, 0 100%); }
+.vn-steg span.klar { background: #DCE5D8; color: var(--vn-salvia); }
+.vn-steg span.nu { background: var(--text); color: #fff; }
+.vn-steg span.du { background: var(--vn-stampel); color: #fff; }
+.vn-utfors { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 12px; font-size: .86rem; color: var(--text-dim); }
+.vn-utfors button { background: transparent; border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; font: 700 .82rem var(--font-body); color: var(--text); cursor: pointer; }
+.vn-utfors button:hover { border-color: var(--accent); }
+.vn-kundlank { background: none; border: 0; padding: 0; font: 500 .68rem var(--font-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--accent-2); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.vn-yta-kropp { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); }
+.vn-leverans { padding: 18px 20px; border-right: 1px solid var(--border); }
+.vn-dok { background: #fff; border: 1px solid var(--border); border-radius: 4px; padding: 16px 18px; font-size: .92rem; line-height: 1.55; max-height: 460px; overflow: auto; margin-top: 8px; }
+.vn-dok > p:first-child { margin-top: 0; }
+.vn-klartnar { margin-top: 14px; }
+.vn-klartnar ul { padding: 0; margin: 6px 0 0; }
+.vn-klartnar li { list-style: none; display: flex; gap: 8px; align-items: flex-start; font-size: .9rem; padding: 3px 0; }
+.vn-klartnar .bock { width: 16px; height: 16px; border-radius: 3px; border: 1.5px solid var(--vn-salvia); flex: none; margin-top: 3px; display: grid; place-items: center; font-size: 11px; color: #fff; background: var(--vn-salvia); }
+.vn-klartnar .bock.tom { background: transparent; }
+.vn-beslut { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+.vn-stryk { margin-left: auto; color: var(--text-dim); font-weight: 500; }
+.vn-uppdrag { padding: 18px 20px; font-size: .92rem; }
+.vn-uppdrag p { white-space: pre-wrap; margin: 6px 0 12px; }
+.vn-samtal .vn-yta-topp { padding: 12px 20px; }
+.vn-chatt .main { height: min(72vh, 760px); }
+.vn-chatt .mobile-bar, .vn-chatt #nasta-steg-main { display: none !important; }
+
+/* VD-kontoret */
+.vn-vdrad { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 20px; margin-top: 18px; }
+.vn-lada { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 18px 20px; color: var(--text); }
+.vn-tomt { padding: 12px 0 4px; margin: 0; }
+.vn-vantar-rad { display: flex; gap: 12px; align-items: center; padding: 12px 0; border-top: 1px solid var(--border); }
+.vn-vantar-rad:first-child { border-top: 0; }
+.vn-vantar-rad img { width: 40px; height: 40px; border-radius: 4px; object-fit: cover; }
+.vn-vantar-rad b { display: block; }
+.vn-vantar-rad span { font-size: .86rem; }
+.vn-vantar-rad .vn-knapp { margin-left: auto; white-space: nowrap; }
+.vn-trappan { list-style: none; padding: 0; margin: 10px 0 0; }
+.vn-trappan li { display: grid; grid-template-columns: 28px 1fr; gap: 10px; padding: 8px 0; border-top: 1px solid var(--border); font-size: .9rem; }
+.vn-trappan li:first-child { border-top: 0; }
+.vn-trappan .n { width: 26px; height: 26px; border-radius: 4px; display: grid; place-items: center; font: 700 .8rem var(--font-mono); background: var(--bg); color: var(--text-dim); }
+.vn-trappan li.klar .n { background: var(--vn-salvia); color: #fff; }
+.vn-trappan li.nu .n { background: var(--accent); color: #fff; }
+.vn-trappan .ul { color: var(--text-dim); font-size: .82rem; }
+.vn-passerkort { margin-top: 14px; display: flex; gap: 10px; align-items: center; font-size: .85rem; color: var(--text-dim); border: 1px dashed var(--border); border-radius: 6px; padding: 10px; }
+.vn-passerkort img { width: 34px; height: 34px; border-radius: 3px; filter: grayscale(1); opacity: .7; }
+.vn-verktyg { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 18px; }
+
+/* pentryt */
+.vn-rutin { display: flex; gap: 12px; align-items: center; padding: 10px 0; border-top: 1px solid var(--border); }
+.vn-rutin-dag { font: 500 .66rem var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--text-dim); width: 64px; flex: none; }
+.vn-rutin-txt { flex: 1; display: flex; flex-direction: column; }
+.vn-rutin-txt span { font-size: .84rem; color: var(--text-dim); }
+.vn-uppnadd-h { font: 800 1.8rem/1.1 var(--font-display); margin: 4px 0 10px; }
+
+/* arbetsytan som låda */
+#vn-lada { position: fixed; inset: 0; z-index: 70; }
+.vn-lada-bak { position: absolute; inset: 0; background: rgba(23, 19, 15, .55); }
+#vn-lada .sidebar { position: absolute; top: 0; right: 0; bottom: 0; left: auto; width: min(360px, 92vw); z-index: 2; transform: none; overflow-y: auto; box-shadow: -18px 0 40px -22px rgba(0, 0, 0, .5); padding-top: 44px; display: flex; flex-direction: column; }
+#vn-lada .sidebar .ws { position: static; width: auto; max-height: none; height: auto; overflow: visible; border-left: 0; flex: 0 0 auto; }
+#vn-lada .sidebar .agent-list { flex: 0 0 auto; overflow: visible; min-height: auto; }
+.vn-lada-stang { position: absolute; top: 8px; right: 12px; z-index: 3; background: var(--text); color: var(--surface); border: 0; border-radius: 6px; padding: 6px 12px; font: 700 .85rem var(--font-body); cursor: pointer; }
+
+/* kunderna */
+.vn-kunder { background: radial-gradient(ellipse at 50% 0%, #2a231c 0%, var(--vn-natt) 70%); color: var(--surface); min-height: calc(100vh - 58px); }
+.vn-tavla-inre { max-width: 1320px; margin: 0 auto; padding: 22px 16px 40px; }
+.vn-tavla-topp { display: flex; align-items: flex-end; gap: 20px; flex-wrap: wrap; margin-bottom: 18px; }
+.vn-tavla-topp h1 { font: 800 1.8rem/1.1 var(--font-display); margin: 4px 0; }
+.vn-tavla-topp p { color: var(--vn-natt-text); font-size: .92rem; margin: 4px 0 0; max-width: 62ch; }
+.vn-etikett.vn-ljus { color: var(--accent); }
+.vn-summa { display: flex; gap: 22px; margin-left: auto; flex-wrap: wrap; }
+.vn-summa div { font: 500 .64rem/1.3 var(--font-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--vn-natt-text); }
+.vn-summa b { display: block; font: 800 1.25rem var(--font-display); color: var(--surface); text-transform: none; }
+.vn-summa .rod b { color: #E07A6A; }
+.vn-linser { display: flex; gap: 4px; margin: 0 0 12px; flex-wrap: wrap; align-items: center; }
+.vn-linser > button { background: transparent; border: 1px solid var(--vn-natt-linje); color: var(--vn-natt-text); border-radius: 6px; padding: 7px 14px; font: 700 .88rem var(--font-body); cursor: pointer; }
+.vn-linser > button.akt { background: var(--surface); color: var(--text); border-color: var(--surface); }
+.vn-linser-hoger { margin-left: auto; display: flex; gap: 6px; }
+.vn-tavla { display: grid; grid-template-columns: repeat(4, minmax(200px, 1fr)); gap: 10px; overflow-x: auto; padding: 14px; background: #2B241C; border: 1px solid var(--vn-natt-linje); border-radius: 8px; box-shadow: inset 0 0 0 6px #221C16; }
+.vn-kol { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.vn-kol h3 { font: 500 .66rem var(--font-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--vn-natt-text); padding: 4px 2px 8px; border-bottom: 1px solid var(--vn-natt-linje); display: flex; justify-content: space-between; margin: 0; }
+.vn-kol .tom { font-size: .78rem; color: #7d7264; padding: 6px 2px; }
+.vn-kund { position: relative; text-align: left; background: var(--surface); color: var(--text); border: 0; border-radius: 4px; padding: 11px 12px 10px; box-shadow: 0 2px 0 rgba(0, 0, 0, .35); font: inherit; cursor: pointer; transition: transform .12s; }
+.vn-kund:hover { transform: translateY(-2px) rotate(-.4deg); }
+.vn-kund::before { content: ""; position: absolute; top: -4px; left: 50%; width: 10px; height: 10px; margin-left: -5px; border-radius: 50%; background: var(--accent); }
+.vn-kund b { display: block; font-size: .95rem; line-height: 1.25; }
+.vn-kund .vad, .vn-orgkort .vad, .vn-kontakt .vad, .vn-kontakt-ljus .vad { font-size: .8rem; color: var(--text-dim); margin-top: 2px; }
+.vn-kund .nast { display: flex; gap: 6px; align-items: center; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border); font-size: .78rem; line-height: 1.3; }
+.vn-kund .nast img { width: 20px; height: 20px; border-radius: 3px; object-fit: cover; }
+.vn-kund.du-tur { box-shadow: 0 2px 0 rgba(0, 0, 0, .35), inset 3px 0 0 var(--vn-stampel); }
+.orgtyp { display: block; font: 500 .6rem var(--font-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--accent-2); margin-bottom: 3px; }
+.vn-tavla-tom { color: var(--vn-natt-text); font-size: .9rem; margin-top: 14px; }
+.vn-orgnat { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 10px; }
+.vn-orgkort { text-align: left; background: var(--surface); color: var(--text); border: 0; border-radius: 6px; padding: 14px; font: inherit; cursor: pointer; }
+.vn-orgkort:hover, .vn-kontakt:hover { outline: 2px solid var(--accent); }
+.vn-orgkort b { font-size: 1rem; }
+.folk { display: flex; align-items: center; gap: 3px; margin: 10px 0 6px; }
+.folk span, .ini { width: 26px; height: 26px; border-radius: 50%; background: var(--text); color: var(--surface); display: grid; place-items: center; font: 700 .66rem var(--font-mono); flex: none; }
+.folk em { font-style: normal; font-size: .78rem; color: var(--text-dim); margin-left: 6px; }
+.aff { font-size: .8rem; border-top: 1px solid var(--border); padding-top: 5px; margin-top: 5px; }
+.vn-kontaktlista { display: grid; gap: 6px; }
+.vn-kontakt { display: grid; grid-template-columns: 30px minmax(160px, 1.1fr) minmax(0, 1.6fr); gap: 12px; align-items: center; text-align: left; background: var(--surface); color: var(--text); border: 0; border-radius: 6px; padding: 10px 14px; font: inherit; cursor: pointer; }
+.vn-kontakt .ini { width: 30px; height: 30px; }
+.vn-kontakt .not { font-size: .84rem; }
+.vn-parm { margin-top: 14px; }
+.vn-parm h1 { font: 800 1.8rem/1.1 var(--font-display); margin: 4px 0; }
+.vn-kontakt-ljus { display: flex; gap: 10px; align-items: flex-start; padding: 10px 0; border: 0; border-top: 1px solid var(--border); background: none; width: 100%; text-align: left; font: inherit; color: inherit; cursor: pointer; }
+.vn-kontakt-ljus .not { font-size: .84rem; margin-top: 3px; }
+.vn-projrad { display: flex; gap: 10px; align-items: center; width: 100%; text-align: left; background: #fff; border: 1px solid var(--border); border-radius: 6px; padding: 10px 12px; margin-top: 8px; font: inherit; color: inherit; cursor: pointer; }
+.vn-projrad:hover { border-color: var(--accent); }
+.vn-projrad img { width: 32px; height: 32px; border-radius: 4px; object-fit: cover; }
+.vn-projrad .vn-dim { font-size: .82rem; }
+.vn-projrad .s { margin-left: auto; font: 500 .64rem var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--text-dim); text-align: right; }
+.vn-projrad .s.v { color: var(--vn-stampel); }
+.vn-toast { position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%); background: var(--text); color: var(--surface); padding: 10px 16px; border-radius: 6px; font-size: .9rem; opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 90; max-width: min(560px, 92vw); text-align: center; }
+.vn-toast.syns { opacity: 1; }
+
+@media (max-width: 860px) {
+  .vn-arbete { grid-template-columns: 1fr; }
+  .vn-plan { position: static; }
+  .vn-miniplan { max-width: 320px; }
+  .vn-yta-kropp, .vn-vdrad { grid-template-columns: 1fr; }
+  .vn-leverans { border-right: 0; border-bottom: 1px solid var(--border); }
+  .vn-nasta-kort { flex-direction: column; align-items: flex-start; }
+  .vn-nasta-kort .vn-knapp { margin-left: 0; }
+  .vn-niva-txt { display: none; }
+  .vn-hud-inre { gap: 10px; }
+  .vn-rumlista { display: grid; gap: 8px; padding: 0 16px 22px; max-width: 1320px; margin: 0 auto; }
+  .vn-rumlista button { display: flex; justify-content: space-between; gap: 10px; background: var(--vn-natt-2); border: 1px solid var(--vn-natt-linje); border-radius: 6px; padding: 12px 14px; color: var(--surface); font: 700 .95rem var(--font-body); text-align: left; cursor: pointer; }
+  .vn-rumlista button span { font: 500 .66rem var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--vn-natt-text); }
+  .vn-rumlista button.last { border-style: dashed; color: var(--vn-natt-text); }
+  .vn-tavla { grid-template-columns: repeat(4, 78vw); scroll-snap-type: x mandatory; }
+  .vn-kol { scroll-snap-align: start; }
+  .vn-summa { margin-left: 0; }
+  .vn-linser-hoger { margin-left: 0; }
+  .vn-kontakt { grid-template-columns: 30px 1fr; }
+  .vn-kontakt .not { grid-column: 2; }
+  .vn-chatt .main { height: 70vh; }
+}
+@media (prefers-reduced-motion: reduce) { .vn-puls, .vn-bygg, .vn-blink { animation: none; } }

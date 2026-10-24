@@ -1675,6 +1675,9 @@ function renderPortal() {
     }
   }
   if (harJobb()) hämtaJobbVantar(); // async: leveranser som väntar på godkännande (SP21)
+  // Våningen (SP16/SP20): kontorsvåningen blir portalens första vy, och
+  // chatten flyttar in i agentens rum. portal/vaningen.js.
+  if (window.ATBVaning) window.ATBVaning.start();
   renderPulse();       // lokala puls-kort — portalen har alltid något att säga
   checkTrialNotice();  // async: provmånadens slutdatum, om kontot säger att det är en provmånad
   runAutoRoutines();   // async: auto-rutiner som ska ligga klara idag
@@ -2702,6 +2705,7 @@ function firmanOmritning() {
     msel.value = state.activeAgentId;
   }
   paintNastaStegMain();
+  if (window.ATBVaning) window.ATBVaning.omrita();
 }
 function firmanBokaOchRita(typ, agentId) {
   const e = firmanBoka(typ, agentId);
