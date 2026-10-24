@@ -5625,6 +5625,7 @@ function kopplingsRuta() {
     "Claude: Inställningar → Anpassa → Kopplingar → Lägg till anpassad koppling. Klistra in adressen. Fungerar på alla abonnemang, även gratis.",
     "ChatGPT: lägg till en egen app (koppling) med adressen under Inställningar → Appar. På vissa abonnemang krävs utvecklarläge, och det är Business och Enterprise som säkert får lämna leveranser tillbaka.",
     "Logga in med samma e-post som här, och säg ja på sidan som visar vad kopplingen får göra.",
+    "Koppla också din mejl och kalender i samma meny (Gmail, Outlook, Google Kalender — de finns färdiga där). Då läser teamet mejlen själv, och du slipper klistra in dem.",
   ].forEach((s) => steg.appendChild(el("li", null, s)));
   d.appendChild(steg);
 
@@ -5664,6 +5665,7 @@ function projektInstruktion() {
     "- När jag berättar något bestående om verksamheten — ett beslut, ett pris, en kund, en kontakt — spara det med spara_minne, spara_organisation eller spara_kontakt och säg kort vad du sparat. Spara inget jag inte sagt.",
     "- Svenska regler, belopp och datum: slå upp med svenska_regler först och ange källan. Står regeln inte där, säg att du inte är säker.",
     "- Jobb: hämta med hamta_jobb och lämna resultatet med lamna_leverans. Jag godkänner i Mitt AI-team.",
+    "- Mejl, kalender och filer: är min mejl eller kalender kopplad här, sök fram och läs det själv. Be mig aldrig klistra in ett mejl. Skicka aldrig något i mitt namn utan att jag sagt ja till just det utkastet.",
     "- Svara på svenska, kort och konkret.",
   ].join("\n");
 }
