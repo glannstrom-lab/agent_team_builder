@@ -520,6 +520,14 @@ Från genomgången 2026-09-01 · sex parallella linser + egen verifiering.
   kunder får upplåst det de *använt*, inte allt de sett — kan upplevas som förlust ·
   `portal/app.js`, `portal/firman.js` · ~1 pass
 
+- [ ] **SP20** *(skiss gjord 2026-10-24: `design/14-vaningen.html`, <https://claude.ai/artifact/P6Ve8dwZwDptLpBX5hwxzg>)* **Våningen: projektet är enheten, inte chatten.** *Mikael 2026-10-24: "en design UI och UX som ett riktigt företag, designat som ett spel ... kontor som innehåller de aktuella arbetsuppgifterna, tydliga arbetsytor med pågående projekt. Det är det jag saknar på t.ex. Claudes program, det är bara massa projekt och en chatt, rörigt."* Vald stil (Mikael): **managementspel ovanifrån**, stramt och vuxet: en isometrisk våning i en mörk ram, medan rummen är papper (Personalen/Ljus). Bygger vidare på SP16:
+  - **Våningen ersätter agentlistan.** Varje anställd har ett rum, och det som pågår syns som mappar på skrivbordet redan från våningen. En röd prick betyder att något väntar på kunden. Längst ner finns ett enda nästa steg.
+  - **Projektet är ett nytt objekt.** Det har steg, en leverans, en "Klart när"-lista och ett eget samtal. Chatten hör till projektet, projektet till ett rum. Projektet blir klart först när kunden godkänt det, och det är samma händelse som SP19 bokför.
+  - **Nivån syns som byggnad.** Ett låst rum är en ritning, ett rum som kan anställas blinkar, och en anställning bygger rummet. Pentryts whiteboard med veckans rutiner tänds på nivå 3.
+  - **Öppet:** var projekten bor i teamkonfigen och `teamExt`, vem som startar dem (förslag: VD-assistenten ur rutinerna plus "+ Nytt projekt"), och om **kundpärmen** (ett lätt CRM byggt ur projekten, se nedan) ska med.
+  - **Kundpärmen (CRM-frågan, Mikael 2026-10-24).** Projekten är redan jobb åt namngivna kunder (Villa Ek, Andersson, Berg, Lund), och rutinen "offerter som väntar på svar" är redan CRM-uppföljning. En pärm per kund samlar projekt, offerter, ÄTA och uppföljningar. Risker: kundens kunder är personuppgifter (PUB-avtal, `integritet.html`), och fullständiga CRM (Fortnox, Pipedrive, HubSpot gratis) ska inte efterliknas. Ska vara ett register som växer ur arbetet, inte en databas att fylla i · beslut
+  · `portal/app.js`, `portal/portal.css`, `portal/firman.js`, `functions/api/_build.js` (TEAM_SCHEMA om projekt genereras) · mätpunkt: en simulerad kund hittar det som väntar på henne utan att fråga · skiss gjord; ~3 pass
+
 ### Väntar på ElevenLabs
 
 > Mikael 2026-10-23: "vi ska skapa bra material till det här senare i ElevenLabs,
