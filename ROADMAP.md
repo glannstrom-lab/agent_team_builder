@@ -819,6 +819,29 @@ Från genomgången 2026-09-01 · sex parallella linser + egen verifiering.
 - [ ] **P2** Gratisbygget fångar ingen e-post — övergiven körning är borta för alltid · `builder/builder.js:1432-1493` · `läst i koden` · ~4 h
 - [x] **P3** *(lagad 2026-09-26: functions/api/_provmanad.js mejlar teamets ägare när fem dagar återstår (dag 25), via veckobrevets timklocka men efter timgolvet — ett test hittade att den först låg före golvet och hade mejlat på natten. En gång per team (markering i ai_usage), omförsök nästa timme om mejlet fallerar. Fyra tester mot riktig SQLite. Skarpa D1 har i dag inga provmånader, så inget mejl gick ut vid driftsättningen)* Provmånaden har ingen utgående livlina utanför portalen · `functions/api/_plan.js:65-86` · `mätt` · ~6 h
 
+## Driftsatt 2026-10-24
+
+Pages `374122f0`, commit `ee5df78`, taggen `deploy-2026-10-24`. Migration 0008 körd skarpt efter `npm run db:backup` (186 kB). 498 gröna.
+
+Med i deployen är allt från passen 2026-10-23 och 2026-10-24: KA14, SP1–SP3, SP8, SP9, SP17 (prompten), SP19 och **SP21 (kopplingen)**. **SP17 gick ut omätt på Mikaels uttryckliga order** ("commit, push, deploy"). Planen var att mäta VD-assistenten 3 × 3 innan drift. Glänne-bygget nedan visade samma namnfel som SP17 handlar om, så mätningen står kvar som nästa pass.
+
+**Verifierat i drift efteråt (mätt):**
+- `/api/health` friskt med sju sanna kontroller. `/`, `/portal/` och `/builder/` svarar 200, och en påhittad sida svarar 404.
+- `/.well-known/oauth-authorization-server` och `oauth-protected-resource` (även `/mcp`-varianten) svarar 200 med JSON. Pages kör alltså funktioner under `.well-known`, vilket inte var känt i förväg.
+- `POST /mcp` utan nyckel ger 401 med `WWW-Authenticate: Bearer resource_metadata=…`.
+- Hela kedjan har körts skarpt mot Glänne & Söners riktiga team: DCR, samtycke, 303 till claude.ai, token, ett jobb skapat via `/api/jobb`, och sedan initialize, lista, hämta och lämna via `/mcp`, med portalen som visar "levererad · Claude". Kördes med en tillfällig session på Mikaels konto. Sessionen, provjobbet, klienten och nycklarna är raderade efteråt, och räkningen är 0/0/0/0.
+
+**Glänne & Söner skarpt:** byggt med den riktiga pipelinen och dagens prompter (`testoutput/glanne-skarp-2026-10-24/`). Det har fyra agenter (VD-assistenten, Offert & uppföljning, Ekonomi-avstämning, Artikel & sökdata), ingen VD-agent enligt KA14, en rekryteringsplan och fem avvisade förslag. Teamet ligger på glannstrom@gmail.com som `jQ8FGFMvPN8BXR3HFBYosy`. Det gamla `glanne-soner` är orört.
+
+**Fynd:**
+- Modellen hittade på efternamnet "Mikael Glänne" i fyra systemprompter fast intaget säger Glännström. Det är rättat för hand före provisioneringen. Det är SP17-felet i skarp form.
+- Radslut: Python på Windows skriver CRLF, och `test/portal.mjs` klipper funktioner på `"
+}
+"`. Tre tester föll i deployens egen testkörning, och grinden höll. Skriv filer med `newline=""` eller via Node.
+- `wrangler d1 --remote` kräver Global API Key (`CLOUDFLARE_API_KEY` + `CLOUDFLARE_EMAIL`). OAuth-inloggningen ger 7403.
+
+**Kvar, och vems:** att koppla en riktig Claude till `https://mittaiteam.se/mcp` med sitt konto är Mikaels. ChatGPT likaså. Texten i `integritet.html` om jobbkortet till plattformen är Mikaels.
+
 ## Driftsatt 2026-09-26
 
 **Modellbytet till `deepseek/deepseek-v4.1-flash`** (Mikaels beslut efter
