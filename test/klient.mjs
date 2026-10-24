@@ -164,7 +164,7 @@ test("modell-id: samma modell i klienten, proxyn och veckobrevet — och i villk
   assert.equal(id("functions/api/ai.js", /^const MODEL_ID = "([^"]+)"/m), klient, "ai.js kör en annan modell än klienten visar");
   assert.equal(id("functions/api/digest/run.js", /^const MODEL_ID = "([^"]+)"/m), klient, "veckobrevet kör en annan modell");
   const label = id("atb-claude.js", /const MODEL_LABEL = "([^"]+)"/);
-  for (const fil of ["villkor.html", "integritet.html", "index.html"]) {
+  for (const fil of ["villkor.html", "integritet.html", "om.html"]) {
     assert.ok(readFileSync(fil, "utf8").includes(label), `${fil} nämner inte modellen ${label}`);
   }
 });

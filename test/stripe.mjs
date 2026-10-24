@@ -122,7 +122,7 @@ const GÄLLANDE = [/\b90 kr/, /\b290 kr/];
 // substrängsökning hade sett 90-nivån i varje omnämnande av 290.
 const STRUKNA = [/\b190 kr/, /\b490 kr/, /\b4\s?990/];
 
-for (const fil of ["index.html", "villkor.html"]) {
+for (const fil of ["om.html", "villkor.html"]) { // prislistan bor i om.html sedan 2026-10-24
   test(`${fil} visar de gällande beloppen och inga strukna`, () => {
     const text = utanKommentarer(fil);
     for (const r of GÄLLANDE) assert.match(text, r, `${fil} saknar ${r}`);

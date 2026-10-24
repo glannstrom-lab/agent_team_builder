@@ -538,6 +538,8 @@ Från genomgången 2026-09-01 · sex parallella linser + egen verifiering.
   - **Kvar:** koppla en riktig Claude mot drift, vilket bara Mikael kan göra med sitt konto. Därefter ChatGPT. `integritet.html` ska nämna att jobbkortet (uppdrag, kund, agentinstruktion) lämnas till plattformen kunden själv kopplat. Det är din text.
   · `functions/mcp.js`, `functions/oauth/*`, `functions/api/_koppling.js`, `functions/api/jobb/*`, `portal/app.js` (openJobs), `migrations/0008_jobb_och_koppling.sql`
 
+- [x] **SP22** *(gjord 2026-10-24)* **Startsidan är scen 1, och demoteamen visas inte utåt.** *Mikael: "startsidan ska vara scen 1", "ta bort alla gamla demokonton … de får bygga sina egna, är metoden nu", "såvida jag inte har ett konto redan, då ska jag in direkt i kontoret".* `index.html` = öppningsscenen (SP15 skarp: lokala typsnitt, `/portal/avatars/`). Valen och måndagssvaret går via `atb_scen` in i Buildern. Inloggad med team leder till portalen. Den gamla säljsidan heter `om.html`. Galleriet och branschsidorna publiceras inte, och `_redirects` skickar deras adresser till `/`. Exempelteamen öppnas bara med `?intern=1`. **Kvar:** namnet och porträttet från scenen ska in i VD-assistenten (SP17 punkt 3 / SP9), och intervjun i Buildern ska fortsätta i scenens ton (SP7).
+
 ### Väntar på ElevenLabs
 
 > Mikael 2026-10-23: "vi ska skapa bra material till det här senare i ElevenLabs,

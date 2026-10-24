@@ -1,0 +1,19 @@
+# Gamla adresser (2026-10-24): galleriet och branschsidorna publiceras inte
+# längre — demoteamen visas inte utåt. Startsidan är öppningsscenen.
+/site/                /   301
+/site/index.html      /   301
+/site/en-vecka        /   301
+/site/en-vecka.html   /   301
+/site/coachonline     /   301
+/site/coachonline.html /  301
+/site/accountant      /   301
+/site/accountant.html /   301
+/site/agency          /   301
+/site/agency.html     /   301
+/site/studio          /   301
+/site/studio.html     /   301
+/site/ikea            /   301
+/site/ikea.html       /   301
+/verticals            /   301
+/verticals/           /   301
+/verticals/*          /   301

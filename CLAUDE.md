@@ -129,7 +129,19 @@ avvisade förslag står kvar överstrukna. Det gör regeln om att minst en agent
 ska få nej synlig i designen. Elva alternativa riktningar finns kvar som
 skisser i `design/` (deployas inte).
 
-- **Hub** (`index.html`) — front-dörr och säljsida som navigerar till de fyra.
+**Startsidan är öppningsscenen (2026-10-24, Mikael).** `index.html` är skiss 12
+gjord skarp: kunden väljer kandidatens ansikte och namn, Gunnar säger upp sig,
+intervjun börjar, och svaret på "vad gör ni på en vanlig måndag?" sparas i
+`atb_scen` och förifyller Buildern (`scenUtkast()` i `builder/builder.js`).
+Är besökaren inloggad med ett team går sidan rakt till `/portal/?team=<senaste>`.
+Säljsidan med priser, villkor och FAQ heter **`om.html`** — prislistan, modellraden
+och personalliggaren som testerna läser bor där nu. **Demoteamen visas inte utåt**
+("de får bygga sina egna, är metoden nu"): galleriet (`site/*.html`) och
+branschsidorna (`verticals/`) publiceras inte (`PUBLICERA_BRANSCHSIDOR`,
+`_redirects`), och portalen öppnar exempelteamen bara med `?intern=1` — för våra
+egna tester. Källfilerna ligger kvar.
+
+- **Hub** (`om.html`, fram till 2026-10-24 `index.html`) — säljsidan.
 - **Builder** (`builder/`) — bygg ett team live framför en kund. Kör den
   **riktiga pipelinen**: `prompts/shared/research.md`, `scale.md`,
   `proposal.md` (+ `ai-consultant/first-project.md`) verbatim, steg för steg,

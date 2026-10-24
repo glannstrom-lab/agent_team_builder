@@ -82,7 +82,7 @@ test("varje agent har en avvisad motpart någonstans i teamet", () => {
 // Testet läser namnen ur sidan i stället för ur en lista här, så att en
 // framtida omskrivning av avsnittet omfattas utan att någon minns testet.
 test("namnen i startsidans personalliggare kommer ur en riktig körning", () => {
-  const sida = readFileSync("index.html", "utf8");
+  const sida = readFileSync("om.html", "utf8"); // säljsidan sedan 2026-10-24; startsidan är öppningsscenen
 
   // Passerkorten: <h3>Namn</h3> inuti .rack.
   const rack = /<div class="rack">([\s\S]*?)<\/section>/.exec(sida);

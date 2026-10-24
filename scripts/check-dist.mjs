@@ -105,11 +105,11 @@ if (existsSync(swPath)) {
 // FAQ-markup utan innehåll. Google straffar dessutom markup som inte matchar
 // det besökaren ser, så varje fråga och svar kontrolleras mot sidans text.
 const jsonLdFel = [];
-const startsida = join("dist", "index.html");
+const startsida = join("dist", "om.html"); // säljsidan bär FAQ:n sedan 2026-10-24
 if (existsSync(startsida)) {
   const html = readFileSync(startsida, "utf8");
   if (html.includes("data-faq-schema")) {
-    jsonLdFel.push("index.html: FAQ-markören är kvar ofylld — schemat genererades inte");
+    jsonLdFel.push("om.html: FAQ-markören är kvar ofylld — schemat genererades inte");
   }
   const LD = /<script type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/g;
   const block = [...html.matchAll(LD)].map((m) => m[1].trim()).filter(Boolean);
@@ -118,14 +118,14 @@ if (existsSync(startsida)) {
   // den här kontrollen gjorde precis det, och upptäcktes bara genom att ett
   // synligt svar ändrades med flit och grinden ändå var grön.
   const synligt = html.replace(LD, "");
-  if (!block.length) jsonLdFel.push("index.html: inget JSON-LD alls");
+  if (!block.length) jsonLdFel.push("om.html: inget JSON-LD alls");
   let frågor = 0;
   for (const [i, b] of block.entries()) {
     let data;
     try {
       data = JSON.parse(b.split("<\\/").join("</"));
     } catch (e) {
-      jsonLdFel.push(`index.html: JSON-LD-block ${i + 1} går inte att tolka (${e.message})`);
+      jsonLdFel.push(`om.html: JSON-LD-block ${i + 1} går inte att tolka (${e.message})`);
       continue;
     }
     if (data["@type"] !== "FAQPage") continue;
@@ -136,7 +136,7 @@ if (existsSync(startsida)) {
       if (bit && !synligt.includes(bit)) jsonLdFel.push(`FAQ-svaret finns inte som synlig text: "${bit}…"`);
     }
   }
-  if (!frågor) jsonLdFel.push("index.html: FAQPage saknar frågor");
+  if (!frågor) jsonLdFel.push("om.html: FAQPage saknar frågor");
   if (!jsonLdFel.length) {
     console.log(`✓  JSON-LD tolkar rent, och FAQPage:s ${frågor} frågor och svar finns som synlig text`);
   }
@@ -151,7 +151,9 @@ fel.push(...jsonLdFel);
 // slugen, ska bygget säga ifrån — en bransch utan sida är en bransch som inte
 // finns för en sökmotor, och det syns inte på något annat sätt.
 const verticalsKälla = "verticals/verticals.js";
-if (existsSync(verticalsKälla) && existsSync(join("dist", "sitemap.xml"))) {
+// Sedan 2026-10-24 publiceras branschsidorna inte (PUBLICERA_BRANSCHSIDOR i
+// build-dist.mjs). Kontrollen gäller bara när de faktiskt följer med i dist/.
+if (existsSync(verticalsKälla) && existsSync(join("dist", "verticals")) && existsSync(join("dist", "sitemap.xml"))) {
   const win = {};
   new Function("window", readFileSync(verticalsKälla, "utf8"))(win);
   const slugs = (win.VERTICALS || []).map((v) => v.slug);

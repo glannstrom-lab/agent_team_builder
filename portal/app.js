@@ -890,6 +890,12 @@ const agentById = (id) => team.agents.find((a) => a.id === id);
 // Team som finns för att visas, inte för att säljas: exempelteamen i registret
 // (portal/teams/index.js) och branschsidornas demo. De öppnas utan konto och
 // utan anrop — svaren är förskrivna i konfigen.
+// Demoteamen visas inte längre utåt (Mikael 2026-10-24: "de får bygga sina
+// egna, är metoden nu"). Startsidan är öppningsscenen, och den som har ett
+// konto går rakt in i sitt kontor. Exempelteamen finns kvar för våra egna
+// tester och öppnas bara med ?intern=1 — utan den leder en gammal demolänk
+// till startsidan i stället för till ett team som inte är kundens.
+const INTERN = new URLSearchParams(location.search).get("intern") === "1";
 const isShowcaseSlug = (s) =>
   !!s && (s === "__vertical" || (Array.isArray(window.TEAMS) && window.TEAMS.some((t) => t.slug === s)));
 // Ett lokalt team utan köp: Builder-utkastet och ett team öppnat via
@@ -1085,7 +1091,7 @@ async function boot() {
   // team i URL:en, eller bär fragmentet en delningslänk, är avsikten redan
   // uttalad och den gamla vägen gäller.
   if (!/^#cfg=/.test(location.hash || "") && !getSlug()) {
-    if (state.demo) { renderPicker(); return; }
+    if (state.demo && INTERN) { renderPicker(); return; }
     const me = await authMe();
     if (me) { renderAccountPicker(me); return; }
     if (me === false) { renderLogin({}); return; }
@@ -1102,7 +1108,10 @@ async function boot() {
   // för att titta på. De öppnas alltid i demoläge: förskrivna svar, inga
   // anrop, ingen inloggning. Utan det mötte en besökare ett 402 mitt i sin
   // första fråga, vilket läses som ett fel och inte som ett erbjudande.
-  if (isShowcaseSlug(getSlug())) state.demo = true;
+  if (isShowcaseSlug(getSlug())) {
+    if (!INTERN) { location.replace("/"); return; }
+    state.demo = true;
+  }
 
   // Delningslänk? Fragment (#cfg=…) bär hela teamkonfigen och når aldrig
   // servern. Packa upp, spara lokalt och öppna som __link-team.
@@ -1194,9 +1203,7 @@ function renderLocked(reason) {
   btn.onclick = () => { location.href = "../builder/"; };
   wrap.appendChild(btn);
 
-  const peek = el("button", "demo-link", "Eller se hur portalen fungerar i ett demoteam →");
-  peek.onclick = () => { location.href = "?team=coachonline&demo=1"; };
-  wrap.appendChild(peek);
+  // Länken till ett demoteam är struken 2026-10-24: demoteamen visas inte utåt.
 
   root.appendChild(wrap);
 }
@@ -1405,6 +1412,10 @@ function renderLogin(opts) {
   wrap.appendChild(el("p", "setup-lead", o.email
     ? `Om ${o.email} finns hos oss ligger det en sexsiffrig kod i inkorgen. Den gäller i tio minuter.`
     : "Skriv adressen ni angav när teamet levererades, så skickar vi en engångskod. Inget lösenord att komma ihåg."));
+  if (!o.email) {
+    const börja = el("a", "hublink", "Inget team än? Börja din resa →"); börja.href = "/";
+    wrap.appendChild(börja);
+  }
 
   if (o.devNote) {
     const note = el("div", "setup-err", "🛠 " + o.devNote);
@@ -1418,6 +1429,7 @@ function renderLogin(opts) {
   const err = el("div", "setup-err"); err.setAttribute("role", "alert"); err.style.display = "none";
   wrap.appendChild(err);
   const fail = (msg) => { err.textContent = "⚠️ " + msg; err.style.display = "block"; };
+  if (o.fel) fail(o.fel);
 
   const input = el("input");
   input.id = o.email ? "login-code" : "login-email";
@@ -1541,6 +1553,8 @@ function renderAccountPicker(me) {
 }
 
 function renderPicker(errMsg) {
+  // Utåt finns ingen lista att välja ur — bara inloggningen.
+  if (!INTERN) { renderLogin({ fel: errMsg }); return; }
   const root = $("#root");
   root.innerHTML = "";
   const wrap = el("main", "picker");

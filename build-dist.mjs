@@ -15,7 +15,13 @@ import { createHash } from "node:crypto";
 // varje felstavad adress blev en till kopia av säljsidan i sökmotorns ögon
 // (mjuk 404) — uppmätt 2026-08-17: /helt/pahittad/sida gav 200 och 44 kB
 // startsida. Den lurade dessutom en granskning att tro att en fil låg exponerad.
-const ITEMS = ["index.html", "404.html", "avatars.js", "atb-claude.js", "builder", "site", "verticals", "portal", "fonts", "og.png", "sitemap.xml", "robots.txt", "_headers"];
+// 2026-10-24 (Mikael): startsidan är öppningsscenen och säljsidan heter
+// om.html. Galleriet (site/*.html) och branschsidorna (verticals/) publiceras
+// inte längre — demoteamen visas inte utåt, "de får bygga sina egna". Av site/
+// följer bara designsystemet med; _redirects skickar de gamla adresserna hem.
+// Källfilerna ligger kvar i repot för våra egna tester.
+const ITEMS = ["index.html", "om.html", "404.html", "avatars.js", "atb-claude.js", "builder", "site/showcase.css", "portal", "fonts", "og.png", "sitemap.xml", "robots.txt", "_headers", "_redirects"];
+const PUBLICERA_BRANSCHSIDOR = false;
 
 // Juridiksidorna publiceras bara när de är ifyllda. Org.nr, momsreg.nr och
 // adress är lagkrav (8 § e-handelslagen) och står som [FYLL I] tills Mikael
@@ -32,7 +38,7 @@ ITEMS.push(...legalRedo);
 // inte blir de länkarna 404 — en sajt som visar priser och länkar till villkor
 // som inte finns är sämre än en som inte länkar alls. Därför fäller vi bygget
 // i just den kombinationen i stället för att varna. Fixen tar fem minuter.
-const hub = readFileSync("index.html", "utf8");
+const hub = readFileSync("index.html", "utf8") + readFileSync("om.html", "utf8");
 const dangling = legalBlocked.filter((f) => hub.includes(`href="${f}"`));
 if (dangling.length) {
   console.error(
@@ -123,7 +129,7 @@ function allaFiler(dir) {
 
 // Branschsidorna skrivs FÖRE filträdet läses in, så att de kommer med i
 // versionsstämplingen och kommentarsstrippningen som varje annan HTML-fil.
-const branschsidor = renderaBranschsidor();
+const branschsidor = PUBLICERA_BRANSCHSIDOR ? renderaBranschsidor() : [];
 for (const { v, html } of branschsidor) {
   writeFileSync(
     `dist/verticals/${v.slug}.html`,
@@ -287,7 +293,7 @@ if (location.hostname === 'agent-team-builder-2xy.pages.dev') location.replace('
 <body>`;
 }
 
-// Markören som byts mot genererat FAQPage-schema. Står i index.html.
+// Markören som byts mot genererat FAQPage-schema. Står i om.html.
 const FAQ_MARKÖR = '<script type="application/ld+json" data-faq-schema></script>';
 
 let strippade = 0;

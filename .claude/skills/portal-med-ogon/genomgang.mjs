@@ -81,7 +81,7 @@ console.log(`${C.dim}Skärmbilder: ${UT}${C.av}\n`);
 
 // ── 1. laddning ───────────────────────────────────────────────────────────
 console.log(`${C.fet}1. Portalen laddar${C.av}`);
-const url = `${bas}/portal/?team=${TEAM}${DEMO ? "&demo=1" : ""}`;
+const url = `${bas}/portal/?team=${TEAM}${DEMO ? "&demo=1&intern=1" : ""}`; // intern=1: demoteamen öppnas inte utåt sedan 2026-10-24
 await sida.goto(url, { waitUntil: "networkidle" });
 await sida.waitForTimeout(600);
 

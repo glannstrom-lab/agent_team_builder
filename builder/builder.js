@@ -86,7 +86,24 @@ function fillIcon(box, a) {
 // och en nyckelruta framför den är att ta betalt i tid av någon som ännu inte
 // vet om produkten är något värd. state.apiKey nollställs med flit: fanns en
 // gammal nyckel kvar i webbläsaren skulle kunden betala för vårt bygge.
+// Startsidan är öppningsscenen (2026-10-24). Det kunden skrev där — firman
+// och svaret på kandidatens fråga "vad gör ni på en vanlig måndag?" — följer
+// med hit, så att intervjun fortsätter i stället för att börja om. Scenen
+// handlar om en verksamhet, så vägvalet är redan gjort.
+function scenUtkast() {
+  let scen = null;
+  try { scen = JSON.parse(localStorage.getItem("atb_scen") || "null"); } catch (_) { scen = null; }
+  if (!scen || state.demo) return;
+  const utkast = {};
+  if (scen.firma && scen.firma !== "Firman") utkast.company = String(scen.firma).slice(0, 80);
+  if (scen.mandag) utkast.moments = "En vanlig måndag: " + String(scen.mandag).slice(0, 2000);
+  if (!Object.keys(utkast).length) return;
+  state.audience = state.audience || "verksamhet";
+  state.formDraft = Object.assign({}, utkast, state.formDraft);
+}
+
 function boot() {
+  scenUtkast();
   state.apiKey = "";
   syncModelForProvider();
   renderForm();
@@ -1919,8 +1936,8 @@ function renderResult(team) {
   // Knappen fungerade dessutom inte: servern avvisar utkast-slugen med flit.
   // Den som vill se portalen innan hon köper tittar på ett färdigt demoteam,
   // där svaren är förskrivna och inget anrop sker.
-  const peek = el("button", "btn-ghost", "👀 Se hur portalen fungerar");
-  peek.onclick = () => window.open("../portal/?team=coachonline&demo=1", "_blank");
+  // Demoteamen visas inte utåt sedan 2026-10-24 — "Se hur portalen fungerar"
+  // ledde dit och är struken. Kunden ser sitt eget team i stället.
   const dl = el("button", "btn-ghost", "⬇ Ladda ner config");
   dl.onclick = () => downloadConfig(team);
   // Delbar länk utan server: hela konfigen komprimeras in i URL-fragmentet
@@ -1941,7 +1958,7 @@ function renderResult(team) {
   // fyra som inte gör det. Den bor i avslutet ovanför i stället.
   const again = el("button", "btn-ghost", "↺ Bygg ett till");
   again.onclick = () => renderForm();
-  actions.append(peek, dl, share, again); hero.appendChild(actions);
+  actions.append(dl, share, again); hero.appendChild(actions);
   wrap.appendChild(hero);
 
   if (team.divergence) {
