@@ -182,8 +182,13 @@ export async function lookupClient(db, clientId, fetchImpl = fetch) {
   let doc;
   try {
     const res = await fetchImpl(id, {
-      headers: { accept: "application/json" },
-      redirect: "error",
+      headers: { accept: "application/json", "user-agent": "MittAITeam-OAuth/1.0 (+https://mittaiteam.se)" },
+      // "manual", inte "error": Cloudflare Workers kastar på redirect: "error"
+      // (bara follow/manual stöds), och det kastet blev "Tjänsten som vill
+      // koppla sig är okänd" för varje Claude-koppling i drift (2026-10-24).
+      // En omdirigering ger ett svar som inte är ok och avvisas nedan — samma
+      // effekt som "error" skulle ha haft.
+      redirect: "manual",
       signal: AbortSignal.timeout(5000),
     });
     if (!res.ok) return null;

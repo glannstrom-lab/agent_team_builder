@@ -320,6 +320,24 @@ test("CIMD: client_id är en adress vars dokument måste säga samma id", async 
   assert.equal(igen.client_name, "Claude");
 });
 
+// Fällan från 2026-10-24: Cloudflare Workers stöder bara redirect "follow" och
+// "manual" — "error" kastar, och varje Claude-koppling i drift fick "okänd".
+// Den falska fetchen beter sig som Workers, så att fällan inte kan komma tillbaka.
+test("CIMD: hämtningen använder bara redirect-lägen som Cloudflare Workers stöder", async () => {
+  const { lookupClient } = await import("../functions/api/_koppling.js");
+  const { db } = await värld();
+  const url = "https://claude.ai/oauth/mcp-oauth-client-metadata";
+  const somWorkers = async (_u, init) => {
+    if (init && init.redirect && !["follow", "manual"].includes(init.redirect)) throw new TypeError("Invalid redirect value");
+    return new Response(JSON.stringify({ client_id: url, client_name: "Claude", redirect_uris: [CLAUDE_CB] }));
+  };
+  const c = await lookupClient(db, url, somWorkers);
+  assert.ok(c, "Claudes klientbeskrivning ska gå att hämta i Workers");
+  // En omdirigering är inte ett dokument.
+  const { db: db2 } = await värld();
+  assert.equal(await lookupClient(db2, url, async () => new Response(null, { status: 302, headers: { location: "https://ond.example/" } })), null);
+});
+
 // ── adresserna ────────────────────────────────────────────────────────────
 
 test("loopback matchas utan port, allt annat exakt", () => {
