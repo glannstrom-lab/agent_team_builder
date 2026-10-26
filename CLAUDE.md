@@ -518,9 +518,8 @@ som chatten) och en egen dygnsrad `digest:global` med eget tak på 200 — samma
 resonemang som byggets tak i K3, så att breven inte kan svälta betalande kunders
 chatt.
 
-**Ännu inte gjort:** `integritet.html` säger inget om veckobrevet. Adressen
-lagras redan för inloggningen, men "vi skickar ett återkommande mejl om du ber
-om det" är en egen behandling och bör stå där. Det är din text, inte min.
+**Gjort:** `integritet.html` har veckobrevet som egen behandling (punkt 5,
+`#veckobrev`): opt-in, ändamål, mottagare och lagringstid.
 
 **Felövervakning (D3, byggd 2026-08-17):** `GET /api/health` svarar **200 när
 tjänsten kan svara kunder och 503 när den inte kan**. Den kontrollerar tre
@@ -582,7 +581,8 @@ ny kund dyker upp i både galleri och portal automatiskt.
 ├── skills-catalog.md               # Kurerad lista över kända Claude Skills
 ├── .github/workflows/test.yml      # CI: kör testsviten och bygget vid push/PR
 │
-├── index.html                      # Säljsida + nav till apparna
+├── index.html                      # Öppningsscenen (startsidan sedan 2026-10-24)
+├── om.html                         # Säljsidan: priser, villkor i korthet, FAQ
 ├── villkor.html                    # Allmänna villkor (prislista i avsnitt 4)
 ├── integritet.html                 # Integritetspolicy
 ├── og.png / sitemap.xml / robots.txt
@@ -616,7 +616,7 @@ ny kund dyker upp i både galleri och portal automatiskt.
 ├── functions/mcp.js + oauth/       # Kopplingen till kundens egen AI (SP21)
 ├── test/                           # node --test: teams, stripe, plan, ai, throttle,
 │                                   #   examples, klient, intake, health, skalning,
-│                                   #   digest, csp, portal (274 tester)
+│                                   #   digest, csp, portal, koppling, firman m.fl. (524 tester, 20 filer)
 ├── scripts/                        # provision.mjs — lägg upp en kund för hand
 │                                   #   check-dist.mjs — kontrollerar versionsstämplingen
 ├── testoutput/                     # Råa pipeline-körningar (källmaterial, ej deployat)
@@ -899,12 +899,11 @@ ny kund dyker upp i både galleri och portal automatiskt.
 > **Intervjun är skärpt 2026-10-24** (`redan_sagt` i schemat, mätt 6→3 upprepningar på
 > 6 resp. 9 simulerade intervjuer, `testoutput/intervju-2026-10-24/`).
 >
-> **Nästa pass enda uppgift:** mät VD-assistenten (SP17) ordentligt. OL1 (konsultpaketet) väntar på Mikaels pris. Mätningen: 3 körningar
-> × byggfirma/salong/fotograf lokalt, emulatorn omstartad efter varje
-> promptändring, ≈ $0,90 — och rätta prompten tills hon inte lånar specialistens
-> blick och inte hittar på namn.
+> **Nästa pass enda uppgift:** driftsätt SP17-rättelsen (specialister får inga förnamn, `proposal.md` *Namnen*) och ta därefter SP7 (intervjun i Buildern i scenens ton). OL1 väntar på Mikaels pris.
 >
-> *Förra passets rad:* **KA14** genomförd och SP17 provad i tre riktiga byggen lokalt.
+> *Förra passets rad:* **SP17** mätt 3 × 3 (2026-10-26, `testoutput/sp17-2026-10-26/`): VD-assistentens namn rätt 9/9 och ingen lånad blick (max 0,41 → 0,25), men specialisterna fick förnamn i 2/9 — rättat, 0/9 efter.
+>
+> *Förrförra passets rad:* **KA14** genomförd och SP17 provad i tre riktiga byggen lokalt.
 >
 > *Tidigare:* **OL4** — exporten av ett genererat team till EN
 > plattform (förslag: ChatGPT), med aktuellt format och teckentak kontrollerade

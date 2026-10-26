@@ -1,7 +1,7 @@
 # Roadmap
 
-Från genomgången 2026-09-01 · sex parallella linser + egen verifiering.
-Översikt: <https://claude.ai/code/artifact/08527a49-a84b-491f-98b0-c6561afdab4e>
+Senaste genomgången 2026-10-26 (sju linser) · före det 2026-09-01 (sex linser).
+Översikt: <https://claude.ai/artifact/22c3RWKF289ppycnSNyep5> (samma artifakt som `08527a49-…`, båda rundorna på en sida)
 (Förra rundorna: 2026-08-17 och 2026-08-15, egna dokument.)
 
 > Den här filen är arbetslistan. `docs/roadmap.md` (passindelningen) och
@@ -19,6 +19,74 @@ Från genomgången 2026-09-01 · sex parallella linser + egen verifiering.
 > `docs/omvarldsresearch-2026-08-18.md`. `PR` (produktriktning) och `RE`
 > (retention) tillkom 2026-09-01. Nummerserien fortsätter per prefix — nya
 > ID:n återanvänder aldrig ett gammalt nummer, inte ens ett avbetat.
+
+## Genomgång 2026-10-26 — kopplingen, det delade och de första minuterna
+
+> Sju parallella linser + egen verifiering, 60 commits efter förra rundan.
+> Linser: **SK** säkerhet i kopplingen (MCP/OAuth), **DS** dataskydd, **SY** synk
+> portal/server/mapp, **OB** de första tio minuterna, **SR** svenska regler,
+> **KO** förvaltning och tester, **BF** blindfläck. Bortvalda: SEO, delning och
+> tillgänglighet (kördes 2026-08-17, galleriet publiceras inte), drift (`/api/health`
+> frisk), retention/köpresa/kärnan (kördes 2026-09-01). Översikten: samma artifakt
+> som förra rundan. `reproducerad` = framkallad i ett prov, `läst i koden` = raden
+> öppnad och kontrollerad.
+
+### Nu — riktiga fel
+- [x] **SK1** *(gjord 2026-10-26: samtyckessidan namnger klienten efter värden; okända värdar får en varning med det självvalda namnet som påstående. Två tester i test/koppling.mjs, mutationsprovade)* Samtyckessidan visar klientens självvalda namn — en falsk "Claude (officiell)" med egen återanropsadress får full `firma`-åtkomst · `functions/api/_koppling.js:221` · visa alltid värden; eget namn bara för claude.ai/chatgpt.com/loopback · ~1 h · reproducerad
+- [ ] **DS1** `om.html`, `villkor.html` och `integritet.html` säger att minne och underlag bara finns i kundens webbläsare ("Vi har ingen kopia av dem") — sedan SP23 ligger de i `firma_poster`, och jobben i `jobs` · `om.html:570`, `villkor.html:276`, `:361`, `:472`, `integritet.html:268–312` · **Mikaels text** · ~1–2 h · läst i koden
+- [x] **SR1** *(gjord 2026-10-26: Q2 den 17 aug. test/deadlines.mjs jämför raden med faktabasen)* Kvartalsmomsen för Q2 står på 12 aug — rätt är 17 aug, och `_fakta.js:69` säger själv 17:e i augusti · `portal/deadlines-se.js:12` · ~15 min · läst i koden
+- [x] **SR2** *(gjord 2026-10-26: `exceptions: {1:17, 8:17}` på AGI-raden, datumet i etiketten)* AGI står på den 12:e året runt; i januari och augusti är det den 17:e · `portal/deadlines-se.js:17` · ~30 min · reproducerad (14 aug: kortet hoppar till september)
+- [x] **SR3** *(gjord 2026-10-26: `ATB_NASTA_DEADLINE()` i deadlines-se.js räknar mot dagens början och används på båda ställena i app.js. test/deadlines.mjs: 5 tester, 4 fäller den gamla koden)* På själva förfallodagen försvinner påminnelsen — `when < now` med klockslag rullar fram ett år/en månad; grenen "Idag:" är död · `portal/app.js:3753`, `:5377` · räkna mot dagens början · ~45 min · reproducerad (12 nov kl 09 → nästa år)
+- [x] **SY1** *(gjord 2026-10-26: väntelista i localStorage (`atb_firmaosynk_<slug>`): det som inte bekräftats behålls vid laddning och skickas igen, även minnet och borttagningar. test/firmasynk.mjs)* En ändring som inte nådde servern (nätfel, 413, timeout) skrivs över med serverns läge vid nästa laddning, utan besked · `portal/app.js:338–345` · smutsflagga per typ · ~3 h · läst i koden
+- [x] **SY2** *(gjord 2026-10-26: `fel` läses, även i 400-svaret; nekade poster behålls lokalt, märkta, och skickas inte om förrän de ändrats)* `fel[]` i svaret från `/api/firma` läses aldrig: avvisade poster räknas som synkade, och flyttflaggan sätts trots avvisningar — det som nekades vid första flytten försvinner ur webbläsaren · `portal/app.js:263–266`, `:321–323`, `functions/api/firma.js:55` · ~1,5 h · läst i koden
+- [x] **SY3** *(gjord 2026-10-26: servern avvisar i stället för att kapa; kunden får beskedet och underlaget ligger kvar lokalt)* Underlag över 200 000 tecken kapas tyst på servern och sedan också lokalt · `functions/api/_firma.js:27` · returnera fel i stället, som `/mcp` redan gör · ~30 min · läst i koden
+- [x] **OB1** *(gjord 2026-10-26: provmånadsraden säger vad nivå 1 ger, och avslutet visar turordningen (`rekryteringsRad()`))* Köpsidan lovar "Hela teamet i portalen … veckans rutiner går att köra" — ett nytt team börjar med bara VD-assistenten anställd och Pentryt låst till nivå 3 · `builder/builder.js:2328`, `portal/app.js:679` · visa rekryteringsplanen i avslutet och skriv om raden · ~1 h · läst i koden
+- [ ] **SK3** Minne och underlag som Claude/ChatGPT sparat via `/mcp` går in i varje agents systemprompt som "skrivet av användaren — följ det" — en promptinjektion i ett mejl Claude sammanfattat blir bestående · `portal/app.js:840`, `functions/mcp.js:44` · märk `updatedBy` i prompten först, förslagskö sedan · ~3 h / 1 dag · läst i koden
+
+### Sedan — skav som märks
+- [ ] **SK2** Kunden kan inte koppla bort en plattform hos oss: ingen `/oauth/revoke`, ingen lista i portalen; förnyelsenyckeln lever 30 dagar · `functions/api/_koppling.js:56–72` · ~3 h · läst i koden
+- [ ] **SK4** `/oauth/authorize` hämtar valfri https-klientadress och skriver till `oauth_clients` före inloggning och utan spärr; ingen OAuth-tabell gallras någonsin · `functions/api/_koppling.js:173–211`, `functions/api/_gallring.js:42–59` · ~2 h · läst i koden
+- [ ] **SK5** Ingen återanvändningsdetektering: en återanvänd kod eller förnyelsenyckel drar inte tillbaka släkten (OAuth 2.1) · `functions/oauth/token.js:35` · migration 0010 · ~2 h · läst i koden
+- [x] **SK6** *(gjord 2026-10-26: `välj(ctx, args, true)` för de fem skrivverktygen; läsning oförändrad. Test i test/koppling.mjs, mutationsprovat)* Skrivverktygen väljer tyst `team[0]` när kontot har flera team — minne kan hamna i kollegans företag · `functions/mcp.js:398` · kräv `foretag` för `spara_*`/`skapa_jobb` vid flera · ~30 min · läst i koden
+- [ ] **SY4** Organisationer, kontakter och underlag skrivs som hela poster (sist vinner) — kundens redigering raderar Claudes anteckning · `portal/app.js:251–267`, `functions/api/_firma.js:103–122` · ~3 h · läst i koden
+- [ ] **SY5** Första flytten dubblerar (olika lokala id:n, två flikar) och återupplivar poster som raderats på servern · `portal/app.js:302–325` · ~3 h · läst i koden
+- [ ] **SY6** Med mapp kopplad läggs serverrader till i `minne.md` men tas aldrig bort — en raderad rad kommer tillbaka via en kollegas kopia · `portal/app.js:329–336` · ~2 h · läst i koden
+- [ ] **DS2** Utlämningen till Claude/ChatGPT via `/mcp` (USA, tredje mans uppgifter, kundens eget avtal) står inte i policyn eller på samtyckessidan · `functions/oauth/authorize.js:98` · **text: Mikaels** · ~1–2 h · läst i koden
+- [ ] **DS3** Kunden kan inte radera eller exportera serverdatan själv; ångerrätten raderar ingenting, posterna ligger 90 dagar · `portal/app.js:2106–2131`, `functions/api/subscription/withdraw.js` · ~3–4 h · läst i koden
+- [ ] **DS5** `/mcp`-instruktionen säger åt Claude att spara kontakter när kunden nämner dem och "säga kort att du gjort det" — fråga först · `functions/mcp.js:44` · designfråga · ~1 h · läst i koden
+- [ ] **OB2** Intervjusvaren följer inte med till portalen: företagsminnet är tomt och introduktionen frågar "Vad tar mest tid av dig en vanlig vecka?" igen · `portal/app.js:2502` · seeda minnet ur intaget · ~3 h · läst i koden
+- [x] **OB3** *(gjord 2026-10-26: mötet rensas bara när kunden valt en ANNAN kandidat — samma val behåller en påbörjad intervju)* Ett halvfärdigt möte (`atb_mote`) ligger kvar när kunden väljer ett nytt ansikte och visas med det nya namnet · `index.html:420–428` · ~10 min · läst i koden
+- [x] **OB4** *(gjord 2026-10-26: meningen struken; inloggningen visar "Inget team än? Bygg ert gratis" utåt, exempelteamen bara med ?intern=1)* Två döda hänvisningar till demoteam: "knappen nedanför" som är struken, och "Titta på exempelteamen" som ritar om inloggningen · `builder/builder.js:2393`, `portal/app.js:1639` · ~10 min · läst i koden
+- [ ] **OB5** "Aktivera teamet →" i den låsta vyn leder till Builderns formulär, inte till köpet · `portal/app.js:1345` · `?aktivera=1` · ~1 h · läst i koden
+- [ ] **BF9** Provmånaden lovar "allt som portalen innehåller", men "Utveckla teamet" kräver examen efter 91 dagar · `portal/firman.js:92`, `:135`, `villkor.html:257` · **beslut** · ~1 h · läst i koden
+- [ ] **SR4** Ingen helgdagsförskjutning, och datumen står hårdkodade i etiketterna (12 dec 2026 är en lördag) · `portal/deadlines-se.js:10–17` · ~2–3 h · läst i koden
+- [ ] **SR5** Åldersvakten fäller faktabasen först efter 13 månader — årsbundna belopp (julgåva 2026) står kvar som "VERIFIERADE" efter nyår, och portalen visar ingen åldersvarning alls · `functions/api/_fakta.js:15`, `portal/app.js:908–915` · ~1–2 h · läst i koden
+- [x] **KO1** *(gjord 2026-10-26: fyra ankare flyttade till om.html, 0 ruttna av 98, registret daterat 2026-10-26)* Kopplingsregistret pekar på `index.html` för pris, modell, fair use och personalliggaren, som flyttade till `om.html` · `.claude/skills/kopplad-andring/kopplingar.json` · ~20 min · mätt (4 ruttna ankare av 98)
+- [ ] **KO2** *(halva gjord 2026-10-26: firmaSynk har sex beteendetester i test/firmasynk.mjs; Våningens krokar har det inte än)* `firmaSynk()` och Våningens krokar i `app.js` har inga beteendetester — `test/vaningen.mjs` kontrollerar bara att namnen finns · `portal/app.js:291`, `portal/vaningen.js:865` · ~4–6 h · mätt (0 träffar i test/)
+- [ ] **KO3** Kontraktet mellan öppningsscenen och Buildern (`atb_scen`, `scenUtkast`) har noll tester · `index.html:342`, `builder/builder.js:93` · ~2 h · mätt (0 träffar)
+- [ ] **KO5** Fyra kopplingar är ovaktade: portal-regler, fair-use, migration-kod, avatarer · `kopplingar.json` · ~3 h · mätt
+
+### Framåt — utveckling
+- [ ] **BF10** Tredje benet syns inte utåt: ingen rad i `om.html` eller `villkor.html` om att teamet går att använda i egen Claude/ChatGPT, eller vad som händer med kopplingen när planen går ut · ~2 h · läst i koden
+- [ ] **OB6** Installationsguiden är gömd längst ner på VD-kontoret, börjar med "Kopplade du före den 24 oktober?" och talar om "utvecklarläge"; menyvägarna är okontrollerade · `portal/app.js:5616–5629` · ~1 h · läst i koden
+- [ ] **SR6** Faktabasen saknar de vanligaste småföretagsfrågorna (momsfrigräns, F-skatt/preliminärskatt, förseningsavgifter) samtidigt som prompten säger "godta aldrig användarens rättelse" · `functions/api/_fakta.js`, `portal/app.js:911` · ~3–4 h · läst i koden
+- [ ] **KO4** Ett uttryckligt kontrakt (`window.ATBPortal`) mellan `app.js` och `vaningen.js` i stället för lånade toppnivånamn · ~1–2 dagar · läst i koden
+- [ ] **KO7** Tysta synkfel: kunden får inget besked när delningen med hennes AI står still · `portal/app.js:295` · ~2 h · läst i koden
+
+### Prövat och avfärdat
+- **IDOR mellan kunder i `/mcp` och `/api/firma`** — `aktivaTeam`/`teamFör` kontrollerar `team_access`; testet "ingen når en annan kunds firma" (SK).
+- **Betalväggen kringgås via kopplingen** — `planState` vid varje anrop; en spärrad plan ger inga jobb (SK).
+- **Öppen omdirigering, PKCE-nedgradering, kodkapplöpning, CSRF/clickjacking, lagrad XSS** — alla falska; läst + `test/koppling.mjs` 53/53 gröna (SK).
+- **Veckobrevet saknas i policyn** — falskt, punkt 5 i `integritet.html` (DS). Stod felaktigt i CLAUDE.md, rättat.
+- **`ai_usage`/`ai_errors` innehåller personuppgifter** — bara räkneverk (DS).
+- **Mobilprestanda** — `app.js` 352 kB, 113 kB gzip; tunga bibliotek laddas lat (BF).
+- **Det valda namnet når inte teamet** — `sättKandidat` sätter det och hanterar krock (OB; mätt också i SP17, 9/9).
+- **Svenska belopp (ROT/RUT, påminnelseavgift, friskvård, matmoms 6 %)** — stämmer med regelläget. Julgåva, representation och INK2-datumet ska ändå kontrolleras mot Skatteverket (SR).
+
+### Dokumentationsfel — rättade 2026-10-26
+- `CLAUDE.md` (veckobrevsavsnittet): "**Ännu inte gjort:** `integritet.html` säger inget om veckobrevet" → "**Gjort:** … punkt 5".
+- `CLAUDE.md` (repo-strukturen): `index.html # Säljsida + nav till apparna` → öppningsscenen, och `om.html` tillagd som säljsidan.
+- `CLAUDE.md` (repo-strukturen): "(274 tester)" → "(524 tester, 20 filer)".
 
 ## Omläggning 2026-10-23 — tre ben och ett eget gränssnitt
 
@@ -448,7 +516,7 @@ Från genomgången 2026-09-01 · sex parallella linser + egen verifiering.
   `prompts/shared/proposal.md` · mätpunkt: personorna hittar rätt rum utan att
   fråga · beslut (KA14) + ~2 pass, skiss först i `design/`
 
-- [ ] **SP17** *(mall-läckan åtgärdad 2026-10-23: fredagsexemplet borta, ingen ordagrann fras på ≥5 ord delas mellan teamen. MEN överlappet blev sämre i tre körningar (mellan team 0,12 / 0,26 / 0,30, mot egna specialister 0,50 / 0,38 / 0,43 mot förra 0,15 / 0,19), spridningen mellan körningar är stor, och sista promptversionen är OPROVAD — emulatorn cachade den förra (`promptCache` i `_build.js`; starta om efter varje promptändring). Hos salongen lånar VD-assistenten specialistens blick. Fotografens VD-assistent fick ett påhittat namn, "Maria", i strid med namnregeln. Nästa steg: mät med flera körningar per version (t.ex. 3 × 3 byggen ≈ $0,90) i stället för en, `testoutput/sp9-2026-10-23/`)* *(provad i tre lokala byggen 2026-10-23, `testoutput/ka14-2026-10-23/`: mellan team max 0,15, mot egna specialister max 0,19 (baslinje 0,87). Bytprovet visar EN mall-läcka: fredagsraden "lägger fram nästa veckas tre möjliga jobb … — X väljer" kopieras ordagrant ur exemplet i `proposal.md` i alla tre, och perspektivet "helheten, det som faller mellan två moment" läser likadant. Skriv om exemplet och kör om de tre byggena (~$0,10))* *(punkt 1 och 4 gjorda 2026-10-23 i `prompts/shared/proposal.md` och båda `chief-of-staff.md` (nu skelett). Baslinje: VD-assistenternas perspektiv mellan team max 0,26, men mot egna specialister upp till 0,87 (läraren). Oprovat i riktigt bygge — nyckeln lokalt är ogiltig. Följer med: TEAM_SCHEMA/PORTAL_RULES (se SP9), `generate.md` steg 3, `docs/team-roles.md`)* **VD-assistenten görs om: från mall till huvudperson.** Kartlagt
+- [x] **SP17** *(MÄTT 2026-10-26, 3 × 3 lokala byggen per version, `testoutput/sp17-2026-10-26/` (`kor.sh` + `mat.mjs`, $0,49 totalt). Baslinje (promptversionen i drift): VD-assistentens namn rätt 9/9 — det valda (Robin/Saga) där kunden valt, "VD-assistent" annars; inget påhittat namn eller efternamn. Mot egna specialister snitt 0,22 / max 0,41, mellan företag snitt 0,12 / max 0,26. Ett nytt fel: i 2/9 fick SPECIALISTERNA förnamn ("Klara (Offertspecialist)", "Rut", "Nova") — det valda namnet smittade. Rättat i `proposal.md` under *Namnen*. Efter: namnfel 0/9, mot egna snitt 0,15 / max 0,25, mellan företag snitt 0,09 / max 0,19. Perspektiven öppnar ofta med "Du letar efter …" — ekot av formatets egen formulering, innehållet skiljer (mätt). Prompten är INTE driftsatt.)* *(mall-läckan åtgärdad 2026-10-23: fredagsexemplet borta, ingen ordagrann fras på ≥5 ord delas mellan teamen. MEN överlappet blev sämre i tre körningar (mellan team 0,12 / 0,26 / 0,30, mot egna specialister 0,50 / 0,38 / 0,43 mot förra 0,15 / 0,19), spridningen mellan körningar är stor, och sista promptversionen är OPROVAD — emulatorn cachade den förra (`promptCache` i `_build.js`; starta om efter varje promptändring). Hos salongen lånar VD-assistenten specialistens blick. Fotografens VD-assistent fick ett påhittat namn, "Maria", i strid med namnregeln. Nästa steg: mät med flera körningar per version (t.ex. 3 × 3 byggen ≈ $0,90) i stället för en, `testoutput/sp9-2026-10-23/`)* *(provad i tre lokala byggen 2026-10-23, `testoutput/ka14-2026-10-23/`: mellan team max 0,15, mot egna specialister max 0,19 (baslinje 0,87). Bytprovet visar EN mall-läcka: fredagsraden "lägger fram nästa veckas tre möjliga jobb … — X väljer" kopieras ordagrant ur exemplet i `proposal.md` i alla tre, och perspektivet "helheten, det som faller mellan två moment" läser likadant. Skriv om exemplet och kör om de tre byggena (~$0,10))* *(punkt 1 och 4 gjorda 2026-10-23 i `prompts/shared/proposal.md` och båda `chief-of-staff.md` (nu skelett). Baslinje: VD-assistenternas perspektiv mellan team max 0,26, men mot egna specialister upp till 0,87 (läraren). Oprovat i riktigt bygge — nyckeln lokalt är ogiltig. Följer med: TEAM_SCHEMA/PORTAL_RULES (se SP9), `generate.md` steg 3, `docs/team-roles.md`)* **VD-assistenten görs om: från mall till huvudperson.** Kartlagt
   2026-10-23. I dag skapas VD-assistenten i samma bygge som alla andra, ur ett intag
   den själv aldrig deltog i, och den är teamets minst skräddarsydda agent:
   `proposal.md:50–80` ger VD:n fyra stycken om att jobbet ska byggas ur kundens
