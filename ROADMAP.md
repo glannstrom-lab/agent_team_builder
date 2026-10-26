@@ -893,6 +893,34 @@ Senaste genomgången 2026-10-26 (sju linser) · före det 2026-09-01 (sex linser
 
 - [x] **SP23** *(byggd och driftsatt 2026-10-24)* **Claude och ChatGPT når allt som inte är samtal.** Mikael: "claude och chatgpt behöver kunna komma åt allt på vår sida, för användaren använder sig av både och och vill inte behöva skriva samma saker till båda sidorna." Företagsminnet, underlagen, organisationerna och kontakterna flyttar från webbläsaren till D1 (`firma_poster`, migration 0009); portalen synkar (`firmaSynk`), `/mcp` får nio verktyg till. Minnet slås ihop rad för rad så att varken portalen eller plattformen skriver över den andra. Ett nytt samtycke krävs (scope `firma`). Tester: 8 nya i `test/koppling.mjs` mot riktig SQLite, två sabotage fångade; synken provad i webbläsare mot emulatorn åt båda hållen. **Kvar:** (a) `integritet.html` — kundens minne, underlag och kunder lagras nu hos oss och kan läsas av den plattform kunden kopplat; Mikaels text. (b) Samtalen delas inte. (c) Mappens filer (`minne.md` delas; övriga filer i mappen gör det inte). (d) Firmans nivå räknas fortfarande i webbläsaren och syns inte för plattformarna.
 
+## Driftsatt 2026-10-26
+
+Pages `f235a75f`, commit `41d431d`, taggen `deploy-2026-10-26`. Pushat före
+deployen. Inga migrationer, inga nya secrets, ingen ny rutt. 538 gröna.
+
+Med i deployen: **SP17**-rättelsen i `proposal.md` (specialisterna får inga
+förnamn), och tolv poster ur genomgången samma dag: **SK1, SK6, SR1–SR3,
+SY1–SY3, OB1, OB3, OB4, KO1**. Dessutom `c6edbea` (sidfoten), som låg
+committad före passet.
+
+**Verifierat i drift efteråt (mätt):**
+- `/api/health` → `{"ok":true,"status":"friskt"}`, alla sju kontroller sanna.
+- `/`, `/portal/`, `/builder/` → 200; en påhittad sida → 404; `/om.html` → 308.
+- `portal/deadlines-se.js` serverar `ATB_NASTA_DEADLINE` och "senast 17 aug";
+  `builder/builder.js` serverar `rekryteringsRad`; portalens `app.js?v=9a428e15`.
+- Fria rutten utan `step` avvisas som förut.
+- **SK1 skarpt:** en klient registrerad med `client_name: "Claude (officiell)"`
+  och återanropet `verifiering.example` fick rubriken *"Koppla
+  verifiering.example till Mitt AI-team"*. Varningsrutan på samtyckessidan
+  syns först efter inloggning och är inte sedd i drift — bara i testet.
+
+**Fynd under deployen:** provklienten (`mat_a7788cbc…`) ligger kvar i
+`oauth_clients`, eftersom ingen OAuth-tabell gallras — det är SK4.
+
+**Inte sett med ögon:** varningsrutan, inloggningens nya länk ("Inget team
+än? Bygg ert gratis") och avslutets turordning. Synken (SY1–SY3) är testad mot
+en låtsasserver, inte i två riktiga webbläsare.
+
 ## Driftsatt 2026-10-24
 
 Pages `374122f0`, commit `ee5df78`, taggen `deploy-2026-10-24`. Migration 0008 körd skarpt efter `npm run db:backup` (186 kB). 498 gröna.

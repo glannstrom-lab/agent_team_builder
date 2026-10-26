@@ -899,7 +899,9 @@ ny kund dyker upp i både galleri och portal automatiskt.
 > **Intervjun är skärpt 2026-10-24** (`redan_sagt` i schemat, mätt 6→3 upprepningar på
 > 6 resp. 9 simulerade intervjuer, `testoutput/intervju-2026-10-24/`).
 >
-> **Nästa pass enda uppgift:** driftsätt SP17-rättelsen (specialister får inga förnamn, `proposal.md` *Namnen*) och ta därefter SP7 (intervjun i Buildern i scenens ton). OL1 väntar på Mikaels pris.
+> **Nästa pass enda uppgift:** SK3 — det Claude sparar via `/mcp` ska inte gå in i agenternas instruktion som "skrivet av användaren — följ det" (märk `updatedBy` först, förslagskö sedan). Därefter `portal-med-ogon` på passet 2026-10-26 och SP7. DS1/DS2 (policytexten) och OL1 (priset) väntar på Mikael.
+>
+> *Passet 2026-10-26 är driftsatt* (Pages `f235a75f`, taggen `deploy-2026-10-26`): SP17-rättelsen och tolv poster ur genomgången — se *Driftsatt 2026-10-26* i `ROADMAP.md`.
 >
 > *Förra passets rad:* **SP17** mätt 3 × 3 (2026-10-26, `testoutput/sp17-2026-10-26/`): VD-assistentens namn rätt 9/9 och ingen lånad blick (max 0,41 → 0,25), men specialisterna fick förnamn i 2/9 — rättat, 0/9 efter.
 >
