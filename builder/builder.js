@@ -2325,9 +2325,26 @@ function renderResult(team) {
 // PLANS; de får inte skrivas om här, för prislistan i index.html och
 // villkor.html § 4 hänger ihop med dem.
 const PLAN_GAIN = {
-  trial: "Hela teamet i portalen i en månad: agenterna svarar, veckans rutiner går att köra, företagsminnet och era underlag ligger kvar mellan gångerna. AI-användningen ingår. Månaden tar slut av sig själv — det finns inget att säga upp.",
+  // OB1 (2026-10-26): "Hela teamet … från start" var fel sedan SP9 — ett nytt
+  // team börjar med VD-assistenten och anställer resten enligt planen, senast
+  // dag 21 (GOLV_DAG i portal/firman.js), eller alla på en gång.
+  trial: "Teamet i portalen i en månad. Ni börjar med VD-assistenten, och resten anställs en i taget under de första tre veckorna — eller alla på en gång om ni vill. Företagsminnet och era underlag ligger kvar mellan gångerna. AI-användningen ingår. Månaden tar slut av sig själv — det finns inget att säga upp.",
   standard: "Samma sak löpande, och teamet ligger på ert konto i stället för i den här webbläsaren. Ni når det från vilken dator som helst och loggar in med en kod till mejlen. Uppsägningsbart när som helst.",
 };
+
+// "Ni börjar med Robin i dag. Sedan anställs Offertskrivaren, ÄTA-stödet och
+// Förfrågningssvararen, i den ordningen." null utan plan (äldre team: alla anställda).
+function rekryteringsRad(team) {
+  const plan = Array.isArray(team && team.hiringPlan) ? team.hiringPlan.slice() : null;
+  if (!plan || !plan.length) return null;
+  const namn = (id) => { const a = (team.agents || []).find((x) => x.id === id); return a ? a.name : null; };
+  const först = (team.agents || []).find((x) => x.id === team.entryAgent) || (team.agents || []).find((x) => x.id === "vd-assistent");
+  const sedan = plan.sort((a, b) => (a.order || 0) - (b.order || 0)).map((p) => namn(p.agentId)).filter(Boolean)
+    .filter((n) => !först || n !== först.name);
+  if (!sedan.length) return null;
+  const lista = sedan.length > 1 ? sedan.slice(0, -1).join(", ") + " och " + sedan[sedan.length - 1] : sedan[0];
+  return `Ni börjar med ${först ? först.name : "VD-assistenten"} i dag. Sedan anställs ${lista}${sedan.length > 1 ? ", i den ordningen" : ""} — en i taget under de första tre veckorna, eller alla på en gång om ni vill.`;
+}
 
 function closingBlock(team) {
   const box = el("div", "result-close");
@@ -2366,6 +2383,11 @@ function closingBlock(team) {
     + "Byter du dator, rensar historiken eller bygger ett nytt team är det borta, och en ny körning ger ett annat team. "
     + "Sparar du det får du ett konto och når teamet där du loggar in."));
 
+  // OB1: säg turordningen här, före köpet, i stället för att kunden möter
+  // fem streckade rum i portalen och tror att hon fått mindre än hon köpt.
+  const ordning = rekryteringsRad(team);
+  if (ordning) box.appendChild(el("p", "close-body", ordning));
+
   // Sägs här, en gång, i klartext. Att kunden upptäcker det först när hon
   // står i portalen och skrivit en fråga är samma fel som nyckelrutan var:
   // ett villkor som visar sig efter att förväntningen redan byggts.
@@ -2390,8 +2412,7 @@ function closingBlock(team) {
   save.onclick = () => renderPurchase(team, box, save);
   box.appendChild(save);
   box.appendChild(el("p", "close-fine",
-    "Betalning med kort via Stripe. Provmånaden förnyas inte automatiskt. "
-    + "Vill du se portalen först finns färdiga demoteam att titta på — knappen nedanför."));
+    "Betalning med kort via Stripe. Provmånaden förnyas inte automatiskt."));
   return box;
 }
 

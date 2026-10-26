@@ -386,7 +386,10 @@ const nyckel = (s) => String(s || "").trim().toLowerCase().replace(/\s+/g, " ");
 // Vilket team verktyget gäller. Ett konto har oftast ett; har det flera väljs
 // det som heter `foretag`, annars det senast skapade. Svaret säger alltid
 // vilket företag det gällde, så att ett fel val syns direkt.
-async function välj(ctx, args) {
+// SK6 (2026-10-26): för en SKRIVNING räcker inte "syns direkt" — då har
+// minnet redan hamnat i kollegans företag. Med flera team och inget
+// `foretag` avvisas skrivningen och valen listas; läsning behåller standardvalet.
+async function välj(ctx, args, skriv = false) {
   const team = await aktivaTeam(ctx.db, ctx.vem.userId);
   if (!team.length) return { fel: text("Kontot har inget team som är igång i Mitt AI-team.", true) };
   const önskat = nyckel(args && args.foretag);
@@ -394,6 +397,9 @@ async function välj(ctx, args) {
     const t = team.find((x) => nyckel(x.company) === önskat || x.slug === args.foretag) || team.find((x) => nyckel(x.company).includes(önskat));
     if (!t) return { fel: text(`Hittade inget team som heter "${args.foretag}". Kontot har: ${team.map((x) => x.company).join(", ")}.`, true) };
     return { team: t, alla: team };
+  }
+  if (skriv && team.length > 1) {
+    return { fel: text(`Kontot har flera team: ${team.map((x) => x.company).join(", ")}. Ange foretag, så att det sparas i rätt företag. Fråga kunden om det är oklart.`, true) };
   }
   return { team: team[0], alla: team };
 }
@@ -450,7 +456,7 @@ async function hamtaUnderlag(ctx, args) {
 }
 
 async function sparaMinneV(ctx, args) {
-  const v = await välj(ctx, args); if (v.fel) return v.fel;
+  const v = await välj(ctx, args, true); if (v.fel) return v.fel;
   const rader = (Array.isArray(args.rader) ? args.rader : [args.rader]).map((r) => String(r || "").trim().slice(0, 500)).filter(Boolean).slice(0, 30);
   if (!rader.length) return text("Inget att spara.", true);
   const r = await läggTillMinne(ctx.db, v.team.slug, rader, await avVem(ctx));
@@ -461,7 +467,7 @@ async function sparaMinneV(ctx, args) {
 }
 
 async function sparaUnderlagV(ctx, args) {
-  const v = await välj(ctx, args); if (v.fel) return v.fel;
+  const v = await välj(ctx, args, true); if (v.fel) return v.fel;
   const t = typeof args.text === "string" ? args.text : "";
   if (t.length > UNDERLAG_MAX) return text(`Underlaget är för långt (högst ${UNDERLAG_MAX} tecken). Dela upp det.`, true);
   const f = await läsFirma(ctx.db, v.team.slug);
@@ -497,7 +503,7 @@ async function listaKunder(ctx, args) {
 
 // tyst = anropad inifrån spara_kontakt: returnerar posten i stället för text.
 async function sparaOrg(ctx, args, tyst) {
-  const v = await välj(ctx, args); if (v.fel) return tyst ? { fel: "Inget team." } : v.fel;
+  const v = await välj(ctx, args, true); if (v.fel) return tyst ? { fel: "Inget team." } : v.fel;
   const f = await läsFirma(ctx.db, v.team.slug);
   const finns = f.org.find((o) => nyckel(o.namn) === nyckel(args.namn));
   const data = { namn: args.namn, typ: args.typ || (finns ? finns.typ : ""), not: påNot(finns && finns.not, args.anteckning) };
@@ -508,7 +514,7 @@ async function sparaOrg(ctx, args, tyst) {
 }
 
 async function sparaKontakt(ctx, args) {
-  const v = await välj(ctx, args); if (v.fel) return v.fel;
+  const v = await välj(ctx, args, true); if (v.fel) return v.fel;
   let orgId = "";
   if (args.organisation) {
     const o = await sparaOrg(ctx, { namn: args.organisation, foretag: args.foretag }, true);
@@ -527,7 +533,7 @@ async function sparaKontakt(ctx, args) {
 }
 
 async function skapaJobb(ctx, args) {
-  const v = await välj(ctx, args); if (v.fel) return v.fel;
+  const v = await välj(ctx, args, true); if (v.fel) return v.fel;
   const a = agentFör(v.team, args.agent);
   if (!a) return text(`Ingen agent heter "${args.agent}" i ${v.team.company}s team. Agenterna står i firman.`, true);
   const kort = (s, n) => (typeof s === "string" ? s.trim().slice(0, n) : "");

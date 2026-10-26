@@ -423,7 +423,14 @@ a.knapp{display:inline-block;text-decoration:none}
     val.firma = $("firma").value.trim() || "Firman";
     // Valen följer med in i Buildern (förifyller firman) och vidare till
     // portalen (SP9: VD-assistentens namn och porträtt).
-    sparaScen({ chef: val.chef, firma: val.firma, namn: val.namn, avatarN: val.portratt });
+    // OB3 (2026-10-26): har kunden valt en annan kandidat än förra gången hör
+    // ett påbörjat möte till den förra. Det ritades annars upp med det nya
+    // namnet och ansiktet, med frågor den nya aldrig ställt.
+    let förra = {};
+    try { förra = JSON.parse(localStorage.getItem("atb_scen") || "{}") || {}; } catch { förra = {}; }
+    const nyKandidat = förra.sparad && (förra.namn !== val.namn || Number(förra.avatarN) !== val.portratt);
+    if (nyKandidat) { try { localStorage.removeItem("atb_mote"); } catch {} }
+    sparaScen({ chef: val.chef, firma: val.firma, namn: val.namn, avatarN: val.portratt, ...(nyKandidat ? { mandag: undefined } : {}) });
     starta(false);
   });
 

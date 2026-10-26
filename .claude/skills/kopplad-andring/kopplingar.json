@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "kontrollerad": "2026-10-23",
+  "kontrollerad": "2026-10-26",
   "kommentar": "Registret över filer som måste ändras samma dag. Varje ankare är kontrollerat den dag som står i kontrollerad — kör `node .claude/skills/kopplad-andring/kontrollera.mjs --revidera` för att se att de fortfarande finns. Ett ankare som ruttnat gör registret farligare än inget register, för det ser ut att vakta något.",
   "kopplingar": [
     {
@@ -13,7 +13,7 @@
       ],
       "delar": [
         {
-          "fil": "index.html",
+          "fil": "om.html",
           "ankare": "290 kr",
           "roll": "prislistan kunden ser"
         },
@@ -41,7 +41,7 @@
       "vaktas_av": [
         "test/klient.mjs — modell-id: samma modell i klienten, proxyn och veckobrevet — och i villkoren"
       ],
-      "foreslagen_vakt": "test/klient.mjs — läs MODEL_ID ur alla tre filerna med regex och assert.equal dem mot varandra; assert att index.html nämner samma modellnamn.",
+      "foreslagen_vakt": "test/klient.mjs — läs MODEL_ID ur alla tre filerna med regex och assert.equal dem mot varandra; assert att om.html nämner samma modellnamn.",
       "delar": [
         {
           "fil": "atb-claude.js",
@@ -59,7 +59,7 @@
           "roll": "veckobrevet — går aldrig genom ai.js"
         },
         {
-          "fil": "index.html",
+          "fil": "om.html",
           "ankare": "$0,30",
           "roll": "#forbrukning — kalkylen som säger att AI:n kan ingå"
         },
@@ -217,7 +217,7 @@
       "rubrik": "Fair use — 1 000 svar per konto och månad",
       "varfor": "Taket är avtalat i villkoren och utlovat på startsidan. Sänks konstanten utan att texten följer med bryter vi avtalet mot en betalande kund; höjs texten utan konstanten får kunden ett fel som villkoren säger inte ska finnas. OVAKTAD.",
       "vaktas_av": [],
-      "foreslagen_vakt": "test/ai.mjs — läs MAX_CALLS_PER_TEAM ur källan och assert att både villkor.html och index.html innehåller samma tal.",
+      "foreslagen_vakt": "test/ai.mjs — läs MAX_CALLS_PER_TEAM ur källan och assert att både villkor.html och om.html innehåller samma tal.",
       "delar": [
         {
           "fil": "functions/api/ai.js",
@@ -230,7 +230,7 @@
           "roll": "avsnitt 3 — det avtalade taket"
         },
         {
-          "fil": "index.html",
+          "fil": "om.html",
           "ankare": "1 000 svar per konto och månad",
           "roll": "löftet på säljsidan"
         }
@@ -390,7 +390,7 @@
       ],
       "delar": [
         {
-          "fil": "index.html",
+          "fil": "om.html",
           "ankare": "id=\"liggare\"",
           "roll": "beviset"
         },

@@ -249,6 +249,34 @@ test("okänd återanropsadress visas som fel här — vi skickar aldrig vidare d
   assert.equal(res.headers.get("location"), null);
 });
 
+// SK1 (2026-10-26): namnet i en DCR-registrering väljer klienten själv. En
+// tjänst som kallade sig "Claude (officiell)" visades med just det namnet i
+// rubriken och på ja-knappen.
+test("samtyckessidan namnger klienten efter värden, aldrig efter namnet den gett sig själv", async () => {
+  const { env, kakor } = await värld();
+  const ond = "https://ond.example/cb";
+  const res = await register.onRequestPost({ request: req("/oauth/register", { method: "POST", body: JSON.stringify({ redirect_uris: [ond], client_name: "Claude (officiell)" }) }), env });
+  const cid = (await res.json()).client_id;
+  const p = { response_type: "code", client_id: cid, redirect_uri: ond, code_challenge: await pkceChallenge("v".repeat(50)), code_challenge_method: "S256", scope: "jobb" };
+  const html = await (await authorize.onRequestGet({ request: req("/oauth/authorize?" + form(p), { headers: { cookie: kakor.u1 } }), env })).text();
+  const rubrik = /<h1>([^<]*)<\/h1>/.exec(html)[1];
+  assert.match(rubrik, /^ond\.example vill koppla sig/);
+  assert.doesNotMatch(rubrik, /Claude/);
+  assert.match(html, />Ja, koppla ond\.example</);
+  assert.match(html, /Kontrollera vem som frågar/);
+  assert.match(html, /kallar sig ”Claude \(officiell\)”/);
+  assert.match(html, /varken Claude eller ChatGPT/);
+});
+
+test("den riktiga Claude får inget varningsfält", async () => {
+  const { env, kakor } = await värld();
+  const cid = await registrera(env);
+  const p = { response_type: "code", client_id: cid, redirect_uri: CLAUDE_CB, code_challenge: await pkceChallenge("v".repeat(50)), code_challenge_method: "S256", scope: "jobb" };
+  const html = await (await authorize.onRequestGet({ request: req("/oauth/authorize?" + form(p), { headers: { cookie: kakor.u1 } }), env })).text();
+  assert.match(html, /<h1>Claude vill koppla sig/);
+  assert.doesNotMatch(html, /Kontrollera vem som frågar/);
+});
+
 test("samtycke från en annan webbplats nekas, och fel csrf ger ingen kod", async () => {
   const { env, kakor } = await värld();
   const cid = await registrera(env);
@@ -405,6 +433,31 @@ test("delat: det portalen sparar ser plattformen", async () => {
   assert.match(k, /Brf Ekbacken \(Förening\)/);
   assert.match(k, /Maria Lind, Ordförande — Föredrar sms/);
   assert.match((await verktyg(env, access_token, "hamta_agent", { agent: "offertskrivaren" })).content[0].text, /Du skriver offerter som en privatperson förstår/);
+});
+
+// SK6 (2026-10-26): ett konto med eget team OCH en kollegas fick skrivningarna
+// i det senast skapade, tyst. Läsning får behålla standardvalet.
+test("delat: med flera team kräver en skrivning foretag, läsning gör det inte", async () => {
+  const { env, kakor, db } = await värld();
+  db.raw.prepare("INSERT INTO team_access (team_slug, user_id, role, created_at) VALUES (?, 'u1', 'member', ?)").run(SLUG2, Date.now());
+  const { access_token } = await koppla(env, kakor.u1, await registrera(env));
+  for (const [namn, args] of [
+    ["spara_minne", { rader: ["Hemligt pris: 595 kr."] }],
+    ["spara_underlag", { titel: "Prislista", text: "595 kr" }],
+    ["spara_organisation", { namn: "Väsby AB" }],
+    ["spara_kontakt", { namn: "Johan Persson" }],
+    ["skapa_jobb", { agent: "Offertskrivaren", titel: "Offert", uppdrag: "x" }],
+  ]) {
+    const r = await verktyg(env, access_token, namn, args);
+    assert.ok(r.isError, namn + " skrev utan att veta vilket företag");
+    assert.match(r.content[0].text, /flera team: .*Rönnbergs.*Annan AB|flera team: .*Annan AB.*Rönnbergs/, namn);
+  }
+  assert.equal(db.raw.prepare("SELECT COUNT(*) AS n FROM firma_poster").get().n, 0, "något skrevs ändå");
+  assert.ok(!(await verktyg(env, access_token, "firman", {})).isError, "läsningen ska fungera utan foretag");
+  const rätt = await verktyg(env, access_token, "spara_minne", { rader: ["Timpris 650 kr."], foretag: "Annan AB" });
+  assert.ok(!rätt.isError);
+  const rad = db.raw.prepare("SELECT team_slug FROM firma_poster WHERE typ = 'minne'").get();
+  assert.equal(rad.team_slug, SLUG2);
 });
 
 test("delat: det plattformen sparar ser portalen, märkt med vem", async () => {

@@ -247,24 +247,65 @@ const firmaPostData = {
   kontakt: (d) => ({ namn: d.namn || "", roll: d.roll || "", org: d.org || "", not: d.not || "" }),
 };
 
+// Det som skickats men inte bekräftats av servern (SY1/SY2, 2026-10-26).
+// Listan ligger i localStorage så att den överlever en omladdning: förut skrev
+// firmaSynk() över kopian med serverns läge, och en ändring som inte nått fram
+// (nätfel, timeout) var borta utan besked. Nu behålls den och skickas igen.
+// En post servern NEKAT (t.ex. ett för långt underlag) behålls också, märkt
+// nekad, och skickas inte om förrän innehållet ändrats.
+//   { underlag|org|kontakt: { id: { data: json|null, nekad, fel } }, minne: { text, bas } }
+const FIRMAOSYNK_PREFIX = "atb_firmaosynk_";
+function osynkLäs() {
+  try { const o = JSON.parse(localStorage.getItem(FIRMAOSYNK_PREFIX + state.slug) || "null"); return o && typeof o === "object" ? o : {}; }
+  catch (_) { return {}; }
+}
+function osynkSkriv(o) { try { localStorage.setItem(FIRMAOSYNK_PREFIX + state.slug, JSON.stringify(o)); } catch (_) { /* full lagring */ } }
+
+// Skickar poster och returnerar listan över nekade. Ett svar där ALLA nekades
+// kommer som 400 — det är fortfarande ett svar, inte ett nätfel.
+async function firmaSkickaPoster(poster) {
+  const fel = [];
+  for (let i = 0; i < poster.length; i += 100) {
+    let svar;
+    try { svar = await jobbApi("/api/firma", { op: "poster", poster: poster.slice(i, i + 100) }); }
+    catch (e) { if (e.data && Array.isArray(e.data.fel)) svar = e.data; else throw e; }
+    (svar.fel || []).forEach((x) => fel.push(x));
+  }
+  return fel;
+}
+
 // Skickar skillnaden mellan `karta` (id → data) och det som senast synkades.
 async function firmaSpegla(typ, karta) {
   if (!firmaDelas() || !state.firmaSynkad) return;
   const snap = state.firmaSnap[typ] || {};
+  const o = osynkLäs(); o[typ] = o[typ] || {};
   const poster = [];
   Object.entries(karta).forEach(([id, d]) => {
-    const data = firmaPostData[typ](d);
-    if (snap[id] !== JSON.stringify(data)) poster.push({ typ, id, data });
+    const data = firmaPostData[typ](d), json = JSON.stringify(data);
+    if (snap[id] === json) { delete o[typ][id]; return; }
+    const v = o[typ][id];
+    if (v && v.nekad && v.data === json) return; // samma innehåll som nekades förra gången
+    poster.push({ typ, id, data });
   });
   Object.keys(snap).forEach((id) => { if (!karta[id]) poster.push({ typ, id, data: null }); });
-  if (!poster.length) return;
-  try {
-    for (let i = 0; i < poster.length; i += 100) {
-      await jobbApi("/api/firma", { op: "poster", poster: poster.slice(i, i + 100) });
-    }
-    poster.forEach((p) => { if (p.data === null) delete snap[p.id]; else snap[p.id] = JSON.stringify(p.data); });
-    state.firmaSnap[typ] = snap;
-  } catch (e) { storeWarn(typ === "underlag" ? "underlagen hos oss" : "kundregistret hos oss", e); }
+  // Borttaget lokalt och aldrig hos oss: inget att vänta på.
+  Object.keys(o[typ]).forEach((id) => { if (!karta[id] && !(id in snap)) delete o[typ][id]; });
+  if (!poster.length) { osynkSkriv(o); return; }
+  poster.forEach((p) => { o[typ][p.id] = { data: p.data === null ? null : JSON.stringify(p.data) }; });
+  osynkSkriv(o);
+  let fel;
+  try { fel = await firmaSkickaPoster(poster); }
+  catch (e) { storeWarn(typ === "underlag" ? "underlagen hos oss" : "kundregistret hos oss", e); return; }
+  const nekade = new Map(fel.map((x) => [x.id, x.fel]));
+  const o2 = osynkLäs(); o2[typ] = o2[typ] || {};
+  poster.forEach((p) => {
+    if (nekade.has(p.id)) { o2[typ][p.id] = { data: p.data === null ? null : JSON.stringify(p.data), nekad: true, fel: nekade.get(p.id) }; return; }
+    delete o2[typ][p.id];
+    if (p.data === null) delete snap[p.id]; else snap[p.id] = JSON.stringify(p.data);
+  });
+  osynkSkriv(o2);
+  state.firmaSnap[typ] = snap;
+  if (fel.length) storeWarn(`${typ === "underlag" ? "underlaget" : "posten"} hos oss (${fel[0].fel} Det ligger kvar här i webbläsaren)`, new Error(fel[0].fel));
 }
 function firmaSpeglaKunder(reg) {
   firmaSpegla("org", reg.org || {});
@@ -274,10 +315,12 @@ function firmaSpeglaKunder(reg) {
 let firmaMinneTimer = null;
 function firmaSkickaMinne(text) {
   if (!firmaDelas() || !state.firmaSynkad) return;
+  const o = osynkLäs(); o.minne = { text, bas: state.firmaMinneBas }; osynkSkriv(o);
   clearTimeout(firmaMinneTimer);
   firmaMinneTimer = setTimeout(async () => {
     try {
       const r = await jobbApi("/api/firma", { op: "minne", text, bas: state.firmaMinneBas });
+      const o2 = osynkLäs(); if (o2.minne && o2.minne.text === text) { delete o2.minne; osynkSkriv(o2); }
       state.firmaMinneBas = r.minne.text;
       // Servern slog ihop med något som kommit in under tiden — visa det.
       if (r.minne.text !== text && !folderActive()) {
@@ -318,10 +361,32 @@ async function firmaSynk() {
       const finns = (typ, id) => f[typ].some((p) => p.id === id);
       if (reg && reg.org) Object.entries(reg.org).forEach(([id, d]) => { if (!finns("org", id)) poster.push({ typ: "org", id, data: firmaPostData.org(d) }); });
       if (reg && reg.pers) Object.entries(reg.pers).forEach(([id, d]) => { if (!finns("kontakt", id)) poster.push({ typ: "kontakt", id, data: firmaPostData.kontakt(d) }); });
-      for (let i = 0; i < poster.length; i += 100) await jobbApi("/api/firma", { op: "poster", poster: poster.slice(i, i + 100) });
+      const fel = await firmaSkickaPoster(poster);
+      // Det som nekades (SY2) räknas inte som flyttat: det behålls lokalt och
+      // visas, i stället för att skrivas bort av serverns läge nedan.
+      if (fel.length) {
+        const o = osynkLäs();
+        fel.forEach((x) => {
+          const p = poster.find((q) => q.typ === x.typ && q.id === x.id);
+          if (p) { o[p.typ] = o[p.typ] || {}; o[p.typ][p.id] = { data: JSON.stringify(p.data), nekad: true, fel: x.fel }; }
+        });
+        osynkSkriv(o);
+        storeWarn(`${fel.length} av det som låg i webbläsaren hos oss (${fel[0].fel}) — det ligger kvar här`, new Error(fel[0].fel));
+      }
       try { localStorage.setItem(flagga, "1"); } catch (_) { /* full lagring */ }
       f = await hämta();
     } catch (e) { storeWarn("flytten till delat minne", e); return; }
+  }
+
+  // Väntande ändringar (SY1): minnet skickas först, så att serverns svar redan
+  // innehåller det. Når det inte fram behålls webbläsarens text.
+  const väntar = osynkLäs();
+  let behållMinne = false;
+  if (väntar.minne && typeof väntar.minne.text === "string") {
+    try {
+      const r = await jobbApi("/api/firma", { op: "minne", text: väntar.minne.text, bas: väntar.minne.bas || "" });
+      f.minne = r.minne; delete väntar.minne; osynkSkriv(väntar);
+    } catch (e) { behållMinne = true; storeWarn("företagsminnet hos oss", e); }
   }
 
   // Serverns läge till kopian.
@@ -334,21 +399,48 @@ async function firmaSynk() {
     const nya = f.minne.text.split("\n").filter((r) => r.trim() && !har.has(r.trim()));
     state.firmaSynkad = true;
     if (nya.length) saveMemory((lokalt ? lokalt.replace(/\s+$/, "") + "\n" : "") + nya.join("\n"));
-  } else {
+  } else if (!behållMinne) {
     try { localStorage.setItem(MEM_PREFIX + state.slug, f.minne.text); } catch (_) { /* full lagring */ }
   }
-  const docs = f.underlag.map((u) => ({ id: u.id, title: u.title, text: u.text, on: u.on !== false, via: u.updatedBy }));
-  try { localStorage.setItem(DOCS_PREFIX + state.slug, JSON.stringify(docs)); } catch (e) { storeWarn("underlagen", e); }
-  const reg = { org: {}, pers: {} };
-  f.org.forEach((o) => { reg.org[o.id] = firmaPostData.org(o); });
-  f.kontakt.forEach((k) => { reg.pers[k.id] = firmaPostData.kontakt(k); });
-  try { localStorage.setItem(KUNDER_PREFIX + state.slug, JSON.stringify(reg)); } catch (_) { /* full lagring */ }
+  // Snap = det servern faktiskt har. Kopian = serverns läge plus det som väntar
+  // eller nekats; det som väntar skickas igen när synken är klar.
   state.firmaSnap = {
     underlag: Object.fromEntries(f.underlag.map((u) => [u.id, JSON.stringify(firmaPostData.underlag(u))])),
     org: Object.fromEntries(f.org.map((o) => [o.id, JSON.stringify(firmaPostData.org(o))])),
     kontakt: Object.fromEntries(f.kontakt.map((k) => [k.id, JSON.stringify(firmaPostData.kontakt(k))])),
   };
+  let regLokalt = null;
+  try { regLokalt = JSON.parse(localStorage.getItem(KUNDER_PREFIX + state.slug) || "null"); } catch (_) { regLokalt = null; }
+  const lokala = {
+    underlag: Object.fromEntries(loadLocalDocs().filter((d) => d && d.id && !d.file).map((d) => [d.id, d])),
+    org: (regLokalt && regLokalt.org) || {},
+    kontakt: (regLokalt && regLokalt.pers) || {},
+  };
+  const docs = f.underlag.map((u) => ({ id: u.id, title: u.title, text: u.text, on: u.on !== false, via: u.updatedBy }));
+  const reg = { org: {}, pers: {} };
+  f.org.forEach((o) => { reg.org[o.id] = firmaPostData.org(o); });
+  f.kontakt.forEach((k) => { reg.pers[k.id] = firmaPostData.kontakt(k); });
+  const kartor = { org: reg.org, kontakt: reg.pers };
+  let attSkicka = false;
+  ["underlag", "org", "kontakt"].forEach((typ) => {
+    Object.entries(väntar[typ] || {}).forEach(([id, v]) => {
+      const lok = lokala[typ][id];
+      if (!v.nekad) attSkicka = true;
+      if (typ === "underlag") {
+        const i = docs.findIndex((d) => d.id === id);
+        if (lok) { if (i >= 0) docs[i] = { ...docs[i], ...lok }; else docs.push(lok); }
+        else if (i >= 0 && v.data === null) docs.splice(i, 1);
+      } else if (lok) kartor[typ][id] = lok;
+      else if (v.data === null) delete kartor[typ][id];
+    });
+  });
+  try { localStorage.setItem(DOCS_PREFIX + state.slug, JSON.stringify(docs)); } catch (e) { storeWarn("underlagen", e); }
+  try { localStorage.setItem(KUNDER_PREFIX + state.slug, JSON.stringify(reg)); } catch (_) { /* full lagring */ }
   state.firmaSynkad = true;
+  if (attSkicka) {
+    firmaSpegla("underlag", Object.fromEntries(docs.filter((d) => d && !d.file).map((d) => [d.id, d])));
+    firmaSpeglaKunder(reg);
+  }
   paintFactCount();
   if (window.ATBVaning) window.ATBVaning.omrita();
 }
@@ -1636,10 +1728,18 @@ function renderLogin(opts) {
     alt.appendChild(again);
     alt.appendChild(document.createTextNode(" · "));
   }
-  const demo = el("a", "", "Titta på exempelteamen i stället");
-  demo.href = "#"; demo.style.color = "var(--accent-2)";
-  demo.onclick = (e) => { e.preventDefault(); renderPicker(); };
-  alt.appendChild(demo);
+  // OB4 (2026-10-26): utåt finns inga exempelteam längre (SP22), och länken
+  // ritade bara om den här sidan. Den som inte har ett team får vägen dit.
+  if (INTERN) {
+    const demo = el("a", "", "Titta på exempelteamen i stället");
+    demo.href = "#"; demo.style.color = "var(--accent-2)";
+    demo.onclick = (e) => { e.preventDefault(); renderPicker(); };
+    alt.appendChild(demo);
+  } else {
+    const bygg = el("a", "", "Inget team än? Bygg ert gratis");
+    bygg.href = "../builder/"; bygg.style.color = "var(--accent-2)";
+    alt.appendChild(bygg);
+  }
   wrap.appendChild(alt);
 
   root.appendChild(wrap);
@@ -3748,17 +3848,9 @@ function renderPulse() {
     window.ATB_DEADLINES_SE.forEach((d) => {
       const match = d.forms.includes("alla") || d.forms.includes(base) || (emp && d.forms.includes("anstallda"));
       if (!match) return;
-      let when;
-      if (d.monthly) {
-        when = new Date(now.getFullYear(), now.getMonth(), d.day);
-        if (when < now) when = new Date(now.getFullYear(), now.getMonth() + 1, d.day);
-      } else {
-        when = new Date(now.getFullYear(), (d.month || 1) - 1, d.day || 1);
-        if (when < now) when = new Date(now.getFullYear() + 1, (d.month || 1) - 1, d.day || 1);
-      }
-      const days = Math.ceil((when - now) / 86400000);
+      const { days, label } = window.ATB_NASTA_DEADLINE(d, now);
       const win = d.monthly ? 7 : 28;
-      if (days >= 0 && days <= win && (!bestDl || days < bestDl.days)) bestDl = { d, days };
+      if (days >= 0 && days <= win && (!bestDl || days < bestDl.days)) bestDl = { d: { ...d, label }, days };
     });
     if (bestDl) {
       cards.push({ icon: "🏛", label: bestDl.days === 0 ? `Idag: ${bestDl.d.label}` : `${bestDl.days} dagar: ${bestDl.d.label}`, act: () => {
@@ -5374,12 +5466,8 @@ function kommandeDatum(now, dagar) {
     const base = dlForm.split("-")[0], emp = dlForm.includes("anstallda");
     window.ATB_DEADLINES_SE.forEach((x) => {
       if (!(x.forms.includes("alla") || x.forms.includes(base) || (emp && x.forms.includes("anstallda")))) return;
-      let when = x.monthly ? new Date(now.getFullYear(), now.getMonth(), x.day)
-        : new Date(now.getFullYear(), (x.month || 1) - 1, x.day || 1);
-      if (when < now) when = x.monthly ? new Date(now.getFullYear(), now.getMonth() + 1, x.day)
-        : new Date(now.getFullYear() + 1, (x.month || 1) - 1, x.day || 1);
-      const d = dagarTill(when);
-      if (d >= 0 && d <= dagar) ut.push({ d, t: `${x.label} (om ${d} dagar — kontrollera exakt datum hos Skatteverket)` });
+      const { days: d, label } = window.ATB_NASTA_DEADLINE(x, now);
+      if (d >= 0 && d <= dagar) ut.push({ d, t: `${label} (${d === 0 ? "i dag" : `om ${d} dagar`} — kontrollera exakt datum hos Skatteverket)` });
     });
   }
   return ut.sort((a, b) => a.d - b.d).map((x) => x.t);
@@ -5437,7 +5525,7 @@ async function jobbApi(path, body) {
     : { credentials: "same-origin" }, 10000);
   let data = {};
   try { data = await res.json(); } catch (_) { /* tomt svar */ }
-  if (!res.ok) throw new Error(data.error || "Det gick inte just nu.");
+  if (!res.ok) { const e = new Error(data.error || "Det gick inte just nu."); e.data = data; e.status = res.status; throw e; }
   return data;
 }
 

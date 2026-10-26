@@ -103,6 +103,11 @@ export async function läggTillMinne(db, slug, rader, av) {
 export async function sparaPost(db, slug, typ, id, data, av) {
   if (!["underlag", "org", "kontakt"].includes(typ)) return { fel: "okänd typ" };
   if (!giltigtId(id)) return { fel: "ogiltigt id" };
+  // SY3 (2026-10-26): ett för långt underlag avvisas. Förut kapades det tyst
+  // här, och agenterna svarade sedan på halva dokumentet. /mcp avvisar redan.
+  if (typ === "underlag" && data && typeof data.text === "string" && data.text.length > UNDERLAG_MAX) {
+    return { fel: `Underlaget är för långt för att delas (högst ${UNDERLAG_MAX.toLocaleString("sv-SE")} tecken).` };
+  }
   const d = rensa(typ, data);
   if ((typ === "org" || typ === "kontakt") && !d.namn) return { fel: "Namnet saknas." };
   if (typ === "underlag" && !d.text.trim()) return { fel: "Underlaget är tomt." };

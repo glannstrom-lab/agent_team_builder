@@ -212,14 +212,31 @@ export async function lookupClient(db, clientId, fetchImpl = fetch) {
 
 // Vad kunden ser: "Claude", "ChatGPT" — inte ett slumpat id. Värden på
 // återanropsadressen avgör, för namnet i en DCR-registrering väljer klienten
-// själv och kan vara vad som helst.
+// själv och kan vara vad som helst (SK1, 2026-10-26: en klient som kallade sig
+// "Claude (officiell)" visades med just det namnet på samtyckessidan). Det
+// självvalda namnet visas därför aldrig som rubrik — bara i varningen, med
+// värden bredvid, se klientVarning().
 export function clientLabel(client, redirectUri) {
-  let host = "";
-  try { host = new URL(redirectUri || (client && client.redirect_uris[0]) || "").hostname; } catch (_) { /* */ }
+  const host = återanropsvärd(client, redirectUri);
   if (host === "claude.ai" || host.endsWith(".claude.ai")) return "Claude";
   if (host === "chatgpt.com" || host.endsWith(".chatgpt.com") || host.endsWith(".openai.com")) return "ChatGPT";
-  if (LOOPBACK.has(host)) return (client && client.client_name) || "ett program på din dator";
-  return (client && client.client_name) || host || "en okänd tjänst";
+  if (LOOPBACK.has(host)) return "ett program på din dator";
+  return host || "en okänd tjänst";
+}
+
+function återanropsvärd(client, redirectUri) {
+  try { return new URL(redirectUri || (client && client.redirect_uris[0]) || "").hostname; } catch (_) { return ""; }
+}
+
+// Varningen under rubriken när klienten inte är Claude eller ChatGPT. null för
+// de två kända. Namnet klienten gett sig själv står med, men som ett påstående.
+export function klientVarning(client, redirectUri) {
+  const vem = clientLabel(client, redirectUri);
+  if (vem === "Claude" || vem === "ChatGPT") return null;
+  const namn = client && typeof client.client_name === "string" ? client.client_name.trim().slice(0, 100) : "";
+  const vad = LOOPBACK.has(återanropsvärd(client, redirectUri)) ? "ett program på den här datorn" : `tjänsten på ${återanropsvärd(client, redirectUri) || "en okänd adress"}`;
+  return (namn ? `Det här är ${vad}, som kallar sig ”${namn}”. ` : `Det här är ${vad}. `) +
+    "Det är varken Claude eller ChatGPT. Koppla bara om du själv har startat kopplingen och känner igen adressen.";
 }
 
 // ── PKCE ──────────────────────────────────────────────────────────────────

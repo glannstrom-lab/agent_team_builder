@@ -20,7 +20,7 @@
 
 import { sessionUser, sha256Hex, timingSafeEqual, randomHex } from "../api/auth/_lib.js";
 import {
-  SCOPE, SCOPE_FIRMA, BEVILJAT, lookupClient, redirectMatches, clientLabel, createCode, aktivaTeam, origin,
+  SCOPE, SCOPE_FIRMA, BEVILJAT, lookupClient, redirectMatches, clientLabel, klientVarning, createCode, aktivaTeam, origin,
 } from "../api/_koppling.js";
 
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -88,12 +88,14 @@ export async function onRequestGet({ request, env }) {
     });
   }
 
+  const varning = klientVarning(client, p.redirect_uri);
   let host = "";
   try { host = new URL(p.redirect_uri).host; } catch (_) { /* kontrollerad ovan */ }
   return page({
     title: `${vem} vill koppla sig till ert team`,
     redirect: p.redirect_uri,
-    body: `<p class="ingress">Inloggad som <b>${esc(user.email)}</b>. Kopplingen gäller ${team.length === 1 ? "teamet" : "teamen"} <b>${team.map((t) => esc(t.company)).join(", ")}</b>.</p>
+    body: `${varning ? `<div class="ruta varning"><div class="etikett">Kontrollera vem som frågar</div><p>${esc(varning)}</p></div>` : ""}
+      <p class="ingress">Inloggad som <b>${esc(user.email)}</b>. Kopplingen gäller ${team.length === 1 ? "teamet" : "teamen"} <b>${team.map((t) => esc(t.company)).join(", ")}</b>.</p>
       <div class="ruta"><div class="etikett">${esc(vem)} kommer att kunna</div>
         <ul><li>läsa teamet: agenterna, deras instruktioner och era rutiner</li><li>läsa och lägga till i ert företagsminne och era underlag</li><li>läsa och lägga till organisationer och kontakter</li><li>se jobben, lägga upp nya och lämna leveranser</li></ul>
         <div class="etikett" style="margin-top:14px">men inte</div>
@@ -178,6 +180,7 @@ main{max-width:520px;margin:0 auto;background:var(--papper);border:1px solid var
 .marke{font:800 .95rem Archivo,Arial,sans-serif;margin-bottom:18px}h1{font:800 1.5rem/1.15 Archivo,Arial,sans-serif;letter-spacing:-.015em;margin:0 0 12px}
 .ingress{margin:0 0 16px}.dim{color:var(--mjuk);font-size:.9rem}.etikett{font:500 .7rem "IBM Plex Mono",Consolas,monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--ockra-2)}
 .ruta{border:1px solid var(--linje);border-radius:6px;padding:14px 16px;margin:0 0 14px}.ruta ul{margin:6px 0 0;padding-left:20px}
+.ruta.varning{border-color:#B4542F;border-left:3px solid #B4542F;background:#FBF1EC}.ruta.varning p{margin:6px 0 0}.ruta.varning .etikett{color:#9A3F1E}
 .falt{display:grid;gap:8px;margin:0 0 12px}input{font:inherit;padding:10px 12px;border:1px solid var(--linje);border-radius:6px;background:#fff}
 button{font:700 1rem Karla,system-ui,sans-serif;background:var(--blak);color:var(--papper);border:0;border-radius:6px;padding:11px 18px;cursor:pointer}
 .knappar{display:flex;gap:10px;flex-wrap:wrap}button.sek{background:transparent;color:var(--blak);border:1px solid var(--linje)}
