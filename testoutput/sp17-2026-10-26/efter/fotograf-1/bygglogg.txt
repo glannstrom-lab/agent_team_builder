@@ -1,0 +1,5 @@
+  research: 22.7 s, 16057 tecken, finish=stop
+  scale: 1.6 s, 785 tecken, finish=stop
+  proposal: 23.4 s, 17833 tecken, finish=stop
+  structure: 19.0 s, 24599 tecken, finish=stop
+team klart på försök 1: vd-assistent, forfragningssvararen, recensionspadrivaren, pris-och-offertstodjaren

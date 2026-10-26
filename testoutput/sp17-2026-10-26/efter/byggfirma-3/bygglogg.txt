@@ -1,0 +1,6 @@
+  research: 22.5 s, 19358 tecken, finish=stop
+  scale: 0.8 s, 341 tecken, finish=stop
+  proposal: 23.5 s, 17992 tecken, finish=stop
+  structure: 25.1 s, 31827 tecken, finish=stop
+  trimmat till skalningsbeslutet: Förfrågningssorteraren
+team klart på försök 1: vd-assistent, offertskrivaren, ata-dokumenteraren, rot-ansokningshjalpen

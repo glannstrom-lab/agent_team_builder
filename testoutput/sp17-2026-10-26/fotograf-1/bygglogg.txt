@@ -1,0 +1,5 @@
+  research: 22.2 s, 15918 tecken, finish=stop
+  scale: 1.0 s, 448 tecken, finish=stop
+  proposal: 36.4 s, 19386 tecken, finish=stop
+  structure: 26.9 s, 24491 tecken, finish=stop
+team klart på försök 1: vd-assistent, forfragan, leverans, kampanj

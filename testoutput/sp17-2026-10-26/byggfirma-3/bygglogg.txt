@@ -1,0 +1,5 @@
+  research: 23.3 s, 16151 tecken, finish=stop
+  scale: 1.0 s, 418 tecken, finish=stop
+  proposal: 31.1 s, 17413 tecken, finish=stop
+  structure: 29.3 s, 23548 tecken, finish=stop
+team klart på försök 1: vd-assistent, offert-ata-specialist, forfragningsassistent, betalningsassistent

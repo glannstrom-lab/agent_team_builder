@@ -1,0 +1,5 @@
+  research: 22.7 s, 12984 tecken, finish=stop
+  scale: 1.0 s, 346 tecken, finish=stop
+  proposal: 27.5 s, 15707 tecken, finish=stop
+  structure: 18.5 s, 22133 tecken, finish=stop
+team klart på försök 1: vd-assistent, instagram-kundsvarsagent, innehallsassistent, lagerassistent

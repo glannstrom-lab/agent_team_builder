@@ -1,0 +1,38 @@
+byggfirma-1: namn="Robin" ok · påhittade namn: – · påhittade efternamn: – · specialister med personnamn: –
+   mot egna: offert-ata 0.11 · forfragningssvararen 0.19 · underlagsjagaren 0.23 · max 0.23 · kontroll OK · $0.038
+   perspektiv: Du bevakar övergångarna där jobbet byter hand hos Bergströms — från hembesöket Jonas gjort i ett rum till dokumentet som ska ut, från rivningen Ali gjort till posten som ska in på slutfakturan, från förfrågan som landat 
+byggfirma-2: namn="Robin" ok · påhittade namn: – · påhittade efternamn: – · specialister med personnamn: –
+   mot egna: offertskrivaren 0.11 · forfragningsvakten 0.08 · rot-och-fakturaberedaren 0.05 · max 0.11 · kontroll OK · $0.034
+   perspektiv: Du bevakar kedjan från "någon hörde av sig" till "jobbet är betalt och ROT utbetalt" — du letar efter det som fastnat mellan två steg, inte efter det som är påbörjat. Du vet att Jonas tappar saker när han står i ett rive
+byggfirma-3: namn="Robin" ok · påhittade namn: – · påhittade efternamn: – · specialister med personnamn: –
+   mot egna: offertskrivaren 0.13 · ata-dokumenteraren 0.18 · rot-ansokningshjalpen 0.11 · max 0.18 · kontroll OK · $0.038
+   perspektiv: Du bevakar övergången mellan det som sagts muntligt och det som står skriftligt — för hos Bergströms är det glappet som kostar pengar, vare sig det gäller en ÄTA som aldrig blev ett underlag, en offert som aldrig blev sk
+fotograf-1: namn="VD-assistenten" ok · påhittade namn: – · påhittade efternamn: – · specialister med personnamn: –
+   mot egna: forfragningssvararen 0.11 · recensionspadrivaren 0.13 · pris-och-offertstodjaren 0.1 · max 0.13 · kontroll OK · $0.033
+   perspektiv: Du bevakar övergångarna i deras vecka — den mellan "förfrågan in" och "svar ut" i högsäsong, den mellan "galleri levererat" och "recension begärd", och den mellan "bröllop bokat" och "planeringsmöte bokat". När en förfrå
+fotograf-2: namn="VD-assistenten" ok · påhittade namn: – · påhittade efternamn: – · specialister med personnamn: –
+   mot egna: offert-forfragan 0.06 · gallerileverans-omdomen 0.08 · sasong-masskampanj 0.14 · max 0.14 · kontroll OK · $0.027
+   perspektiv: Du letar alltid efter det par eller den företagskund vars nästa steg ligger hos Oskar och Emma — den som väntar utan att veta att den väntar. Du resonerar från trådar som löper mellan brudpar och företagskunder utan att 
+fotograf-3: namn="VD-assistenten" ok · påhittade namn: – · påhittade efternamn: – · specialister med personnamn: –
+   mot egna: forfragningssvaret 0.17 · offerten 0.13 · sasongs-och-kampanjstodet 0.09 · max 0.17 · kontroll OK · $0.030
+   perspektiv: Vad som just nu står mellan ett brudpar och deras bilder — en obesvarad förfrågan, ett galleri i kön, en recension som aldrig efterfrågades — och vem av Oskar och Emma som behöver se det först. Du letar efter det som hål
+salong-1: namn="Saga" ok · påhittade namn: – · påhittade efternamn: – · specialister med personnamn: –
+   mot egna: aterhamtningskoll 0.1 · meddelandestodet 0.05 · innehallsassistenten 0.12 · max 0.12 · kontroll OK · $0.031
+   perspektiv: Du letar alltid efter glappet mellan det som är nästan gjort och det som faktiskt är klart — kunden som är på väg att bokas men inte bokat, svaret som är skrivet men inte skickat, luckan som är identifierad men inte fyll
+salong-2: namn="Saga" ok · påhittade namn: – · påhittade efternamn: – · specialister med personnamn: –
+   mot egna: instagram-specialisten 0.05 · pris-kundkontakt-specialisten 0.25 · stamkund-specialisten 0.14 · max 0.25 · kontroll OK · $0.028
+   perspektiv: Du ser alltid efter var en kunds väg korsar en annans — samma person som frågar om pris kan vara samma person som inte bokat på länge, och en lucka i schemat kan fyllas av en av dem. Du varnar när fyra olika moment vill 
+salong-3: namn="Saga" ok · påhittade namn: – · påhittade efternamn: – · specialister med personnamn: –
+   mot egna: aterbokaren 0 · dm-vakten 0 · innehallsstodet 0 · max 0 · kontroll OK · $0.028
+   perspektiv: Letar alltid efter var en kund finns i två sammanhang samtidigt — i Bokadirekt-historiken och i DM-tråden, i avbokningslistan och i stamkundslistan — eftersom det är precis där Lina tappar henne.
+
+=== Mellan företagen, inom samma omgång ===
+omgång 1: byggfirma~salong 0.1 · byggfirma~fotograf 0.19 · salong~fotograf 0.05
+omgång 2: byggfirma~salong 0 · byggfirma~fotograf 0.11 · salong~fotograf 0.09
+omgång 3: byggfirma~salong 0.07 · byggfirma~fotograf 0.13 · salong~fotograf 0.07
+
+=== Summering ===
+byggfirma: namn rätt 3/3 · påhittade namn i 0/3 · påhittade efternamn i 0/3 · personnamn på specialist i 0/3 · mot egna max 0.23/0.11/0.18 (snitt 0.17)
+fotograf: namn rätt 3/3 · påhittade namn i 0/3 · påhittade efternamn i 0/3 · personnamn på specialist i 0/3 · mot egna max 0.13/0.14/0.17 (snitt 0.15)
+salong: namn rätt 3/3 · påhittade namn i 0/3 · påhittade efternamn i 0/3 · personnamn på specialist i 0/3 · mot egna max 0.12/0.25/0 (snitt 0.12)
+ALLA: mot egna snitt 0.15 max 0.25 · mellan företag snitt 0.09 max 0.19 · namnfel 0/9 · kostnad $0.287

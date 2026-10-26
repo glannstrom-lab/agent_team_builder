@@ -1,0 +1,5 @@
+  research: 17.0 s, 11751 tecken, finish=stop
+  scale: 0.8 s, 470 tecken, finish=stop
+  proposal: 24.1 s, 17049 tecken, finish=stop
+  structure: 19.0 s, 24695 tecken, finish=stop
+team klart på försök 1: vd-assistent, aterhamtningskoll, meddelandestodet, innehallsassistenten

@@ -1,0 +1,5 @@
+  research: 16.9 s, 12299 tecken, finish=stop
+  scale: 1.9 s, 556 tecken, finish=stop
+  proposal: 22.0 s, 15960 tecken, finish=stop
+  structure: 22.0 s, 22614 tecken, finish=stop
+team klart på försök 1: vd-assistent, instagram-svar, klara, nova

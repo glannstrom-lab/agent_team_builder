@@ -195,7 +195,11 @@ Står ett sådant namn i underlaget, använd det: rubriken blir
 `### [Namnet] (VD-assistent)`. Saknas det, skriv rollen: `### VD-assistent`.
 Hitta aldrig på ett personnamn åt henne — namnet är kundens val.
 Specialisterna — och VD-agenten, där en sådan finns — namnges efter
-jobbet (se regel 2).
+jobbet (se regel 2), **också när VD-assistenten har ett personnamn.**
+Hennes namn är kundens val och smittar inte av sig: rubriken är
+`### Offertskrivaren`, aldrig `### Klara (Offertspecialist)`, `### Rut`
+eller `### Nova`. (Uppmätt 2026-10-26: i två av nio byggen med ett valt
+namn fick specialisterna påhittade förnamn.)
 
 Ingen agent får heta som kunden eller någon i kundens verksamhet — det
 gäller också det namn kunden valt åt sin assistent. Krockar det valda

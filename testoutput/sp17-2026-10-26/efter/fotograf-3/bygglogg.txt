@@ -1,0 +1,5 @@
+  research: 22.1 s, 16591 tecken, finish=stop
+  scale: 0.8 s, 468 tecken, finish=stop
+  proposal: 17.8 s, 15111 tecken, finish=stop
+  structure: 20.5 s, 23830 tecken, finish=stop
+team klart på försök 1: vd-assistent, forfragningssvaret, offerten, sasongs-och-kampanjstodet

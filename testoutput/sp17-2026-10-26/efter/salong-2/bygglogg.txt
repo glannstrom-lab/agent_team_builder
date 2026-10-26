@@ -1,0 +1,5 @@
+  research: 21.6 s, 15503 tecken, finish=stop
+  scale: 0.8 s, 448 tecken, finish=stop
+  proposal: 15.5 s, 15120 tecken, finish=stop
+  structure: 18.4 s, 20769 tecken, finish=stop
+team klart på försök 1: vd-assistent, instagram-specialisten, pris-kundkontakt-specialisten, stamkund-specialisten

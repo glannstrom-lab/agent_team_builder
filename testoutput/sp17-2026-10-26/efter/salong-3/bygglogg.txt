@@ -1,0 +1,5 @@
+  research: 17.9 s, 13292 tecken, finish=stop
+  scale: 2.0 s, 381 tecken, finish=stop
+  proposal: 20.2 s, 16542 tecken, finish=stop
+  structure: 21.2 s, 24041 tecken, finish=stop
+team klart på försök 1: vd-assistent, aterbokaren, dm-vakten, innehallsstodet

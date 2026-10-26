@@ -1,0 +1,5 @@
+  research: 20.6 s, 15360 tecken, finish=stop
+  scale: 0.9 s, 425 tecken, finish=stop
+  proposal: 30.2 s, 22015 tecken, finish=stop
+  structure: 21.3 s, 29068 tecken, finish=stop
+team klart på försök 1: vd-assistent, offertskrivaren, forfragningsvakten, rot-och-fakturaberedaren
