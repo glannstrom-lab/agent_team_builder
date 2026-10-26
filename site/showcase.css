@@ -428,3 +428,10 @@ footer .backlink:hover { text-decoration: underline; }
   .reveal { opacity: 1 !important; transform: none !important; }
   .badge, .hero h1, .hero p.sub, .meta-pills, .stats { opacity: 1 !important; }
 }
+
+/* Andra projekt av Glänne & Söner (2026-10-26) */
+footer .footer-projects { margin: 30px auto 0; max-width: 760px; text-align: left; border-top: 1px solid var(--border); padding-top: 22px; }
+footer .footer-projects h2 { font-family: var(--font-mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--text-dim); font-weight: 500; margin: 0 0 12px; }
+footer .footer-projects ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 8px 24px; }
+footer .footer-projects li { font-size: 14px; color: var(--text-dim); }
+footer .footer-projects a { color: var(--accent-2); font-weight: 600; }
