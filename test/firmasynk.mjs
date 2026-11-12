@@ -14,7 +14,9 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { UNDERLAG_MAX } from "../functions/api/_firma.js";
 
-const KÄLLA = readFileSync("portal/app.js", "utf8");
+// \r bort: med core.autocrlf=true checkas filen ut med CRLF, och klipp-markörer
+// som "\n}\n" hittas då aldrig (SK3-testet föll på Windows, U8).
+const KÄLLA = readFileSync("portal/app.js", "utf8").replace(/\r\n/g, "\n");
 const klipp = (från, till) => {
   const i = KÄLLA.indexOf(från), j = KÄLLA.indexOf(till, i);
   assert.ok(i >= 0 && j > i, "hittade inte " + från);
@@ -184,6 +186,22 @@ test("SK3: agenternas instruktion och exporten går genom minneBlock", () => {
   // Slutmarkören är nästa funktionsrubrik, inte "\n}\n": i en worktree med
   // CRLF fanns den strängen inte, och testet föll på radsluten.
   assert.match(klipp("function externtPaket(", "\nfunction "), /minneBlock\(minne,/);
+});
+
+// U8 (2026-11-12): SK3 märkte minnet i systemFor och exporten, men två
+// anrop till skickade det omärkt — och GROW skriver en ny agents permanenta
+// systemprompt. Varje loadMemory() som går till en modell ska gå via
+// delaMinne/minneBlock.
+test("U8: Utöka teamet får bara kundens egna minnesrader", () => {
+  const grow = klipp("const existing = team.agents.map(", "renderGrowPreview(preview");
+  assert.match(grow, /delaMinne\(loadMemory\(\)\)\.egna/, "GROW läser hela minnet, även plattformens ogranskade rader");
+  assert.doesNotMatch(grow, /const mem = loadMemory\(\)/, "den omärkta raden är tillbaka");
+});
+
+test("U8: minnesförslagen ser plattformens rader som ogranskade", () => {
+  const sugg = klipp("async function suggestMemory(agentId)", "const lines = out.split");
+  assert.match(sugg, /minneBlock\(loadMemory\(\)/, "minnesförslagen får minnet omärkt");
+  assert.doesNotMatch(sugg, /BEFINTLIGT MINNE:\\n\$\{loadMemory\(\)/, "den omärkta raden är tillbaka");
 });
 
 test("SK3: utan källor ser blocket ut som förut", async () => {

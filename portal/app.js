@@ -3573,10 +3573,14 @@ async function suggestMemory(agentId) {
   const status = el("p", "ovl-lead", "Läser samtalet och letar efter fakta värda att spara…");
   box.appendChild(status);
   let out = "";
+  // U8 (2026-11-12): hela minnet behövs för att inte föreslå dubbletter, men
+  // raderna kundens egen AI sparat via /mcp (SK3) står märkta som ogranskade
+  // uppgifter — samma block som i systemFor, aldrig omärkta.
+  const befintligt = minneBlock(loadMemory().trim(), "BEFINTLIGT MINNE:").trim() || "BEFINTLIGT MINNE:\n(tomt)";
   try {
     out = await window.ATBClaude.collect({
       apiKey: state.apiKey, model: state.model, system: MEM_SUGGEST_PROMPT,
-      messages: [{ role: "user", content: `BEFINTLIGT MINNE:\n${loadMemory().trim() || "(tomt)"}\n\nSAMTAL:\n${convo}` }],
+      messages: [{ role: "user", content: `${befintligt}\n\nSAMTAL:\n${convo}` }],
       maxTokens: 400,
     });
   } catch (e) { status.textContent = "⚠️ " + ((e && e.message) || "Gick inte att hämta förslag — försök igen."); return; }
@@ -4270,7 +4274,10 @@ function openGrow() {
     preview.innerHTML = "";
     try {
       const existing = team.agents.map((a) => `- ${a.name} (${a.id}): ${a.job || a.tagline || ""}`).join("\n");
-      const mem = loadMemory().trim().slice(0, 1500);
+      // U8 (2026-11-12): bara kundens egna rader. Det GROW skriver blir en ny
+      // agents permanenta systemprompt, så en rad hennes egen AI sparat via
+      // /mcp (SK3) får inte kunna bli en grundinstruktion den vägen.
+      const mem = delaMinne(loadMemory()).egna.slice(0, 1500);
       const raw = await window.ATBClaude.collect({
         apiKey: state.apiKey, model: state.model, system: GROW_RULES,
         messages: [{ role: "user", content: `FÖRETAG: ${team.company} — ${team.tagline || ""}\n\nBEFINTLIGA AGENTER:\n${existing}\n\nKUNDENS BEHOV:\n${need}${mem ? `\n\nUR FÖRETAGSMINNET:\n${mem}` : ""}` }],
