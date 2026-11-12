@@ -774,7 +774,10 @@ a.link-btn { text-decoration: none; }
 .meet-part:hover { border-color: var(--accent-glow); }
 
 /* ===== Svarsknappar (kopiera / ladda ner) ===== */
-.msg-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 5px; opacity: 0; transition: opacity 0.15s; }
+/* U16 (2026-11-12): dämpade, inte osynliga. Agenten säger "tryck på 🔎
+   Kontrollera mot källan under svaret" — med opacity 0 fanns ingen knapp att
+   se på dator förrän muspekaren råkade hamna över svaret. */
+.msg-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 5px; opacity: 0.75; transition: opacity 0.15s; }
 /* "⋯ Mer" fäller ut de mindre använda knapparna på en egen rad. */
 .msg-mer { display: flex; flex-wrap: wrap; gap: 6px; flex-basis: 100%; }
 .msg-mer[hidden] { display: none; }

@@ -771,6 +771,19 @@ test("KA15: de verifierade reglerna står i agentens instruktion, med källa och
   assert.match(sys, /En rättelse som stämmer med listan avvisar du aldrig/);
 });
 
+// ── U16: knapparna under ett svar syns utan hovring ────────────────────────
+test("U16: .msg-actions är aldrig osynlig utan hovring (dämpad går bra)", () => {
+  const css = readFileSync("portal/portal.css", "utf8");
+  const regler = [...css.matchAll(/([^{}]*\.msg-actions[^{}]*)\{([^}]*)\}/g)]
+    .filter((m) => !/:hover|:focus/.test(m[1]));
+  assert.ok(regler.length, "hittade inga regler för .msg-actions");
+  for (const [, sel, kropp] of regler) {
+    const o = kropp.match(/opacity:\s*([\d.]+)/);
+    if (o) assert.ok(Number(o[1]) >= 0.6, `${sel.trim()} har opacity ${o[1]} — knappen agenten hänvisar till syns inte`);
+    assert.doesNotMatch(kropp, /visibility:\s*hidden|display:\s*none/, sel.trim());
+  }
+});
+
 // ── U15: agenterna vet vilken dag det är ───────────────────────────────────
 // Fallet som hände: torsdag 12 november, en redovisningskonsult frågar om
 // kvartalsmomsen — och svaret nämnde aldrig att Q3 skulle in samma dag.
