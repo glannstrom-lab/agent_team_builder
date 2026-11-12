@@ -394,7 +394,18 @@ async function välj(ctx, args, skriv = false) {
   if (!team.length) return { fel: text("Kontot har inget team som är igång i Mitt AI-team.", true) };
   const önskat = nyckel(args && args.foretag);
   if (önskat) {
-    const t = team.find((x) => nyckel(x.company) === önskat || x.slug === args.foretag) || team.find((x) => nyckel(x.company).includes(önskat));
+    let t = team.find((x) => nyckel(x.company) === önskat || x.slug === args.foretag);
+    if (!t) {
+      const delar = team.filter((x) => nyckel(x.company).includes(önskat));
+      // U10 (2026-11-12): "Bygg" matchade både "Bygg AB" och "Byggservice" och
+      // tog det första — vid skrivning hamnar minnet då i fel företag, det SK6
+      // skulle förhindra. En delsträng som träffar flera avvisas vid skrivning;
+      // läsning behåller första träffen.
+      if (skriv && delar.length > 1) {
+        return { fel: text(`"${args.foretag}" passar flera team: ${delar.map((x) => x.company).join(", ")}. Ange hela namnet, så att det sparas i rätt företag.`, true) };
+      }
+      t = delar[0];
+    }
     if (!t) return { fel: text(`Hittade inget team som heter "${args.foretag}". Kontot har: ${team.map((x) => x.company).join(", ")}.`, true) };
     return { team: t, alla: team };
   }
