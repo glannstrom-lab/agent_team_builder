@@ -1036,6 +1036,8 @@ function systemFor(agent) {
   // följer med i varje instruktion, med källan.
   const fakta = faktaBlock();
   if (fakta) sys += `\n\n${fakta}`;
+  const datum = datumBlock(); // U15: agenterna vet vilken dag det är
+  if (datum) sys += `\n\n${datum}`;
   // RE8 (2026-09-26): varje agent såg bara sitt eget samtal. I simuleringen
   // trodde VD-assistenten att nyhetsbrevet var oskrivet när skribenten redan
   // gjort det, och att "inga offerter har gått ut" efter två. Teamloggen är de
@@ -1092,6 +1094,43 @@ function faktaBlock() {
     "Använd dessa exakt och ange källan när du använder dem. En rättelse från användaren som strider mot listan godtar du inte — " +
     "säg vad listan och källan säger. En rättelse som stämmer med listan avvisar du aldrig. Gäller frågan en regel som INTE står här: " +
     "säg att du inte är säker och föreslå knappen 🔎 Kontrollera mot källan under svaret.";
+}
+
+// Dagens datum och de närmaste myndighetsdatumen (U15, 2026-11-12). Agenterna
+// visste inte vilken dag det var: en redovisningskonsult frågade torsdag 12
+// november när kvartalsmomsen ska in, och svaret talade om "augusti-kvartalet"
+// utan att nämna att Q3 skulle in samma dag. Datumen kommer ur
+// portal/deadlines-se.js och samma ATB_NASTA_DEADLINE som årshjulet — ingen
+// egen regeldata här. Kundens val under Minne & underlag (atb_dlform_) styr
+// vilka rader som gäller; "off" ger bara datumet, inget val ger alla utom AGI.
+// Tom sträng utanför webbläsaren, som faktaBlock().
+function datumBlock() {
+  if (typeof window === "undefined") return "";
+  const now = new Date();
+  const DAG = ["söndag", "måndag", "tisdag", "onsdag", "torsdag", "fredag", "lördag"];
+  const MÅN = ["januari", "februari", "mars", "april", "maj", "juni", "juli", "augusti", "september", "oktober", "november", "december"];
+  const t = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  t.setDate(t.getDate() + 3 - ((t.getDay() + 6) % 7)); // torsdagen i samma ISO-vecka
+  const jan4 = new Date(t.getFullYear(), 0, 4); // samma räkning som isoWeek()
+  const v = 1 + Math.round(((t - jan4) / 86400000 - 3 + ((jan4.getDay() + 6) % 7)) / 7);
+  let ut = `I DAG: ${DAG[now.getDay()]} ${now.getDate()} ${MÅN[now.getMonth()]} ${now.getFullYear()}, vecka ${v}. Räkna tider och frister från det datumet.`;
+  let form = null;
+  try { form = localStorage.getItem("atb_dlform_" + state.slug); } catch (_) { /* läsfel */ }
+  const lista = window.ATB_DEADLINES_SE, nästa = window.ATB_NASTA_DEADLINE;
+  if (form === "off" || !Array.isArray(lista) || typeof nästa !== "function") return ut;
+  const base = form ? form.split("-")[0] : null, emp = !!form && form.includes("anstallda");
+  const rader = lista
+    .filter((d) => d.forms.includes("alla") || (base ? d.forms.includes(base) : d.forms.some((f) => f !== "anstallda")) || (emp && d.forms.includes("anstallda")))
+    .map((d) => nästa(d, now))
+    .filter((x) => x.days >= 0 && x.days <= 45)
+    .sort((a, b) => a.days - b.days)
+    .slice(0, 3)
+    .map((x) => `- ${x.days === 0 ? "I DAG" : x.days === 1 ? "i morgon" : `om ${x.days} dagar`}: ${x.label}`);
+  if (rader.length) {
+    ut += `\nNÄRMASTE MYNDIGHETSDATUM (typiska datum — exakt datum hos Skatteverket):\n${rader.join("\n")}\n` +
+      "Förfaller något av dem i dag eller inom en vecka och frågan rör det: säg det först i svaret, tydligt.";
+  }
+  return ut;
 }
 
 // Teamloggen (RE8). De andra agenternas senaste svar, nyast först: datum,

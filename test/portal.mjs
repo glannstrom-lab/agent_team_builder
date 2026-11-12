@@ -771,6 +771,39 @@ test("KA15: de verifierade reglerna står i agentens instruktion, med källa och
   assert.match(sys, /En rättelse som stämmer med listan avvisar du aldrig/);
 });
 
+// ── U15: agenterna vet vilken dag det är ───────────────────────────────────
+// Fallet som hände: torsdag 12 november, en redovisningskonsult frågar om
+// kvartalsmomsen — och svaret nämnde aldrig att Q3 skulle in samma dag.
+function systemForDen(iso, form) {
+  const w = {}; new Function("window", readFileSync("portal/deadlines-se.js", "utf8"))(w);
+  const Äkta = Date;
+  const Frusen = class extends Äkta { constructor(...a) { if (a.length) super(...a); else super(iso); } };
+  const ls = { getItem: (k) => (k === "atb_dlform_kund" ? form : null) };
+  const i = KÄLLA.indexOf("const DOC_BUDGET"), j = KÄLLA.indexOf("// ---------- helpers ----------");
+  return new Function("loadMemory", "loadDocs", "state", "team", "window", "Date", "localStorage", KÄLLA.slice(i, j) + "\nreturn { systemFor };")(
+    () => "", () => [], { history: {}, slug: "kund" }, { agents: [] }, w, Frusen, ls).systemFor({ id: "a", name: "A", system: "Bas." });
+}
+
+test("U15: instruktionen bär dagens datum och de närmaste myndighetsdatumen, med dagens först", () => {
+  const sys = systemForDen("2026-11-12T09:30:00", "ab");
+  assert.match(sys, /I DAG: torsdag 12 november 2026, vecka 46\./);
+  assert.match(sys, /NÄRMASTE MYNDIGHETSDATUM/);
+  assert.match(sys, /- I DAG: Momsdeklaration kvartal 3 \(senast 12 nov\)/, "Q3-momsen förfaller i dag och står inte med");
+  assert.match(sys, /säg det först i svaret/);
+  assert.doesNotMatch(sys, /Arbetsgivardeklaration/, "AGI gäller bara den som valt anställda");
+});
+
+test("U15: datumet är rätt över årsskiftet, valet 'off' ger bara datumet, och utan val gäller alla utom AGI", () => {
+  assert.match(systemForDen("2027-01-01T12:00:00", "ab"), /I DAG: fredag 1 januari 2027, vecka 53\./);
+  const av = systemForDen("2026-11-12T09:30:00", "off");
+  assert.match(av, /I DAG: torsdag 12 november 2026/);
+  assert.doesNotMatch(av, /MYNDIGHETSDATUM/);
+  const utan = systemForDen("2026-11-10T09:30:00", null);
+  assert.match(utan, /- om 2 dagar: Momsdeklaration kvartal 3/);
+  assert.doesNotMatch(utan, /Arbetsgivardeklaration/);
+  assert.match(systemForDen("2026-11-10T09:30:00", "enskild-anstallda"), /Arbetsgivardeklaration, AGI \(senast 12 nov\)/);
+});
+
 test("KA15: varje regel har ämne, text och en https-källa hos en myndighet eller riksdagen", () => {
   const w = {}; new Function("window", readFileSync("portal/fakta-se.js", "utf8"))(w);
   const f = w.ATB_FAKTA_SE;
