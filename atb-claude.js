@@ -91,6 +91,18 @@
   // Kör bara om strömningen inte hunnit börja — då har inga tokens förbrukats.
   const RETRY_DELAYS = [2000, 5000];
 
+  // Koder från functions/api/ai.js som är beslut, inte blippar (U11). Tillfälliga
+  // (rate_limited, service_busy, build_busy, upstream, timeout) provas om som förut.
+  const PERMANENTA_KODER = ["quota", "build_quota", "web_paused", "purchase_required", "plan_ended", "service_down", "login_required"];
+  async function felkod(res) {
+    try {
+      const ct = (res.headers && res.headers.get && res.headers.get("content-type")) || "";
+      if (!ct.includes("application/json") || typeof res.clone !== "function") return null;
+      const j = await res.clone().json();
+      return (j && j.code) || null;
+    } catch (_) { return null; }
+  }
+
   // Strömmar ett svar och anropar onDelta(text) för varje textbit.
   // En väg (/api/ai), ett format (OpenAI-SSE). opts.model och opts.apiKey
   // ignoreras med flit — anropsställena får fortsätta skicka dem.
@@ -141,7 +153,15 @@
     for (let attempt = 0; ; attempt++) {
       res = await netFetch(url, init);
       if (res.ok) break;
-      const retryable = res.status === 429 || res.status >= 500;
+      let retryable = res.status === 429 || res.status >= 500;
+      // U11 (2026-11-12): en spärr som inte går över av att vänta (månadstak,
+      // dygnstak, paus, köp krävs, krediten slut) gav kunden 7 sekunders
+      // väntan innan beskedet. Koden läses ur en KLON så att errorMessage(res)
+      // fortfarande kan läsa kroppen.
+      if (retryable && attempt < RETRY_DELAYS.length) {
+        const kod = await felkod(res);
+        if (PERMANENTA_KODER.includes(kod)) retryable = false;
+      }
       if (retryable && attempt < RETRY_DELAYS.length) {
         await wait(RETRY_DELAYS[attempt], signal);
         continue;

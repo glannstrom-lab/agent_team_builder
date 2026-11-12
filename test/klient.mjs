@@ -220,3 +220,36 @@ test("en felram mitt i strömmen (tidsgräns hos oss) går att försöka om i by
   const { atb } = ladda(ström([{ choices: [{ delta: { content: "Halv" } }] }, { error: { message: "Svaret tog för lång tid och avbröts. Försök igen." } }]));
   await assert.rejects(() => atb.collect({ messages: [], kravSlut: true }), (e) => e.försökIgen === true && /för lång tid/.test(e.message));
 });
+
+// U11 (2026-11-12): en spärr som inte går över av att vänta ska ge beskedet
+// direkt, inte efter två omförsök (2 s + 5 s). Tillfälliga koder provas om.
+function laddaMedSvar(status, kropp) {
+  let n = 0;
+  const win = {};
+  const sandbox = {
+    window: win,
+    fetch: async () => { n++; return new Response(JSON.stringify(kropp), { status, headers: { "content-type": "application/json" } }); },
+    TextDecoder, TextEncoder, AbortController,
+    setTimeout: (f) => setTimeout(f, 0), // väntan hoppas över så testet inte tar sju sekunder
+    clearTimeout,
+  };
+  const nycklar = Object.keys(sandbox);
+  new Function(...nycklar, KÄLLA)(...nycklar.map((k) => sandbox[k]));
+  return { atb: win.ATBClaude, anrop: () => n };
+}
+
+test("U11: spärr med permanent kod ger beskedet utan omförsök", async () => {
+  for (const [status, code] of [[429, "quota"], [429, "build_quota"], [429, "web_paused"], [402, "purchase_required"], [503, "service_down"]]) {
+    const { atb, anrop } = laddaMedSvar(status, { error: "Månadens tak är nått.", code });
+    await assert.rejects(atb.stream({ system: "s", messages: [], onDelta: () => {} }), /Månadens tak är nått/, code);
+    assert.equal(anrop(), 1, `${code} skulle inte provas om`);
+  }
+});
+
+test("U11: tillfälligt 429 och 503 provas om som förut", async () => {
+  for (const [status, code] of [[429, "rate_limited"], [503, "service_busy"]]) {
+    const { atb, anrop } = laddaMedSvar(status, { error: "Vänta.", code });
+    await assert.rejects(atb.stream({ system: "s", messages: [], onDelta: () => {} }), /Vänta/, code);
+    assert.equal(anrop(), 3, `${code} skulle provas om två gånger`);
+  }
+});
