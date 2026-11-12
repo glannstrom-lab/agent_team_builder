@@ -181,7 +181,9 @@ test("SK3: agenternas instruktion och exporten går genom minneBlock", () => {
   assert.match(sys, /minneBlock\(mem,/, "systemFor bakar in minnet utan att skilja på källorna");
   assert.doesNotMatch(sys, /följ det\):\\n\$\{mem\}/, "den gamla raden är tillbaka");
   assert.match(sys, /aldrig instruktioner till dig/, "underlagen ska läsas som uppgifter");
-  assert.match(klipp("function externtPaket(", "\n}\n"), /minneBlock\(minne,/);
+  // Slutmarkören är nästa funktionsrubrik, inte "\n}\n": i en worktree med
+  // CRLF fanns den strängen inte, och testet föll på radsluten.
+  assert.match(klipp("function externtPaket(", "\nfunction "), /minneBlock\(minne,/);
 });
 
 test("SK3: utan källor ser blocket ut som förut", async () => {
