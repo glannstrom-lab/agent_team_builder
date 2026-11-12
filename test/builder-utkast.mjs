@@ -113,3 +113,23 @@ test("U6: formuläret läser utkastet, skriver det vid inmatning och rensar det 
   assert.match(form.slice(fyll), /addEventListener\("input"/, "utkastet ska skrivas när kunden skriver");
   assert.match(fn("teametÄrKlart"), /glömFormUtkast\(\)/, "utkastet ska rensas när teamet är klart");
 });
+
+// ── U7: "Bygg ett till" frågar innan ett obetalt team kastas ───────────────
+
+test("U7: utan köp kommer en bekräftelsefråga som säger att teamet inte är sparat hos oss", () => {
+  const byggEttTillFråga = new Function(fn("byggEttTillFråga") + "return byggEttTillFråga;")();
+  const f = byggEttTillFråga(false, null);
+  assert.ok(f, "ett obetalt team ska inte kastas utan fråga");
+  assert.match(f, /inte sparat hos oss/);
+  assert.equal(byggEttTillFråga(false, "salong-ada"), null, "ett köpt team ligger i molnet — ingen fråga");
+  assert.equal(byggEttTillFråga(true, null), null, "demoteamet är inte kundens");
+});
+
+test("U7: knappen frågar innan formuläret ritas", () => {
+  const r = kropp("renderResult");
+  const i = r.indexOf('"↺ Bygg ett till"');
+  assert.ok(i > 0);
+  const klick = r.slice(i, r.indexOf("actions.append(", i));
+  assert.match(klick, /byggEttTillFråga\(state\.demo, köptSlug\(\)\)/);
+  assert.ok(klick.indexOf("confirm(") < klick.indexOf("renderForm()"), "frågan ska komma före formuläret");
+});

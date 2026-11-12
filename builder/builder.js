@@ -2326,7 +2326,11 @@ function renderResult(team) {
   // alternativ i en knapprad — den enda som leder någonstans, klädd som de
   // fyra som inte gör det. Den bor i avslutet ovanför i stället.
   const again = el("button", "btn-ghost", "↺ Bygg ett till");
-  again.onclick = () => renderForm();
+  again.onclick = () => {
+    const fråga = byggEttTillFråga(state.demo, köptSlug());
+    if (fråga && !confirm(fråga)) return;
+    renderForm();
+  };
   actions.append(dl, share, again); hero.appendChild(actions);
   wrap.appendChild(hero);
 
@@ -2573,6 +2577,15 @@ const PLANS = [
 const KÖPT_STORAGE = "atb_last_run_purchased";
 function köptSlug() { try { return localStorage.getItem(KÖPT_STORAGE) || null; } catch (_) { return null; } }
 function glömKöp() { try { localStorage.removeItem(KÖPT_STORAGE); } catch (_) { /* inget att göra */ } }
+
+// U7: "↺ Bygg ett till" kastade ett obetalt team utan att fråga. Det ligger
+// bara i den här webbläsaren, och nästa bygge skriver över det — så kunden
+// ska få veta det innan, inte efter. Köpt team (eller demoläget): ingen fråga,
+// teamet finns i molnet respektive var aldrig kundens.
+function byggEttTillFråga(demo, köpt) {
+  if (demo || köpt) return null;
+  return "Teamet är inte köpt, så det är inte sparat hos oss — det finns bara i den här webbläsaren tills du bygger nästa, då försvinner det. Vill du börja bygga ett nytt team?";
+}
 
 function renderPurchase(team, hero, trigger) {
   if (hero.querySelector(".buy-panel")) return; // redan öppen
