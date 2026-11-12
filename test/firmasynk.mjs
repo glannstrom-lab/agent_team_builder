@@ -57,12 +57,12 @@ function lager() {
 }
 
 // En "sidladdning": ny instans av synkkoden mot samma lager och server.
-function ladda(ls, srv) {
+function ladda(ls, srv, delas = true) {
   const varningar = [];
   const väntande = [];
   const state = { slug: "kund", firmaSnap: {}, firmaSynkad: false };
   const env = {
-    state, localStorage: ls, jobbApi: srv.api, harJobb: () => true,
+    state, localStorage: ls, jobbApi: srv.api, harJobb: () => delas,
     storeWarn: (what) => varningar.push(what),
     MEM_PREFIX: "atb_mem_", MEMKALLA_PREFIX: "atb_minnekalla_", DOCS_PREFIX: "atb_docs_",
     folderActive: () => false, loadMemory: () => ls.getItem("atb_mem_kund") || "", saveMemory: () => {},
@@ -74,7 +74,7 @@ function ladda(ls, srv) {
   return { ...api, state, varningar, klart: () => Promise.all(väntande) };
 }
 
-async function igång(ls, srv) { const p = ladda(ls, srv); await p.firmaSynk(); return p; }
+async function igång(ls, srv, delas) { const p = ladda(ls, srv, delas); await p.firmaSynk(); return p; }
 
 test("SY1: ett underlag som inte nådde servern finns kvar efter omladdningen och skickas igen", async () => {
   const ls = lager(), srv = server();
@@ -149,6 +149,64 @@ test("allt bekräftat: väntelistan är tom", async () => {
   await p.saveDocs([{ id: "u6", title: "A", text: "a", on: true }]);
   const o = JSON.parse(ls.getItem("atb_firmaosynk_kund") || "{}");
   assert.deepEqual(o.underlag || {}, {});
+});
+
+// U13 (2026-11-12): en ändring som görs medan första hämtningen fallerar
+// tappades tyst — firmaSpegla/firmaSkickaMinne köade inte före första synken,
+// och nästa laddning skrev över kopian med serverns läge.
+test("U13: ett underlag sparat när första hämtningen fallerar når servern vid nästa laddning, och kunden varnas", async () => {
+  const ls = lager(), srv = server();
+  await igång(ls, srv); // en tidigare lyckad laddning
+  srv.nere = true;
+  const p = await igång(ls, srv);
+  assert.ok(p.varningar.some((v) => /delade minnet/.test(v)), "kunden fick ingen varning om att synken föll");
+  assert.equal(p.varningar.filter((v) => /delade minnet/.test(v)).length, 1, "varningen ska komma en gång, inte per försök");
+  await p.saveDocs([{ id: "u7", title: "Offertmall", text: "Målning per m²: 95 kr", on: true }]);
+
+  srv.nere = false;
+  const igen = await igång(ls, srv);
+  assert.deepEqual(igen.loadLocalDocs().map((d) => d.title), ["Offertmall"], "omladdningen skrev över underlaget");
+  await new Promise((r) => setTimeout(r, 0));
+  assert.equal(srv.poster.underlag.u7 && srv.poster.underlag.u7.title, "Offertmall", "underlaget nådde aldrig servern");
+});
+
+test("U13: ett minne skrivet när första hämtningen fallerar når servern vid nästa laddning", async () => {
+  const ls = lager(), srv = server();
+  srv.minne = "Vi har F-skatt.";
+  await igång(ls, srv);
+  srv.nere = true;
+  const p = await igång(ls, srv);
+  ls.setItem("atb_mem_kund", "Vi har F-skatt.\nVi målar inte fasader.");
+  p.firmaSkickaMinne("Vi har F-skatt.\nVi målar inte fasader.");
+  await p.klart();
+
+  srv.nere = false;
+  await igång(ls, srv);
+  assert.match(srv.minne, /målar inte fasader/, "minnet nådde aldrig servern");
+  assert.match(ls.getItem("atb_mem_kund"), /målar inte fasader/, "omladdningen skrev över minnet");
+});
+
+test("U13: en borttagning när första hämtningen fallerar kommer också fram", async () => {
+  const ls = lager(), srv = server();
+  srv.poster.underlag.u8 = { title: "Gammal prislista", text: "…", on: true };
+  await igång(ls, srv);
+  srv.nere = true;
+  const p = await igång(ls, srv);
+  await p.saveDocs([]);
+  srv.nere = false;
+  const igen = await igång(ls, srv);
+  await new Promise((r) => setTimeout(r, 0));
+  assert.deepEqual(igen.loadLocalDocs(), [], "den borttagna prislistan kom tillbaka");
+  assert.equal(srv.poster.underlag.u8, undefined, "borttagningen nådde inte servern");
+});
+
+test("U13: utan delning (firmaDelas) köas ingenting", async () => {
+  const ls = lager(), srv = server();
+  const p = await igång(ls, srv, false);
+  await p.saveDocs([{ id: "u9", title: "A", text: "a", on: true }]);
+  p.firmaSkickaMinne("hemligt");
+  assert.equal(ls.getItem("atb_firmaosynk_kund"), null, "något köades trots att inget delas");
+  assert.deepEqual(srv.anrop, []);
 });
 
 // SK3 (2026-11-12): det kundens egen AI sparat via /mcp står inte som "skrivet

@@ -304,6 +304,21 @@ function osynkLäs() {
 }
 function osynkSkriv(o) { try { localStorage.setItem(FIRMAOSYNK_PREFIX + state.slug, JSON.stringify(o)); } catch (_) { /* full lagring */ } }
 
+// U13 (2026-11-12): det servern hade vid senaste lyckade synk, kvar över en
+// omladdning. Förut tappades en ändring som gjordes innan första synken var
+// klar (eller när den föll) tyst: firmaSpegla/firmaSkickaMinne returnerade
+// utan att köa, och nästa laddning skrev över kopian med serverns läge. Nu köas
+// ändringen i väntelistan, och skillnaden räknas mot den här bilden — så att
+// en borttagning också kommer fram, och oförändrade poster inte skickas om.
+const FIRMASNAP_PREFIX = "atb_firmasnap_";
+function snapLäs() {
+  try { const s = JSON.parse(localStorage.getItem(FIRMASNAP_PREFIX + state.slug) || "null"); return s && typeof s === "object" ? s : {}; }
+  catch (_) { return {}; }
+}
+function snapSkriv() {
+  try { localStorage.setItem(FIRMASNAP_PREFIX + state.slug, JSON.stringify({ ...state.firmaSnap, minneBas: state.firmaMinneBas })); } catch (_) { /* full lagring */ }
+}
+
 // Skickar poster och returnerar listan över nekade. Ett svar där ALLA nekades
 // kommer som 400 — det är fortfarande ett svar, inte ett nätfel.
 async function firmaSkickaPoster(poster) {
@@ -319,8 +334,10 @@ async function firmaSkickaPoster(poster) {
 
 // Skickar skillnaden mellan `karta` (id → data) och det som senast synkades.
 async function firmaSpegla(typ, karta) {
-  if (!firmaDelas() || !state.firmaSynkad) return;
-  const snap = state.firmaSnap[typ] || {};
+  if (!firmaDelas()) return;
+  // U13: före första synken köas ändringen mot senast kända serverläge.
+  const synkad = !!state.firmaSynkad;
+  const snap = synkad ? (state.firmaSnap[typ] || {}) : { ...(snapLäs()[typ] || {}) };
   const o = osynkLäs(); o[typ] = o[typ] || {};
   const poster = [];
   Object.entries(karta).forEach(([id, d]) => {
@@ -336,6 +353,7 @@ async function firmaSpegla(typ, karta) {
   if (!poster.length) { osynkSkriv(o); return; }
   poster.forEach((p) => { o[typ][p.id] = { data: p.data === null ? null : JSON.stringify(p.data) }; });
   osynkSkriv(o);
+  if (!synkad) return; // U13: ligger i väntelistan; firmaSynk() skickar den
   let fel;
   try { fel = await firmaSkickaPoster(poster); }
   catch (e) { storeWarn(typ === "underlag" ? "underlagen hos oss" : "kundregistret hos oss", e); return; }
@@ -348,6 +366,7 @@ async function firmaSpegla(typ, karta) {
   });
   osynkSkriv(o2);
   state.firmaSnap[typ] = snap;
+  snapSkriv();
   if (fel.length) storeWarn(`${typ === "underlag" ? "underlaget" : "posten"} hos oss (${fel[0].fel} Det ligger kvar här i webbläsaren)`, new Error(fel[0].fel));
 }
 function firmaSpeglaKunder(reg) {
@@ -357,7 +376,17 @@ function firmaSpeglaKunder(reg) {
 
 let firmaMinneTimer = null;
 function firmaSkickaMinne(text) {
-  if (!firmaDelas() || !state.firmaSynkad) return;
+  if (!firmaDelas()) return;
+  if (!state.firmaSynkad) {
+    // U13: köas och skickas av nästa firmaSynk(). Basen är den från första
+    // osända ändringen, annars senast kända serverläge, annars "" — en tom bas
+    // tar aldrig bort något på servern (slåIhopMinne), bara lägger till.
+    const o = osynkLäs();
+    const s = snapLäs();
+    const bas = o.minne && typeof o.minne.bas === "string" ? o.minne.bas : (typeof s.minneBas === "string" ? s.minneBas : "");
+    o.minne = { text, bas }; osynkSkriv(o);
+    return;
+  }
   const o = osynkLäs(); o.minne = { text, bas: state.firmaMinneBas }; osynkSkriv(o);
   clearTimeout(firmaMinneTimer);
   firmaMinneTimer = setTimeout(async () => {
@@ -365,6 +394,7 @@ function firmaSkickaMinne(text) {
       const r = await jobbApi("/api/firma", { op: "minne", text, bas: state.firmaMinneBas });
       const o2 = osynkLäs(); if (o2.minne && o2.minne.text === text) { delete o2.minne; osynkSkriv(o2); }
       state.firmaMinneBas = r.minne.text;
+      snapSkriv();
       if (r.minne.kallor) saveMinneKallor(r.minne.kallor);
       // Servern slog ihop med något som kommit in under tiden — visa det.
       if (r.minne.text !== text && !folderActive()) {
@@ -379,7 +409,14 @@ async function firmaSynk() {
   if (!firmaDelas()) return;
   const hämta = () => jobbApi(`/api/firma?team=${encodeURIComponent(state.slug)}`);
   let f;
-  try { f = await hämta(); } catch (_) { return; } // utan server gäller kopian som förut
+  try { f = await hämta(); } catch (e) {
+    // Utan server gäller kopian som förut. U13: men kunden får veta det (en
+    // gång), det hon ändrar köas, och synken provas igen — högst tre gånger.
+    if (!state.firmaVarnad) { state.firmaVarnad = true; storeWarn("det delade minnet hos oss — det du ändrar sparas här och skickas när kontakten är tillbaka", e); }
+    state.firmaFörsök = (state.firmaFörsök || 0) + 1;
+    if (state.firmaFörsök < 3) setTimeout(firmaSynk, 60000);
+    return;
+  }
   const flagga = FIRMASYNK_PREFIX + state.slug;
   let flyttad = false;
   try { flyttad = !!localStorage.getItem(flagga); } catch (_) { /* läsfel */ }
@@ -482,6 +519,7 @@ async function firmaSynk() {
   try { localStorage.setItem(DOCS_PREFIX + state.slug, JSON.stringify(docs)); } catch (e) { storeWarn("underlagen", e); }
   try { localStorage.setItem(KUNDER_PREFIX + state.slug, JSON.stringify(reg)); } catch (_) { /* full lagring */ }
   state.firmaSynkad = true;
+  snapSkriv(); // U13
   if (attSkicka) {
     firmaSpegla("underlag", Object.fromEntries(docs.filter((d) => d && !d.file).map((d) => [d.id, d])));
     firmaSpeglaKunder(reg);
