@@ -449,7 +449,8 @@ a.knapp{display:inline-block;text-decoration:none}
   });
   document.addEventListener("keydown", (e) => {
     if (!film.classList.contains("aktiv")) return;
-    if ((e.key === " " || e.key === "Enter") && !e.target.closest("textarea, button")) {
+    // U1: länkar undantas också — annars sväljer preventDefault Enter på "Fortsätt intervjun →".
+    if ((e.key === " " || e.key === "Enter") && !e.target.closest("textarea, button, a")) {
       e.preventDefault(); if (klick) { const k = klick; klick = null; k(); }
     }
   });
@@ -631,7 +632,9 @@ a.knapp{display:inline-block;text-decoration:none}
     $("slutH").textContent = `${namn} har börjat intervjun.`;
     $("slutNamn").textContent = namn;
     $("slutP").textContent = `Gunnars passerkort ligger kvar på skrivbordet. ${firma} har en ny VD-assistent på väg in.`;
-    $("slut").classList.add("syns"); $("igen").focus({ preventScroll: true });
+    $("slut").classList.add("syns");
+    // U1: fokus på vägen vidare, inte på "Spela igen" — Enter här startade om hela filmen (~6 min förlorade).
+    $("vidareLank").focus({ preventScroll: true });
   }
 
   $("hoppa").onclick = () => starta(true);
