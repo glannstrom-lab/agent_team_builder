@@ -239,7 +239,8 @@ function renderForm() {
 
   // Sparad körning? Erbjud återupptagning — de klara stegen är redan betalda.
   const saved = state.demo ? null : loadRun();
-  if (saved && saved.team && köptSlug()) {
+  const läge = körningsLäge(saved, !!(saved && saved.team && köptSlug()));
+  if (läge === "köpt") {
     // KR5: körningen är köpt. Då är den ingen oavslutad körning att återuppta,
     // och "Visa teamet igen" hade lett tillbaka till en köpknapp.
     const box = el("div", "resume-box");
@@ -250,11 +251,13 @@ function renderForm() {
     ny.onclick = () => { clearRun(); glömKöp(); box.remove(); };
     row.append(go, ny); box.appendChild(row);
     wrap.appendChild(box);
-  } else if (saved && saved.intake && (saved.team || (saved.r && Object.keys(saved.r).length))) {
+  } else if (läge) {
     const box = el("div", "resume-box");
-    box.appendChild(el("div", "clarify-title", saved.team
+    box.appendChild(el("div", "clarify-title", läge === "klar"
       ? `Din senaste körning (${saved.intake.company}) är klar och finns kvar.`
-      : `Du har en oavslutad körning för ${saved.intake.company} — de avklarade stegen finns kvar.`));
+      : läge === "steg"
+        ? `Du har en oavslutad körning för ${saved.intake.company} — de avklarade stegen finns kvar.`
+        : `Du har en påbörjad körning för ${saved.intake.company} — underlaget finns kvar, så du kan fortsätta där den avbröts.`));
     const row = el("div", "clarify-actions");
     const go = el("button", "btn-primary", saved.team ? "Visa teamet igen" : "↻ Återuppta körningen"); go.type = "button";
     go.onclick = () => {
@@ -998,8 +1001,13 @@ function nyttMöte() {
 // upp en inspelad körning.
 function mötetFörst() {
   if (state.demo) return false;
-  const saved = loadRun();
-  if (saved && saved.intake && (saved.team || (saved.r && Object.keys(saved.r).length))) return false;
+  const läge = körningsLäge(loadRun(), köptSlug());
+  // U5: en körning som startat utan att något steg hunnit bli klart. Kom den
+  // ur mötet ligger mötet kvar (det raderas först när teamet finns) och visar
+  // intervjun med "Lägg fram planen" igen. Kom den ur formuläret finns inget
+  // möte — då ska formuläret och dess återupptagning visas, inte en ny intervju.
+  if (läge === "påbörjad") return !!läsMöte();
+  if (läge) return false;
   return !!(läsMöte() || läsScen());
 }
 
@@ -1179,6 +1187,23 @@ function saveRun(team) {
 function loadRun() { try { return JSON.parse(localStorage.getItem(RUN_STORAGE) || "null"); } catch (_) { return null; } }
 function clearRun() { localStorage.removeItem(RUN_STORAGE); }
 
+// U5: vad en sparad körning är. "påbörjad" = intaget sparat men inget steg
+// klart än — körningen sparas nu redan när den startar, så en F5 eller ett fel
+// i research lämnar kvar underlaget. Förut gick den sparade körningen bara att
+// känna igen efter första steget, och då var intervjun redan raderad.
+function körningsLäge(saved, köpt) {
+  if (!saved || !saved.intake) return null;
+  if (saved.team) return köpt ? "köpt" : "klar";
+  return saved.r && Object.keys(saved.r).length ? "steg" : "påbörjad";
+}
+
+// U5: intervjun raderas först när teamet finns. Raderades den när bygget
+// startade (som förut) och research sedan föll, eller kunden laddade om, var
+// upp till tolv svar borta och mötet började om med bara måndagssvaret.
+function teametÄrKlart(intake) {
+  if (intake && intake.intakeText) glömMöte();
+}
+
 // ---------- pipeline ----------
 // prevR: redan avklarade stegresultat (från en avbruten körning) — steg med
 // resultat hoppas över, så en återupptagning bara betalar för det som saknas.
@@ -1197,9 +1222,12 @@ async function runBuild(intake, prevR) {
     const k = scenKandidat();
     if (k.namn || k.avatarN) intake = Object.assign({}, intake, { kandidat: k });
   }
-  if (!prevR && intake.intakeText) glömMöte();
+  // U5: mötet ligger kvar tills teamet är klart (teametÄrKlart), och körningen
+  // sparas innan första steget — inte efter. Annars fanns ingenting att
+  // återuppta om research föll eller sidan laddades om.
   const intakeBlock = buildIntakeBlock(intake);
   state.lastRun = { intake, intakeBlock, r };
+  saveRun();
 
   // `step` namnger prompten; filen läses av servern, inte här. Stegnamnen är
   // nycklarna i BUILD_STEPS (functions/api/_build.js) — byter du namn på ett
@@ -1226,6 +1254,7 @@ async function runBuild(intake, prevR) {
         markDone(stg.key);
         state.team = teamObj;
         saveRun(teamObj);
+        teametÄrKlart(intake);
         renderResult(teamObj);
         return;
       }
@@ -1951,6 +1980,7 @@ async function retryStructure() {
     const teamObj = await structureWithStatus(state.lastRun.intake, state.lastRun.r);
     state.team = teamObj;
     saveRun(teamObj);
+    teametÄrKlart(state.lastRun.intake);
     renderResult(teamObj);
   } catch (err) {
     renderError(err.message, true);
