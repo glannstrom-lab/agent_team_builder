@@ -25,7 +25,7 @@ const LÅNADE = [
   "nastaStegFor", "nastaStegHandling", "panelOppen", "openHire", "hiringReason", "harJobb", "jobbApi",
   "renderMarkdown", "firmanBokaOchRita", "byggJobbForm", "kopplingsRuta", "openOverlay", "closeOverlay",
   "openMeeting", "runRoutine", "routineDone", "todayDayNo", "dayName", "startWeek", "openMemory",
-  "openJobs", "refreshSidebar", "firmaSpeglaKunder",
+  "openJobs", "refreshSidebar", "firmaSpeglaKunder", "sparaSomMall",
 ];
 
 test("varje namn Våningen lånar finns på app.js toppnivå", () => {
@@ -64,4 +64,50 @@ test("demoläget får inte Våningen — exempelteamen har inga jobb och ingen t
 test("kundregistret delas: varje sparning går vidare till /api/firma (SP23)", () => {
   const spara = VAN.slice(VAN.indexOf("function sparaRegister"), VAN.indexOf("function organisationer"));
   assert.match(spara, /firmaSpeglaKunder\(r\)/, "en kund som sparas i portalen når annars aldrig Claude eller ChatGPT");
+});
+
+// U14 (2026-11-12): "Spara som mall". Logiken körs ur källan mot ett
+// låtsaslager; knappen och rullistan kontrolleras i källan.
+function laddaMallar() {
+  const i = APP.indexOf("const MALL_PREFIX"), j = APP.indexOf("function byggJobbForm(");
+  assert.ok(i > 0 && j > i, "hittade inte mallblocket i app.js");
+  let docs = [{ id: "u1", title: "Prislista", text: "Målning 95 kr/m²", on: true }];
+  const api = new Function("loadLocalDocs", "saveDocs", APP.slice(i, j) + "\nreturn { mallar, sparaSomMall, mallBrief, MALL_PREFIX, JOBB_BRIEF_MAX };")(
+    () => JSON.parse(JSON.stringify(docs)), (d) => { docs = d; });
+  return { ...api, docs: () => docs };
+}
+
+test("U14: en leverans sparas som avstängt underlag med titeln 'Mall: <rubrik>', och syns som mall", () => {
+  const m = laddaMallar();
+  const titel = m.sparaSomMall({ title: "Offert Brf Ekbacken", leverans: "Offert\nKund: Brf Ekbacken\nSumma: 48 000 kr" });
+  assert.equal(titel, "Mall: Offert Brf Ekbacken");
+  const sparad = m.docs().find((d) => d.title === titel);
+  assert.ok(sparad, "mallen sparades inte som underlag");
+  assert.equal(sparad.on, false, "en mall ska inte fylla varje agents kontext");
+  assert.deepEqual(Object.keys(sparad).sort(), ["on", "text", "title"], "bara fälten rensa() i _firma.js släpper igenom");
+  assert.deepEqual(m.mallar().map((d) => d.title), [titel], "vanliga underlag ska inte räknas som mallar");
+  m.sparaSomMall({ title: "Offert Brf Ekbacken", leverans: "Ny version" });
+  assert.equal(m.docs().filter((d) => d.title === titel).length, 1, "samma rubrik ska ersätta, inte dubblera");
+  assert.equal(m.mallar()[0].text, "Ny version");
+});
+
+test("U14: briefen ur en mall bär mallens text och KA16-regeln om [fyll i: …], inom jobbens tak", () => {
+  const m = laddaMallar();
+  const b = m.mallBrief({ title: "Mall: Offert Brf Ekbacken", text: "Kund: Brf Ekbacken" });
+  assert.match(b, /^Det nya uppdraget: /);
+  assert.match(b, /\[fyll i: …\]/);
+  assert.match(b, /--- MALL: Offert Brf Ekbacken ---\nKund: Brf Ekbacken$/);
+  const lång = m.mallBrief({ title: "Mall: X", text: "y".repeat(20000) });
+  assert.ok(lång.length <= m.JOBB_BRIEF_MAX - 400, "briefen ska rymmas under jobbens tak med plats kvar åt kunden");
+  assert.match(lång, /mallen avkortad/);
+});
+
+test("U14: jobbkortet har 'Spara som mall' och jobbformuläret 'Utgå från mall'", () => {
+  const yta = VAN.slice(VAN.indexOf("function jobbYta(j)"), VAN.indexOf("function egenLeverans(j)"));
+  assert.match(yta, /knapp\("Spara som mall"/, "knappen saknas i Våningens jobbkort");
+  assert.match(yta, /sparaSomMall\(j\)/);
+  const form = APP.slice(APP.indexOf("function byggJobbForm("), APP.indexOf("// Hur kunden kopplar sin egen AI"));
+  assert.match(form, /const mallLista = mallar\(\)/, "formuläret läser inga mallar");
+  assert.match(form, /fält\("Utgå från mall/, "rullistan saknas");
+  assert.match(form, /uppdrag\.value = mallBrief\(m\)/, "valet skriver inte briefen");
 });

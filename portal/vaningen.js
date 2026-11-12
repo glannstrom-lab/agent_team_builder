@@ -501,6 +501,14 @@
       knapp("✓ Godkänn", "vn-knapp", () => gör("godkann"));
       knapp("Be om ändring", "vn-knapp-ghost", () => gör("oppna"));
     }
+    // U14: en bra leverans blir nästa jobbs utgångspunkt (sparaSomMall i app.js).
+    if ((j.status === "levererad" || klar) && j.leverans) {
+      const m = knapp("Spara som mall", "vn-knapp-ghost", () => {
+        const titel = sparaSomMall(j);
+        m.disabled = true; m.textContent = "Sparad som mall ✓";
+        toast(`Sparat som "${titel}". Välj den under "Utgå från mall" när du lägger upp nästa jobb.`);
+      });
+    }
     if (j.status === "oppen" && !j.leverans) knapp("Jag gjorde det själv — lämna leverans", "vn-knapp-ghost", () => egenLeverans(j));
     if (!klar) knapp("Stryk jobbet", "vn-knapp-ghost vn-stryk", () => { if (confirm(`Stryka jobbet "${j.title}"?`)) gör("avbryt"); });
     if (harJobb()) q("#vn-koppla").appendChild(kopplingsRuta());

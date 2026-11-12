@@ -5800,13 +5800,65 @@ function jobbKort(j, ladda) {
   return kort;
 }
 
+// ---------- mallar (U14, 2026-11-12) ----------
+// En målare utgår i dag från förra offerten i Word. En godkänd leverans kan
+// sparas som mall, och ett nytt jobb kan utgå från den utan att något klistras
+// in. Mallen är ett vanligt underlag, avstängt (on: false) så att den inte
+// fyller varje agents kontext. Igenkänningen är titelprefixet "Mall: ":
+// underlag delas med servern, och rensa() i functions/api/_firma.js släpper
+// bara igenom title, text och on — ett riktigt fält (t.ex. slag: "mall")
+// kräver att rensa() och firmaPostData.underlag får det först.
+const MALL_PREFIX = "Mall: ";
+const JOBB_BRIEF_MAX = 8000; // samma tak som kort(body.brief, 8000) i functions/api/jobb/index.js
+function mallar() {
+  return loadLocalDocs().filter((d) => d && !d.file && typeof d.title === "string" && d.title.startsWith(MALL_PREFIX) && d.text);
+}
+function sparaSomMall(j) {
+  const title = (MALL_PREFIX + String(j.title || "").trim()).slice(0, 200);
+  const docs = loadLocalDocs();
+  const finns = docs.find((d) => d && d.title === title);
+  if (finns) finns.text = j.leverans; // samma jobbrubrik: senaste godkända versionen gäller
+  else docs.push({ title, text: j.leverans, on: false });
+  saveDocs(docs);
+  return title;
+}
+// Briefen ett nytt jobb får när kunden väljer en mall. Regeln om luckor är
+// densamma som KA16 i PORTAL_RULES: aldrig påhittat, [fyll i: …] där det saknas.
+function mallBrief(mall) {
+  const huvud = "Det nya uppdraget: \n\n" +
+    "Utgå från mallen nedan — en tidigare godkänd leverans. Behåll upplägg, ton och det som gäller varje gång. " +
+    "Byt ut allt som gällde det förra uppdraget (kund, adress, datum, mått, mängder, belopp) mot det som gäller det här. " +
+    "Saknas en uppgift: skriv [fyll i: …] i stället — aldrig påhittad, aldrig kvar från förra gången.\n\n" +
+    `--- MALL: ${mall.title.slice(MALL_PREFIX.length)} ---\n`;
+  const plats = JOBB_BRIEF_MAX - huvud.length - 500; // plats kvar åt kundens egen rad
+  return huvud + (mall.text.length > plats ? mall.text.slice(0, plats - 20) + "\n[…mallen avkortad]" : mall.text);
+}
+
 function byggJobbForm(form, klar) {
   const fält = (label, node) => { const l = el("label", "ovl-label", label); node.id = "jb-" + label.replace(/\W+/g, "").toLowerCase(); l.setAttribute("for", node.id); form.append(l, node); return node; };
   const vem = fält("Vem gör jobbet?", el("select", "ovl-input"));
   team.agents.filter((a) => !a.retired).forEach((a) => { const o = el("option", null, `${a.name} · ${a.tagline || a.role || ""}`); o.value = a.id; vem.appendChild(o); });
   const rubrik = fält("Rubrik", el("input", "ovl-input")); rubrik.maxLength = 140;
   rubrik.placeholder = "T.ex. Offert till Brf Ekbacken";
-  const uppdrag = fält("Uppdraget", el("textarea", "ovl-ta")); uppdrag.rows = 4; uppdrag.maxLength = 8000;
+  // U14: finns mallar kan jobbet utgå från en. Valet skriver briefen; kunden
+  // fyller i vad det nya uppdraget gäller på första raden.
+  const mallLista = mallar();
+  let uppdrag = null;
+  if (mallLista.length) {
+    const mall = fält("Utgå från mall (valfritt)", el("select", "ovl-input"));
+    const ingen = el("option", null, "— ingen mall —"); ingen.value = ""; mall.appendChild(ingen);
+    mallLista.forEach((m, i) => { const o = el("option", null, m.title.slice(MALL_PREFIX.length)); o.value = String(i); mall.appendChild(o); });
+    mall.onchange = () => {
+      const m = mallLista[Number(mall.value)];
+      if (!m || !uppdrag) return;
+      uppdrag.value = mallBrief(m);
+      const slut = "Det nya uppdraget: ".length;
+      // Första raden är den kunden ska fylla i — den ska synas, inte mallens slut.
+      uppdrag.rows = 8;
+      uppdrag.focus(); uppdrag.setSelectionRange(slut, slut); uppdrag.scrollTop = 0;
+    };
+  }
+  uppdrag = fält("Uppdraget", el("textarea", "ovl-ta")); uppdrag.rows = 4; uppdrag.maxLength = JOBB_BRIEF_MAX;
   uppdrag.placeholder = "Vad ska göras, med vilket underlag, och vad du redan vet.";
   const kund = fält("Åt vem? (valfritt)", el("input", "ovl-input")); kund.maxLength = 200;
   kund.placeholder = "Organisation eller person";
