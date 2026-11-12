@@ -129,11 +129,22 @@ avvisade förslag står kvar överstrukna. Det gör regeln om att minst en agent
 ska få nej synlig i designen. Elva alternativa riktningar finns kvar som
 skisser i `design/` (deployas inte).
 
-**Startsidan är öppningsscenen (2026-10-24, Mikael).** `index.html` är skiss 12
-gjord skarp: kunden väljer kandidatens ansikte och namn, Gunnar säger upp sig,
-intervjun börjar, och svaret på "vad gör ni på en vanlig måndag?" sparas i
-`atb_scen` och förifyller Buildern (`scenUtkast()` i `builder/builder.js`).
+**Startsidan är Huset (2026-11-12, Mikael: "bygg detta på riktigt, ordentligt och
+snyggt").** Ersätter öppningsscenen från 2026-10-24 (Gunnar-filmen, kvar som skiss i
+`design/12-oppningsscen.html`). `index.html`: "Börja med en våning. Bygg ut när ni
+växer." med en byggnad i genomskärning, åtta rum (ett per jobb) och stegen Flytta in ·
+Inred · Bygg ut. "Flytta in" går till `/builder/?intervju=1`, som öppnar intervjun
+direkt (`intervjuBegärd()` i `builder/builder.js`); `scenUtkast()`/`atb_scen` finns
+kvar i Buildern men fylls inte längre av startsidan.
 Är besökaren inloggad med ett team går sidan rakt till `/portal/?team=<senaste>`.
+**Bilderna** (`bild/huset/`, webp, 285 kB) är genererade i ElevenLabs
+(recraft-v4.1-flash) och bär alla samma bakgrund, `#FAF9F7` — sidor som visar dem ska
+ha exakt den bakgrunden, aldrig mix-blend-mode. Originalen och skisserna ligger i
+`design/omg2/`. **I portalen** är Våningen nu ett hus: våningar om sex rum
+(`vaningen.js`), rumskort med bild, och **Inred rummet** — möbler per agent i
+`atb_inredning_<slug>` (standard kalender + arkiv + diplom = samma beteende som förut);
+arkivskåpet styr underlagen och diplomet faktablocket i `systemFor`
+(`inredningFor()` mellan ⟦INRED⟧-markörerna i `portal/app.js`).
 Säljsidan med priser, villkor och FAQ heter **`om.html`** — prislistan, modellraden
 och personalliggaren som testerna läser bor där nu. **Demoteamen visas inte utåt**
 ("de får bygga sina egna, är metoden nu"): galleriet (`site/*.html`) och
