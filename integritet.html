@@ -98,7 +98,7 @@
     --accent: #C8862B; --accent-2: #8A5C14;
     --t-liten: 14.5px; --t-brod: 17px; --t-ingress: 19px; --t-h3: 22px;
     --t-h2: clamp(30px, 3.6vw, 40px); --t-h1: clamp(38px, 5vw, 58px);
-    --luft: clamp(64px, 8vw, 104px);
+    --luft: clamp(56px, 6.5vw, 88px);
   }
   html, body { background: var(--bg); }
   body { font-size: var(--t-brod); line-height: 1.6; }
@@ -125,7 +125,7 @@
   /* en överrad per avsnitt */
   .eyebrow, .badge { font-family: var(--font-body); font-size: 14.5px; font-weight: 700; letter-spacing: 0.02em; text-transform: none; color: var(--accent-2); margin: 0 0 14px; background: none; border: 0; padding: 0; border-radius: 0; display: block; width: auto; opacity: 1; animation: none; }
   .eyebrow .dot, .badge .dot { display: none; }
-  .eyebrow.center { justify-content: center; text-align: center; }
+  .eyebrow.center { justify-content: flex-start; text-align: left; }
   h2.section-title { font-size: var(--t-h2); margin-bottom: 16px; }
   .section-lead { color: var(--text-dim); font-size: var(--t-ingress); line-height: 1.55; max-width: 640px; }
   .section-lead + .section-lead { margin-top: 14px; }
