@@ -941,6 +941,34 @@ Sessioner: holdout (Kerstin, B&B, förseglad), Lena (målare) före och efter, M
 
 - [x] **SP23** *(byggd och driftsatt 2026-10-24)* **Claude och ChatGPT når allt som inte är samtal.** Mikael: "claude och chatgpt behöver kunna komma åt allt på vår sida, för användaren använder sig av både och och vill inte behöva skriva samma saker till båda sidorna." Företagsminnet, underlagen, organisationerna och kontakterna flyttar från webbläsaren till D1 (`firma_poster`, migration 0009); portalen synkar (`firmaSynk`), `/mcp` får nio verktyg till. Minnet slås ihop rad för rad så att varken portalen eller plattformen skriver över den andra. Ett nytt samtycke krävs (scope `firma`). Tester: 8 nya i `test/koppling.mjs` mot riktig SQLite, två sabotage fångade; synken provad i webbläsare mot emulatorn åt båda hållen. **Kvar:** (a) `integritet.html` — kundens minne, underlag och kunder lagras nu hos oss och kan läsas av den plattform kunden kopplat; Mikaels text. (b) Samtalen delas inte. (c) Mappens filer (`minne.md` delas; övriga filer i mappen gör det inte). (d) Firmans nivå räknas fortfarande i webbläsaren och syns inte för plattformarna.
 
+## Driftsatt 2026-11-12
+
+Pages `b58d80c5`, commit `17cfe4f` (main snabbspolad från `utveckla/2026-11-12`), taggen
+`deploy-2026-11-12`. Inga migrationer, inga nya secrets, ingen ny rutt. 588 gröna.
+
+Innehåll: **SK3** (det kundens egen AI sparar står som uppgifter, inte order), **utveckla-projektet
+omgång 1** (U1–U16, U18; se avsnittet *Utveckla-projektet omgång 1* överst) och **Huset**:
+ny startsida ("Börja med en våning. Bygg ut när ni växer."), portalens våningar om sex rum med
+rumskort, **Inred rummet** (möbler per agent; arkivskåp styr underlagen och diplom faktablocket i
+`systemFor`; standard = samma beteende som förut), lugnare `om.html`, `villkor.html`,
+`integritet.html`, bilderna i `bild/huset/` (ElevenLabs, ~8 cent för tio).
+
+**Verifierat i drift efteråt (mätt):**
+- `/api/health` → `ok:true`, sju kontroller sanna.
+- `/`, `/om.html`, `/villkor.html`, `/integritet.html`, `/portal/`, `/builder/?intervju=1` → 200;
+  `/bild/huset/huset.webp` (51 kB), `rum-offert.webp`, `mobel-diplom.webp` → 200; påhittad sida → 404.
+- Startsidan i drift innehåller "Börja med en våning" och inte Gunnar-scenen; portalens
+  `vaningen.js?v=2dabb1f1` innehåller "Inred rummet" och hyllan.
+- Fria rutten utan `step` → avvisas med "hör inte till ett bygge".
+- Ett riktigt intervjusteg (`step:"intervju"`) i produktion → modellsvar med `redan_sagt` och en följdfråga.
+
+**Fynd under deployen:** Windows-gits `core.autocrlf=true` gav CRLF i arbetskopian efter varje
+cherry-pick och fällde källtextstester; repot har nu `core.autocrlf=false` lokalt (blobbarna är LF).
+
+**Inte gjort:** portalens hus är bara klickat med låtsas-API (demoläget visar det inte) — inget
+blint experttest i drift. Stripe-läget okontrollerat (Mikaels). U17 och omgångens övriga frågor
+väntar på Mikael.
+
 ## Driftsatt 2026-10-26
 
 Pages `f235a75f`, commit `41d431d`, taggen `deploy-2026-10-26`. Pushat före
