@@ -546,8 +546,13 @@
       const n = String(a.name || "").trim();
       const namn = /^[A-ZÅÄÖ][a-zåäöé-]+$/.test(n) ? (/[sxz]$/.test(n) ? n : n + "s") + " rum" : `${n} · rummet`;
       const roll = id === team.entryAgent ? "VD-assistent" : (a.tagline || a.role || "Specialist");
-      const scen = MOBLER.filter((m) => inr.includes(m.id)).map((m) =>
-        `<img class="vn-inred-mobel" src="${mobelSrc(m.id)}" alt="${esc(m.namn)}" style="left:${m.plats[0]}%;top:${m.plats[1]}%;width:${m.plats[2]}%">`).join("");
+      // Möblerna står på en hylla under rummet, inte ovanpå rumsbilden: varje
+      // rum är ritat med egna föremål, och en fast plats krockade alltid med
+      // något (lampan mitt på offertbordet, whiteboarden över färgkartan).
+      const valda = MOBLER.filter((m) => inr.includes(m.id));
+      const scen = valda.length
+        ? `<ul class="vn-inred-hylla">${valda.map((m) => `<li><img src="${mobelSrc(m.id)}" alt=""><span>${esc(m.namn)}</span></li>`).join("")}</ul>`
+        : `<p class="vn-inred-tom">Rummet är tomt. Ställ in en möbel till höger.</p>`;
       const val = MOBLER.map((m) => {
         const pa = inr.includes(m.id);
         const utan = !pa && UTAN[m.id] ? UTAN[m.id](a.name) : "";
@@ -556,7 +561,7 @@
       box.innerHTML = `<div class="vn-inred">
         <div class="vn-inred-stor">
           <button type="button" class="vn-lank-tillbaka" id="vn-inred-tillbaka">← Tillbaka till ${esc(a.name)}</button>
-          <div class="vn-inred-scen"><img class="vn-inred-rum" src="${rumSrc(r.bild)}" alt="${esc(namn)}">${scen}</div>
+          <div class="vn-inred-scen"><img class="vn-inred-rum" src="${rumSrc(r.bild)}" alt="${esc(namn)}"></div>${scen}
           <div class="vn-inred-namn"><h1>${esc(namn)}</h1><span>${esc(roll)} · ${inr.length} ${inr.length === 1 ? "möbel" : "möbler"} · ${funk} ${funk === 1 ? "funktion" : "funktioner"} på</span></div>
         </div>
         <div class="vn-inred-val">
