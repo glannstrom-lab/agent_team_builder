@@ -519,7 +519,7 @@ a.knapp{display:inline-block;text-decoration:none}
     $("pkBild").src = bild(GUNNAR);
     try {
       if (!direktTillIntervju) await uppsagningen();
-      await intervjun();
+      await intervjun(direktTillIntervju);
     } catch (e) { if (e.message !== "avbruten") throw e; }
   }
 
@@ -563,7 +563,7 @@ a.knapp{display:inline-block;text-decoration:none}
     const id = avbruten;
     return new Promise((r, rej) => { knapp.onclick = () => { knapp.onclick = null; id === avbruten ? r() : rej(new Error("avbruten")); }; });
   }
-  async function intervjun() {
+  async function intervjun(snabb = false) {
     const { chef, firma, namn, portratt } = val;
     film.classList.remove("bio"); film.classList.add("dagsljus");
     $("morker").classList.remove("ned"); $("lampa").classList.remove("pa");
@@ -571,7 +571,8 @@ a.knapp{display:inline-block;text-decoration:none}
     $("kontaktNamn").textContent = namn; $("sjalv").textContent = chef.slice(0, 1).toUpperCase();
     $("kontor").hidden = false;
     if (!RM) $("kontor").animate([{ opacity: 0 }, { opacity: 1 }], { duration: 1200 });
-    await vanta(1300);
+    if (!snabb) await vanta(1300);
+    if (!snabb) {
     $("notis").querySelector("small").textContent = "Kalender · 08:00";
     $("notis").querySelector("b").textContent = `Intervju: ${namn}`;
     $("notisText").textContent = "Videosamtal. Tjänsten som VD-assistent.";
@@ -617,6 +618,19 @@ a.knapp{display:inline-block;text-decoration:none}
     await sag(namn, sarskild === "robot" ? "Jag är alltså en AI. Jag dricker inget kaffe, men jag kommer att fråga om momsen." : "Jag ska vara ärlig från början: jag är en AI. Jag dricker inget kaffe, men jag kommer att fråga om momsen.");
     await sag(namn, `En intervju går åt båda håll. Innan jag tackar ja vill jag förstå ${firma}.`);
     await sag(namn, "Så — vad gör ni på en vanlig måndag?", { auto: false });
+    } else {
+      // U2: "Hoppa till samtalet" går rakt till måndagsfrågan med svarsrutan framme —
+      // ingen ringning, mikrofonklick eller repliker. Samma slutläge som ovan, utan väntorna.
+      $("kontakt").hidden = true; $("video").hidden = false; $("kontroller").hidden = false;
+      $("samtalStatus").innerHTML = "<b>I samtal</b> · "; $("samtalStatus").append(namn);
+      const mikS = $("mik"); mikS.className = "ctl"; mikS.textContent = "Mikrofon på"; mikS.setAttribute("aria-pressed", "true");
+      clearInterval(samtalsur); const startS = Date.now();
+      samtalsur = setInterval(() => {
+        const sek = Math.floor((Date.now() - startS) / 1000);
+        $("tid").textContent = String(Math.floor(sek / 60)).padStart(2, "0") + ":" + String(sek % 60).padStart(2, "0");
+      }, 1000);
+      $("vem").textContent = namn; $("replik").textContent = "Så — vad gör ni på en vanlig måndag?";
+    }
     $("vidare").hidden = true;
     $("svarform").hidden = false; $("svar").value = ""; $("svar").focus({ preventScroll: true });
     const id = avbruten;
