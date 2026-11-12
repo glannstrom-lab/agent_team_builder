@@ -7,6 +7,10 @@
    mörka tonerna nedan finns bara här.
    ============================================================ */
 body.vn-pa { --vn-natt: #17130F; --vn-natt-2: #221C16; --vn-natt-linje: #3A3128; --vn-natt-text: #B9AE9C; --vn-stampel: #9C3B2E; --vn-salvia: #4F7A54; }
+/* Huset (2026-11-12): riktning E. Illustrationerna bär färgen; resten är
+   bläck på papper. #FAF9F7 är rumsbildernas egen bakgrund — korten måste ha
+   exakt den, annars syns bildkanten. */
+body.vn-pa { --bg: #FAF9F7; --paper: #FFFFFF; --ink: #1E1913; --dim: #6A6152; --line: #E8E2D6; --ockra: #C8862B; --ockra-text: #8A5C14; --salvia: #4F7A54; --las: #B9B0A0; }
 html:has(body.vn-pa), body.vn-pa, body.vn-pa #root { height: auto; min-height: 100%; }
 body.vn-pa { background: var(--bg); }
 body.vn-pa .app { display: none; }
@@ -22,70 +26,149 @@ body.vn-pa [hidden] { display: none !important; }
 .vn-knapp-ghost:hover { border-color: var(--accent); }
 .vn-lank { background: none; border: 0; padding: 0; color: var(--accent-2); font: inherit; text-decoration: underline; cursor: pointer; }
 
-/* HUD */
-.vn-hud { position: sticky; top: 0; z-index: 30; background: var(--vn-natt); color: var(--surface); border-bottom: 1px solid var(--vn-natt-linje); }
-.vn-hud-inre { max-width: 1320px; margin: 0 auto; display: flex; align-items: center; gap: 18px; padding: 10px 16px; flex-wrap: wrap; }
-.vn-firma { font: 800 1rem var(--font-display); letter-spacing: -.01em; color: var(--surface); text-decoration: none; }
-.vn-firma small { display: block; font: 500 .62rem var(--font-mono); letter-spacing: .14em; color: var(--vn-natt-text); text-transform: uppercase; }
+/* HUD — papper med en bläcklinje under, som skissens toppfält */
+.vn-hud { position: sticky; top: 0; z-index: 30; background: var(--paper); color: var(--ink); border-bottom: 1px solid var(--line); }
+.vn-hud-inre { max-width: 1320px; margin: 0 auto; display: flex; align-items: center; gap: 18px; padding: 12px 24px; flex-wrap: wrap; }
+.vn-firma { display: flex; align-items: center; gap: 11px; font: 700 1.05rem/1.15 var(--font-display); letter-spacing: -.01em; color: var(--ink); text-decoration: none; min-width: 0; }
+.vn-firma > span { min-width: 0; }
+.vn-firma small { display: block; font: 500 .62rem var(--font-mono); letter-spacing: .12em; color: var(--dim); text-transform: uppercase; margin-top: 2px; }
+.vn-logo { width: 22px; height: 22px; border-radius: 6px; background: var(--ink); position: relative; flex: none; }
+.vn-logo::after { content: ""; position: absolute; left: 5px; top: 5px; width: 6px; height: 6px; border-radius: 2px; background: var(--ockra); }
 .vn-niva { display: flex; align-items: center; gap: 10px; margin-left: auto; }
-.vn-niva-txt { text-align: right; font: 500 .64rem/1.3 var(--font-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--vn-natt-text); }
-.vn-niva-txt b { display: block; font: 700 .9rem var(--font-body); letter-spacing: 0; text-transform: none; color: var(--surface); }
+.vn-niva-txt { text-align: right; font: 500 .62rem/1.3 var(--font-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--dim); }
+.vn-niva-txt b { display: block; font: 700 .9rem var(--font-body); letter-spacing: 0; text-transform: none; color: var(--ink); }
 .vn-pips { display: flex; gap: 4px; }
-.vn-pips i { width: 22px; height: 8px; border-radius: 2px; background: var(--vn-natt-linje); }
-.vn-pips i.full { background: var(--accent); }
-.vn-pips i.nu { background: linear-gradient(90deg, var(--accent) 40%, var(--vn-natt-linje) 40%); }
-.vn-hudnav { display: flex; gap: 8px; flex-wrap: wrap; }
+.vn-pips i { width: 20px; height: 6px; border-radius: 9px; background: var(--line); }
+.vn-pips i.full { background: var(--ockra); }
+.vn-pips i.nu { background: linear-gradient(90deg, var(--ockra) 45%, var(--line) 45%); }
+.vn-hudnav { display: flex; gap: 6px; flex-wrap: wrap; }
 .vn-firma + .vn-hudnav { margin-left: auto; }
-.vn-hudknapp { background: transparent; border: 1px solid var(--vn-natt-linje); color: var(--surface); border-radius: 6px; padding: 7px 12px; font: 700 .86rem var(--font-body); cursor: pointer; }
-.vn-hudknapp:hover, .vn-hudknapp.akt { border-color: var(--accent); }
-.vn-hudknapp.vn-ghost { color: var(--vn-natt-text); }
-.vn-prick { display: inline-block; min-width: 18px; padding: 0 5px; margin-left: 6px; border-radius: 9px; background: var(--vn-stampel); color: #fff; font: 700 .72rem/18px var(--font-mono); text-align: center; }
+.vn-hudknapp { background: transparent; border: 1px solid transparent; color: var(--ink); border-radius: 999px; padding: 7px 14px; font: 700 .88rem var(--font-body); cursor: pointer; }
+.vn-hudknapp:hover { background: var(--bg); }
+.vn-hudknapp.akt { background: var(--bg); border-color: var(--line); }
+.vn-hudknapp.vn-ghost { color: var(--dim); }
+.vn-prick { display: inline-block; min-width: 18px; padding: 0 5px; margin-left: 6px; border-radius: 9px; background: var(--ockra); color: #fff; font: 700 .72rem/18px var(--font-mono); text-align: center; }
+/* Kundtavlan är kvar i mörkt; dess knappar ska inte ärva HUD:ens ljusa. */
+.vn-kunder .vn-hudknapp { color: var(--surface); border-color: var(--vn-natt-linje); border-radius: 6px; }
+.vn-kunder .vn-hudknapp:hover { background: transparent; border-color: var(--ockra); }
 
-/* våningen */
-.vn-vaning { background: radial-gradient(ellipse at 50% 35%, #2a231c 0%, var(--vn-natt) 70%); color: var(--surface); min-height: calc(100vh - 58px); display: flex; flex-direction: column; }
-.vn-scen { position: relative; flex: 1; max-width: 1320px; width: 100%; margin: 0 auto; padding: 8px 16px 0; box-sizing: border-box; }
-.vn-scen svg { display: block; width: 100%; height: auto; max-height: 70vh; }
-.vn-rutnat { position: absolute; inset: 0; pointer-events: none; opacity: .07; background-image: linear-gradient(var(--vn-natt-text) 1px, transparent 1px), linear-gradient(90deg, var(--vn-natt-text) 1px, transparent 1px); background-size: 32px 32px; }
-.vn-rum { cursor: pointer; }
-.vn-rum .golv { transition: filter .15s; }
-.vn-rum:hover .golv, .vn-rum:focus .golv { filter: brightness(1.08); }
-.vn-rum:focus { outline: none; }
-.vn-rum:focus .golvkant { stroke: var(--accent); stroke-width: 2.5; }
-.vn-tagg rect.bas { fill: var(--surface); }
-.vn-tagg text { font-family: var(--font-body); fill: var(--text); }
-.vn-tagg .namn { font-weight: 700; font-size: 13px; }
-.vn-tagg .status { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: .06em; fill: var(--text-dim); text-transform: uppercase; }
-.vn-tagg.last rect.bas { fill: transparent; stroke: var(--vn-natt-text); stroke-dasharray: 4 3; }
-.vn-tagg.last text { fill: var(--vn-natt-text); }
-.vn-puls { animation: vnPuls 1.8s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
-@keyframes vnPuls { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.25); } }
+/* huset: våningslistan till vänster, vald våning till höger */
+.vn-vaning { background: var(--bg); color: var(--ink); min-height: calc(100vh - 62px); }
+.vn-hus { max-width: 1320px; margin: 0 auto; display: grid; grid-template-columns: 260px minmax(0, 1fr); min-height: calc(100vh - 62px); }
+.vn-vaningar { border-right: 1px solid var(--line); padding: 26px 18px; display: flex; flex-direction: column; gap: 8px; }
+.vn-hus-etikett { font: 700 .8rem var(--font-body); color: var(--dim); margin: 0 10px 8px; }
+.vn-vn { display: block; width: 100%; text-align: left; background: transparent; border: 1px solid transparent; border-radius: 12px; padding: 13px 16px; font: inherit; color: var(--ink); cursor: pointer; transition: background .12s, border-color .12s; }
+.vn-vn b { display: block; font: 700 1rem/1.25 var(--font-body); }
+.vn-vn > span:not(.vn-bar) { display: block; font-size: .84rem; color: var(--dim); margin-top: 2px; }
+.vn-vn:hover { background: var(--paper); border-color: var(--line); }
+.vn-vn.vald { background: var(--paper); border-color: var(--line); box-shadow: 0 6px 18px -14px rgba(30, 25, 19, .35); }
+.vn-vn.tom { border: 1px dashed var(--las); color: var(--dim); }
+.vn-vn.tom b { color: var(--ink); }
+.vn-vn.tom:hover { border-color: var(--ockra); background: transparent; }
+.vn-bar { display: block; height: 4px; border-radius: 9px; background: var(--line); margin-top: 10px; overflow: hidden; }
+.vn-bar i { display: block; height: 100%; background: var(--ockra); border-radius: 9px; }
+.vn-hus-fot { margin: auto 10px 0; padding-top: 18px; font-size: .88rem; line-height: 1.5; color: var(--dim); }
+.vn-golv { padding: 26px 32px 48px; min-width: 0; }
+.vn-golv-rubrik { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; flex-wrap: wrap; margin-bottom: 16px; }
+.vn-golv-rubrik h1 { font: 700 1.9rem/1.1 var(--font-display); letter-spacing: -.025em; margin: 0; }
+.vn-golv-rubrik span { color: var(--dim); font-size: .95rem; }
+.vn-rumrut { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+.vn-rr { position: relative; display: block; width: 100%; text-align: left; background: #FAF9F7; border: 1px solid var(--line); border-radius: 16px; padding: 12px 16px 16px; font: inherit; color: var(--ink); cursor: pointer; transition: border-color .15s, transform .15s, box-shadow .15s; }
+.vn-rr:hover, .vn-rr:focus-visible { border-color: var(--las); transform: translateY(-2px); box-shadow: 0 14px 30px -24px rgba(30, 25, 19, .5); }
+.vn-rr:focus-visible { outline: 2px solid var(--ockra); outline-offset: 2px; }
+.vn-rr-bild { display: block; width: 100%; height: auto; aspect-ratio: 1; max-height: 200px; object-fit: contain; margin: 0 auto; }
+.vn-vem { display: flex; align-items: center; gap: 10px; margin-top: 6px; min-width: 0; }
+.vn-vem img, .vn-rr-du { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; flex: none; background: var(--line); }
+.vn-rr-du { display: grid; place-items: center; background: var(--ink); color: #fff; font: 700 .9rem var(--font-display); }
+.vn-vem-txt { min-width: 0; display: block; }
+.vn-vem-txt b { display: block; font: 700 1rem/1.25 var(--font-body); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.vn-vem-txt > span { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-size: .84rem; line-height: 1.35; color: var(--dim); min-height: 2.7em; }
+.vn-bricka { position: absolute; top: 14px; right: 14px; z-index: 1; font: 700 .78rem/1 var(--font-body); padding: 6px 10px; border-radius: 999px; background: var(--ockra); color: #fff; max-width: calc(100% - 28px); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.vn-bricka.lugn { background: var(--paper); color: var(--dim); border: 1px solid var(--line); }
+.vn-rr.ledig { background: transparent; border: 1.5px dashed var(--las); }
+.vn-rr.ledig .vn-rr-bild { opacity: .45; filter: grayscale(1); }
+.vn-rr.ledig .vn-vem img { filter: grayscale(1); opacity: .7; }
+.vn-rr.ledig.kan { border-color: var(--ockra); }
+.vn-rr.ledig.kan .vn-bricka.lugn { color: var(--ockra-text); border-color: var(--ockra); }
+.vn-rr.last { background: transparent; }
+.vn-rr.last .vn-rr-bild { opacity: .5; filter: grayscale(1); }
+.vn-rr.last .vn-vem-txt b { color: var(--dim); }
 .vn-bygg { animation: vnBygg .9s ease-out both; }
-@keyframes vnBygg { from { opacity: 0; transform: translateY(-30px); } to { opacity: 1; transform: none; } }
-.vn-blink { animation: vnBlink 1.4s ease-in-out infinite; }
-@keyframes vnBlink { 50% { opacity: .35; } }
-.vn-nasta { max-width: 1320px; width: 100%; margin: 0 auto; padding: 10px 16px 22px; box-sizing: border-box; }
-.vn-nasta-kort { display: flex; align-items: center; gap: 18px; background: var(--vn-natt-2); border: 1px solid var(--vn-natt-linje); border-left: 3px solid var(--accent); border-radius: 6px; padding: 14px 18px; }
-.vn-nasta-kort .vn-etikett { color: var(--accent); }
-.vn-nasta-kort h2 { font: 800 1.15rem/1.2 var(--font-display); margin: 3px 0 0; }
-.vn-nasta-kort p { color: var(--vn-natt-text); font-size: .92rem; margin: 2px 0 0; }
+@keyframes vnBygg { from { opacity: 0; transform: translateY(-24px); } to { opacity: 1; transform: none; } }
+.vn-nasta-kort { display: flex; align-items: center; gap: 18px; background: var(--paper); border: 1px solid var(--line); border-left: 3px solid var(--ockra); border-radius: 12px; padding: 14px 18px; margin-bottom: 20px; }
+.vn-nasta-kort .vn-etikett { color: var(--ockra-text); }
+.vn-nasta-kort h2 { font: 700 1.1rem/1.25 var(--font-display); letter-spacing: -.01em; margin: 3px 0 0; }
+.vn-nasta-kort p { color: var(--dim); font-size: .92rem; margin: 2px 0 0; }
 .vn-nasta-kort .vn-knapp { margin-left: auto; white-space: nowrap; }
 .vn-nasta-ljus { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; padding-top: 6px; }
 .vn-nasta-ljus h2 { font: 800 1.05rem/1.25 var(--font-display); margin: 2px 0 0; }
 .vn-nasta-ljus p { margin: 0; color: var(--text-dim); font-size: .9rem; }
-.vn-rumlista { display: none; }
 
 /* rummet (papper) */
-.vn-arbete { max-width: 1320px; margin: 0 auto; padding: 18px 16px 60px; display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 24px; }
-.vn-plan { position: sticky; top: 76px; align-self: start; }
+.vn-arbete { max-width: 1320px; margin: 0 auto; padding: 18px 24px 60px; display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 28px; }
+.vn-plan { position: sticky; top: 80px; align-self: start; }
 .vn-plan .vn-etikett { margin-bottom: 8px; }
-.vn-miniplan { position: relative; width: 100%; background: var(--text); border-radius: 6px; box-sizing: border-box; }
-.vn-miniplan button { position: absolute; margin: 4px 0 0 4px; border: 1px solid #4a4036; background: #3a2f22; color: #fff; border-radius: 3px; font: 500 .6rem/1.15 var(--font-mono); letter-spacing: .03em; padding: 3px; text-align: left; overflow: hidden; cursor: pointer; }
-.vn-miniplan button:hover { border-color: var(--accent); }
-.vn-miniplan button.akt { background: var(--accent); border-color: var(--accent); }
-.vn-miniplan button.last { border-style: dashed; background: transparent; color: var(--vn-natt-text); opacity: .7; }
-.vn-miniplan button .r { position: absolute; right: 3px; top: 3px; width: 7px; height: 7px; border-radius: 50%; background: var(--vn-stampel); }
+.vn-miniplan { display: grid; gap: 4px; }
+.vn-miniplan button { position: relative; display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; background: transparent; border: 1px solid transparent; border-radius: 10px; padding: 4px 8px 4px 4px; font: 700 .88rem/1.2 var(--font-body); color: var(--ink); cursor: pointer; }
+.vn-miniplan button img { width: 40px; height: 40px; flex: none; border-radius: 8px; background: #FAF9F7; border: 1px solid var(--line); }
+.vn-miniplan button span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.vn-miniplan button:hover { background: var(--paper); border-color: var(--line); }
+.vn-miniplan button.akt { background: var(--paper); border-color: var(--ink); }
+.vn-miniplan button.last { color: var(--dim); font-weight: 500; }
+.vn-miniplan button.last img { filter: grayscale(1); opacity: .55; }
+.vn-miniplan button .r { margin-left: auto; width: 8px; height: 8px; flex: none; border-radius: 50%; background: var(--ockra); }
 .vn-tillbaka { margin-top: 12px; width: 100%; }
 .vn-rumhuvud { display: flex; gap: 16px; align-items: center; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+.vn-inred-knapp { margin-left: auto; flex: none; }
+
+/* I rummet: det möblerna gör */
+.vn-irummet { margin-top: 18px; }
+.vn-ir-rad { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; margin-top: 10px; }
+.vn-ir { display: flex; gap: 12px; align-items: flex-start; background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; min-width: 0; }
+.vn-ir > img, .vn-ir-liten > img, .vn-ir-telefon > img { width: 48px; height: 48px; flex: none; object-fit: contain; }
+.vn-ir > div { min-width: 0; flex: 1; }
+.vn-ir p { margin: 4px 0 0; font-size: .88rem; }
+.vn-ir-lista { list-style: none; padding: 0; margin: 4px 0 0; }
+.vn-ir-lista li { display: flex; gap: 10px; align-items: baseline; padding: 5px 0; border-top: 1px solid var(--line); font-size: .9rem; }
+.vn-ir-lista li:first-child { border-top: 0; }
+.vn-ir-lista .d { font: 500 .64rem var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--dim); width: 56px; flex: none; }
+.vn-ir-lista .t { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.vn-ir-sma { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+.vn-ir-liten { display: flex; gap: 10px; align-items: center; background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 6px 14px 6px 8px; font: inherit; font-size: .86rem; color: var(--dim); text-align: left; flex: 1 1 220px; min-width: 0; }
+.vn-ir-liten > img { width: 40px; height: 40px; }
+.vn-ir-liten b { display: block; color: var(--ink); font-size: .92rem; }
+button.vn-ir-liten { cursor: pointer; }
+button.vn-ir-liten:hover { border-color: var(--ockra); }
+.vn-ir-telefon { display: flex; gap: 12px; align-items: flex-start; background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; margin-top: 10px; }
+.vn-ir-telefon > details { flex: 1; min-width: 0; margin: 0; border-top: 0; padding-top: 0; }
+.vn-ir-telefon > details > summary { cursor: pointer; font-weight: 700; padding: 12px 0; }
+
+/* Inred rummet */
+.vn-inred { max-width: 1320px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) 440px; min-height: calc(100vh - 62px); }
+.vn-inred-stor { position: relative; display: flex; flex-direction: column; align-items: center; padding: 22px 32px 30px; border-right: 1px solid var(--line); min-width: 0; }
+.vn-lank-tillbaka { align-self: flex-start; background: none; border: 0; padding: 4px 0; font: 500 .95rem var(--font-body); color: var(--dim); cursor: pointer; }
+.vn-lank-tillbaka:hover { color: var(--ink); }
+.vn-inred-scen { position: relative; width: min(100%, 560px); aspect-ratio: 1; margin: 8px auto 0; background: #FAF9F7; }
+.vn-inred-rum { display: block; width: 100%; height: 100%; object-fit: contain; }
+.vn-inred-mobel { position: absolute; height: auto; animation: vnStall .35s ease-out both; filter: drop-shadow(0 6px 6px rgba(30, 25, 19, .08)); }
+@keyframes vnStall { from { opacity: 0; transform: translateY(-14px); } to { opacity: 1; transform: none; } }
+.vn-inred-namn { align-self: flex-start; margin-top: 10px; }
+.vn-inred-namn h1 { font: 700 1.9rem/1.1 var(--font-display); letter-spacing: -.025em; margin: 0; }
+.vn-inred-namn span { color: var(--dim); }
+.vn-inred-val { padding: 28px 30px 40px; min-width: 0; }
+.vn-inred-val h2 { font: 700 1.4rem/1.2 var(--font-display); letter-spacing: -.02em; margin: 0; }
+.vn-inred-under { color: var(--dim); font-size: .95rem; line-height: 1.5; margin: 6px 0 18px; }
+.vn-mobler { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.vn-mb { display: flex; flex-direction: column; text-align: left; border: 1px solid var(--line); background: #FAF9F7; border-radius: 14px; padding: 10px 12px 12px; font: inherit; color: var(--ink); cursor: pointer; min-width: 0; transition: border-color .12s, box-shadow .12s; }
+.vn-mb:hover { border-color: var(--las); }
+.vn-mb:focus-visible { outline: 2px solid var(--ockra); outline-offset: 2px; }
+.vn-mb img { width: 100%; height: 62px; object-fit: contain; display: block; margin-bottom: 6px; }
+.vn-mb b { display: block; font-size: .92rem; }
+.vn-mb-gor { display: block; font-size: .8rem; line-height: 1.35; color: var(--dim); }
+.vn-mb-utan { display: block; font-size: .76rem; line-height: 1.35; color: var(--ockra-text); margin-top: 4px; overflow-wrap: anywhere; }
+.vn-mb-lage { display: block; margin-top: auto; padding-top: 8px; font: 700 .76rem var(--font-body); color: var(--dim); }
+.vn-mb.pa { border-color: var(--ink); box-shadow: 0 0 0 1px var(--ink); background: var(--paper); }
+.vn-mb.pa .vn-mb-lage { color: var(--salvia); }
 .vn-portratt { width: 64px; height: 64px; border-radius: 6px; object-fit: cover; background: var(--border); flex: none; }
 .vn-du-ikon { width: 64px; height: 64px; border-radius: 6px; background: var(--text); color: var(--surface); display: grid; place-items: center; font: 800 1.6rem var(--font-display); flex: none; }
 .vn-rumhuvud h1 { font: 800 1.7rem/1.1 var(--font-display); letter-spacing: -.015em; margin: 2px 0; }
@@ -223,20 +306,37 @@ body.vn-pa [hidden] { display: none !important; }
 .vn-toast { position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%); background: var(--text); color: var(--surface); padding: 10px 16px; border-radius: 6px; font-size: .9rem; opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 90; max-width: min(560px, 92vw); text-align: center; }
 .vn-toast.syns { opacity: 1; }
 
+@media (max-width: 1100px) {
+  .vn-rumrut { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .vn-inred { grid-template-columns: minmax(0, 1fr) 380px; }
+  .vn-mobler { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
 @media (max-width: 860px) {
-  .vn-arbete { grid-template-columns: 1fr; }
-  .vn-plan { position: static; }
-  .vn-miniplan { max-width: 320px; }
+  .vn-arbete { grid-template-columns: minmax(0, 1fr); padding: 14px 16px 50px; gap: 16px; }
+  .vn-plan { position: static; min-width: 0; }
+  /* Rummen på våningen som en vågrät remsa i stället för en spalt. */
+  .vn-miniplan { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; }
+  .vn-miniplan button { flex: none; width: auto; max-width: 180px; }
+  .vn-tillbaka { width: auto; }
   .vn-yta-kropp, .vn-vdrad { grid-template-columns: 1fr; }
   .vn-leverans { border-right: 0; border-bottom: 1px solid var(--border); }
   .vn-nasta-kort { flex-direction: column; align-items: flex-start; }
   .vn-nasta-kort .vn-knapp { margin-left: 0; }
   .vn-niva-txt { display: none; }
-  .vn-hud-inre { gap: 10px; }
-  .vn-rumlista { display: grid; gap: 8px; padding: 0 16px 22px; max-width: 1320px; margin: 0 auto; }
-  .vn-rumlista button { display: flex; justify-content: space-between; gap: 10px; background: var(--vn-natt-2); border: 1px solid var(--vn-natt-linje); border-radius: 6px; padding: 12px 14px; color: var(--surface); font: 700 .95rem var(--font-body); text-align: left; cursor: pointer; }
-  .vn-rumlista button span { font: 500 .66rem var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--vn-natt-text); }
-  .vn-rumlista button.last { border-style: dashed; color: var(--vn-natt-text); }
+  .vn-hud-inre { gap: 10px; padding: 10px 16px; }
+  .vn-hus { grid-template-columns: 1fr; min-height: 0; }
+  /* Våningslistan blir en vågrät rad överst. */
+  .vn-vaningar { flex-direction: row; overflow-x: auto; border-right: 0; border-bottom: 1px solid var(--line); padding: 14px 16px; gap: 8px; }
+  .vn-hus-etikett, .vn-hus-fot { display: none; }
+  .vn-vn { flex: none; width: auto; min-width: 150px; padding: 10px 14px; }
+  .vn-golv { padding: 18px 16px 40px; }
+  .vn-golv-rubrik h1 { font-size: 1.5rem; }
+  .vn-rumhuvud { flex-wrap: wrap; }
+  .vn-inred-knapp { margin-left: 0; }
+  .vn-inred { grid-template-columns: 1fr; min-height: 0; }
+  .vn-inred-stor { border-right: 0; border-bottom: 1px solid var(--line); padding: 14px 16px 20px; }
+  .vn-inred-val { padding: 20px 16px 40px; }
+  .vn-inred-namn h1 { font-size: 1.5rem; }
   .vn-tavla { grid-template-columns: repeat(4, 78vw); scroll-snap-type: x mandatory; }
   .vn-kol { scroll-snap-align: start; }
   .vn-summa { margin-left: 0; }
@@ -245,4 +345,21 @@ body.vn-pa [hidden] { display: none !important; }
   .vn-kontakt .not { grid-column: 2; }
   .vn-chatt .main { height: 70vh; }
 }
-@media (prefers-reduced-motion: reduce) { .vn-puls, .vn-bygg, .vn-blink { animation: none; } }
+@media (max-width: 520px) {
+  /* Två rum i bredd även på telefonen: en våning ska gå att överblicka. */
+  .vn-rumrut { gap: 10px; }
+  .vn-rr { padding: 8px 10px 12px; border-radius: 14px; }
+  .vn-rr-bild { max-height: 150px; }
+  .vn-vem { gap: 8px; }
+  .vn-vem img, .vn-rr-du { width: 26px; height: 26px; font-size: .75rem; }
+  .vn-vem-txt b { font-size: .9rem; }
+  .vn-vem-txt > span { font-size: .78rem; }
+  .vn-bricka { top: 8px; right: 8px; font-size: .7rem; padding: 4px 8px; max-width: calc(100% - 16px); }
+  .vn-hudknapp { padding: 6px 10px; font-size: .84rem; }
+  .vn-hud-inre { gap: 8px; }
+  .vn-hudnav { flex-wrap: nowrap; overflow-x: auto; width: 100%; margin-left: 0; gap: 2px; }
+  .vn-hudknapp { flex: none; }
+  .vn-mobler { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 340px) { .vn-rumrut { grid-template-columns: 1fr; } }
+@media (prefers-reduced-motion: reduce) { .vn-bygg, .vn-inred-mobel { animation: none; } .vn-rr { transition: none; } }

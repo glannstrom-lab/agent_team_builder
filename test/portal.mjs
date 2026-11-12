@@ -771,6 +771,67 @@ test("KA15: de verifierade reglerna står i agentens instruktion, med källa och
   assert.match(sys, /En rättelse som stämmer med listan avvisar du aldrig/);
 });
 
+// ── Huset: inredningen styr instruktionen (2026-11-12) ─────────────────────
+// Arkivskåpet ger underlagen, diplomet reglerna. Standarden — inget sparat —
+// ska ge exakt samma instruktion som före möblerna.
+function systemForInrett(sparat) {
+  const w = {}; new Function("window", readFileSync("portal/fakta-se.js", "utf8"))(w);
+  const lager = { atb_inredning_kund: sparat === undefined ? null : JSON.stringify(sparat) };
+  const ls = { getItem: (k) => (k in lager ? lager[k] : null), setItem: (k, v) => { lager[k] = String(v); } };
+  const docs = () => [{ title: "Prislista", text: "Målning 95 kr/m²", on: true }];
+  const i = KÄLLA.indexOf("const DOC_BUDGET"), j = KÄLLA.indexOf("// ---------- helpers ----------");
+  const api = new Function("loadMemory", "loadDocs", "state", "team", "window", "localStorage", KÄLLA.slice(i, j) + "\nreturn { systemFor, inredningFor, inredningSpara, INREDNING_STANDARD };")(
+    () => "", docs, { history: {}, slug: "kund" }, { agents: [] }, w, ls);
+  return { ...api, sys: (id = "a") => api.systemFor({ id, name: "A", system: "Bas." }), lager };
+}
+// Instruktionen som den byggdes före möblerna: samma källa med inredningen bortklippt.
+function systemForUtanMobler() {
+  const w = {}; new Function("window", readFileSync("portal/fakta-se.js", "utf8"))(w);
+  const i = KÄLLA.indexOf("const DOC_BUDGET"), j = KÄLLA.indexOf("// ---------- helpers ----------");
+  const src = KÄLLA.slice(i, j)
+    .replace(/const inred = inredningFor\(agent && agent\.id\);\n/, "")
+    .replace('inred.includes("arkiv") ? loadDocs().filter((d) => d && d.on && d.text) : []', "loadDocs().filter((d) => d && d.on && d.text)")
+    .replace('if (fakta && inred.includes("diplom"))', "if (fakta)");
+  return new Function("loadMemory", "loadDocs", "state", "team", "window", "localStorage", src + "\nreturn { systemFor };")(
+    () => "", () => [{ title: "Prislista", text: "Målning 95 kr/m²", on: true }], { history: {}, slug: "kund" }, { agents: [] }, w, { getItem: () => null })
+    .systemFor({ id: "a", name: "A", system: "Bas." });
+}
+
+test("Huset: standardinredningen är kalender, arkiv och diplom — och ger samma instruktion som före möblerna", () => {
+  const r = systemForInrett();
+  assert.deepEqual([...r.INREDNING_STANDARD], ["kalender", "arkiv", "diplom"]);
+  assert.deepEqual(r.inredningFor("a"), ["kalender", "arkiv", "diplom"]);
+  const före = systemForUtanMobler();
+  assert.match(före, /UNDERLAG: Prislista/);
+  assert.match(före, /VERIFIERADE REGLER/);
+  assert.equal(r.sys(), före, "en kund som aldrig inrett något ska få samma instruktion, tecken för tecken");
+  // Trasig post i lagringen = standarden, inte ett tomt rum.
+  assert.equal(systemForInrett("inte ett objekt").sys(), före);
+});
+
+test("Huset: utan arkivskåp inga UNDERLAG, utan diplom inget faktablock — och bara för den agenten", () => {
+  const utanArkiv = systemForInrett({ a: ["kalender", "diplom"] });
+  assert.doesNotMatch(utanArkiv.sys("a"), /UNDERLAG/);
+  assert.doesNotMatch(utanArkiv.sys("a"), /hänvisa kort till källan/, "källhänvisningen gäller bara när underlag finns");
+  assert.match(utanArkiv.sys("a"), /VERIFIERADE REGLER/);
+  assert.match(utanArkiv.sys("b"), /UNDERLAG: Prislista/, "en annan agents rum påverkas inte");
+  const utanDiplom = systemForInrett({ a: ["arkiv"] });
+  assert.doesNotMatch(utanDiplom.sys("a"), /VERIFIERADE REGLER/);
+  assert.match(utanDiplom.sys("a"), /UNDERLAG: Prislista/);
+  const tomt = systemForInrett({ a: [] });
+  assert.deepEqual(tomt.inredningFor("a"), [], "ett tömt rum är tomt, inte standarden");
+});
+
+test("Huset: inredningSpara skriver atb_inredning_<slug> per agent, i katalogens ordning och utan okända möbler", () => {
+  const r = systemForInrett();
+  assert.equal(r.inredningSpara("a", ["vaxt", "arkiv", "soffa"]), true);
+  assert.deepEqual(JSON.parse(r.lager.atb_inredning_kund), { a: ["arkiv", "vaxt"] });
+  r.inredningSpara("b", ["diplom"]);
+  assert.deepEqual(r.inredningFor("a"), ["arkiv", "vaxt"]);
+  assert.deepEqual(r.inredningFor("b"), ["diplom"]);
+  assert.deepEqual(r.inredningFor("c"), ["kalender", "arkiv", "diplom"]);
+});
+
 // ── U18: inget skriptförsök för ett moln-team ──────────────────────────────
 test("U18: teams/<slug>.js prövas bara för inbyggda team, och varje teamfil står i registret", () => {
   const i = KÄLLA.indexOf("async function loadTeam(slug)");

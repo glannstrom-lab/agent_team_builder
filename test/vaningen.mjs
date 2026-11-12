@@ -6,7 +6,7 @@
 // ett kontrakt.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readFileSync, existsSync } from "node:fs";
 
 const APP = readFileSync("portal/app.js", "utf8");
 const VAN = readFileSync("portal/vaningen.js", "utf8");
@@ -26,6 +26,8 @@ const LÅNADE = [
   "renderMarkdown", "firmanBokaOchRita", "byggJobbForm", "kopplingsRuta", "openOverlay", "closeOverlay",
   "openMeeting", "runRoutine", "routineDone", "todayDayNo", "dayName", "startWeek", "openMemory",
   "openJobs", "refreshSidebar", "firmaSpeglaKunder", "sparaSomMall",
+  // Huset (2026-11-12): bygg en våning, och det möblerna gör i rummet.
+  "openGrow", "openDigest", "loadDocs", "inredningFor", "inredningSpara",
 ];
 
 test("varje namn Våningen lånar finns på app.js toppnivå", () => {
@@ -64,6 +66,68 @@ test("demoläget får inte Våningen — exempelteamen har inga jobb och ingen t
 test("kundregistret delas: varje sparning går vidare till /api/firma (SP23)", () => {
   const spara = VAN.slice(VAN.indexOf("function sparaRegister"), VAN.indexOf("function organisationer"));
   assert.match(spara, /firmaSpeglaKunder\(r\)/, "en kund som sparas i portalen når annars aldrig Claude eller ChatGPT");
+});
+
+// ── Huset (2026-11-12): våningarna och rumsbilderna, körda ur källan ───────
+function huset() {
+  const i = VAN.indexOf("// ⟦HUSET-START⟧"), j = VAN.indexOf("// ⟦HUSET-SLUT⟧");
+  assert.ok(i > 0 && j > i, "hittade inte ⟦HUSET⟧-blocket i vaningen.js");
+  return new Function(VAN.slice(i, j) + "\nreturn { delaVaningar, tilldelaRumbilder, nyckelBild, RUM_PER_VANING, RUMBILDER };")();
+}
+const agent = (id, name, tagline = "", role = "Specialist") => ({ id, typ: "agent", agent: { id, name, tagline, role } });
+
+test("Huset: sex rum per våning, våning 1 heter Kontoret och resten sitt nummer", () => {
+  const { delaVaningar, RUM_PER_VANING } = huset();
+  assert.equal(RUM_PER_VANING, 6);
+  const rum = Array.from({ length: 14 }, (_, k) => ({ id: "r" + k }));
+  const v = delaVaningar(rum);
+  assert.deepEqual(v.map((x) => x.rum.length), [6, 6, 2]);
+  assert.deepEqual(v.map((x) => x.namn), ["Våning 1 · Kontoret", "Våning 2", "Våning 3"]);
+  assert.deepEqual(v[1].rum.map((r) => r.id), ["r6", "r7", "r8", "r9", "r10", "r11"], "ordningen ska vara rummens");
+  assert.equal(delaVaningar(rum.slice(0, 6)).length, 1, "sex rum ryms på en våning");
+});
+
+test("Huset: de fasta rummen har fasta bilder, specialisterna får sin efter nyckelord", () => {
+  const { tilldelaRumbilder, nyckelBild } = huset();
+  const rum = tilldelaRumbilder([
+    { id: "vd", typ: "du" }, { ...agent("vd-assistent", "VD-assistent"), entry: true },
+    agent("bok", "Bokföraren", "Underlag och moms"), agent("tel", "Telefonpasset", "Kundtjänst och bokningar"),
+    { id: "x", typ: "vakant", agent: { id: "x", name: "X" } }, { id: "__mote", typ: "mote" }, { id: "__pentry", typ: "pentry" },
+  ]);
+  assert.deepEqual(rum.map((r) => r.bild), ["reception", "assistent", "bokforing", "telefon", "ledigt", "mote", "pentry"]);
+  assert.equal(nyckelBild({ name: "Kundposten", tagline: "Mejl och sms" }), "post");
+  assert.equal(nyckelBild({ name: "Kundtjänsten" }), "telefon", "kundtjänst ska inte fastna på 'kund'");
+  assert.equal(nyckelBild({ name: "Månadsrapportören", role: "Specialist — första projektet" }), "analys", "namnet väger tyngre än rollen");
+  assert.equal(nyckelBild({ name: "Teknisk Dokumentör" }), "arkiv");
+  assert.equal(nyckelBild({ name: "Menyplaneraren", tagline: "Sätter lunchmenyn" }), null);
+});
+
+test("Huset: säkrare träff vinner bilden, och två grannar får aldrig samma bild", () => {
+  const { tilldelaRumbilder, RUMBILDER } = huset();
+  // VD:ns tagline nämner offerten, men Offertskrivaren heter det.
+  const rum = tilldelaRumbilder([{ id: "vd", typ: "du" }, agent("vd", "VD (Patrik)", "Säger var offerten är för tunn"),
+    agent("offert", "Offertskrivaren"), agent("a", "Menyplaneraren"), agent("b", "Schemaläggaren"), agent("c", "Återkomstpåminnaren"), agent("d", "Sorteraren")]);
+  assert.equal(rum.find((r) => r.id === "offert").bild, "offert");
+  assert.notEqual(rum.find((r) => r.id === "vd" && r.typ === "agent").bild, "offert");
+  rum.forEach((r, i) => { for (let k = Math.max(0, i - 3); k < i; k++) assert.notEqual(rum[k].bild, r.bild, `${rum[k].id} och ${r.id} har samma bild`); });
+  rum.slice(1).forEach((r) => assert.ok(RUMBILDER.includes(r.bild), r.bild));
+  // Stabil: samma team ger samma bilder.
+  const igen = tilldelaRumbilder(rum.map((r) => ({ ...r })));
+  assert.deepEqual(igen.map((r) => r.bild), rum.map((r) => r.bild));
+});
+
+test("Huset: SVG-planritningen är borta, rumskorten klickar som rummen gjorde, och bilderna finns", () => {
+  assert.doesNotMatch(VAN, /function ritaSvg|<svg id="vn-svg"/);
+  const vy = VAN.slice(VAN.indexOf("function visaVaning("), VAN.indexOf("// Ett nästa steg, inte en dashboard"));
+  assert.match(vy, /\.vn-rr"\)\.forEach\(\(b\) => b\.onclick = \(\) => klickRum\(b\.dataset\.rum\)\)/);
+  assert.match(vy, /ritaNasta\(/, "nästa steg-kortet ska stå kvar");
+  for (const b of ["assistent", "offert", "post", "mote", "pentry", "ledigt", "bokforing", "telefon", "reception", "verkstad", "arkiv", "analys"]) {
+    assert.ok(existsSync(`bild/huset/rum-${b}.webp`), `bild/huset/rum-${b}.webp saknas`);
+  }
+  for (const m of ["kalender", "arkiv", "telefon", "whiteboard", "brev", "lampa", "diplom", "vaxt"]) {
+    assert.ok(existsSync(`bild/huset/mobel-${m}.webp`), `bild/huset/mobel-${m}.webp saknas`);
+    assert.match(VAN, new RegExp(`id: "${m}"`), `möbeln ${m} saknas i MOBLER`);
+  }
 });
 
 // U14 (2026-11-12): "Spara som mall". Logiken körs ur källan mot ett

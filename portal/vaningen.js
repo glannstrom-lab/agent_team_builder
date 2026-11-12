@@ -6,9 +6,14 @@
    med pågående projekt." Ledstången samma dag: begriplighet och översikt,
    inte funktionalitet.
 
-   Portalen öppnar på kontorsvåningen sedd ovanifrån. Varje anställd har ett
-   rum, jobben ligger som mappar på skrivbordet, och en röd prick betyder att
-   något väntar på kunden. Kunden är VD:n (KA14) och har VD-kontoret. De som
+   Huset (2026-11-12, riktning E i design/omg2/e-huset.html): portalen öppnar
+   på en våning i huset — rumskort med rummets bild, kollegan och läget, sex
+   rum per våning. Planritningen i isometri (SVG) är ersatt av det. Varje
+   anställd har ett rum som kunden kan inreda ("Inred rummet"), och möblerna
+   gör något: arkivskåpet ger underlagen, diplomet reglerna (systemFor i
+   app.js), kalendern, telefonen, whiteboarden och brevkorgen syns i rummet.
+   Jobben ligger som mappar på skrivbordet, och en bricka säger att något
+   väntar på kunden. Kunden är VD:n (KA14) och har VD-kontoret. De som
    inte är anställda än står som streckade rum ur rekryteringsplanen (SP9).
    Kunderna är en andra lins på samma firma: affärer, organisationer och
    kontakter.
@@ -34,7 +39,7 @@
 
   const V = {
     pa: false, vy: "vaning", rum: null, jobbId: null, jobb: null, lins: "affarer", parm: null,
-    main: null, sidebar: null, nyss: null, nivaFore: null,
+    main: null, sidebar: null, nyss: null, nivaFore: null, vaning: 0, inred: false,
   };
   const q = (s, r) => (r || document).querySelector(s);
   const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -83,30 +88,96 @@
     } catch (_) { V.jobb = V.jobb || []; }
   }
 
+  // ── Huset: våningar och rumsbilder (2026-11-12) ─────────────────────────
+  // Rena funktioner utan app.js-namn — test/vaningen.mjs kör dem ur källan.
+  // ⟦HUSET-START⟧
+  const RUM_PER_VANING = 6;
+  // Sex rum per våning, i rummens ordning. Våning 1 är kontoret; resten
+  // heter bara sitt nummer tills någon har en bättre idé.
+  function delaVaningar(rum) {
+    const ut = [];
+    for (let i = 0; i < rum.length; i += RUM_PER_VANING) {
+      const nr = ut.length + 1;
+      ut.push({ nr, namn: nr === 1 ? "Våning 1 · Kontoret" : `Våning ${nr}`, rum: rum.slice(i, i + RUM_PER_VANING) });
+    }
+    return ut;
+  }
+  // Specialisternas rum: nyckelord i namnet först, sedan i taglinen, sedan i
+  // rollen — "Månadsrapportören" (rollen säger "första projektet") är en
+  // analytiker, inte en verkstad. Telefonen prövas före posten, så att
+  // "kundtjänst" inte fastnar på "kund".
+  const RUMBILDER = ["offert", "post", "bokforing", "telefon", "verkstad", "arkiv", "analys"];
+  const RUMORD = [
+    ["offert", /offert/],
+    ["telefon", /telefon|kundtjänst|bokning/],
+    ["post", /mejl|mail|kund|post|sms/],
+    ["bokforing", /bokför|moms|ekonomi|faktur/],
+    ["verkstad", /projekt|material|verkstad/],
+    ["arkiv", /arkiv|avtal|dokument/],
+    ["analys", /analys|siffror|rapport|statistik/],
+  ];
+  // [bild, styrka]: 0 = träff i namnet, 1 = taglinen, 2 = rollen.
+  function nyckelTraff(a) {
+    const falt = [a && a.name, a && a.tagline, a && a.role];
+    for (let s = 0; s < falt.length; s++) {
+      const t = String(falt[s] || "").toLowerCase();
+      if (!t) continue;
+      const hit = RUMORD.find(([, re]) => re.test(t));
+      if (hit) return [hit[0], s];
+    }
+    return null;
+  }
+  const nyckelBild = (a) => (nyckelTraff(a) || [null])[0];
+  const strangHash = (s) => [...String(s)].reduce((h, c) => (h * 31 + c.codePointAt(0)) >>> 0, 7);
+  // Grannar är de tre rummen före och efter: i tre kolumner (dator) och två
+  // (telefon) ligger varje sidogranne och varje granne ovanför eller under där.
+  const grannIndex = (i, n) => [i - 3, i - 2, i - 1, i + 1, i + 2, i + 3].filter((k) => k >= 0 && k < n);
+  // Sätter r.bild på varje rum. Specialisterna tar sin nyckelordsbild i
+  // ordning efter hur säker träffen är (namnet före taglinen före rollen),
+  // så att "Offertskrivaren" får offertrummet och inte VD:n vars tagline
+  // nämner offerten. En bild som en granne redan har tas inte igen. Den som
+  // blir utan får en stabil bild (ur rummets id) bland de som ingen annan har
+  // än, och aldrig samma som en granne.
+  function tilldelaRumbilder(rum) {
+    const anvanda = new Set();
+    const n = rum.length;
+    const grannBilder = (i) => grannIndex(i, n).map((k) => rum[k].bild).filter(Boolean);
+    const FAST = { du: "reception", vakant: "ledigt", mote: "mote", pentry: "pentry" };
+    rum.forEach((r) => { delete r.bild; });
+    rum.forEach((r) => { if (FAST[r.typ]) r.bild = FAST[r.typ]; else if (r.entry) r.bild = "assistent"; });
+    rum.map((r, i) => ({ r, i, t: r.bild ? null : nyckelTraff(r.agent) }))
+      .filter((x) => x.t)
+      .sort((x, y) => x.t[1] - y.t[1] || x.i - y.i)
+      .forEach(({ r, i, t }) => { if (!grannBilder(i).includes(t[0])) { r.bild = t[0]; anvanda.add(t[0]); } });
+    rum.forEach((r, i) => {
+      if (r.bild) return;
+      const grannar = grannBilder(i);
+      const kvar = RUMBILDER.filter((x) => !anvanda.has(x) && !grannar.includes(x));
+      const pool = kvar.length ? kvar : RUMBILDER.filter((x) => !grannar.includes(x));
+      r.bild = pool[strangHash(r.id) % pool.length];
+      anvanda.add(r.bild);
+    });
+    return rum;
+  }
+  // ⟦HUSET-SLUT⟧
+  const rumSrc = (b) => `../bild/huset/rum-${b}.webp`;
+  const mobelSrc = (m) => `../bild/huset/mobel-${m}.webp`;
+
   // Rummen i den ordning de ritas: VD-kontoret, ingångsagentens kontor, de
   // anställda i byggets ordning, de som kommer enligt planen, och två
   // gemensamma rum vars förmåga låses upp av trappan.
   function rummen() {
     const entry = agentById(team.entryAgent) || team.agents[0];
-    const lista = [{ id: "vd", typ: "du", namn: "VD-kontoret", golv: "#E3D6BF" }];
-    if (entry) lista.push({ id: entry.id, typ: "agent", agent: entry, namn: kontorFor(entry), golv: "#DFE3D6" });
-    team.agents.filter((a) => entry && a.id !== entry.id).forEach((a, i) =>
-      lista.push({ id: a.id, typ: "agent", agent: a, namn: a.name, golv: i % 2 ? "#E6DCCB" : "#E8DCC8" }));
+    const lista = [{ id: "vd", typ: "du", namn: "VD-kontoret" }];
+    if (entry) lista.push({ id: entry.id, typ: "agent", agent: entry, namn: kontorFor(entry), entry: true });
+    team.agents.filter((a) => entry && a.id !== entry.id).forEach((a) =>
+      lista.push({ id: a.id, typ: "agent", agent: a, namn: a.name }));
     (team.pending || []).forEach((a) => lista.push({ id: a.id, typ: "vakant", agent: a, namn: a.name }));
-    lista.push({ id: "__mote", typ: "mote", namn: "Mötesrummet", golv: "#E2DACB" });
-    lista.push({ id: "__pentry", typ: "pentry", namn: "Pentryt", golv: "#D8D2C7" });
-    // Planritningen: tre rum per rad (5 + 5 + 4 rutor), första raden djupare.
-    const BREDD = [5, 5, 4];
-    let y = 0;
-    for (let i = 0; i < lista.length; i += 3) {
-      const h = i === 0 ? 4 : 3;
-      let x = 0;
-      lista.slice(i, i + 3).forEach((r, k) => { Object.assign(r, { x, y, w: BREDD[k], h }); x += BREDD[k]; });
-      y += h;
-    }
-    lista.djup = y;
-    return lista;
+    lista.push({ id: "__mote", typ: "mote", namn: "Mötesrummet" });
+    lista.push({ id: "__pentry", typ: "pentry", namn: "Pentryt" });
+    return tilldelaRumbilder(lista);
   }
+  const vaningFor = (id) => Math.max(0, delaVaningar(rummen()).findIndex((v) => v.rum.some((r) => r.id === id)));
 
   // Ett gemensamt rum är låst tills trappan öppnat dess panel.
   function rumLast(r, l) {
@@ -138,10 +209,10 @@
       niva = `<div class="vn-niva" title="${esc(l.n.kvar ? "Nästa: " + l.n.kvar : "")}"><div class="vn-niva-txt">Nivå ${l.n.niva} av 5<b>${esc(l.n.namn)}</b></div><div class="vn-pips" aria-hidden="true">${pips}</div></div>`;
     }
     hud.innerHTML = `<div class="vn-hud-inre">
-      <a class="vn-firma" href="../" title="Till Mitt AI-team">${esc(team.company)}<small>Våning 1 · ${DAGAR[new Date(nu).getDay()]} · v. ${veckaNr(nu)}</small></a>
+      <a class="vn-firma" href="../" title="Till Mitt AI-team"><i class="vn-logo" aria-hidden="true"></i><span>${esc(team.company)}<small>${esc(V.vy === "rum" && V.rum ? (delaVaningar(rummen())[vaningFor(V.rum)] || {}).namn || "Huset" : "Huset")} · ${DAGAR[new Date(nu).getDay()]} · v. ${veckaNr(nu)}</small></span></a>
       ${niva}
-      <nav class="vn-hudnav" aria-label="Våningen">
-        <button type="button" class="vn-hudknapp${V.vy === "vaning" ? " akt" : ""}" data-g="vaning">Våningen</button>
+      <nav class="vn-hudnav" aria-label="Huset">
+        <button type="button" class="vn-hudknapp${V.vy === "vaning" ? " akt" : ""}" data-g="vaning">Huset</button>
         <button type="button" class="vn-hudknapp${V.vy === "kunder" ? " akt" : ""}" data-g="kunder">Kunderna</button>
         <button type="button" class="vn-hudknapp${V.vy === "rum" && V.rum === "vd" ? " akt" : ""}" data-g="vd">VD-kontoret${v ? `<span class="vn-prick">${v}</span>` : ""}</button>
         <button type="button" class="vn-hudknapp vn-ghost" data-g="lada" title="Allt som fanns i den gamla arbetsytan: veckostart, minne, rutiner, möten, kollegor">Arbetsytan</button>
@@ -155,131 +226,6 @@
     });
   }
 
-  // ── isometrin ───────────────────────────────────────────────────────────
-  const SK = 46;
-  const iso = (x, y, z = 0) => [(x - y) * 0.866 * SK, (x + y) * 0.5 * SK - z * SK];
-  const pts = (a) => a.map(([x, y, z]) => iso(x, y, z).map((n) => n.toFixed(1)).join(",")).join(" ");
-  const poly = (a, fill, extra = "") => `<polygon points="${pts(a)}" fill="${fill}" ${extra}/>`;
-  function lada(x, y, z, w, d, h, topp, v, hgr) {
-    return "<g>" +
-      poly([[x, y + d, z], [x + w, y + d, z], [x + w, y + d, z + h], [x, y + d, z + h]], v) +
-      poly([[x + w, y, z], [x + w, y + d, z], [x + w, y + d, z + h], [x + w, y, z + h]], hgr) +
-      poly([[x, y, z + h], [x + w, y, z + h], [x + w, y + d, z + h], [x, y + d, z + h]], topp) + "</g>";
-  }
-  const vaggar = (r) => lada(r.x, r.y, 0, r.w, 0.14, 1.15, "#2B241C", "#F4EEE4", "#D9CFBF") + lada(r.x, r.y, 0, 0.14, r.h, 1.15, "#2B241C", "#E9E1D3", "#E3D9C9");
-  function skrivbord(cx, cy, mappar) {
-    let s = lada(cx - 0.85, cy - 0.15, 0, 1.7, 0.75, 0.42, "#8A6A48", "#6B5136", "#5A442D");
-    s += lada(cx - 0.35, cy - 0.05, 0.42, 0.7, 0.06, 0.38, "#1E1913", "#2B241C", "#151210");
-    mappar.slice(0, 6).forEach((j, i) => {
-      const f = j.status === "levererad" ? "#9C3B2E" : i % 2 ? "#A9741F" : "#C9B48E";
-      s += lada(cx + 0.35, cy + 0.12 + i * 0.02, 0.42 + i * 0.05, 0.38, 0.3, 0.045, f, "#6B5136", "#5A442D");
-    });
-    return s;
-  }
-  const stol = (cx, cy) => lada(cx - 0.22, cy - 0.75, 0, 0.44, 0.44, 0.3, "#3A3128", "#2B241C", "#221C16");
-  function vaxt(x, y) {
-    const [a1, b1] = iso(x + 0.16, y + 0.16, 0.62), [a2, b2] = iso(x + 0.1, y + 0.2, 0.78);
-    return lada(x, y, 0, 0.32, 0.32, 0.28, "#5E554A", "#4A4036", "#3A3128") +
-      `<circle cx="${a1}" cy="${b1}" r="12" fill="#4F7A54"/><circle cx="${a2}" cy="${b2}" r="9" fill="#5F8A63"/>`;
-  }
-  const hylla = (r) => lada(r.x + 0.5, r.y + 0.15, 0, Math.min(1.4, r.w - 1.2), 0.32, 0.9, "#6B5136", "#8A6A48", "#5A442D");
-  function portratt(r, cx, cy) {
-    const [px, py] = iso(cx, cy - 0.45, 1.25);
-    const src = bildFor(r.agent);
-    const id = "vnc-" + String(r.id).replace(/[^a-z0-9-]/gi, "");
-    if (!src) return `<circle cx="${px}" cy="${py}" r="21.5" fill="#FCFAF6"/><text x="${px}" y="${py + 7}" text-anchor="middle" font-size="18">${esc(r.agent.icon || "•")}</text>`;
-    return `<g><clipPath id="${id}"><circle cx="${px}" cy="${py}" r="19"/></clipPath><circle cx="${px}" cy="${py}" r="21.5" fill="#FCFAF6"/>` +
-      `<image href="${esc(src)}" x="${px - 19}" y="${py - 19}" width="38" height="38" clip-path="url(#${id})" preserveAspectRatio="xMidYMid slice"/></g>`;
-  }
-  function duMarke(cx, cy) {
-    const [px, py] = iso(cx, cy - 0.45, 1.25);
-    return `<circle cx="${px}" cy="${py}" r="21.5" fill="#FCFAF6"/><circle cx="${px}" cy="${py}" r="19" fill="#1E1913"/>` +
-      `<text x="${px}" y="${py + 6}" text-anchor="middle" font-family="Archivo" font-weight="800" font-size="16" fill="#FCFAF6">${esc(initial())}</text>`;
-  }
-  function tagg(r, namn, status, rod, last) {
-    const [tx, ty] = iso(r.x + r.w / 2, r.y + r.h / 2, last ? 0.45 : 2.35);
-    const [gx, gy] = iso(r.x + r.w / 2, r.y + r.h / 2, 1.5);
-    const kort = namn.length > 26 ? namn.slice(0, 25) + "…" : namn;
-    const bredd = Math.max(kort.length * 8.1, status.length * 6.6) + 28;
-    let s = `<g class="vn-tagg${last ? " last" : ""}">`;
-    if (!last) s += `<line x1="${tx}" y1="${ty + 20}" x2="${gx}" y2="${gy}" stroke="#FCFAF6" stroke-width="1" opacity=".5"/>`;
-    s += `<rect class="bas" x="${tx - bredd / 2}" y="${ty - 20}" width="${bredd}" height="40" rx="5"/>`;
-    s += `<text class="namn" x="${tx}" y="${ty - 3}" text-anchor="middle">${esc(kort)}</text>`;
-    s += `<text class="status" x="${tx}" y="${ty + 12}" text-anchor="middle">${esc(status)}</text>`;
-    if (rod) s += `<g class="vn-puls"><circle cx="${tx + bredd / 2 - 2}" cy="${ty - 19}" r="10" fill="#9C3B2E"/><text x="${tx + bredd / 2 - 2}" y="${ty - 15}" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#fff">${rod}</text></g>`;
-    return s + "</g>";
-  }
-
-  function ritaSvg(svg) {
-    const l = lage();
-    const R = rummen();
-    const ordning = [...R].sort((a, b) => (a.x + a.y) - (b.x + b.y));
-    let s = lada(-0.2, -0.2, -0.35, 14.4, R.djup + 0.4, 0.35, "#3A3128", "#2B241C", "#221C16");
-    for (const r of ordning) {
-      const cx = r.x + r.w / 2, cy = r.y + r.h / 2 + 0.2;
-      const golv = [[r.x, r.y, 0], [r.x + r.w, r.y, 0], [r.x + r.w, r.y + r.h, 0], [r.x, r.y + r.h, 0]];
-      if (rumLast(r, l)) {
-        const kan = r.typ === "vakant" && l && l.rk && l.rk.nasta === r.id && l.rk.dags;
-        s += `<g class="vn-rum" tabindex="0" role="button" data-rum="${esc(r.id)}" aria-label="${esc(r.namn)}, ${esc(lasText(r, l))}">`;
-        s += poly(golv, kan ? "rgba(169,116,31,.16)" : "rgba(185,174,156,.10)", `class="golv golvkant" stroke="${kan ? "#A9741F" : "#8A7F70"}" stroke-dasharray="6 5" stroke-width="1.5"`);
-        if (kan) { const [bx, by] = iso(cx, cy, 0); s += `<text class="vn-blink" x="${bx}" y="${by + 4}" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" letter-spacing="1" fill="#D9A54A">+ ANSTÄLL</text>`; }
-        s += tagg(r, r.namn, lasText(r, l), 0, !kan) + "</g>";
-        continue;
-      }
-      const mappar = r.typ === "agent" ? jobbFor(r.id) : [];
-      const rod = r.typ === "du" ? vantar().length + (l && l.rk && l.rk.dags ? 1 : 0) : mappar.filter((j) => j.status === "levererad").length;
-      s += `<g class="vn-rum${V.nyss === r.id ? " vn-bygg" : ""}" tabindex="0" role="button" data-rum="${esc(r.id)}" aria-label="${esc(r.namn)}${rod ? ", " + rod + " väntar på dig" : ""}">`;
-      s += poly(golv, r.golv, `class="golv golvkant" stroke="#2B241C" stroke-width="1"`);
-      for (let i = 1; i < r.w; i++) s += `<polyline points="${pts([[r.x + i, r.y, 0], [r.x + i, r.y + r.h, 0]])}" stroke="#000" stroke-opacity=".05" fill="none"/>`;
-      s += vaggar(r);
-      if (r.typ === "du" || r.typ === "agent") {
-        s += hylla(r) + stol(cx, cy) + skrivbord(cx, cy, r.typ === "du" ? vantar() : mappar);
-        s += r.typ === "du" ? duMarke(cx, cy) : portratt(r, cx, cy);
-        s += vaxt(r.x + r.w - 0.6, r.y + 0.35);
-        const status = r.typ === "du"
-          ? (rod ? `${rod} väntar på dig` : "Inget väntar")
-          : (mappar.length ? `${mappar.length} ${mappar.length === 1 ? "jobb" : "jobb"} på bordet` : (r.agent.id === team.entryAgent ? "Håller ihop veckan" : "Redo för jobb"));
-        s += tagg(r, r.typ === "du" ? "VD-kontoret · du" : r.namn, status, rod, false);
-      } else if (r.typ === "pentry") {
-        s += poly([[r.x + 0.8, r.y + 0.15, 0.35], [r.x + 3.4, r.y + 0.15, 0.35], [r.x + 3.4, r.y + 0.15, 1.0], [r.x + 0.8, r.y + 0.15, 1.0]], "#FFFFFF", `stroke="#5E554A"`);
-        const n = Math.min(3, (team.routines || []).length);
-        for (let i = 0; i < n; i++) s += `<polyline points="${pts([[r.x + 1.0, r.y + 0.16, 0.85 - i * 0.16], [r.x + 2.6 - i * 0.3, r.y + 0.16, 0.85 - i * 0.16]])}" stroke="#A9741F" stroke-width="2" fill="none"/>`;
-        s += lada(r.x + r.w - 1.6, r.y + 0.15, 0, 1.4, 0.55, 0.85, "#B9AE9C", "#E8E1D5", "#CFC7BA");
-        s += lada(cx - 0.5, cy + 0.3, 0, 1, 1, 0.65, "#8A6A48", "#6B5136", "#5A442D");
-        s += tagg(r, "Pentryt", (team.routines || []).length ? "Veckans rutiner på tavlan" : "Tavlan är tom", 0, false);
-      } else if (r.typ === "mote") {
-        s += lada(cx - 1.1, cy - 0.5, 0, 2.2, 1.1, 0.42, "#8A6A48", "#6B5136", "#5A442D");
-        s += tagg(r, "Mötesrummet", "Håll ett möte", 0, false);
-      }
-      s += "</g>";
-    }
-    // Viewbox ur rummens hörn, så att våningen växer med teamet.
-    const hörn = [iso(-0.2, -0.2, 2.8), iso(14.2, -0.2, 2.8), iso(-0.2, R.djup + 0.2, -0.4), iso(14.2, R.djup + 0.2, -0.4)];
-    const xs = hörn.map((p) => p[0]), ys = hörn.map((p) => p[1]);
-    const mx = Math.min(...xs) - 40, my = Math.min(...ys) - 30;
-    svg.setAttribute("viewBox", `${mx.toFixed(0)} ${my.toFixed(0)} ${(Math.max(...xs) - mx + 40).toFixed(0)} ${(Math.max(...ys) - my + 20).toFixed(0)}`);
-    svg.innerHTML = s;
-    // Skylten mäts efter ritningen: en uppskattad teckenbredd räckte inte för
-    // långa jobbnamn ("Ekonomi-avstämningsagenten"), och texten stack ut.
-    svg.querySelectorAll(".vn-tagg").forEach((g) => {
-      const rect = g.querySelector("rect.bas"); if (!rect) return;
-      let w = 0;
-      g.querySelectorAll("text.namn, text.status").forEach((t) => { try { w = Math.max(w, t.getComputedTextLength()); } catch (_) { /* inte ritad */ } });
-      if (!w) return;
-      const mitt = +rect.getAttribute("x") + +rect.getAttribute("width") / 2;
-      const ny = w + 26;
-      rect.setAttribute("x", (mitt - ny / 2).toFixed(1)); rect.setAttribute("width", ny.toFixed(1));
-      const prick = g.querySelector(".vn-puls");
-      if (prick) { const nx = (mitt + ny / 2 - 2).toFixed(1); prick.querySelectorAll("circle, text").forEach((n) => n.setAttribute(n.tagName === "circle" ? "cx" : "x", nx)); }
-    });
-    svg.querySelectorAll(".vn-rum").forEach((g) => {
-      const gå = () => klickRum(g.dataset.rum);
-      g.addEventListener("click", gå);
-      g.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); gå(); } });
-    });
-    V.nyss = null;
-  }
-
   // ── vyerna ──────────────────────────────────────────────────────────────
   function visa(vy) {
     V.vy = vy;
@@ -288,22 +234,94 @@
     window.scrollTo(0, 0);
   }
 
-  function visaVaning() {
-    visa("vaning");
-    const box = q("#vn-vaning");
-    box.innerHTML = `<div class="vn-scen"><div class="vn-rutnat"></div><svg id="vn-svg" role="img" aria-label="Kontorsvåningen sedd ovanifrån"></svg></div>
-      <div class="vn-nasta"><div class="vn-nasta-kort" id="vn-nasta"></div></div><div class="vn-rumlista" id="vn-rumlista"></div>`;
-    ritaSvg(q("#vn-svg"));
-    ritaNasta(q("#vn-nasta"));
+  // Det som väntar i ett rum, och vad brickan säger.
+  function rumLage(r, l) {
+    if (r.typ === "du") return { rod: vantar().length + (l && l.rk && l.rk.dags ? 1 : 0), arbetar: false };
+    if (r.typ !== "agent") return { rod: 0, arbetar: false };
+    const pr = jobbFor(r.id);
+    return { rod: pr.filter((j) => j.status === "levererad").length, arbetar: pr.length > 0 };
+  }
+  // Vem som sitter i rummet, med en rad om vad hen gör.
+  function rumVem(r, l) {
+    if (r.typ === "du") return { namn: "VD-kontoret", rad: "Du · det som väntar på dig", ikon: `<span class="vn-rr-du" aria-hidden="true">${esc(initial())}</span>` };
+    if (r.typ === "mote") return { namn: "Mötesrummet", rad: rumLast(r, l) ? lasText(r, l) : "Låt flera tycka till" };
+    if (r.typ === "pentry") {
+      const n = (team.routines || []).length;
+      return { namn: "Pentryt", rad: rumLast(r, l) ? lasText(r, l) : n ? `${n} ${n === 1 ? "rutin" : "rutiner"} på tavlan` : "Tavlan är tom" };
+    }
+    const a = r.agent;
+    const bild = bildFor(a);
+    const ikon = bild ? `<img src="${esc(bild)}" alt="" loading="lazy">` : `<span class="vn-rr-du" aria-hidden="true">${esc(a.icon || "•")}</span>`;
+    if (r.typ === "vakant") return { namn: `+ Anställ ${a.name}`, rad: hiringReason(team, a.id) || lasText(r, l), ikon };
+    const rad = r.entry ? (a.name === "VD-assistent" ? (a.tagline || "Ditt närmaste stöd") : "VD-assistent") : (a.tagline || a.role || "Specialist");
+    return { namn: a.name, rad, ikon };
+  }
+
+  // Det som redan finns för att växa: nästa anställning i planen, annars
+  // "Utveckla teamet". Ingen ny väg — samma dörrar som rummen och lådan har.
+  function byggVaning() {
     const l = lage();
-    q("#vn-rumlista").innerHTML = rummen().map((r) => {
-      const last = rumLast(r, l);
-      const pr = r.typ === "agent" ? jobbFor(r.id) : [];
-      const rod = r.typ === "du" ? vantar().length : pr.filter((j) => j.status === "levererad").length;
-      const sub = last ? lasText(r, l) : rod ? rod + " väntar på dig" : pr.length ? pr.length + " jobb" : "";
-      return `<button type="button" class="${last ? "last" : ""}" data-rum="${esc(r.id)}">${esc(r.namn)}<span>${esc(sub)}</span></button>`;
+    const nasta = (l && l.rk && l.rk.nasta) || ((team.pending || [])[0] || {}).id;
+    if (nasta) {
+      if (!l || (l.rk && l.rk.dags)) return openHire(nasta);
+      return klickRum(nasta);
+    }
+    return openGrow();
+  }
+  function byggText() {
+    const l = lage();
+    const id = (l && l.rk && l.rk.nasta) || ((team.pending || [])[0] || {}).id;
+    const a = id && (team.pending || []).find((x) => x.id === id);
+    return a ? `Nästa: ${a.name}` : "För fler kollegor";
+  }
+
+  function visaVaning(nr) {
+    visa("vaning");
+    const l = lage();
+    const vaningar = delaVaningar(rummen());
+    if (typeof nr === "number") V.vaning = nr;
+    if (!(V.vaning >= 0 && V.vaning < vaningar.length)) V.vaning = 0;
+    const vald = vaningar[V.vaning];
+    const box = q("#vn-vaning");
+    const totalt = vantar().length + (l && l.rk && l.rk.dags ? 1 : 0);
+    // Våningslistan uppifrån och ner, som huset står: översta våningen först.
+    const lista = vaningar.slice().reverse().map((v) => {
+      const anstallda = v.rum.filter((r) => r.typ !== "vakant").length;
+      const lediga = v.rum.length - anstallda;
+      const ant = `${anstallda} av ${RUM_PER_VANING} rum${lediga ? ` · ${lediga} ${lediga === 1 ? "ledigt" : "lediga"}` : ""}`;
+      return `<button type="button" class="vn-vn${v === vald ? " vald" : ""}" data-v="${v.nr - 1}" aria-pressed="${v === vald}"><b>${esc(v.namn)}</b><span>${esc(ant)}</span><span class="vn-bar"><i style="width:${Math.round((anstallda / RUM_PER_VANING) * 100)}%"></i></span></button>`;
     }).join("");
-    q("#vn-rumlista").querySelectorAll("button").forEach((b) => b.onclick = () => klickRum(b.dataset.rum));
+    const kort = vald.rum.map((r) => {
+      const last = rumLast(r, l);
+      const { rod, arbetar } = rumLage(r, l);
+      const vem = rumVem(r, l);
+      const kan = r.typ === "vakant" && l && l.rk && l.rk.nasta === r.id && l.rk.dags;
+      const bricka = rod ? `<span class="vn-bricka">${rod} väntar</span>`
+        : r.typ === "vakant" ? `<span class="vn-bricka lugn">${esc(lasText(r, l))}</span>`
+        : arbetar ? `<span class="vn-bricka lugn">Arbetar</span>` : "";
+      const cls = ["vn-rr", r.typ === "vakant" ? "ledig" : "", last && r.typ !== "vakant" ? "last" : "", kan ? "kan" : "", V.nyss === r.id ? "vn-bygg" : ""].filter(Boolean).join(" ");
+      const etikett = `${r.namn}${rod ? `, ${rod} väntar på dig` : ""}${last ? `, ${lasText(r, l)}` : ""}`;
+      return `<button type="button" class="${cls}" data-rum="${esc(r.id)}" aria-label="${esc(etikett)}">${bricka}
+        <img class="vn-rr-bild" src="${rumSrc(r.bild)}" alt="" loading="lazy" width="360" height="360">
+        <span class="vn-vem">${vem.ikon || ""}<span class="vn-vem-txt"><b>${esc(vem.namn)}</b><span>${esc(vem.rad)}</span></span></span></button>`;
+    }).join("");
+    box.innerHTML = `<div class="vn-hus">
+      <aside class="vn-vaningar" aria-label="Våningarna">
+        <div class="vn-hus-etikett">Huset</div>
+        <button type="button" class="vn-vn tom" id="vn-byggvn"><b>+ Bygg en våning</b><span>${esc(byggText())}</span></button>
+        ${lista}
+        <p class="vn-hus-fot">Rutiner, underlag och regler finns i rummen — inred dem.</p>
+      </aside>
+      <section class="vn-golv">
+        <div class="vn-golv-rubrik"><h1>${esc(vald.namn)}</h1><span>${totalt ? `${totalt} ${totalt === 1 ? "sak väntar" : "saker väntar"} på dig` : "Inget väntar på dig"}</span></div>
+        <div class="vn-nasta-kort" id="vn-nasta"></div>
+        <div class="vn-rumrut">${kort}</div>
+      </section></div>`;
+    ritaNasta(q("#vn-nasta"));
+    box.querySelectorAll(".vn-rr").forEach((b) => b.onclick = () => klickRum(b.dataset.rum));
+    box.querySelectorAll(".vn-vn[data-v]").forEach((b) => b.onclick = () => visaVaning(+b.dataset.v));
+    q("#vn-byggvn").onclick = byggVaning;
+    V.nyss = null;
   }
 
   // Ett nästa steg, inte en dashboard: samma kort som arbetsytan har haft
@@ -392,27 +410,28 @@
   }
 
   // ── rummen ──────────────────────────────────────────────────────────────
+  // Våningen rummet ligger på, som en kort lista med rumsbilderna.
   function miniplan(akt) {
-    const R = rummen(); const l = lage();
-    return `<div class="vn-miniplan" style="aspect-ratio:14/${R.djup}">` + R.map((r) => {
+    const l = lage();
+    const v = delaVaningar(rummen())[vaningFor(akt)];
+    return `<div class="vn-etikett">${esc(v.namn)}</div><div class="vn-miniplan">` + v.rum.map((r) => {
       const last = rumLast(r, l);
-      const rod = r.typ === "du" ? vantar().length : r.typ === "agent" && jobbFor(r.id).some((j) => j.status === "levererad");
-      const st = `left:${(r.x / 14) * 100}%;top:${(r.y / R.djup) * 100}%;width:calc(${(r.w / 14) * 100}% - 4px);height:calc(${(r.h / R.djup) * 100}% - 4px)`;
-      return `<button type="button" style="${st}" class="${r.id === akt ? "akt" : ""} ${last ? "last" : ""}" data-rum="${esc(r.id)}" title="${esc(r.namn)}">${esc(r.typ === "du" ? "VD" : r.namn)}${rod ? '<span class="r"></span>' : ""}</button>`;
+      const rod = rumLage(r, l).rod;
+      return `<button type="button" class="${r.id === akt ? "akt" : ""}${last ? " last" : ""}" data-rum="${esc(r.id)}"${r.id === akt ? ' aria-current="page"' : ""}><img src="${rumSrc(r.bild)}" alt="" loading="lazy"><span>${esc(r.typ === "agent" ? r.agent.name : r.namn)}</span>${rod ? `<i class="r" aria-label="${rod} väntar"></i>` : ""}</button>`;
     }).join("") + "</div>";
   }
 
   function visaRum(id, jobbId, opts) {
     opts = opts || {};
     if (id !== "vd" && !agentById(id)) return visaVaning();
-    visa("rum");
     V.rum = id;
+    V.inred = false;
+    visa("rum");
     const box = q("#vn-rum");
-    box.innerHTML = `<div class="vn-arbete"><aside class="vn-plan"><div class="vn-etikett">Våningen</div>${miniplan(id)}
-      <button type="button" class="vn-knapp-ghost vn-tillbaka">← Hela våningen</button></aside><section class="vn-innehall" id="vn-innehall"></section></div>`;
+    box.innerHTML = `<div class="vn-arbete"><aside class="vn-plan">${miniplan(id)}
+      <button type="button" class="vn-knapp-ghost vn-tillbaka">← Hela huset</button></aside><section class="vn-innehall" id="vn-innehall"></section></div>`;
     box.querySelectorAll(".vn-miniplan button").forEach((b) => b.onclick = () => klickRum(b.dataset.rum));
-    q(".vn-tillbaka", box).onclick = visaVaning;
-    ritaHud();
+    q(".vn-tillbaka", box).onclick = () => visaVaning(vaningFor(id));
     if (id === "vd") return vdKontoret();
 
     const a = agentById(id);
@@ -421,7 +440,8 @@
     V.jobbId = jobbId === undefined || jobbId === null ? (opts.samtal ? null : (mappar.find((j) => j.status === "levererad") || {}).id || null) : jobbId;
     const inn = q("#vn-innehall");
     const roll = id === team.entryAgent ? "VD-assistent · ditt närmaste stöd" : (a.tagline || a.role || "Specialist");
-    let h = `<div class="vn-rumhuvud"><img class="vn-portratt" src="${esc(bildFor(a))}" alt=""><div><div class="vn-etikett">${esc(roll)}</div><h1>${esc(id === team.entryAgent ? kontorFor(a) : a.name)}</h1><p>${esc(a.job || a.tagline || "")}</p></div></div>`;
+    let h = `<div class="vn-rumhuvud"><img class="vn-portratt" src="${esc(bildFor(a))}" alt=""><div><div class="vn-etikett">${esc(roll)}</div><h1>${esc(id === team.entryAgent ? kontorFor(a) : a.name)}</h1><p>${esc(a.job || a.tagline || "")}</p></div><button type="button" class="vn-knapp-ghost vn-inred-knapp" id="vn-inred">Inred rummet</button></div>`;
+    h += `<div id="vn-irummet"></div>`;
     h += `<div class="vn-skrivbord"><div class="vn-etikett">På skrivbordet</div><div class="vn-mappar">`;
     const n = ((state.history && state.history[id]) || []).length;
     h += `<button type="button" class="vn-mapp${V.jobbId ? "" : " akt"}" data-j=""><b>Samtalet med ${esc(a.name)}</b><div class="s">${n ? n + " meddelanden" : "Inget sagt än"}</div></button>`;
@@ -436,8 +456,125 @@
     inn.querySelectorAll(".vn-mapp[data-j]").forEach((b) => b.onclick = () => visaRum(id, b.dataset.j || null, { samtal: !b.dataset.j }));
     const ny = q("#vn-nytt"); if (ny) ny.onclick = () => nyttJobb(id);
     const ark = q("#vn-arkiv"); if (ark) ark.onclick = openJobs.original || openJobs;
+    q("#vn-inred").onclick = () => visaInred(id);
+    ritaIRummet(q("#vn-irummet"), a);
     if (V.jobbId) { const j = jobben().find((x) => x.id === V.jobbId); if (j) return jobbYta(j); }
     samtalYta(id);
+  }
+
+  // ── inredningen ─────────────────────────────────────────────────────────
+  // Mikael 2026-11-12: "användaren ska kunna inreda kontorsrummen efter sin
+  // smak, även med funktioner". Vad som står i rummet bor i app.js
+  // (inredningFor/inredningSpara, atb_inredning_<slug>), eftersom arkivskåpet
+  // och diplomet ändrar agentens instruktion i systemFor. Här bor hur det syns.
+  // `plats` är var möbeln står i den stora rumsbilden, i procent av bilden.
+  const MOBLER = [
+    { id: "kalender", namn: "Väggkalender", gor: "Veckorutinerna i rummet", plats: [16, 18, 20] },
+    { id: "arkiv", namn: "Arkivskåp", gor: "Läser era underlag", plats: [6, 46, 21] },
+    { id: "telefon", namn: "Telefon", gor: "Nås från er Claude eller ChatGPT", plats: [42, 64, 17] },
+    { id: "whiteboard", namn: "Whiteboard", gor: "Mål och beslut från mötena", plats: [64, 20, 21] },
+    { id: "brev", namn: "Brevkorg", gor: "Veckobrevet till mejlen", plats: [24, 62, 17] },
+    { id: "diplom", namn: "Diplomet", gor: "Kontrollerade svenska regler", plats: [50, 13, 15] },
+    { id: "lampa", namn: "Lampa", gor: "Bara för stämningen", plats: [28, 34, 16] },
+    { id: "vaxt", namn: "Växt", gor: "Bara för att det är trevligt", plats: [70, 46, 21] },
+  ];
+  const TRIVSEL = ["lampa", "vaxt"];
+  // De två möbler som ändrar vad agenten vet säger vad som går förlorat.
+  // De andra visar bara saker som också finns på andra ställen.
+  const UTAN = {
+    arkiv: (n) => `Utan den läser ${n} inga underlag.`,
+    diplom: (n) => `Utan det svarar ${n} utan regellistan.`,
+  };
+
+  // De senaste besluten från mötena (✓ Det här bestämde vi) — de sparas på
+  // mötesanteckningen i samtalshistoriken, hos den som sammanställde.
+  function senasteBeslut(n) {
+    const ut = [];
+    Object.values(state.history || {}).forEach((lista) => (lista || []).forEach((m) => {
+      if (m && m.beslut && m.beslut.text) ut.push(m.beslut);
+    }));
+    return ut.sort((x, y) => (y.at || 0) - (x.at || 0)).slice(0, n);
+  }
+
+  // Det möblerna gör, i agentens rum. Arkivskåpet och diplomet verkar i
+  // instruktionen; här visas bara att de står där.
+  function ritaIRummet(box, a) {
+    if (!box) return;
+    const inr = inredningFor(a.id);
+    const kort = [];
+    if (inr.includes("kalender")) {
+      const rut = (team.routines || []).filter((rt) => rt.agentId === a.id);
+      const rader = rut.slice(0, 4).map((rt, i) => `<li><span class="d">${esc(routineDone(rt.label) ? "klar ✓" : rt.day === todayDayNo() ? "i dag" : dayName(rt.day))}</span><span class="t">${esc(rt.label)}</span><button type="button" class="vn-lank" data-rutin="${i}">Kör</button></li>`).join("");
+      kort.push(`<div class="vn-ir"><img src="${mobelSrc("kalender")}" alt=""><div><div class="vn-etikett">Väggkalendern</div>${rut.length ? `<ul class="vn-ir-lista">${rader}</ul>` : `<p class="vn-dim">Inga veckorutiner hos ${esc(a.name)} än.</p>`}</div></div>`);
+    }
+    if (inr.includes("whiteboard")) {
+      const bes = senasteBeslut(3);
+      kort.push(`<div class="vn-ir"><img src="${mobelSrc("whiteboard")}" alt=""><div><div class="vn-etikett">Whiteboarden</div>${bes.length ? `<ul class="vn-ir-lista">${bes.map((b) => `<li><span class="d">${esc(b.at ? new Date(b.at).toLocaleDateString("sv-SE", { day: "numeric", month: "short" }) : "")}</span><span class="t">${esc(b.text)}</span></li>`).join("")}</ul>` : `<p class="vn-dim">Inga beslut än. De hamnar här när ni bestämt något i Mötesrummet.</p>`}</div></div>`);
+    }
+    const sma = [];
+    if (inr.includes("arkiv")) {
+      const n = loadDocs().filter((d) => d && d.on && d.text).length;
+      sma.push(`<button type="button" class="vn-ir-liten" data-g="arkiv"><img src="${mobelSrc("arkiv")}" alt=""><span><b>Arkivskåpet</b>${n ? `Läser ${n} ${n === 1 ? "underlag" : "underlag"}` : "Inga underlag påslagna"}</span></button>`);
+    }
+    if (inr.includes("diplom")) sma.push(`<div class="vn-ir-liten"><img src="${mobelSrc("diplom")}" alt=""><span><b>Diplomet</b>Svarar efter de kontrollerade svenska reglerna</span></div>`);
+    if (inr.includes("brev")) sma.push(`<button type="button" class="vn-ir-liten" data-g="brev"><img src="${mobelSrc("brev")}" alt=""><span><b>Brevkorgen</b>Veckobrevet till mejlen →</span></button>`);
+    if (!kort.length && !sma.length && !inr.includes("telefon")) { box.innerHTML = ""; return; }
+    box.innerHTML = `<div class="vn-irummet"><div class="vn-etikett">I rummet</div>${kort.length ? `<div class="vn-ir-rad">${kort.join("")}</div>` : ""}${sma.length ? `<div class="vn-ir-sma">${sma.join("")}</div>` : ""}<div id="vn-ir-telefon"></div></div>`;
+    const rut = (team.routines || []).filter((rt) => rt.agentId === a.id);
+    box.querySelectorAll("[data-rutin]").forEach((b) => b.onclick = () => runRoutine(rut[+b.dataset.rutin]));
+    const ark = q('[data-g="arkiv"]', box); if (ark) ark.onclick = openMemory;
+    const brev = q('[data-g="brev"]', box); if (brev) brev.onclick = openDigest;
+    if (inr.includes("telefon")) {
+      const t = q("#vn-ir-telefon", box);
+      t.className = "vn-ir-telefon";
+      t.innerHTML = `<img src="${mobelSrc("telefon")}" alt="">`;
+      t.appendChild(kopplingsRuta());
+    }
+  }
+
+  function visaInred(id) {
+    const a = agentById(id);
+    if (!a) return visaVaning();
+    V.rum = id;
+    V.inred = true;
+    visa("rum");
+    const r = rummen().find((x) => x.id === id) || { bild: "assistent" };
+    const box = q("#vn-rum");
+    const rita = () => {
+      const inr = inredningFor(id);
+      const funk = inr.filter((m) => !TRIVSEL.includes(m)).length;
+      const n = String(a.name || "").trim();
+      const namn = /^[A-ZÅÄÖ][a-zåäöé-]+$/.test(n) ? (/[sxz]$/.test(n) ? n : n + "s") + " rum" : `${n} · rummet`;
+      const roll = id === team.entryAgent ? "VD-assistent" : (a.tagline || a.role || "Specialist");
+      const scen = MOBLER.filter((m) => inr.includes(m.id)).map((m) =>
+        `<img class="vn-inred-mobel" src="${mobelSrc(m.id)}" alt="${esc(m.namn)}" style="left:${m.plats[0]}%;top:${m.plats[1]}%;width:${m.plats[2]}%">`).join("");
+      const val = MOBLER.map((m) => {
+        const pa = inr.includes(m.id);
+        const utan = !pa && UTAN[m.id] ? UTAN[m.id](a.name) : "";
+        return `<button type="button" class="vn-mb${pa ? " pa" : ""}" data-m="${m.id}" aria-pressed="${pa}"><img src="${mobelSrc(m.id)}" alt=""><b>${esc(m.namn)}</b><span class="vn-mb-gor">${esc(m.gor)}</span>${utan ? `<span class="vn-mb-utan">${esc(utan)}</span>` : ""}<span class="vn-mb-lage">${pa ? "✓ I rummet" : "+ Ställ in"}</span></button>`;
+      }).join("");
+      box.innerHTML = `<div class="vn-inred">
+        <div class="vn-inred-stor">
+          <button type="button" class="vn-lank-tillbaka" id="vn-inred-tillbaka">← Tillbaka till ${esc(a.name)}</button>
+          <div class="vn-inred-scen"><img class="vn-inred-rum" src="${rumSrc(r.bild)}" alt="${esc(namn)}">${scen}</div>
+          <div class="vn-inred-namn"><h1>${esc(namn)}</h1><span>${esc(roll)} · ${inr.length} ${inr.length === 1 ? "möbel" : "möbler"} · ${funk} ${funk === 1 ? "funktion" : "funktioner"} på</span></div>
+        </div>
+        <div class="vn-inred-val">
+          <h2>Inred rummet</h2>
+          <p class="vn-inred-under">Välj det som passar er. Varje möbel ger ${esc(a.name)} något hen kan göra åt er — det gäller från nästa svar.</p>
+          <div class="vn-mobler">${val}</div>
+        </div></div>`;
+      q("#vn-inred-tillbaka").onclick = () => visaRum(id, null, { samtal: true });
+      box.querySelectorAll(".vn-mb").forEach((b) => b.onclick = () => {
+        const m = b.dataset.m;
+        const nu = inredningFor(id);
+        const ny = nu.includes(m) ? nu.filter((x) => x !== m) : nu.concat(m);
+        if (!inredningSpara(id, ny)) return toast("Kunde inte spara — webbläsarens lagring är full.");
+        rita();
+        const knapp = q(`.vn-mb[data-m="${m}"]`, box); if (knapp) knapp.focus();
+      });
+    };
+    rita();
   }
 
   // Samtalet: portalens egen chatt, flyttad in i rummet. Allt den kan —
@@ -878,7 +1015,7 @@
       orig(id, opts);
       if (!V.pa || (opts && opts.boot)) return;
       stangLada();
-      if (!(V.vy === "rum" && V.rum === id && !V.jobbId)) visaRum(id, null, { samtal: true });
+      if (!(V.vy === "rum" && V.rum === id && !V.jobbId && !V.inred)) visaRum(id, null, { samtal: true });
     };
     ny.vaning = true;
     window.selectAgent = ny;

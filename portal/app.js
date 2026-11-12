@@ -1009,13 +1009,49 @@ function updateFolderBanner() {
 }
 
 const DOC_BUDGET = 12000; // tecken underlag totalt per anrop — skydd mot tokensvällning
+
+// ---------- inredningen (Huset, 2026-11-12) ----------
+//
+// Mikael: "användaren ska kunna inreda kontorsrummen efter sin smak, även med
+// funktioner". Varje möbel i ett rum gör något åt agenten som sitter där:
+// arkivskåpet ger hen underlagen, diplomet de kontrollerade svenska reglerna
+// (de två läses här, i systemFor); kalendern, telefonen, whiteboarden och
+// brevkorgen visar saker i rummet (portal/vaningen.js). Lampan och växten är
+// bara trivsel.
+//
+// STANDARDEN är exakt det en agent hade innan möblerna fanns: underlag och
+// regler i instruktionen. En kund som aldrig öppnar "Inred rummet" får alltså
+// samma instruktion som förut, tecken för tecken — test/portal.mjs håller det.
+// ⟦INRED-START⟧
+const INREDNING_STANDARD = ["kalender", "arkiv", "diplom"];
+const INREDNING_MOBLER = ["kalender", "arkiv", "telefon", "whiteboard", "brev", "diplom", "lampa", "vaxt"];
+function inredningAlla() {
+  try {
+    const v = JSON.parse(localStorage.getItem("atb_inredning_" + state.slug) || "null");
+    return v && typeof v === "object" && !Array.isArray(v) ? v : {};
+  } catch (_) { return {}; } // ingen lagring (eller trasig post) — standarden gäller
+}
+function inredningFor(agentId) {
+  const v = inredningAlla()[agentId];
+  return Array.isArray(v) ? INREDNING_MOBLER.filter((m) => v.includes(m)) : INREDNING_STANDARD.slice();
+}
+function inredningSpara(agentId, lista) {
+  const alla = inredningAlla();
+  alla[agentId] = INREDNING_MOBLER.filter((m) => Array.isArray(lista) && lista.includes(m));
+  try { localStorage.setItem("atb_inredning_" + state.slug, JSON.stringify(alla)); return true; }
+  catch (_) { return false; }
+}
+// ⟦INRED-SLUT⟧
+
 function systemFor(agent) {
   let sys = agent.system || "";
   const mem = loadMemory().trim();
   // SK3: bara kundens egna rader står som "följ det". Rader hennes egen AI
   // sparat via /mcp får ett eget block, som uppgifter och inte instruktioner.
   if (mem) sys += minneBlock(mem, "FÖRETAGSMINNE (delat för hela teamet, skrivet av användaren — följ det):");
-  const active = loadDocs().filter((d) => d && d.on && d.text);
+  // Inredningen: utan arkivskåp inga underlag, utan diplom inga regler.
+  const inred = inredningFor(agent && agent.id);
+  const active = inred.includes("arkiv") ? loadDocs().filter((d) => d && d.on && d.text) : [];
   if (active.length) {
     let used = 0;
     const parts = [];
@@ -1035,7 +1071,7 @@ function systemFor(agent) {
   // reglerna står nu kontrollerade mot primärkälla i portal/fakta-se.js och
   // följer med i varje instruktion, med källan.
   const fakta = faktaBlock();
-  if (fakta) sys += `\n\n${fakta}`;
+  if (fakta && inred.includes("diplom")) sys += `\n\n${fakta}`;
   const datum = datumBlock(); // U15: agenterna vet vilken dag det är
   if (datum) sys += `\n\n${datum}`;
   // RE8 (2026-09-26): varje agent såg bara sitt eget samtal. I simuleringen
