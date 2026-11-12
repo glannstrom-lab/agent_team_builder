@@ -133,3 +133,51 @@ test("U7: knappen frågar innan formuläret ritas", () => {
   assert.match(klick, /byggEttTillFråga\(state\.demo, köptSlug\(\)\)/);
   assert.ok(klick.indexOf("confirm(") < klick.indexOf("renderForm()"), "frågan ska komma före formuläret");
 });
+
+// ── U4: ingen fråga efter en "sista", och räknaren vid varje fråga ─────────
+
+test("U4: räknaren säger vilken fråga det är och taket — 'den sista' bara på den tolfte", () => {
+  const frågeRäknare = new Function(fn("frågeRäknare") + "return frågeRäknare;")();
+  assert.equal(frågeRäknare(0, 12), "Fråga 1 av högst 12");
+  assert.equal(frågeRäknare(6, 12), "Fråga 7 av högst 12");
+  assert.equal(frågeRäknare(10, 12), "Fråga 11 av högst 12");
+  assert.equal(frågeRäknare(11, 12), "Fråga 12 av 12 — den sista");
+  for (let n = 0; n < 11; n++) assert.doesNotMatch(frågeRäknare(n, 12), /sista/);
+});
+
+test("U4: räknaren står vid frågan, och Enter skickar svaret i intervjun", () => {
+  const m = kropp("renderMote");
+  assert.match(m, /replik\(`\$\{namn\} · \$\{nr\}`, möte\.fraga/, "frågan ska bära räknaren, inte bara kamerans hörn");
+  assert.match(m, /räknare\.textContent = möte\.klart \? "Intervjun är klar" : nr;/,
+    "räknaren ska synas vid varje fråga, inte först när tre är kvar");
+  assert.match(m, /e\.key === "Enter" && !e\.shiftKey/);
+  assert.match(m, /svarForm\.requestSubmit\(\)/);
+  assert.match(m, /Enter skickar svaret · Shift\+Enter ger ny rad/, "kunden ska få veta det under rutan");
+});
+
+test("U4: modellen får bara säga 'sista' på den tur där frågan verkligen är sista", async () => {
+  const { byggSteg, läsIntervju, rensaPromptCache, INTERVJU_MAX_TURER } = await import("../functions/api/_build.js");
+  const fil = readFileSync("prompts/shared/interview.md", "utf8");
+  const env = { ASSETS: { fetch: async () => new Response(fil) } };
+  const request = { url: "https://mittaiteam.se/api/ai" };
+  const system = async (n) => {
+    const turer = Array.from({ length: n }, (_, i) => ({ fraga: `Fråga ${i + 1}?`, svar: "Ett svar." }));
+    return (await byggSteg(env, request, "intervju", {}, läsIntervju(JSON.stringify({ turer })))).system;
+  };
+  try {
+    assert.equal(await system(0), fil, "öppningens systemprompt ska vara filen som den står");
+    for (const n of [1, 5, INTERVJU_MAX_TURER - 2]) {
+      const s = await system(n);
+      assert.match(s, /SÄG ALDRIG "SISTA"/, `tur ${n}: förbudet saknas`);
+      assert.doesNotMatch(s, /DEN SISTA FRÅGAN|SISTA TUREN/, `tur ${n}: får inte få lov att säga sista`);
+    }
+    const elva = await system(INTERVJU_MAX_TURER - 1);
+    assert.match(elva, /DEN SISTA FRÅGAN/);
+    assert.doesNotMatch(elva, /SÄG ALDRIG|SISTA TUREN/);
+    const tolv = await system(INTERVJU_MAX_TURER);
+    assert.match(tolv, /SISTA TUREN/);
+    assert.doesNotMatch(tolv, /SÄG ALDRIG|DEN SISTA FRÅGAN/);
+  } finally {
+    rensaPromptCache();
+  }
+});

@@ -1002,6 +1002,15 @@ const MOTE_MAX_TURER = 12;      // samma tal som INTERVJU_MAX_TURER på servern
 const MOTE_MAX_SVAR = 2000;     // samma tal som INTERVJU_MAX_SVAR
 const SCEN_FRAGA = "Så — vad gör ni på en vanlig måndag?";
 
+// U4: vilken fråga det är, och hur många det kan bli som mest. "Den sista"
+// sägs bara när taket gör den till det — samma tur som servern ger modellen
+// lov att säga det (INTERVJU_SISTA_FRÅGAN i functions/api/_build.js).
+// Kandidaten kan avsluta tidigare, så talet är ett tak och inte ett löfte.
+function frågeRäknare(antalSvar, max) {
+  const nr = Math.min(antalSvar + 1, max);
+  return nr >= max ? `Fråga ${max} av ${max} — den sista` : `Fråga ${nr} av högst ${max}`;
+}
+
 function läsScen() {
   try { return JSON.parse(localStorage.getItem("atb_scen") || "null") || null; } catch (_) { return null; }
 }
@@ -1115,7 +1124,17 @@ function renderMote() {
   const fält = el("div", "intake-dikt"); fält.append(ta); if (mic) fält.append(mic);
   const skicka = el("button", "btn-primary", "Svara"); skicka.type = "submit";
   const fel = el("div", "setup-err"); fel.setAttribute("role", "alert"); fel.hidden = true;
-  svarForm.append(lab, fält, skicka, fel);
+  // U4: Enter skickar och Shift+Enter ger ny rad — samma regel som portalens
+  // chatt (Lena tryckte Enter och ingenting hände). På pekskärm ger Enter ny
+  // rad som förut, för där är tangentbordets Enter kundens enda radbrytning.
+  const pek = typeof matchMedia === "function" && matchMedia("(pointer: coarse)").matches;
+  ta.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !e.shiftKey && !e.isComposing && !pek) { e.preventDefault(); svarForm.requestSubmit(); }
+  });
+  const tips = pek ? null : el("div", "fhint", "Enter skickar svaret · Shift+Enter ger ny rad");
+  svarForm.append(lab, fält);
+  if (tips) svarForm.append(tips);
+  svarForm.append(skicka, fel);
   rum.appendChild(svarForm);
 
   const klar = el("div", "mote-klar"); klar.hidden = true;
@@ -1143,10 +1162,12 @@ function renderMote() {
   const rita = () => {
     logg.innerHTML = "";
     möte.turer.forEach((t) => { replik(namn, t.fraga, "is-kandidat"); replik(k.chef || "Du", t.svar, "is-kund"); });
-    if (möte.fraga) replik(namn, möte.fraga, "is-kandidat");
+    // U4: räknaren står vid varje fråga, inte bara i kamerans hörn — det hörnet
+    // scrollar ur bild medan kunden läser frågan och skriver sitt svar.
+    const nr = frågeRäknare(möte.turer.length, MOTE_MAX_TURER);
+    if (möte.fraga) replik(`${namn} · ${nr}`, möte.fraga, "is-kandidat");
     if (möte.klart) replik(namn, möte.klart.replik, "is-kandidat");
-    const kvar = MOTE_MAX_TURER - möte.turer.length;
-    räknare.textContent = möte.klart ? "Intervjun är klar" : `Fråga ${Math.min(möte.turer.length + 1, MOTE_MAX_TURER)} · högst ${MOTE_MAX_TURER}${kvar <= 3 ? ` — ${kvar} kvar` : ""}`;
+    räknare.textContent = möte.klart ? "Intervjun är klar" : nr;
     svarForm.hidden = !!möte.klart || !möte.fraga;
     klar.hidden = !möte.klart;
     if (möte.klart) ritaKlar();
