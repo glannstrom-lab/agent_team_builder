@@ -137,7 +137,15 @@ export async function sparaPost(db, slug, typ, id, data, av) {
   const d = rensa(typ, data);
   if ((typ === "org" || typ === "kontakt") && !d.namn) return { fel: "Namnet saknas." };
   if (typ === "underlag" && !d.text.trim()) return { fel: "Underlaget är tomt." };
-  const finns = await db.prepare("SELECT 1 AS f FROM firma_poster WHERE team_slug = ?1 AND typ = ?2 AND id = ?3").bind(slug, typ, id).first();
+  const finns = await db.prepare("SELECT data, updated_by FROM firma_poster WHERE team_slug = ?1 AND typ = ?2 AND id = ?3").bind(slug, typ, id).first();
+  // U9 (2026-11-12): portalen skickar hela posten också när kunden bara slår
+  // av eller på ett underlag. Det gjorde ett underlag Claude sparat till
+  // "granskat av kunden" (SK3 märker via updated_by !== "portal") fast hon
+  // aldrig läst texten. Skiljer bara `on` behåller posten sin gamla källa.
+  if (finns && typ === "underlag" && av === "portal" && finns.updated_by && finns.updated_by !== "portal") {
+    let gammal = {}; try { gammal = JSON.parse(finns.data) || {}; } catch (_) { /* trasig rad — räkna som ändrad */ }
+    if (gammal.title === d.title && gammal.text === d.text) av = finns.updated_by;
+  }
   if (!finns) {
     const n = await db.prepare("SELECT COUNT(*) AS n FROM firma_poster WHERE team_slug = ?1 AND typ = ?2").bind(slug, typ).first();
     if (n && n.n >= POSTER_MAX[typ]) return { fel: `Högst ${POSTER_MAX[typ]} ${typ === "underlag" ? "underlag" : typ === "org" ? "organisationer" : "kontakter"} per team.` };

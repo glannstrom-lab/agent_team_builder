@@ -460,6 +460,27 @@ test("delat: med flera team kräver en skrivning foretag, läsning gör det inte
   assert.equal(rad.team_slug, SLUG2);
 });
 
+// U10 (2026-11-12): "Bygg" får inte välja ett av flera företag vid skrivning.
+test("delat: en delsträng som passar flera team avvisas vid skrivning, exakt namn och unik delsträng går", async () => {
+  const { env, kakor, db } = await värld();
+  const t = Date.now();
+  for (const [slug, namn] of [["cccccccccccccccccccccc", "Bygg AB"], ["dddddddddddddddddddddd", "Byggservice"]]) {
+    db.raw.prepare("INSERT INTO teams (slug, config, tier, created_at, plan) VALUES (?,?, 'self-serve', ?, 'standard')")
+      .run(slug, JSON.stringify({ company: namn, agents: [{ id: "x", name: "X", system: "x" }] }), t);
+    db.raw.prepare("INSERT INTO team_access (team_slug, user_id, role, created_at) VALUES (?, 'u1', 'member', ?)").run(slug, t);
+  }
+  const { access_token } = await koppla(env, kakor.u1, await registrera(env));
+  const dubbel = await verktyg(env, access_token, "spara_minne", { rader: ["Fel företag?"], foretag: "Bygg" });
+  assert.ok(dubbel.isError);
+  assert.match(dubbel.content[0].text, /passar flera team: .*Bygg AB.*Byggservice/);
+  assert.equal(db.raw.prepare("SELECT COUNT(*) AS n FROM firma_poster").get().n, 0, "något skrevs ändå");
+
+  assert.ok(!(await verktyg(env, access_token, "spara_minne", { rader: ["Exakt."], foretag: "Bygg AB" })).isError);
+  assert.equal(db.raw.prepare("SELECT team_slug FROM firma_poster WHERE typ = 'minne'").get().team_slug, "cccccccccccccccccccccc");
+  assert.ok(!(await verktyg(env, access_token, "spara_minne", { rader: ["Unik."], foretag: "Rönnberg" })).isError, "en delsträng som träffar exakt ett team får gälla");
+  assert.ok(!(await verktyg(env, access_token, "firman", { foretag: "Bygg" })).isError, "läsning behåller första träffen");
+});
+
 test("delat: det plattformen sparar ser portalen, märkt med vem", async () => {
   const { env, kakor } = await värld();
   const { access_token } = await koppla(env, kakor.u1, await registrera(env));
@@ -490,6 +511,27 @@ test("delat: det plattformen sparar ser portalen, märkt med vem", async () => {
   const j2 = f2.kontakt.filter((p) => p.namn.toLowerCase() === "johan persson");
   assert.equal(j2.length, 1, "samma namn är samma kontakt");
   assert.match(j2[0].not, /250 000[\s\S]*Ring efter lunch/);
+});
+
+// U9 (2026-11-12): att slå av/på ett underlag är inte att ha läst det.
+test("delat: ett underlag Claude sparat behåller sin källa när kunden slår av och på, men blir hennes när hon ändrar det", async () => {
+  const { env, kakor } = await värld();
+  const { access_token } = await koppla(env, kakor.u1, await registrera(env));
+  await verktyg(env, access_token, "spara_underlag", { titel: "Offertmall", text: "# Offert\nTimpris 650 kr." });
+  const hämta = async () => (await (await firmaGet(env, kakor.u1)).json()).underlag[0];
+  const u = await hämta();
+  assert.equal(u.updatedBy, "Claude");
+
+  const skicka = (data) => firmaPost(env, kakor.u1, { op: "poster", poster: [{ typ: "underlag", id: u.id, data }] });
+  assert.equal((await skicka({ title: u.title, text: u.text, on: false })).status, 200);
+  const av = await hämta();
+  assert.equal(av.on, false);
+  assert.equal(av.updatedBy, "Claude", "avslaget ska inte göra underlaget granskat");
+  await skicka({ title: u.title, text: u.text, on: true });
+  assert.equal((await hämta()).updatedBy, "Claude");
+
+  await skicka({ title: u.title, text: u.text + "\nMoms tillkommer.", on: true });
+  assert.equal((await hämta()).updatedBy, "portal", "ändrad text är kundens");
 });
 
 test("delat: minnet slås ihop när portalen och plattformen skrivit samtidigt", async () => {
