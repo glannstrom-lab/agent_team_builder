@@ -206,11 +206,42 @@ function applyDraft(form) {
   state.formDraft = rest;
 }
 
+// U6: formulärets text i localStorage. state.formDraft lever bara i minnet,
+// så ett fel ("↺ Till formuläret"), "Avbryt körningen" eller en F5 tömde allt
+// kunden skrivit. Utkastet skrivs vid inmatning (med fördröjning), läses där
+// formuläret ritas, och rensas när teamet är klart — då har det gjort sitt.
+// Bara text och val i fälten; enkätens kryss räknas inte, de är ett klick bort.
+const FORM_UTKAST = "atb_formutkast";
+function läsFormUtkast() {
+  try {
+    const u = JSON.parse(localStorage.getItem(FORM_UTKAST) || "null");
+    return u && typeof u === "object" && u.fält && typeof u.fält === "object" ? u : null;
+  } catch (_) { return null; }
+}
+function sparaFormUtkast(audience, fält) {
+  const kvar = {};
+  Object.entries(fält || {}).forEach(([k, v]) => { if (typeof v === "string" && v.trim()) kvar[k] = v; });
+  try {
+    if (Object.keys(kvar).length) localStorage.setItem(FORM_UTKAST, JSON.stringify({ audience: audience || null, fält: kvar, at: Date.now() }));
+    else localStorage.removeItem(FORM_UTKAST);
+  } catch (_) { /* privat läge eller full lagring — formuläret fungerar ändå */ }
+}
+function glömFormUtkast() { try { localStorage.removeItem(FORM_UTKAST); } catch (_) { /* inget att göra */ } }
+
 // ---------- intake form ----------
 function renderForm() {
   // Demoläget spelar upp en inspelad körning åt ett företag — då är vägvalet
   // redan gjort och ska inte stå i vägen för uppspelningen.
   if (state.demo && !state.audience) state.audience = "verksamhet";
+  // U6: det sparade utkastet under det som redan finns i minnet — minnet är
+  // nyare (ett byte av vägval mitt i skrivandet), lagringen överlever F5.
+  if (!state.demo) {
+    const u = läsFormUtkast();
+    if (u) {
+      if (!state.audience && (u.audience === "person" || u.audience === "verksamhet")) state.audience = u.audience;
+      state.formDraft = Object.assign({}, u.fält, state.formDraft);
+    }
+  }
   const person = state.audience === "person";
   const root = $("#root"); root.innerHTML = "";
   const wrap = el("main", "form-wrap");
@@ -441,6 +472,16 @@ function renderForm() {
   };
   wrap.appendChild(form);
   applyDraft(form);
+  if (!state.demo) {
+    // U6: det som står i fälten nu, plus det som saknar fält i den här dörren
+    // (rollen när verksamhetsformuläret visas). state.formDraft rörs inte här —
+    // det är applyDraft:s förbrukningslista, och ett nytt bygge ska börja rent.
+    const sparaNu = () => sparaFormUtkast(state.audience,
+      Object.assign({}, state.formDraft, Object.fromEntries(new FormData(form).entries())));
+    let vänta = null;
+    form.addEventListener("input", () => { clearTimeout(vänta); vänta = setTimeout(sparaNu, 400); });
+    form.addEventListener("submit", () => { clearTimeout(vänta); sparaNu(); });
+  }
   if (modeSel.value === "ai-consultant") matRow.style.display = ""; // draften kan ha valt första projektet
 
   const foot = el("div", "form-foot");
@@ -1202,6 +1243,7 @@ function körningsLäge(saved, köpt) {
 // upp till tolv svar borta och mötet började om med bara måndagssvaret.
 function teametÄrKlart(intake) {
   if (intake && intake.intakeText) glömMöte();
+  glömFormUtkast(); // U6: formulärets utkast har gjort sitt när teamet finns
 }
 
 // ---------- pipeline ----------

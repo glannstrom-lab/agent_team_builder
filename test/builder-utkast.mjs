@@ -69,3 +69,47 @@ test("U5: en påbörjad körning ur mötet öppnar mötet igen, en ur formuläre
   assert.equal(bygg({ intake: { company: "X" }, r: { research: "x" } }, { turer: [] }, {})(), false);
   assert.equal(bygg(null, null, { mandag: "x" })(), true);
 });
+
+// ── U6: formulärets text överlever omladdning ──────────────────────────────
+
+function lagring() {
+  const m = new Map();
+  return {
+    getItem: (k) => (m.has(k) ? m.get(k) : null),
+    setItem: (k, v) => m.set(k, String(v)),
+    removeItem: (k) => m.delete(k),
+    _m: m,
+  };
+}
+const utkast = (ls) => new Function("localStorage",
+  src.match(/^const FORM_UTKAST = [^;]*;/m)[0] + "\n" +
+  fn("läsFormUtkast") + fn("sparaFormUtkast") + fn("glömFormUtkast") +
+  "return { läsFormUtkast, sparaFormUtkast, glömFormUtkast };")(ls);
+
+test("U6: utkastet sparas i localStorage och kommer tillbaka efter omladdning", () => {
+  const ls = lagring();
+  const före = utkast(ls);
+  före.sparaFormUtkast("verksamhet", { company: "Salong Ada", moments: "Bokar om kunder hela måndagen.", what: "", size: "solo" });
+  // "Omladdningen": samma lagring, nya funktioner — inget i minnet följer med.
+  const efter = utkast(ls).läsFormUtkast();
+  assert.equal(efter.audience, "verksamhet");
+  assert.deepEqual(efter.fält, { company: "Salong Ada", moments: "Bokar om kunder hela måndagen.", size: "solo" },
+    "tomma fält ska inte sparas, allt annat ska komma tillbaka");
+  före.glömFormUtkast();
+  assert.equal(utkast(ls).läsFormUtkast(), null);
+  // Ett helt tömt formulär lämnar inget utkast efter sig.
+  före.sparaFormUtkast("person", { company: "x" });
+  före.sparaFormUtkast("person", { company: "  " });
+  assert.equal(ls._m.size, 0);
+  // Trasig lagring kastar inte.
+  ls.setItem("atb_formutkast", "{inte json");
+  assert.equal(utkast(ls).läsFormUtkast(), null);
+});
+
+test("U6: formuläret läser utkastet, skriver det vid inmatning och rensar det när teamet är klart", () => {
+  const form = kropp("renderForm");
+  const läs = form.indexOf("läsFormUtkast()"), fyll = form.indexOf("applyDraft(form);");
+  assert.ok(läs >= 0 && läs < fyll, "utkastet ska läsas innan fälten fylls i");
+  assert.match(form.slice(fyll), /addEventListener\("input"/, "utkastet ska skrivas när kunden skriver");
+  assert.match(fn("teametÄrKlart"), /glömFormUtkast\(\)/, "utkastet ska rensas när teamet är klart");
+});
