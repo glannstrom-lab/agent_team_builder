@@ -462,7 +462,7 @@ async function sparaMinneV(ctx, args) {
   const r = await läggTillMinne(ctx.db, v.team.slug, rader, await avVem(ctx));
   if (r.fel) return text(r.fel, true);
   return text(r.tillagda
-    ? `Sparat i ${v.team.company}s företagsminne (${r.tillagda} ${r.tillagda === 1 ? "rad" : "rader"}). Alla agenter i Mitt AI-team läser det från och med nu.`
+    ? `Sparat i ${v.team.company}s företagsminne (${r.tillagda} ${r.tillagda === 1 ? "rad" : "rader"}). Agenterna i Mitt AI-team läser det från och med nu, märkt som sparat av dig tills kunden godkänt det i portalen.`
     : "Det stod redan i företagsminnet.");
 }
 

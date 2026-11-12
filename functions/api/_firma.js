@@ -43,7 +43,7 @@ export async function läsFirma(db, slug) {
     let d = {};
     try { d = JSON.parse(r.data) || {}; } catch (_) { d = {}; }
     const meta = { id: r.id, updatedAt: r.updated_at, updatedBy: r.updated_by };
-    if (r.typ === "minne") ut.minne = { text: d.text || "", updatedAt: r.updated_at, updatedBy: r.updated_by };
+    if (r.typ === "minne") ut.minne = { text: d.text || "", kallor: rensaKällor(d.kallor), updatedAt: r.updated_at, updatedBy: r.updated_by };
     else if (ut[r.typ]) ut[r.typ].push({ ...d, ...meta });
   }
   return ut;
@@ -73,18 +73,44 @@ async function storlek(db, slug, utom) {
   return r ? Number(r.n) : 0;
 }
 
-// Sparar minnet. Returnerar { text } eller { fel }.
-export async function sparaMinne(db, slug, { text, bas = null, av }) {
+// SK3 (2026-11-12): vem som skrev varje rad. Minnet är en text, och
+// `updated_by` säger bara vem som skrev SIST — så en rad Claude sparat ur ett
+// mejl (som kan bära en promptinjektion) stod förut i agenternas instruktion
+// som "skrivet av användaren — följ det". `kallor` är { "<rad, trimmad>":
+// "<plattform>" } för rader som en plattform lagt till och kunden inte rört.
+// Rader utan post är kundens. Kunden gör en rad till sin genom att ändra den
+// eller godkänna den (`godkänn`); tar hon bort den försvinner posten med den.
+function rensaKällor(k) {
+  const ut = {};
+  if (!k || typeof k !== "object" || Array.isArray(k)) return ut;
+  for (const [rad, av] of Object.entries(k)) {
+    if (typeof rad === "string" && rad.trim() && typeof av === "string") ut[rad.trim()] = av.replace(/[\r\n]+/g, " ").slice(0, 60);
+  }
+  return ut;
+}
+
+// Sparar minnet. Returnerar { text, kallor } eller { fel }.
+// `av` = "portal" när kunden skriver, annars plattformens namn.
+export async function sparaMinne(db, slug, { text, bas = null, av, godkänn = [] }) {
   const nu = await db.prepare("SELECT data FROM firma_poster WHERE team_slug = ?1 AND typ = 'minne' AND id = 'text'").bind(slug).first();
-  let gammal = "";
-  try { gammal = nu ? (JSON.parse(nu.data).text || "") : ""; } catch (_) { gammal = ""; }
+  let gammal = "", gamlaKällor = {};
+  try {
+    const d = nu ? JSON.parse(nu.data) : {};
+    gammal = d.text || ""; gamlaKällor = rensaKällor(d.kallor);
+  } catch (_) { gammal = ""; gamlaKällor = {}; }
   const ihop = slåIhopMinne(gammal, bas, text);
   if (ihop.length > MINNE_MAX) return { fel: `Minnet får vara högst ${MINNE_MAX} tecken. Korta det, eller lägg det långa som ett underlag.` };
+  const rader = new Set(ihop.split("\n").map((r) => r.trim()).filter(Boolean));
+  const fanns = new Set(gammal.split("\n").map((r) => r.trim()).filter(Boolean));
+  const godk = new Set((Array.isArray(godkänn) ? godkänn : []).map((r) => String(r || "").trim()));
+  const kallor = {};
+  for (const [rad, vem] of Object.entries(gamlaKällor)) if (rader.has(rad) && !godk.has(rad)) kallor[rad] = vem;
+  if (av && av !== "portal") for (const rad of rader) if (!fanns.has(rad)) kallor[rad] = String(av).slice(0, 60);
   await db.prepare(
     "INSERT INTO firma_poster (team_slug, typ, id, data, updated_at, updated_by) VALUES (?1, 'minne', 'text', ?2, ?3, ?4) " +
     "ON CONFLICT (team_slug, typ, id) DO UPDATE SET data = excluded.data, updated_at = excluded.updated_at, updated_by = excluded.updated_by"
-  ).bind(slug, JSON.stringify({ text: ihop }), nowMs(), av).run();
-  return { text: ihop };
+  ).bind(slug, JSON.stringify({ text: ihop, kallor }), nowMs(), av).run();
+  return { text: ihop, kallor };
 }
 
 // Lägger till rader i minnet (det plattformarna gör). Rader som redan står

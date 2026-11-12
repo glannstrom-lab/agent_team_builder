@@ -7,7 +7,7 @@
 // team_access, plan igång (teamFör).
 //
 // POST-formerna:
-//   { team, op: "minne", text, bas }                — bas = texten portalen senast såg
+//   { team, op: "minne", text, bas, godkann? }      — bas = texten portalen senast såg
 //   { team, op: "poster", poster: [{ typ, id, data }] } — data null = ta bort
 // Flera poster i ett anrop: första synken flyttar upp allt som legat i
 // webbläsaren, och det ska inte bli hundra anrop.
@@ -34,9 +34,11 @@ export async function onRequestPost({ request, env }) {
 
   if (body.op === "minne") {
     if (typeof body.text !== "string") return json({ error: "text saknas" }, 400);
-    const r = await sparaMinne(env.DB, team.slug, { text: body.text, bas: typeof body.bas === "string" ? body.bas : null, av: "portal" });
+    // SK3: `godkann` = rader som plattformen sparat och kunden nu gör till sina.
+    const godkänn = Array.isArray(body.godkann) ? body.godkann.slice(0, 500).map((r) => String(r || "")) : [];
+    const r = await sparaMinne(env.DB, team.slug, { text: body.text, bas: typeof body.bas === "string" ? body.bas : null, av: "portal", godkänn });
     if (r.fel) return json({ error: r.fel }, 413);
-    return json({ minne: { text: r.text } });
+    return json({ minne: { text: r.text, kallor: r.kallor } });
   }
 
   if (body.op === "poster") {
