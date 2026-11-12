@@ -20,6 +20,54 @@ Senaste genomgången 2026-10-26 (sju linser) · före det 2026-09-01 (sex linser
 > (retention) tillkom 2026-09-01. Nummerserien fortsätter per prefix — nya
 > ID:n återanvänder aldrig ett gammalt nummer, inte ens ett avbetat.
 
+## Utveckla-projektet omgång 1 — 2026-11-12 (blinda experter ur målgruppen)
+
+Gren `utveckla/2026-11-12`, taggar `omgang-0` (baslinje, `8c61150`) och `omgang-1`. **Inte utlagt**
+(produktionsskydd: konton och betalning) — se Frågor nedan. Reskontran är källan:
+`playtests/ledger.json`. Översikt: samma artifakt som genomgångarna,
+<https://claude.ai/artifact/22c3RWKF289ppycnSNyep5> (version 7). Research: `playtests/research/omg1.md`.
+Sessioner: holdout (Kerstin, B&B, förseglad), Lena (målare) före och efter, Maria
+(redovisningskonsult), Johan (webbyrå) i slutprovet. 542 → 575 gröna tester.
+
+### Klart — bekräftat av test som är hela kriteriet eller av blind expert
+- [x] **U3** Startsidan säger vad tjänsten gör (en mening under rubriken) · bekräftad: Lena 30 s "det står gratis att bygga och offerter och kundmejl, alltså mitt ärende" · `index.html`
+- [x] **U5** Intervjun raderas inte innan något steg sparats · `builder/builder.js` · 3 tester
+- [x] **U6** Formulärets text överlever fel, avbrott och F5 · `builder/builder.js` · 2 tester
+- [x] **U7** "Bygg ett till" frågar innan ett obetalt team kastas · `builder/builder.js` · 2 tester
+- [x] **U8** SK3-hålet: "Utöka teamet" och minnesförslagen får inte plattformens rader omärkta · `portal/app.js` · 2 tester
+- [x] **U9** Claudes underlag behåller källan när kunden bara slår av/på det · `functions/api/_firma.js` · test mot SQLite
+- [x] **U10** `/mcp` avvisar en delsträng som passar flera team vid skrivning · `functions/mcp.js` · test
+- [x] **U11** Permanenta spärrar (quota, build_quota, web_paused, purchase_required, service_down) provas inte om · `atb-claude.js` · 2 tester
+- [x] **U12** Fält på pekskärm minst 16 px (iOS zoomar inte) · `portal/portal.css`, `builder/builder.css` · `test/mobil.mjs`
+- [x] **U13** Ändringar före första lyckade synk köas i stället för att tappas · `portal/app.js` · 4 tester
+- [x] **U15** Agenterna vet dagens datum och närmaste myndighetsdatum · bekräftad: Johan "I dag, torsdag 12 november 2026 — sista dagen … kvartal 3" · `portal/app.js`
+- [x] **U18** `teams/<slug>.js` prövas bara för inbyggda team (inget konsolfel) · `portal/app.js` · test
+
+### Byggt, ej prövat av blind expert (riktigt klick höll)
+- [ ] **U1** Enter på slutkortet går till Buildern (blockerare: två experter förlorade 6 min) · `index.html:653` · `test/startsida.mjs`
+- [ ] **U2** "Hoppa till samtalet" landar vid måndagsfrågan · `index.html`
+- [ ] **U4** Räknaren vid varje fråga, "sista" bara på den tolfte, Enter skickar · `builder/builder.js`, `functions/api/_build.js`
+- [ ] **U16** Knapparna under ett svar (🔎 Kontrollera mot källan) syns utan hovring · `portal/portal.css:777`
+
+### Vederlagt
+- [ ] **U14** *BET* "Spara som mall" — byggd i Våningens jobbkort, men Johan godkände först och letade sedan i arkivlistan och Nytt jobb. **Nästa:** "utgå från ett godkänt jobb" direkt i Nytt jobb och i arkivet, utan att mallen måste sparas först.
+
+### Nu — ur slutprovet (verifierade)
+- [ ] **U19** T1 Teamet ser inte sina egna godkända jobb — "Jag har ingen offert till Bageriet Korn" · `teamLogg()` läser bara chatten · lägg de senaste godkända leveranserna i instruktionen
+- [ ] **U20** T2 Byggets fackspråk ("Körningsmetadata", "Hypoteser: 0") strömmas till kunden · `prompts/shared/research.md:282`, `builder/builder.js`
+- [ ] **U21** T3 Måndagsfrågan skärs av videorutans kant (ram 043) · `index.html`
+- [ ] **U22** T3 "Gör det här i chatten" fyller i men skickar inte · `portal/app.js:5773`
+
+### Frågor till Mikael
+1. **U17 presentkortsmomsen** (T1, sakfel): teamet sa "redovisas vid inlösen" — för ett salongskort är det tvärtom. Kontrollerat mot Skatteverket (Momssatser och undantag, avsnittet Voucher): enfunktionsvoucher → moms vid försäljningen; flerfunktionsvoucher → vid inlösen. Ska regeln in i faktabasen (`portal/fakta-se.js` + `functions/api/_fakta.js`, kopplade)? *Tills vidare: inte byggt.* Rekommendation: ja.
+2. **Faktabasens instruktion**: modellen hittade på i stället för att säga att den var osäker. Skärpa? *Tills vidare: orört.* Rekommendation: ja, med U17.
+3. **Utläggning**: omgången ligger på grenen. *Tills vidare: inte utlagt.* Rekommendation: `driftsatt` från grenen.
+4. **Avbruten betalning** → till synes tomt formulär (`cancel_url`, `functions/api/checkout.js:90`). Betalflöde. *Tills vidare: orört.* Rekommendation: `/builder/?tillbaka=1`.
+5. **Byggets IP-tak** 24/kvart kan slå mitt i ett bygge (`functions/api/ai.js:55`). Kassaskydd. *Tills vidare: orört.* Rekommendation: mät ett riktigt bygges anrop först.
+6. **Konkurrensen**: Anthropic "Claude for Small Business" (kontrollerat: färdiga arbetsflöden i Claude, inga svenska regler, ingen svenska). Ska nästa omgång luta mot svenska regler (U17, SR6)?
+7. **Nya vinklar** (research, ej byggda): ROT/moms-checklista · fast pris som säljargument · redovisningsbyråer som återförsäljare · egen mätning av AI i mikroföretag.
+8. **Holdouten**: hennes område (startsidan) ändrades, så slutsessionen hoppades över enligt reglerna.
+
 ## Genomgång 2026-10-26 — kopplingen, det delade och de första minuterna
 
 > Sju parallella linser + egen verifiering, 60 commits efter förra rundan.

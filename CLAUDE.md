@@ -899,7 +899,9 @@ ny kund dyker upp i både galleri och portal automatiskt.
 > **Intervjun är skärpt 2026-10-24** (`redan_sagt` i schemat, mätt 6→3 upprepningar på
 > 6 resp. 9 simulerade intervjuer, `testoutput/intervju-2026-10-24/`).
 >
-> **Nästa pass enda uppgift:** `portal-med-ogon` på passen 2026-10-26 och 2026-11-12 (SK3:s godkännanderuta under Minne & underlag har inte setts i webbläsare), därefter SP7.
+> **Nästa pass enda uppgift:** U19 — teamet ska se sina egna godkända jobb (`teamLogg` läser bara chatten), därefter U14 omgjord ("utgå från ett godkänt jobb" i Nytt jobb). Först: Mikaels svar på frågorna i `ROADMAP.md` (*Utveckla-projektet omgång 1*), särskilt U17 och utläggningen av grenen `utveckla/2026-11-12`.
+>
+> *Förra passets rad:* **utveckla-projektet omgång 1** (2026-11-12): 18 poster byggda på grenen `utveckla/2026-11-12`, 12 bekräftade, 575 gröna — inte utlagt.
 >
 > *Förra passets rad:* **SK3** gjord 2026-11-12 — plattformens minnesrader bär sin källa och står som uppgifter, inte instruktioner. Inte driftsatt. DS1/DS2 (policytexten) och OL1 (priset) väntar på Mikael.
 >

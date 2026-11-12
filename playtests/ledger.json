@@ -1,0 +1,1055 @@
+{
+ "meta": {
+  "project": "Mitt AI-team",
+  "idPrefix": "U",
+  "idFloor": 0,
+  "coreStatus": "unknown",
+  "diagnosis": "",
+  "holdout": "kerstin-61",
+  "created": "2026-11-12",
+  "updated": "2026-11-12"
+ },
+ "sessions": [
+  {
+   "date": "2026-11-12",
+   "id": "omg0-kerstin-holdout",
+   "persona": "Kerstin 61",
+   "role": "holdout",
+   "build": "8c61150",
+   "hook": [
+    "30s tvekar",
+    "1m tvekar",
+    "5m på väg"
+   ]
+  },
+  {
+   "date": "2026-11-12",
+   "id": "omg1-lena",
+   "persona": "Lena 52",
+   "role": "primary",
+   "build": "8c61150",
+   "hook": [
+    "30s tvekar",
+    "1m tvekar",
+    "5m på väg",
+    "15m tvekar"
+   ]
+  },
+  {
+   "date": "2026-11-12",
+   "id": "omg1-maria",
+   "persona": "Maria 45",
+   "role": "rotation",
+   "build": "8c61150",
+   "hook": [
+    "30s på väg",
+    "1m på väg",
+    "5m tvekar"
+   ]
+  },
+  {
+   "date": "2026-11-12",
+   "id": "omg1-lena-slut",
+   "persona": "Lena 52",
+   "role": "primary",
+   "build": "omgang-1",
+   "hook": [
+    "30s på väg",
+    "1m på väg",
+    "5m tvekar",
+    "15m på väg"
+   ]
+  },
+  {
+   "date": "2026-11-12",
+   "id": "omg1-johan-slut",
+   "persona": "Johan 38",
+   "role": "rotation",
+   "build": "omgang-1",
+   "hook": [
+    "30s tvekar",
+    "1m tvekar",
+    "5m tvekar"
+   ]
+  }
+ ],
+ "items": [
+  {
+   "id": "U1",
+   "title": "Enter på slutkortet startar om hela intervjufilmen",
+   "cause": "fokus läggs på 'Spela igen' i stället för 'Fortsätt intervjun' (index.html:634)",
+   "moment": "startsidan, efter måndagssvaret",
+   "stage": "opening",
+   "aspect": "fungerar",
+   "tier": 1,
+   "type": "FIX",
+   "effort": "S",
+   "hypothesis": "om fokus ligger på Fortsätt kommer den som trycker Enter vidare till Buildern i stället för att förlora 6 minuter",
+   "criterion": "en ny kund som svarat på måndagsfrågan och trycker Enter hamnar i Buildern, inte i filmens början",
+   "check": "{\"kind\":\"unit\",\"ref\":\"test/startsida.mjs + riktigt klick\",\"final\":false}",
+   "status": "checked",
+   "roadmap": "",
+   "evidence": [
+    {
+     "session": "omg1-lena",
+     "note": "steg 34 och 59: Enter startade om filmen två gånger, ~6 min förlorade"
+    },
+    {
+     "session": "lins-kod",
+     "note": "index.html:634 $(\"igen\").focus()"
+    }
+   ],
+   "history": [
+    {
+     "date": "2026-11-12",
+     "status": "open",
+     "note": "first seen"
+    },
+    {
+     "date": "2026-11-12",
+     "status": "open",
+     "note": "check={\"kind\":\"unit\",\"ref\":\"test/startsida.mjs + riktigt klick\",\"final\":false}"
+    },
+    {
+     "date": "2026-11-12",
+     "status": "built",
+     "note": "status=built build=bdc98b7"
+    },
+    {
+     "date": "2026-11-12",
+     "status": "checked",
+     "note": "riktigt klick 2026-11-12 (klick-omg1): höll; väntar på blind expert"
+    },
+    {
+     "date": "2026-11-12",
+     "status": "checked",
+     "note": "slutprov omg1: ej prövat — användaren nådde inte situationen (domaren lutade åt ej uppfyllt men angav ej prövat som lika försvarbart)"
+    }
+   ],
+   "source": "expert",
+   "build": "bdc98b7"
+  },
+  {
+   "id": "U2",
+   "title": "'Hoppa till samtalet' hoppar till Ring upp, inte till frågan",
+   "cause": "starta(true) hoppar över rummet men spelar uppringning, mikrofonskämt och sex repliker",
+   "moment": "startsidan",
+   "stage": "opening",
+   "aspect": "hanterbart",
+   "tier": 2,
+   "type": "FIX",
+   "effort": "S",
+   "hypothesis": "om hoppa landar vid måndagsfrågan med svarsrutan framme sparar den otåliga kunden 2–3 minuter",
+   "criterion": "en kund som trycker 'Hoppa till samtalet' ser måndagsfrågan med svarsruta inom 2 steg",
+   "check": {
+    "kind": "player",
+    "ref": ""
+   },
+   "status": "checked",
+   "roadmap": "",
+   "evidence": [
+    {
+     "session": "omg1-lena",
+     "note": "steg 15, 38, 61: hoppa tog till Ring upp, tre filmväntor kvar"
+    }
+   ],
+   "history": [
+    {
+     "date": "2026-11-12",
+     "status": "open",
+     "note": "first seen"
+    },
+    {
+     "date": "2026-11-12",
+     "status": "built",
+     "note": "status=built build=bdc98b7"
+    },
+    {
+     "date": "2026-11-12",
+     "status": "checked",
+     "note": "riktigt klick 2026-11-12 (klick-omg1): höll; väntar på blind expert"
+    },
+    {
+     "date": "2026-11-12",
+     "status": "checked",
+     "note": "slutprov omg1: ej prövat — användaren nådde inte situationen (domaren lutade åt ej uppfyllt men angav ej prövat som lika försvarbart)"
+    }
+   ],
+   "source": "expert",
+   "build": "bdc98b7"
+  },
+  {
+   "id": "U3",
+   "title": "Startsidan säger inte vad tjänsten gör",
+   "cause": "öppningsscenen börjar med 'Någon ska komma på intervju i dag' utan en mening om nyttan",
+   "moment": "startsidan, första 30 s",
+   "stage": "opening",
+   "aspect": "begripligt",
+   "tier": 2,
+   "type": "FIX",
+   "effort": "S",
+   "hypothesis": "en rad om vad teamet gör (offerter, kundmejl, påminnelser) gör att kunden förstår varför hon väljer en kandidat",
+   "criterion": "vid 30 s-märket kan en ny kund säga vad tjänsten gör för hennes firma",
+   "check": {
+    "kind": "player",
+    "ref": ""
+   },
+   "status": "confirmed",
+   "roadmap": "",
+   "evidence": [
+    {
+     "session": "omg1-lena",
+     "note": "30 s tvekar: 'jag förstår inte vad det här är'"
+    }
+   ],
+   "history": [
+    {
+     "date": "2026-11-12",
+     "status": "open",
+     "note": "first seen"
+    },
+    {
+     "date": "2026-11-12",
+     "status": "built",
+     "note": "status=built build=bdc98b7"
+    },
+    {
+     "date": "2026-11-12",
+     "status": "checked",
+     "note": "riktigt klick 2026-11-12 (klick-omg1): höll; väntar på blind expert"
+    },
+    {
+     "date": "2026-11-12",
+     "status": "confirmed",
+     "note": "omg1-lena-slut 30 s: 'det står gratis att bygga och offerter och kundmejl, alltså mitt ärende' (domare: uppfyllt, måttligt säker)"
+    }
+   ],
+   "source": "expert",
+   "build": "bdc98b7"
+  },
+  {
+   "id": "U4",
+   "title": "Intervjun i Buildern säger 'sista' före sista frågan och visar inte hur många som återstår",
+   "cause": "intervjuprompten låter modellen säga 'en sista sak' fritt; räknaren syns sällan",
+   "moment": "Builderns intervju, fråga 8–10",
+   "stage": "opening",
+   "aspect": "begripligt",
+   "tier": 2,
+   "type": "FIX",
+   "effort": "S",
+   "hypothesis": "om räknaren alltid syns och 'sista' bara sägs på sista frågan litar kunden på att det tar slut",
+   "criterion": "kunden vet vid varje fråga hur många som är kvar, och ingen fråga efter en 'sista' följer",
+   "check": {
+    "kind": "player",
+    "ref": ""
+   },
+   "status": "checked",
+   "roadmap": "",
+   "evidence": [
+    {
+     "session": "omg1-lena",
+     "note": "steg 130, 137: 'en sista sak' följdes av fler frågor; 'fråga 3 av 12' syntes sällan"
+    }
+   ],
+   "history": [
+    {
+     "date": "2026-11-12",
+     "status": "open",
+     "note": "first seen"
+    },
+    {
+     "date": "2026-11-12",
+     "status": "built",
+     "note": "status=built build=bdc98b7"
+    },
+    {
+     "date": "2026-11-12",
+     "status": "checked",
+     "note": "riktigt klick 2026-11-12 (klick-omg1): höll; väntar på blind expert"
+    },
+    {
+     "date": "2026-11-12",
+     "status": "checked",
+     "note": "slutprov omg1: ej prövat — användaren nådde inte situationen (domaren lutade åt ej uppfyllt men angav ej prövat som lika försvarbart)"
+    }
+   ],
+   "source": "expert",
+   "build": "bdc98b7"
+  },
+  {
+   "id": "U5",
+   "title": "Intervjun raderas innan första byggsteget sparats",
+   "cause": "glömMöte() körs när bygget startar; saveRun() först efter researchsteget (builder.js:1200, 1272)",
+   "moment": "Builder, bygget startar",
+   "stage": "opening",
+   "aspect": "fungerar",
+   "tier": 1,
+   "type": "FIX",
+   "effort": "S",
+   "hypothesis": "om intervjun ligger kvar tills teamet är klart förlorar ingen kund sina svar på ett nätfel eller F5",
+   "criterion": "efter F5 mitt i researchsteget finns intervjusvaren kvar",
+   "check": {
+    "kind": "unit",
+    "ref": "test/intake.mjs",
+    "final": true
+   },
+   "status": "confirmed",
+   "roadmap": "",
+   "evidence": [
+    {
+     "session": "lins-kärnflöde",
+     "note": "läst i koden, verifierat av orkestreraren"
+    }
+   ],
+   "history": [
+    {
+     "date": "2026-11-12",
+     "status": "open",
+     "note": "first seen"
+    },
+    {
+     "date": "2026-11-12",
+     "status": "built",
+     "note": "status=built build=bdc98b7"
+    },
+    {
+     "date": "2026-11-12",
+     "status": "confirmed",
+     "note": "npm test 575 gröna; nytt test fäller gamla koden (byggarens mutationsprov)"
+    }
+   ],
+   "source": "lens",
+   "build": "bdc98b7"
+  },
+  {
+   "id": "U6",
+   "title": "Formulärets text försvinner vid fel, avbryt och F5",
+   "cause": "state.formDraft finns bara i minnet (builder.js:189–207)",
+   "moment": "Builder, formuläret",
+   "stage": "opening",
+   "aspect": "fungerar",
+   "tier": 2,
+   "type": "FIX",
+   "effort": "M",
+   "hypothesis": "utkast i localStorage gör att ett nätfel inte kostar kunden hennes beskrivning",
+   "criterion": "text i formuläret finns kvar efter omladdning",
+   "check": {
+    "kind": "unit",
+    "ref": "test/intake.mjs",
+    "final": true
+   },
+   "status": "confirmed",
+   "roadmap": "",
+   "evidence": [
+    {
+     "session": "lins-kärnflöde",
+     "note": "läst i koden"
+    }
+   ],
+   "history": [
+    {
+     "date": "2026-11-12",
+     "status": "open",
+     "note": "first seen"
+    },
+    {
+     "date": "2026-11-12",
+     "status": "built",
+     "note": "status=built build=bdc98b7"
+    },
+    {
+     "date": "2026-11-12",
+     "status": "confirmed",
+     "note": "npm test 575 gröna; nytt test fäller gamla koden (byggarens mutationsprov)"
+    }
+   ],
+   "source": "lens",
+   "build": "bdc98b7"
+  },
+  {
+   "id": "U7",
+   "title": "'Bygg ett till' kastar ett obetalt team utan att fråga",
+   "cause": "again.onclick = renderForm() utan bekräftelse (builder.js:2257)",
+   "moment": "Builder, resultatet",
+   "stage": "hour",
+   "aspect": "hanterbart",
+   "tier": 2,
+   "type": "FIX",
+   "effort": "S",
+   "hypothesis": "en bekräftelse förhindrar att ett felklick kostar en kvarts arbete",
+   "criterion": "ett klick på 'Bygg ett till' utan köp ger en fråga först",
+   "check": {
+    "kind": "unit",
+    "ref": "test/intake.mjs",
+    "final": true
+   },
+   "status": "confirmed",
+   "roadmap": "",
+   "evidence": [
+    {
+     "session": "lins-kärnflöde",
+     "note": "verifierat i koden"
+    }
+   ],
+   "history": [
+    {
+     "date": "2026-11-12",
+     "status": "open",
+     "note": "first seen"
+    },
+    {
+     "date": "2026-11-12",
+     "status": "built",
+     "note": "status=built build=bdc98b7"
+    },
+    {
+     "date": "2026-11-12",
+     "status": "confirmed",
+     "note": "npm test 575 gröna; nytt test fäller gamla koden (byggarens mutationsprov)"
+    }
+   ],
+   "source": "lens",
+   "build": "bdc98b7"
+  },
+  {
+   "id": "U8",
+   "title": "'Utöka teamet' och minnesförslagen skickar ogranskade plattformsrader omärkta",
+   "cause": "SK3 täckte systemFor och exporten men inte GROW (app.js:4276) och MEM_SUGGEST (app.js:3578)",
+   "moment": "portalen, Utöka teamet",
+   "stage": "hour",
+   "aspect": "fungerar",
+   "tier": 1,
+   "type": "FIX",
+   "effort": "S",
+   "hypothesis": "en rad Claude sparat ur ett mejl kan annars hamna i en ny agents grundinstruktion",
+   "criterion": "GROW och MEM_SUGGEST får bara kundens egna rader, eller dem märkta",
+   "check": {
+    "kind": "unit",
+    "ref": "test/firmasynk.mjs",
+    "final": true
+   },
+   "status": "confirmed",
+   "roadmap": "",
+   "evidence": [
+    {
+     "session": "lins-kod",
+     "note": "verifierat i koden"
+    }
+   ],
+   "history": [
+    {
+     "date": "2026-11-12",
+     "status": "open",
+     "note": "first seen"
+    },
+    {
+     "date": "2026-11-12",
+     "status": "built",
+     "note": "status=built build=bdc98b7"
+    },
+    {
+     "date": "2026-11-12",
+     "status": "confirmed",
+     "note": "npm test 575 gröna; nytt test fäller gamla koden (byggarens mutationsprov)"
+    }
+   ],
+   "source": "lens",
+   "build": "bdc98b7"
+  },
+  {
+   "id": "U9",
+   "title": "Att slå av/på ett underlag gör plattformens underlag 'granskat'",
+   "cause": "sparaPost sätter updated_by=portal även när bara on ändras (_firma.js)",
+   "moment": "portalen, Minne & underlag",
+   "stage": "hour",
+   "aspect": "fungerar",
+   "tier": 2,
+   "type": "FIX",
+   "effort": "S",
+   "hypothesis": "källan ska bara försvinna när kunden ändrat innehållet eller uttryckligen godkänt",
+   "criterion": "ett underlag Claude sparat behåller sin källa när kunden slår av och på det",
+   "check": {
+    "kind": "unit",
+    "ref": "test/koppling.mjs",
+    "final": true
+   },
+   "status": "confirmed",
+   "roadmap": "",
+   "evidence": [
+    {
+     "session": "lins-kod",
+     "note": "läst i koden"
+    }
+   ],
+   "history": [
+    {
+     "date": "2026-11-12",
+     "status": "open",
+     "note": "first seen"
+    },
+    {
+     "date": "2026-11-12",
+     "status": "built",
+     "note": "status=built build=bdc98b7"
+    },
+    {
+     "date": "2026-11-12",
+     "status": "confirmed",
+     "note": "npm test 575 gröna; nytt test fäller gamla koden (byggarens mutationsprov)"
+    }
+   ],
+   "source": "lens",
+   "build": "bdc98b7"
+  },
+  {
+   "id": "U10",
+   "title": "/mcp godtar delsträng som företag vid skrivning",
+   "cause": "välj() faller tillbaka på includes() även när skriv=true (mcp.js:396)",
+   "moment": "kopplingen, flera team",
+   "stage": "long",
+   "aspect": "fungerar",
+   "tier": 2,
+   "type": "FIX",
+   "effort": "S",
+   "hypothesis": "exakt namn vid skrivning hindrar att minne hamnar i fel företag",
+   "criterion": "spara_minne med foretag 'Bygg' och två Bygg-team avvisas med valen listade",
+   "check": {
+    "kind": "unit",
+    "ref": "test/koppling.mjs",
+    "final": true
+   },
+   "status": "confirmed",
+   "roadmap": "",
+   "evidence": [
+    {
+     "session": "lins-kod",
+     "note": "verifierat i koden"
+    }
+   ],
+   "history": [
+    {
+     "date": "2026-11-12",
+     "status": "open",
+     "note": "first seen"
+    },
+    {
+     "date": "2026-11-12",
+     "status": "built",
+     "note": "status=built build=bdc98b7"
+    },
+    {
+     "date": "2026-11-12",
+     "status": "confirmed",
+     "note": "npm test 575 gröna; nytt test fäller gamla koden (byggarens mutationsprov)"
+    }
+   ],
+   "source": "lens",
+   "build": "bdc98b7"
+  },
+  {
+   "id": "U11",
+   "title": "Klienten väntar 7 s på spärrar som inte går över",
+   "cause": "atb-claude.js:143 provar om varje 429/5xx, även quota/build_quota/web_paused/service_down",
+   "moment": "portal och Builder vid tak",
+   "stage": "hour",
+   "aspect": "svarar",
+   "tier": 2,
+   "type": "FIX",
+   "effort": "S",
+   "hypothesis": "att läsa felkoden först ger kunden beskedet direkt",
+   "criterion": "ett 429 med code quota ger beskedet utan omförsök",
+   "check": {
+    "kind": "unit",
+    "ref": "test/klient.mjs",
+    "final": true
+   },
+   "status": "confirmed",
+   "roadmap": "",
+   "evidence": [
+    {
+     "session": "lins-blindfläck",
+     "note": "verifierat i koden"
+    }
+   ],
+   "history": [
+    {
+     "date": "2026-11-12",
+     "status": "open",
+     "note": "first seen"
+    },
+    {
+     "date": "2026-11-12",
+     "status": "built",
+     "note": "status=built build=bdc98b7"
+    },
+    {
+     "date": "2026-11-12",
+     "status": "confirmed",
+     "note": "npm test 575 gröna; nytt test fäller gamla koden (byggarens mutationsprov)"
+    }
+   ],
+   "source": "lens",
+   "build": "bdc98b7"
+  },
+  {
+   "id": "U12",
+   "title": "iOS zoomar in när kunden trycker i en textruta",
+   "cause": "fält under 16 px (portal.css:79, 329, 734; builder.css:32)",
+   "moment": "mobil, första chatten",
+   "stage": "opening",
+   "aspect": "hanterbart",
+   "tier": 2,
+   "type": "FIX",
+   "effort": "S",
+   "hypothesis": "16 px på pekskärm stoppar zoomhoppet",
+   "criterion": "alla input/textarea/select har minst 16 px på enheter utan hover",
+   "check": {
+    "kind": "unit",
+    "ref": "test/csp.mjs",
+    "final": true
+   },
+   "status": "confirmed",
+   "roadmap": "",
+   "evidence": [
+    {
+     "session": "lins-blindfläck",
+     "note": "verifierat i CSS"
+    }
+   ],
+   "history": [
+    {
+     "date": "2026-11-12",
+     "status": "open",
+     "note": "first seen"
+    },
+    {
+     "date": "2026-11-12",
+     "status": "built",
+     "note": "status=built build=bdc98b7"
+    },
+    {
+     "date": "2026-11-12",
+     "status": "confirmed",
+     "note": "npm test 575 gröna; nytt test fäller gamla koden (byggarens mutationsprov)"
+    }
+   ],
+   "source": "lens",
+   "build": "bdc98b7"
+  },
+  {
+   "id": "U13",
+   "title": "Ändringar före första lyckade synk tappas tyst",
+   "cause": "firmaSkickaMinne/firmaSpegla returnerar när !firmaSynkad utan att köa (app.js:321, 360)",
+   "moment": "portalen, dåligt nät",
+   "stage": "hour",
+   "aspect": "fungerar",
+   "tier": 2,
+   "type": "FIX",
+   "effort": "M",
+   "hypothesis": "att köa även före synk gör att inget kunden skrivit försvinner",
+   "criterion": "minne skrivet medan första hämtningen fallerar finns kvar och når servern vid nästa laddning",
+   "check": {
+    "kind": "unit",
+    "ref": "test/firmasynk.mjs",
+    "final": true
+   },
+   "status": "confirmed",
+   "roadmap": "",
+   "evidence": [
+    {
+     "session": "lins-kod",
+     "note": "läst i koden"
+    }
+   ],
+   "history": [
+    {
+     "date": "2026-11-12",
+     "status": "open",
+     "note": "first seen"
+    },
+    {
+     "date": "2026-11-12",
+     "status": "built",
+     "note": "status=built build=bdc98b7"
+    },
+    {
+     "date": "2026-11-12",
+     "status": "confirmed",
+     "note": "npm test 575 gröna; nytt test fäller gamla koden (byggarens mutationsprov)"
+    }
+   ],
+   "source": "lens",
+   "build": "bdc98b7"
+  },
+  {
+   "id": "U14",
+   "title": "Spara en godkänd leverans som mall och utgå från den nästa gång",
+   "cause": "",
+   "moment": "portalen, jobb",
+   "stage": "long",
+   "aspect": "drar",
+   "tier": 3,
+   "type": "BET",
+   "effort": "M",
+   "hypothesis": "en målare som i dag utgår från förra offerten i Word får samma sak i teamet, och den växer för varje vecka",
+   "criterion": "kunden kan skapa ett nytt jobb som utgår från en sparad mall utan att klistra in något",
+   "check": {
+    "kind": "unit",
+    "ref": "test/firmasynk.mjs"
+   },
+   "status": "refuted",
+   "roadmap": "",
+   "evidence": [
+    {
+     "session": "lins-framåt",
+     "note": "förslag 1"
+    },
+    {
+     "session": "omg1-lena",
+     "note": "'Word med förra offerten som mall'"
+    }
+   ],
+   "history": [
+    {
+     "date": "2026-11-12",
+     "status": "open",
+     "note": "first seen"
+    },
+    {
+     "date": "2026-11-12",
+     "status": "built",
+     "note": "status=built build=bdc98b7"
+    },
+    {
+     "date": "2026-11-12",
+     "status": "checked",
+     "note": "riktigt klick 2026-11-12 (klick-omg1): höll; väntar på blind expert"
+    },
+    {
+     "date": "2026-11-12",
+     "status": "refuted",
+     "note": "omg1-johan-slut steg 7–16: knappen bara i Våningens jobbkort; arkivlistan och Nytt jobb erbjuder ingen mall (domare: ej uppfyllt)"
+    }
+   ],
+   "source": "lens+expert",
+   "build": "bdc98b7"
+  },
+  {
+   "id": "U15",
+   "title": "Agenterna vet inte dagens datum eller närmaste myndighetsdatum",
+   "cause": "systemFor() bakar in fakta men inget datum (portal/app.js:~975)",
+   "moment": "portalen, momsfråga en förfallodag",
+   "stage": "hour",
+   "aspect": "begripligt",
+   "tier": 2,
+   "type": "FIX",
+   "effort": "S",
+   "hypothesis": "med dagens datum och närmaste datum ur deadlines-se.js kan en agent säga 'Q3-momsen ska in i dag' i stället för att räkna fel kvartal",
+   "criterion": "en fråga om när momsen ska in, ställd på en förfallodag, får ett svar som nämner att den ska in i dag",
+   "check": {
+    "kind": "unit",
+    "ref": "test/portal.mjs"
+   },
+   "status": "confirmed",
+   "roadmap": "",
+   "evidence": [
+    {
+     "session": "omg1-maria",
+     "note": "steg 8: 'augusti-kvartalet', nämnde aldrig att Q3 skulle in 12 nov — samma dag"
+    }
+   ],
+   "history": [
+    {
+     "date": "2026-11-12",
+     "status": "open",
+     "note": "first seen"
+    },
+    {
+     "date": "2026-11-12",
+     "status": "built",
+     "note": "status=built build=bdc98b7"
+    },
+    {
+     "date": "2026-11-12",
+     "status": "checked",
+     "note": "riktigt klick 2026-11-12 (klick-omg1): höll; väntar på blind expert"
+    },
+    {
+     "date": "2026-11-12",
+     "status": "confirmed",
+     "note": "omg1-johan-slut steg 39: 'I dag, torsdag 12 november 2026 — sista dagen … kvartal 3' (domare: uppfyllt, säker)"
+    }
+   ],
+   "source": "expert",
+   "build": "bdc98b7"
+  },
+  {
+   "id": "U16",
+   "title": "'Kontrollera mot källan' är osynlig fast agenten ber kunden trycka på den",
+   "cause": ".msg-actions har opacity 0 utom vid hover på dator (portal/portal.css:777–781)",
+   "moment": "portalen, efter ett svar",
+   "stage": "hour",
+   "aspect": "begripligt",
+   "tier": 2,
+   "type": "FIX",
+   "effort": "S",
+   "hypothesis": "synliga knappar under svaret gör att kunden kontrollerar osäkra regelsvar",
+   "criterion": "en kund som läser 'tryck på Kontrollera mot källan under svaret' hittar knappen utan att hålla musen över svaret",
+   "check": {
+    "kind": "unit",
+    "ref": "test/mobil.mjs eller test/portal.mjs"
+   },
+   "status": "checked",
+   "roadmap": "",
+   "evidence": [
+    {
+     "session": "omg1-maria",
+     "note": "'Knappen … hittade jag inte under något svar i bild'; ram 015 visar svaret utan knapprad"
+    }
+   ],
+   "history": [
+    {
+     "date": "2026-11-12",
+     "status": "open",
+     "note": "first seen"
+    },
+    {
+     "date": "2026-11-12",
+     "status": "built",
+     "note": "status=built build=bdc98b7"
+    },
+    {
+     "date": "2026-11-12",
+     "status": "checked",
+     "note": "riktigt klick 2026-11-12 (klick-omg1): höll; väntar på blind expert"
+    },
+    {
+     "date": "2026-11-12",
+     "status": "checked",
+     "note": "slutprov omg1: ej prövat — användaren nådde inte situationen (domaren lutade åt ej uppfyllt men angav ej prövat som lika försvarbart)"
+    }
+   ],
+   "source": "expert",
+   "build": "bdc98b7"
+  },
+  {
+   "id": "U17",
+   "title": "Presentkortsmomsen besvaras fel: 'vid inlösen' oavsett slag av voucher",
+   "cause": "faktabasen saknar vouchers; modellen hittade på i stället för att säga att den är osäker",
+   "moment": "portalen, momsfråga",
+   "stage": "hour",
+   "aspect": "fungerar",
+   "tier": 1,
+   "type": "FIX",
+   "effort": "S",
+   "hypothesis": "en kontrollerad regel om enfunktions-/flerfunktionsvoucher i faktabasen ger rätt svar",
+   "criterion": "en redovisningskonsult som frågar om presentkort i en frisörsalong får svaret att momsen redovisas vid försäljningen när momssatsen är känd",
+   "check": {
+    "kind": "player",
+    "ref": ""
+   },
+   "status": "open",
+   "roadmap": "FRÅGA FÖRST — skatteråd, Mikaels beslut",
+   "evidence": [
+    {
+     "session": "omg1-maria",
+     "note": "steg 15, citat i rapporten"
+    },
+    {
+     "session": "orkestreraren",
+     "note": "kontrollerat: Skatteverket, Momssatser och undantag, avsnittet Voucher: 'Du ska därför ta ut moms vid försäljningen' (enfunktion); 'Du ska inte ta ut någon moms när du säljer en flerfunktionsvoucher'"
+    }
+   ],
+   "history": [
+    {
+     "date": "2026-11-12",
+     "status": "open",
+     "note": "first seen"
+    }
+   ],
+   "source": "expert"
+  },
+  {
+   "id": "U18",
+   "title": "Varje inloggad kund får ett konsolfel när portalen laddar",
+   "cause": "loadScript(teams/<slug>.js) prövas först även för moln-team (portal/app.js:1295), svarar HTML",
+   "moment": "portalen, laddning",
+   "stage": "opening",
+   "aspect": "fungerar",
+   "tier": 3,
+   "type": "FIX",
+   "effort": "S",
+   "hypothesis": "att bara pröva skriptet för showcase-slugs tar bort felet och ett onödigt anrop",
+   "criterion": "en inloggad kund får inget konsolfel vid laddning",
+   "check": {
+    "kind": "unit",
+    "ref": "test/portal.mjs",
+    "final": true
+   },
+   "status": "confirmed",
+   "roadmap": "",
+   "evidence": [
+    {
+     "session": "omg1-maria",
+     "note": "steg 1: Refused to execute script … MIME type text/html"
+    }
+   ],
+   "history": [
+    {
+     "date": "2026-11-12",
+     "status": "open",
+     "note": "first seen"
+    },
+    {
+     "date": "2026-11-12",
+     "status": "built",
+     "note": "status=built build=bdc98b7"
+    },
+    {
+     "date": "2026-11-12",
+     "status": "confirmed",
+     "note": "npm test 575 gröna; nytt test fäller gamla koden (byggarens mutationsprov)"
+    }
+   ],
+   "source": "expert",
+   "build": "bdc98b7"
+  },
+  {
+   "id": "U19",
+   "title": "Teamet ser inte sina egna levererade och godkända jobb",
+   "cause": "teamLogg() läser bara chatthistoriken (portal/app.js:~1142), inte jobbens leveranser",
+   "moment": "portalen, 'som förra gången'",
+   "stage": "long",
+   "aspect": "fungerar",
+   "tier": 1,
+   "type": "FIX",
+   "effort": "M",
+   "hypothesis": "med de senaste godkända leveranserna (rubrik, kund, datum) i instruktionen kan kunden be om 'en offert som den till Korn'",
+   "criterion": "en kund som ber agenten om något 'som förra offerten' får ett svar som utgår från den godkända leveransen",
+   "check": {
+    "kind": "player",
+    "ref": ""
+   },
+   "status": "open",
+   "roadmap": "",
+   "evidence": [
+    {
+     "session": "omg1-johan-slut",
+     "note": "steg 31–33: 'Jag har ingen offert till Bageriet Korn' fast den låg godkänd i arkivet"
+    },
+    {
+     "session": "orkestreraren",
+     "note": "teamLogg läser state.history, inga jobb"
+    }
+   ],
+   "history": [
+    {
+     "date": "2026-11-12",
+     "status": "open",
+     "note": "first seen"
+    }
+   ],
+   "source": "expert"
+  },
+  {
+   "id": "U20",
+   "title": "Byggets fackspråk strömmas till kunden ('Körningsmetadata', 'Hypoteser: 0')",
+   "cause": "researchstegets rådokument (prompts/shared/research.md:282) visas medan det strömmar",
+   "moment": "Builder, byggstegen",
+   "stage": "opening",
+   "aspect": "begripligt",
+   "tier": 2,
+   "type": "FIX",
+   "effort": "S",
+   "hypothesis": "en enkel rad per steg i stället för rådokumentet gör väntan begriplig",
+   "criterion": "en icke-teknisk kund beskriver byggsteget utan att nämna obegripliga ord",
+   "check": {
+    "kind": "player",
+    "ref": ""
+   },
+   "status": "open",
+   "roadmap": "",
+   "evidence": [
+    {
+     "session": "omg1-lena-slut",
+     "note": "steg 81–88: 'texten som rullade förbi var på ett språk jag inte talar'"
+    }
+   ],
+   "history": [
+    {
+     "date": "2026-11-12",
+     "status": "open",
+     "note": "first seen"
+    }
+   ],
+   "source": "expert"
+  },
+  {
+   "id": "U21",
+   "title": "Måndagsfrågan skärs av videorutans kant och samtalsknapparna",
+   "cause": "repliken placeras över rutans nederkant i samtalsläget",
+   "moment": "startsidan, samtalet",
+   "stage": "opening",
+   "aspect": "ser ut",
+   "tier": 3,
+   "type": "FIX",
+   "effort": "S",
+   "hypothesis": "repliken under videorutan, inte över kanten, gör frågan läsbar",
+   "criterion": "måndagsfrågan står hel och läsbar vid 1280×720",
+   "check": {
+    "kind": "probe",
+    "ref": "skärmbild"
+   },
+   "status": "open",
+   "roadmap": "",
+   "evidence": [
+    {
+     "session": "omg1-lena-slut",
+     "note": "ram 043: texten korsar rutans kant bakom Mikrofon på / Kamera på / Lägg på"
+    }
+   ],
+   "history": [
+    {
+     "date": "2026-11-12",
+     "status": "open",
+     "note": "first seen"
+    }
+   ],
+   "source": "expert"
+  },
+  {
+   "id": "U22",
+   "title": "'Gör det här i chatten' fyller i men skickar inte",
+   "cause": "knappen lägger texten i composern utan att skicka (portal/app.js:5773)",
+   "moment": "portalen, jobb",
+   "stage": "hour",
+   "aspect": "svarar",
+   "tier": 3,
+   "type": "FIX",
+   "effort": "S",
+   "hypothesis": "att skicka direkt motsvarar knappens ord",
+   "criterion": "ett klick på 'Gör det här i chatten' ger ett svar utan ett andra klick",
+   "check": {
+    "kind": "unit",
+    "ref": "test/portal.mjs",
+    "final": true
+   },
+   "status": "open",
+   "roadmap": "",
+   "evidence": [
+    {
+     "session": "omg1-johan-slut",
+     "note": "steg 28: fyllde i, fick klicka pil upp"
+    }
+   ],
+   "history": [
+    {
+     "date": "2026-11-12",
+     "status": "open",
+     "note": "first seen"
+    }
+   ],
+   "source": "expert"
+  }
+ ]
+}
