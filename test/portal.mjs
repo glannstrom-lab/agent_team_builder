@@ -771,6 +771,22 @@ test("KA15: de verifierade reglerna står i agentens instruktion, med källa och
   assert.match(sys, /En rättelse som stämmer med listan avvisar du aldrig/);
 });
 
+// ── U18: inget skriptförsök för ett moln-team ──────────────────────────────
+test("U18: teams/<slug>.js prövas bara för inbyggda team, och varje teamfil står i registret", () => {
+  const i = KÄLLA.indexOf("async function loadTeam(slug)");
+  const kropp = KÄLLA.slice(i, KÄLLA.indexOf("\n}\n", i));
+  const vakt = kropp.indexOf("if (!isShowcaseSlug(slug))");
+  const skript = kropp.indexOf("await loadScript(`teams/${slug}.js`)");
+  assert.ok(skript > 0, "hittade inte skriptladdningen");
+  assert.ok(vakt > 0 && vakt < skript, "skriptet prövas för alla slugs — moln-team ger ett MIME-fel i konsolen");
+  // Vakten gör registret till grinden: en fil som saknas där går inte att öppna.
+  const w = {}; new Function("window", readFileSync("portal/teams/index.js", "utf8"))(w);
+  const reg = new Set(w.TEAMS.map((t) => t.slug));
+  for (const f of readdirSync("portal/teams").filter((f) => f.endsWith(".js") && f !== "index.js")) {
+    assert.ok(reg.has(f.replace(/\.js$/, "")), `portal/teams/${f} saknas i portal/teams/index.js`);
+  }
+});
+
 // ── U16: knapparna under ett svar syns utan hovring ────────────────────────
 test("U16: .msg-actions är aldrig osynlig utan hovring (dämpad går bra)", () => {
   const css = readFileSync("portal/portal.css", "utf8");

@@ -1369,6 +1369,12 @@ async function loadTeam(slug) {
     try { localStorage.setItem(ownerKey, owner); } catch (_) { /* full storage */ }
   } else {
     try {
+      // U18 (2026-11-12): skriptet prövas bara för de inbyggda teamen i
+      // registret (portal/teams/index.js). Förut prövades det för varje slug,
+      // och för ett moln-team svarade servern med HTML — konsolfelet "Refused
+      // to execute script … MIME type text/html" vid varje inloggad laddning.
+      // test/portal.mjs fäller bygget om en fil i portal/teams/ saknas i registret.
+      if (!isShowcaseSlug(slug)) throw new Error("moln-team");
       await loadScript(`teams/${slug}.js`);
     } catch (_) {
       // Inte ett inbyggt team — försök hämta ett moln-sparat team (M2a, capability-URL).
