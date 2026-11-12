@@ -910,3 +910,8 @@ a.link-btn { text-decoration: none; }
 .jb-koppla { margin-top: 16px; border-top: 1px solid var(--border); padding-top: 10px; }
 .jb-adress { display: flex; gap: 6px; align-items: center; margin-top: 8px; }
 .jb-adress .ovl-input { margin: 0; font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 13px; }
+
+/* U12: iOS Safari zoomar in på fält under 16 px. Bara på pekskärm — på dator är texten orörd. */
+@media (hover: none) and (pointer: coarse) {
+  input:not([type="checkbox"]):not([type="radio"]), textarea, select { font-size: 16px !important; }
+}

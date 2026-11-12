@@ -352,3 +352,8 @@ select.fin { cursor: pointer; }
 .mote-rum [hidden] { display: none !important; }
 .mote-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 @media (max-width: 560px) { .mote-kamera { aspect-ratio: 4 / 3; } .mote-bild { max-width: 80%; } .mote-replik { max-width: 100%; } }
+
+/* U12: iOS Safari zoomar in på fält under 16 px. Bara på pekskärm — på dator är texten orörd. */
+@media (hover: none) and (pointer: coarse) {
+  input:not([type="checkbox"]):not([type="radio"]), textarea, select { font-size: 16px !important; }
+}
