@@ -87,43 +87,107 @@
 -->
 
 <style>
-  /* Sidspecifikt: juridisk brödtext, utkastruta, beslutmarkering */
-  .legal { max-width: 780px; }
-  .legal h3 { font-size: clamp(19px, 2.2vw, 23px); margin: 44px 0 10px; }
-  .legal h4 { font-family: var(--font-display); font-size: 16px; font-weight: 600; letter-spacing: -0.01em; margin: 22px 0 6px; }
-  .legal p, .legal li { font-size: 16px; line-height: 1.7; }
+  /* ===== HUSET-BAS: delas av om.html, villkor.html och integritet.html =====
+     Samma tokens och typskala som den nya startsidan. Ligger efter
+     site/showcase.css och skriver över det som gjorde sidorna röriga:
+     mono-versaler, tre typsnitt, tolv storlekar, dolda reveal-block. Ändras
+     här måste de tre sidorna följas åt. */
+  :root {
+    --bg: #FAF9F7; --surface: #FFFFFF; --surface-2: #F4F1EA; --surface-3: #F4F1EA;
+    --border: #E8E2D6; --text: #1E1913; --text-dim: #6A6152;
+    --accent: #C8862B; --accent-2: #8A5C14;
+    --t-liten: 14.5px; --t-brod: 17px; --t-ingress: 19px; --t-h3: 22px;
+    --t-h2: clamp(30px, 3.6vw, 40px); --t-h1: clamp(38px, 5vw, 58px);
+    --luft: clamp(64px, 8vw, 104px);
+  }
+  html, body { background: var(--bg); }
+  body { font-size: var(--t-brod); line-height: 1.6; }
+  h1, h2, h3, h4 { font-weight: 700; letter-spacing: -0.025em; line-height: 1.12; text-wrap: balance; }
+  a { text-decoration-color: var(--border); text-underline-offset: 3px; }
+  .wrap { max-width: 1120px; padding: 0 28px; }
+  .narrow { max-width: 760px; }
+  section { padding: var(--luft) 0; }
+  section + section { border-top: 1px solid var(--border); }
+  .top + section { padding-top: 40px; }
+  section[id] { scroll-margin-top: 24px; }
+  .dot { background: var(--accent); box-shadow: none; animation: none; }
+
+  /* toppfält, samma som startsidan */
+  .top { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px 24px; max-width: 1120px; margin: 0 auto; padding: 26px 28px; }
+  .top .logo { font-family: var(--font-display); font-weight: 700; font-size: 18px; letter-spacing: -0.02em; display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text); }
+  .top .logo i { width: 22px; height: 22px; border-radius: 6px; background: var(--text); display: inline-block; position: relative; flex-shrink: 0; }
+  .top .logo i::after { content: ""; position: absolute; left: 5px; top: 5px; width: 6px; height: 6px; border-radius: 2px; background: var(--accent); }
+  .top nav { display: flex; gap: 26px; }
+  .top nav a { color: var(--text-dim); font-size: 15px; text-decoration: none; }
+  .top nav a:hover { color: var(--text); }
+  @media (max-width: 520px) { .top { padding: 20px 20px 8px; gap: 8px 12px; flex-wrap: nowrap; } .top .logo { font-size: 16px; white-space: nowrap; } .top nav { gap: 14px; } .top nav a { font-size: 14px; white-space: nowrap; } }
+
+  /* en överrad per avsnitt */
+  .eyebrow, .badge { font-family: var(--font-body); font-size: 14.5px; font-weight: 700; letter-spacing: 0.02em; text-transform: none; color: var(--accent-2); margin: 0 0 14px; background: none; border: 0; padding: 0; border-radius: 0; display: block; width: auto; opacity: 1; animation: none; }
+  .eyebrow .dot, .badge .dot { display: none; }
+  .eyebrow.center { justify-content: center; text-align: center; }
+  h2.section-title { font-size: var(--t-h2); margin-bottom: 16px; }
+  .section-lead { color: var(--text-dim); font-size: var(--t-ingress); line-height: 1.55; max-width: 640px; }
+  .section-lead + .section-lead { margin-top: 14px; }
+
+  /* mjuk in-tonning från synligt läge, aldrig dolt */
+  .js .reveal { opacity: 1; transform: none; }
+  .reveal.in { animation: tona .5s ease both; }
+  @keyframes tona { from { opacity: .6; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+  /* sidfot */
+  footer { border-top: 1px solid var(--border); padding: 56px 0 72px; text-align: left; }
+  footer .wrap { max-width: 1120px; }
+  footer .built { font-family: var(--font-display); font-size: 17px; font-weight: 700; display: inline-flex; margin-bottom: 14px; }
+  footer .fstats { font-size: var(--t-liten); line-height: 1.7; color: var(--text-dim); }
+  footer .fstats a { color: var(--text); font-weight: 600; text-decoration-color: var(--border); }
+  footer .footer-projects { max-width: none; margin-top: 36px; padding-top: 28px; }
+  footer .footer-projects h2 { font-family: var(--font-body); font-size: var(--t-liten); font-weight: 700; letter-spacing: 0; text-transform: none; color: var(--text); margin: 0 0 14px; }
+  footer .footer-projects ul { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 8px 32px; }
+  footer .footer-projects li { font-size: var(--t-liten); }
+  footer .footer-projects a { color: var(--text); }
+
+  /* juridisk brödtext */
+  .legal { max-width: 740px; }
+  .legal h1 { font-size: clamp(34px, 4.4vw, 46px); margin-bottom: 16px; }
+  .legal h3 { font-size: var(--t-h3); margin: 40px 0 12px; padding-top: 26px; border-top: 1px solid var(--border); }
+  .legal h3:first-of-type { border-top: 0; padding-top: 0; margin-top: 44px; }
+  .legal h4 { font-family: var(--font-display); font-size: 17px; font-weight: 700; letter-spacing: -0.01em; margin: 26px 0 8px; }
+  .legal p, .legal li { font-size: 16px; line-height: 1.65; }
   .legal p { margin: 0 0 14px; }
-  .legal ul { margin: 0 0 16px 20px; display: flex; flex-direction: column; gap: 6px; }
+  .legal ul { margin: 0 0 16px 22px; display: flex; flex-direction: column; gap: 6px; }
   .legal a { color: var(--accent-2); }
-  .lead-meta { font-family: var(--font-mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 20px; }
-  .kort { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 20px 22px; margin: 0 0 18px; }
+  .lead-meta { font-family: var(--font-body); font-size: var(--t-liten); font-weight: 700; letter-spacing: 0.02em; text-transform: none; color: var(--accent-2); margin: 0 0 14px; }
+  .legal .section-lead { margin-bottom: 8px; }
+  .kort { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 24px 28px; margin: 0 0 20px; }
   .kort h4 { margin-top: 0; }
-  .fakta { list-style: none; margin: 10px 0 0; padding: 0; display: flex; flex-direction: column; gap: 7px; }
-  .fakta li { display: grid; grid-template-columns: 190px 1fr; gap: 10px; font-size: 15px; }
-  .fakta li b { font-family: var(--font-mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--text-dim); font-weight: 500; padding-top: 4px; }
-  @media (max-width: 640px) { .fakta li { grid-template-columns: 1fr; gap: 2px; } }
-  .varning { border-left: 3px solid var(--red); background: var(--surface-2); padding: 16px 20px; margin: 0 0 18px; border-radius: 0 6px 6px 0; }
+  .kort .fakta { margin-bottom: 0; }
+  .legal ul.fakta, .fakta { list-style: none; margin: 12px 0 18px; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+  .fakta li { display: grid; grid-template-columns: 190px 1fr; gap: 12px; font-size: var(--t-brod); }
+  .fakta li b { font-family: var(--font-body); font-size: var(--t-liten); letter-spacing: 0; text-transform: none; color: var(--text-dim); font-weight: 700; padding-top: 2px; }
+  @media (max-width: 640px) { .fakta li { grid-template-columns: 1fr; gap: 0; } }
+  .varning { border: 1px solid var(--border); border-left: 3px solid var(--red); background: var(--surface); padding: 20px 24px; margin: 0 0 20px; border-radius: 14px; }
   .varning h4 { margin-top: 0; color: var(--red); }
+  .prisrad { display: grid; grid-template-columns: 1fr auto; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); font-size: var(--t-brod); }
+  .prisrad:last-child { border-bottom: 0; }
+  .prisrad b { font-weight: 700; }
+  .prisrad span { font-family: var(--font-body); font-size: var(--t-brod); font-variant-numeric: tabular-nums; white-space: nowrap; }
 </style>
 </head>
 <body>
 
 <!-- ===== NAV ===== -->
-<div class="hubnav">
-  <div class="inner">
-    <a class="home" href="./"><span class="dot"></span> Mitt AI-team</a>
-    <a class="np" href="villkor.html">Villkor</a>
-    <a class="np" href="portal/">Logga in</a>
-    <a class="np nav-cta" href="./#kontakt">Kontakt</a>
-  </div>
-</div>
+<header class="top">
+  <a class="logo" href="/"><i></i>Mitt AI-team</a>
+  <nav aria-label="Huvudmeny"><a href="/om.html#hur">Så funkar det</a><a href="/om.html#priser">Priser</a><a href="/portal/">Logga in</a></nav>
+</header>
 
 <section>
   <div class="wrap narrow legal">
 
     <div class="lead-meta">Integritetspolicy · Senast ändrad 2026-08-17</div>
-    <h1 class="section-title" style="font-size:clamp(30px,4vw,44px)">Så behandlas personuppgifter</h1>
-    <p class="section-lead" style="margin-bottom:10px">Det du skriver i portalen skickas via våra servrar till den AI-leverantör som
+    <h1 class="section-title">Så behandlas personuppgifter</h1>
+    <p class="section-lead">Det du skriver i portalen skickas via våra servrar till den AI-leverantör som
     producerar svaret. Den här sidan beskriver de sex behandlingar som finns, en i taget, med vad som samlas in, varför,
     hur länge och vad du kan kräva. Är något oklart går det bra att fråga.</p>
 
