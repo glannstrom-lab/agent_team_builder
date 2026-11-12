@@ -106,7 +106,8 @@ function boot() {
   scenUtkast();
   state.apiKey = "";
   syncModelForProvider();
-  // SP7: kommer kunden från öppningsscenen fortsätter intervjun i mötesrummet.
+  // SP7: kommer kunden från startsidan (?intervju=1) eller har ett möte på
+  // gång öppnas intervjun i mötesrummet.
   if (mötetFörst()) renderMote(); else renderForm();
 }
 
@@ -1058,7 +1059,14 @@ function mötetFörst() {
   // möte — då ska formuläret och dess återupptagning visas, inte en ny intervju.
   if (läge === "påbörjad") return !!läsMöte();
   if (läge) return false;
-  return !!(läsMöte() || läsScen());
+  return !!(läsMöte() || läsScen() || intervjuBegärd());
+}
+
+// Startsidans "Flytta in" (Huset, 2026-11-12) länkar till /builder/?intervju=1:
+// den som kommer därifrån möts av intervjun, inte av formuläret. Formuläret
+// nås som förut via länken under samtalet.
+function intervjuBegärd() {
+  try { return new URLSearchParams(location.search).get("intervju") === "1"; } catch (_) { return false; }
 }
 
 // Intaget ur intervjun → det intake-objekt pipelinen redan känner. Texten går

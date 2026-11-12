@@ -57,10 +57,10 @@ test("U5: körningen sparas innan första steget, och mötet raderas först när
 
 test("U5: en påbörjad körning ur mötet öppnar mötet igen, en ur formuläret öppnar formuläret", () => {
   // mötetFörst körs med låtsade lagringar: körningen påbörjad, mötet kvar eller inte.
-  const bygg = (saved, möte, scen) => new Function(
-    "state", "loadRun", "köptSlug", "läsMöte", "läsScen",
-    fn("körningsLäge") + fn("mötetFörst") + "return mötetFörst;",
-  )({ demo: false }, () => saved, () => null, () => möte, () => scen);
+  const bygg = (saved, möte, scen, sök = "") => new Function(
+    "state", "loadRun", "köptSlug", "läsMöte", "läsScen", "location",
+    fn("körningsLäge") + fn("intervjuBegärd") + fn("mötetFörst") + "return mötetFörst;",
+  )({ demo: false }, () => saved, () => null, () => möte, () => scen, { search: sök });
   const påbörjad = { intake: { company: "X" }, r: {}, team: null };
   assert.equal(bygg(påbörjad, { turer: [], klart: { intag: "x" } }, {})(), true,
     "intervjun ska visas igen med sina svar — inte ett nytt möte");
@@ -68,6 +68,32 @@ test("U5: en påbörjad körning ur mötet öppnar mötet igen, en ur formuläre
     "kom körningen ur formuläret ska formulärets återupptagning visas, inte en ny intervju");
   assert.equal(bygg({ intake: { company: "X" }, r: { research: "x" } }, { turer: [] }, {})(), false);
   assert.equal(bygg(null, null, { mandag: "x" })(), true);
+});
+
+// ── Huset (2026-11-12): startsidans "Flytta in" öppnar intervjun direkt ────
+
+test("Huset: ?intervju=1 öppnar intervjun för en ny besökare, utan det formuläret", () => {
+  const bygg = (saved, möte, scen, sök) => new Function(
+    "state", "loadRun", "köptSlug", "läsMöte", "läsScen", "location",
+    fn("körningsLäge") + fn("intervjuBegärd") + fn("mötetFörst") + "return mötetFörst;",
+  )({ demo: false }, () => saved, () => null, () => möte, () => scen, { search: sök });
+  assert.equal(bygg(null, null, null, "?intervju=1")(), true,
+    "en ny besökare från startsidan ska mötas av intervjun, utan att någon scen sparat något");
+  assert.equal(bygg(null, null, null, "")(), false, "utan parametern är formuläret förvalt som förut");
+  assert.equal(bygg(null, null, null, "?intervju=0")(), false);
+  // En påbörjad körning ur formuläret återupptas fortfarande som formulär.
+  assert.equal(bygg({ intake: { company: "X" }, r: {}, team: null }, null, null, "?intervju=1")(), false);
+  // Demoläget spelar alltid upp sin inspelade körning.
+  const demo = new Function(
+    "state", "loadRun", "köptSlug", "läsMöte", "läsScen", "location",
+    fn("körningsLäge") + fn("intervjuBegärd") + fn("mötetFörst") + "return mötetFörst;",
+  )({ demo: true }, () => null, () => null, () => null, () => null, { search: "?intervju=1" });
+  assert.equal(demo(), false);
+});
+
+test("Huset: formuläret går fortfarande att nå från intervjun", () => {
+  assert.match(kropp("renderMote"), /Gå till formuläret[\s\S]*?renderForm\(\)/);
+  assert.match(kropp("boot"), /mötetFörst\(\) \? |if \(mötetFörst\(\)\) renderMote\(\); else renderForm\(\);/);
 });
 
 // ── U6: formulärets text överlever omladdning ──────────────────────────────
