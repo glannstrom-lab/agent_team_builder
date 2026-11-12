@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="sv"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Riktning D — Våningen</title>
+<link rel="stylesheet" href="../../fonts/fonts.css">
+<style>
+/* Våningen: A:s lugna layout, och kontoret som spel. Illustrationerna bär allt färgen; resten är bläck på papper. */
+:root{--bg:#F9F7F5;--paper:#FFFFFF;--ink:#1E1913;--dim:#6A6152;--line:#E8E1D4;--ockra:#C8862B;--ockra-text:#8A5C14;--salvia:#4F7A54;--las:#B9B0A0}
+*{box-sizing:border-box;margin:0}
+body{background:#888;font-family:Karla,system-ui,sans-serif;color:var(--ink)}
+.skarm{width:1280px;height:800px;background:var(--bg);position:relative;overflow:hidden;margin:0 0 40px}
+.mobil{width:390px;height:844px}
+.lang{height:auto;min-height:800px;padding-bottom:64px}
+h1,h2,h3{font-family:Archivo,system-ui,sans-serif;letter-spacing:-.025em;text-wrap:balance}
+.knapp{display:inline-block;background:var(--ink);color:#fff;padding:16px 26px;border-radius:10px;font-weight:700;font-size:17px}
+.lank{font-weight:600;color:var(--ink);border-bottom:1.5px solid var(--line);padding-bottom:2px}
+.top{display:flex;justify-content:space-between;align-items:center;padding:30px 72px;position:relative;z-index:3}
+.logo{font-family:Archivo;font-weight:700;font-size:18px;display:flex;align-items:center;gap:10px}
+.logo i{width:22px;height:22px;border-radius:6px;background:var(--ink);display:inline-block;position:relative}
+.logo i::after{content:"";position:absolute;left:5px;top:5px;width:6px;height:6px;border-radius:2px;background:var(--ockra)}
+.top nav a{color:var(--dim);margin-left:30px;font-size:15px}
+/* hero */
+.hero{display:grid;grid-template-columns:470px 1fr;align-items:center;padding:0 0 0 72px;height:560px}
+.hero h1{font-size:62px;line-height:1.02;font-weight:700}
+.hero p{font-size:19.5px;line-height:1.55;color:var(--dim);margin:24px 0 34px;max-width:430px}
+.hero .rad{display:flex;gap:26px;align-items:center}
+.hero .fot{margin-top:22px;font-size:14.5px;color:var(--dim)}
+.scen{position:relative;height:560px}
+.scen img{position:absolute;left:-20px;top:10px;width:820px}
+.skylt{position:absolute;background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:7px 13px 7px 8px;font-size:13.5px;display:flex;align-items:center;gap:8px;box-shadow:0 6px 18px -10px rgba(30,25,19,.35);white-space:nowrap}
+.skylt img{position:static;width:24px;height:24px;border-radius:50%;mix-blend-mode:normal;object-fit:cover}
+.skylt b{font-weight:700}
+.skylt.ledig{background:var(--paper);border:1px dashed var(--las);box-shadow:none;color:var(--dim);padding-left:11px}
+.skylt.ledig::before{content:"";width:7px;height:7px;border-radius:50%;border:1.5px solid var(--las)}
+/* kapitel */
+.kapitel{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;padding:0 72px}
+.kap{display:grid;grid-template-columns:108px 1fr;gap:16px;align-items:center}
+.ruta{width:108px;height:104px;background:url(rum-2.webp) no-repeat;background-size:450px auto;mix-blend-mode:multiply}
+.r1{background-position:-32px -16px}.r2{background-position:-171px -16px}.r3{background-position:-310px -16px}
+.r4{background-position:-32px -128px}.r5{background-position:-171px -128px}.r6{background-position:-310px -128px}
+.kap small{display:block;font-size:12.5px;font-weight:700;color:var(--ockra-text);letter-spacing:.04em;margin-bottom:3px}
+.kap b{display:block;font-family:Archivo;font-size:18px;margin-bottom:4px}
+.ruta,.rum .liten{-webkit-mask-image:radial-gradient(circle at 50% 52%,#000 58%,transparent 71%);mask-image:radial-gradient(circle at 50% 52%,#000 58%,transparent 71%)}
+.kap span{color:var(--dim);font-size:14.5px;line-height:1.45}
+.kap.last .ruta{filter:grayscale(1);opacity:.55}
+/* portal */
+.p-top{height:68px;display:flex;align-items:center;gap:28px;padding:0 32px;border-bottom:1px solid var(--line);background:var(--paper)}
+.niva{display:flex;align-items:center;gap:12px;font-size:14px;color:var(--dim)}
+.niva .bar{width:160px;height:6px;border-radius:99px;background:var(--line);overflow:hidden}
+.niva .bar i{display:block;width:40%;height:100%;background:var(--ockra)}
+.p-top .nasta{margin-left:auto;font-size:14.5px;background:var(--bg);border-radius:999px;padding:9px 16px}
+.p-top .nasta b{color:var(--ockra-text)}
+.p-kropp{display:grid;grid-template-columns:300px 1fr;height:732px}
+.rumlist{border-right:1px solid var(--line);padding:22px 16px;display:flex;flex-direction:column;gap:6px}
+.rumlist h3{font-family:Karla;font-size:13px;color:var(--dim);margin:0 10px 6px;font-weight:700}
+.rum{display:grid;grid-template-columns:64px 1fr auto;gap:12px;align-items:center;padding:8px 10px;border-radius:12px}
+.rum .liten{width:64px;height:62px;background:url(rum-2.webp) no-repeat;background-size:266px auto;mix-blend-mode:multiply;position:relative}
+.liten.s1{background-position:-19px -9px}.liten.s2{background-position:-101px -9px}.liten.s3{background-position:-183px -9px}.liten.s4{background-position:-19px -75px}.liten.s5{background-position:-101px -75px}.liten.s6{background-position:-183px -75px}
+.rum .ansikte{position:absolute;right:-4px;bottom:-2px;width:26px;height:26px;border-radius:50%;border:2px solid var(--bg);object-fit:cover}
+.rum b{display:block;font-size:15.5px}.rum span{font-size:13px;color:var(--dim)}
+.rum.vald{background:var(--paper);box-shadow:0 1px 0 var(--line),0 0 0 1px var(--line)}
+.rum .prick{width:9px;height:9px;border-radius:50%;background:var(--ockra)}
+.rum.last{opacity:.5}.rum.last .liten{filter:grayscale(1)}
+.rum.last em{font-style:normal;font-size:12px;color:var(--dim);border:1px solid var(--line);border-radius:999px;padding:2px 8px}
+.samtal{display:flex;flex-direction:column;padding:30px 0 24px}
+.samtal .inner{width:660px;margin:0 auto;flex:1}
+.samtal .vem{display:flex;gap:14px;align-items:center;margin-bottom:24px}
+.samtal .vem img{width:48px;height:48px;border-radius:50%;object-fit:cover}
+.samtal h2{font-size:24px}
+.samtal .vem span{color:var(--dim);font-size:15px}
+.bubbla{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:18px 20px;font-size:16.5px;line-height:1.6;margin-bottom:14px}
+.bubbla .kort{margin-top:14px;border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;font-size:15px;background:var(--bg)}
+.bubbla .kort em{font-style:normal;color:var(--ockra-text);font-weight:700;font-size:13.5px}
+.forslag{display:flex;gap:10px;flex-wrap:wrap}
+.forslag span{border:1px solid var(--line);border-radius:999px;padding:9px 15px;font-size:14.5px;background:var(--paper)}
+.skriv{width:660px;margin:0 auto;border:1px solid var(--line);background:var(--paper);border-radius:14px;padding:18px 20px;color:var(--dim);font-size:16.5px;display:flex;justify-content:space-between;align-items:center}
+.skriv b{background:var(--ink);color:#fff;border-radius:8px;width:36px;height:36px;display:grid;place-items:center;margin:-8px -8px -8px 0}
+/* mobil */
+.mobil .top{padding:20px}
+.mobil .top nav a{margin-left:14px;font-size:14px}
+.mobil .m-hero{padding:24px 20px 0}
+.mobil h1{font-size:40px;line-height:1.03}
+.mobil p{font-size:17.5px;line-height:1.55;color:var(--dim);margin:18px 0 0}
+.mobil .m-scen{position:relative;height:300px;margin-top:8px}
+.mobil .m-scen img{position:absolute;left:-40px;top:0;width:480px}
+.mobil .knapp{display:block;text-align:center;margin:0 20px}
+.mobil .fot{text-align:center;font-size:14px;color:var(--dim);margin-top:12px}
+</style></head><body>
+
+<section class="skarm lang" id="start">
+  <div class="top"><span class="logo"><i></i>Mitt AI-team</span><nav><a>Så funkar det</a><a>Priser</a><a>Logga in</a></nav></div>
+  <div class="hero">
+    <div>
+      <h1>Ert kontor står tomt. Fyll det.</h1>
+      <p>Varje rum blir en AI-kollega med ett eget jobb: offerterna, kundmejlen, påminnelserna. Ni börjar med en, och kontoret växer i er takt.</p>
+      <div class="rad"><a class="knapp">Anställ den första</a><a class="lank">Se ett kontor</a></div>
+      <p class="fot">En kvarts intervju · gratis att bygga · inget kort</p>
+    </div>
+    <div class="scen">
+      <img src="vaning-2.webp" alt="">
+      <span class="skylt" style="left:120px;top:66px"><img src="../../portal/avatars/avatar-04.png" alt=""><b>Agnes</b> VD-assistent</span>
+      <span class="skylt ledig" style="left:262px;top:200px">Offerter</span>
+      <span class="skylt ledig" style="left:366px;top:250px">Kundmejl</span>
+      <span class="skylt ledig" style="left:470px;top:300px">Fakturor</span>
+    </div>
+  </div>
+  <div class="kapitel">
+    <div class="kap"><div class="ruta r1"></div><div><small>VÅNING 1</small><b>Första anställningen</b><span>Intervjun blir en VD-assistent som kan er vecka.</span></div></div>
+    <div class="kap"><div class="ruta r4"></div><div><small>VÅNING 2</small><b>Mötesrummet</b><span>Låt flera kollegor tycka till innan ni bestämmer.</span></div></div>
+    <div class="kap last"><div class="ruta r5"></div><div><small>VÅNING 3</small><b>Pentryt</b><span>Veckans rutiner sköter sig själva.</span></div></div>
+  </div>
+</section>
+
+<section class="skarm" id="portal">
+  <div class="p-top"><span class="logo"><i></i>Holms Måleri</span><span class="niva">Våning 1<span class="bar"><i></i></span>2 av 5 anställda</span><span class="nasta">Nästa: <b>granska offerten till Brf Ekbacken</b></span></div>
+  <div class="p-kropp">
+    <aside class="rumlist">
+      <h3>Våningen</h3>
+      <div class="rum vald"><div class="liten s1"><img class="ansikte" src="../../portal/avatars/avatar-04.png" alt=""></div><div><b>Agnes</b><span>VD-assistent</span></div><span class="prick"></span></div>
+      <div class="rum"><div class="liten s2"><img class="ansikte" src="../../portal/avatars/avatar-08.png" alt=""></div><div><b>Offertskrivaren</b><span>Offerter och ROT</span></div></div>
+      <div class="rum last"><div class="liten s3"></div><div><b>Kundposten</b><span>Anställs vecka 2</span></div><em>ledigt</em></div>
+      <div class="rum last"><div class="liten s4"></div><div><b>Mötesrummet</b><span>Låses upp på våning 2</span></div></div>
+      <div class="rum last"><div class="liten s5"></div><div><b>Pentryt</b><span>Låses upp på våning 3</span></div></div>
+    </aside>
+    <div class="samtal">
+      <div class="inner">
+        <div class="vem"><img src="../../portal/avatars/avatar-04.png" alt=""><div><h2>Agnes</h2><span>VD-assistent · förbereder dina val</span></div></div>
+        <div class="bubbla">God morgon Lena. Offertskrivaren har gjort klart offerten till Brf Ekbacken, och momsen för kvartal 3 ska in i dag.
+          <div class="kort"><span>Offert · Brf Ekbacken · 48 600 kr inkl. ROT</span><em>Väntar på dig →</em></div>
+        </div>
+        <div class="forslag"><span>Granska offerten</span><span>Vad ska in i dag?</span><span>Svara kunderna om tider</span></div>
+      </div>
+      <div class="skriv">Skriv till Agnes …<b>↑</b></div>
+    </div>
+  </div>
+</section>
+
+<section class="skarm mobil" id="mobil">
+  <div class="top"><span class="logo"><i></i>Mitt AI-team</span><nav><a>Priser</a><a>Logga in</a></nav></div>
+  <div class="m-hero">
+    <h1>Ert kontor står tomt. Fyll det.</h1>
+    <p>Varje rum blir en AI-kollega med ett eget jobb. Ni börjar med en.</p>
+  </div>
+  <div class="m-scen"><img src="vaning-2.webp" alt=""></div>
+  <a class="knapp">Anställ den första</a>
+  <p class="fot">En kvarts intervju · gratis att bygga</p>
+</section>
+</body></html>

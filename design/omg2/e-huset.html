@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="sv"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Riktning E — Huset</title>
+<link rel="stylesheet" href="../../fonts/fonts.css">
+<style>
+/* Huset: en byggnad som växer våning för våning. Illustrationerna bär färgen; resten är bläck på papper. */
+:root{--bg:#FAF9F7;--paper:#FFFFFF;--ink:#1E1913;--dim:#6A6152;--line:#E8E2D6;--ockra:#C8862B;--ockra-text:#8A5C14;--salvia:#4F7A54;--las:#B9B0A0}
+*{box-sizing:border-box;margin:0}
+body{background:#888;font-family:Karla,system-ui,sans-serif;color:var(--ink)}
+.skarm{width:1280px;background:var(--bg);position:relative;overflow:hidden;margin:0 0 40px}
+.h800{height:800px}
+h1,h2,h3{font-family:Archivo,system-ui,sans-serif;letter-spacing:-.025em;text-wrap:balance}
+.knapp{display:inline-block;background:var(--ink);color:#fff;padding:16px 26px;border-radius:10px;font-weight:700;font-size:17px}
+.knapp.ljus{background:var(--paper);color:var(--ink);border:1px solid var(--line)}
+.lank{font-weight:600;color:var(--ink);border-bottom:1.5px solid var(--line);padding-bottom:2px}
+.top{display:flex;justify-content:space-between;align-items:center;padding:30px 72px}
+.logo{font-family:Archivo;font-weight:700;font-size:18px;display:flex;align-items:center;gap:10px}
+.logo i{width:22px;height:22px;border-radius:6px;background:var(--ink);display:inline-block;position:relative}
+.logo i::after{content:"";position:absolute;left:5px;top:5px;width:6px;height:6px;border-radius:2px;background:var(--ockra)}
+.top nav a{color:var(--dim);margin-left:30px;font-size:15px}
+.ovre{font-size:13px;font-weight:700;color:var(--ockra-text);letter-spacing:.05em;margin-bottom:14px}
+/* hero */
+.hero{display:grid;grid-template-columns:480px 1fr;align-items:center;padding:10px 0 0 72px;height:700px}
+.hero h1{font-size:66px;line-height:1.01;font-weight:700}
+.hero p{font-size:20px;line-height:1.55;color:var(--dim);margin:26px 0 36px;max-width:440px}
+.hero .rad{display:flex;gap:26px;align-items:center}
+.hero .fot{margin-top:22px;font-size:14.5px;color:var(--dim)}
+.scen{position:relative;height:700px}
+.scen img{position:absolute;left:120px;top:30px;width:720px;-webkit-mask-image:radial-gradient(ellipse 50% 50% at 50% 50%,#000 80%,transparent 100%);mask-image:radial-gradient(ellipse 50% 50% at 50% 50%,#000 80%,transparent 100%)}
+.hero>div:first-child{position:relative;z-index:2}
+.etikett .pill{white-space:nowrap}
+.rr .bricka{z-index:2}
+.stor .rumbild{-webkit-mask-image:radial-gradient(circle at 50% 52%,#000 62%,transparent 71%);mask-image:radial-gradient(circle at 50% 52%,#000 62%,transparent 71%)}
+.etikett{position:absolute;display:flex;align-items:center;gap:12px;font-size:14.5px}
+.etikett .streck{width:56px;height:1px;background:var(--ink);opacity:.35}
+.etikett b{display:block;font-family:Archivo;font-size:16px}
+.etikett span{color:var(--dim)}
+.etikett .pill{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:10px 14px;box-shadow:0 8px 22px -14px rgba(30,25,19,.4)}
+.etikett.ledig .pill{border-style:dashed;box-shadow:none;background:var(--bg)}
+/* rummen */
+.band{padding:90px 72px 40px}
+.band h2{font-size:44px;line-height:1.05;max-width:720px}
+.band .under{color:var(--dim);font-size:19px;line-height:1.55;max-width:620px;margin-top:16px}
+.rumgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:42px}
+.rumkort{background:var(--bg);border:1px solid var(--line);border-radius:16px;padding:14px 16px 18px}
+.rumkort img{width:100%;aspect-ratio:1;object-fit:contain;display:block}
+.rumkort b{display:block;font-family:Archivo;font-size:17px;margin-top:4px}
+.rumkort span{color:var(--dim);font-size:14.5px}
+/* tillväxt */
+.vaxer{display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin-top:46px;border-top:1px solid var(--line)}
+.vaxer div{padding:26px 28px 0 0}
+.vaxer .tal{font-family:Archivo;font-size:40px;font-weight:700}
+.vaxer b{display:block;font-size:17px;margin:4px 0 6px}
+.vaxer span{color:var(--dim);font-size:15.5px;line-height:1.5}
+.slut{display:flex;justify-content:space-between;align-items:center;margin:70px 72px 80px;padding:34px 38px;background:var(--paper);border:1px solid var(--line);border-radius:18px}
+.slut h3{font-size:28px}
+.slut p{color:var(--dim);margin-top:6px}
+/* portal */
+.p-top{height:68px;display:flex;align-items:center;gap:28px;padding:0 32px;border-bottom:1px solid var(--line);background:var(--paper)}
+.p-top .nasta{margin-left:auto;font-size:14.5px;background:var(--bg);border-radius:999px;padding:9px 16px}
+.p-top .nasta b{color:var(--ockra-text)}
+.p-kropp{display:grid;grid-template-columns:260px 1fr;height:732px}
+.vaningar{border-right:1px solid var(--line);padding:26px 18px;display:flex;flex-direction:column;gap:8px}
+.vaningar h3{font-family:Karla;font-size:13px;color:var(--dim);font-weight:700;margin:0 10px 8px}
+.vn{border-radius:12px;padding:14px 16px;border:1px solid transparent}
+.vn b{display:block;font-size:16px}.vn span{font-size:13.5px;color:var(--dim)}
+.vn.vald{background:var(--paper);border-color:var(--line)}
+.vn.tom{border:1px dashed var(--las);color:var(--dim)}
+.vn .bar{height:4px;border-radius:9px;background:var(--line);margin-top:10px;overflow:hidden}.vn .bar i{display:block;height:100%;background:var(--ockra)}
+.vaningar .pa{margin-top:auto;font-size:14px;color:var(--dim);padding:0 10px;line-height:1.5}
+.golv{padding:28px 36px;overflow:hidden}
+.golv .rubrik{display:flex;justify-content:space-between;align-items:end;margin-bottom:20px}
+.golv h2{font-size:30px}
+.golv .rubrik span{color:var(--dim);font-size:15px}
+.rumrut{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.rr{background:var(--bg);border:1px solid var(--line);border-radius:16px;padding:12px 16px 16px;position:relative}
+.rr img.rum{width:100%;height:178px;object-fit:contain;display:block}
+.rr .vem{display:flex;align-items:center;gap:10px;margin-top:4px}
+.rr .vem img{width:34px;height:34px;border-radius:50%;object-fit:cover}
+.rr b{display:block;font-size:16px}.rr span{font-size:13.5px;color:var(--dim)}
+.rr .bricka{position:absolute;top:14px;right:14px;font-size:12.5px;font-weight:700;padding:4px 10px;border-radius:999px;background:var(--ockra);color:#fff}
+.rr .bricka.lugn{background:var(--bg);color:var(--dim);border:1px solid var(--line)}
+.rr.ledig{background:transparent;border:1.5px dashed var(--las)}
+.rr.ledig img.rum{opacity:.45;filter:grayscale(1)}
+.rr.ledig .anstall{font-weight:700;color:var(--ink)}
+/* inred */
+.inred{display:grid;grid-template-columns:1fr 440px;height:732px}
+.stor{position:relative;display:grid;place-items:center;border-right:1px solid var(--line)}
+.stor .rumbild{width:600px;mix-blend-mode:multiply}
+.stor .mobel{position:absolute;mix-blend-mode:multiply}
+.stor .tillbaka{position:absolute;left:32px;top:26px;font-size:15px;color:var(--dim)}
+.stor .namn{position:absolute;left:32px;bottom:30px}
+.stor .namn h2{font-size:30px}.stor .namn span{color:var(--dim)}
+.val{padding:28px 30px;overflow:hidden}
+.val h3{font-size:22px}
+.val .under{color:var(--dim);font-size:15px;margin:6px 0 20px;line-height:1.5}
+.mobler{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.mb img{height:70px!important}.mb b{font-size:14px}.mb span{font-size:12.5px}
+.mb{border:1px solid var(--line);background:var(--bg);border-radius:14px;padding:10px 12px 12px;position:relative}
+.mb img{width:100%;height:92px;object-fit:contain;display:block}
+.mb b{display:block;font-size:14.5px}.mb span{font-size:13px;color:var(--dim);line-height:1.35;display:block}
+.mb.pa{border-color:var(--ink);box-shadow:0 0 0 1px var(--ink)}
+.mb.pa::after{content:"✓ I rummet";position:absolute;top:8px;right:10px;font-size:11.5px;font-weight:700;color:var(--salvia)}
+</style></head><body>
+
+<section class="skarm" id="start">
+  <div class="top"><span class="logo"><i></i>Mitt AI-team</span><nav><a>Så funkar det</a><a>Priser</a><a>Logga in</a></nav></div>
+  <div class="hero">
+    <div>
+      <div class="ovre">ETT KONTOR AV AI-KOLLEGOR</div>
+      <h1>Börja med en våning. Bygg ut när ni växer.</h1>
+      <p>Varje rum är en kollega med ett eget jobb. Ni flyttar in med de första, inreder rummen efter er smak och bygger en våning till när ni behöver fler.</p>
+      <div class="rad"><a class="knapp">Flytta in — gratis</a><a class="lank">Gå runt i ett kontor</a></div>
+      <p class="fot">En kvarts intervju · inget konto · inget kort</p>
+    </div>
+    <div class="scen">
+      <img src="hus-2.webp" alt="">
+      <div class="etikett ledig" style="left:40px;top:96px"><div class="pill"><b>Våning 3</b><span>byggs när ni behöver</span></div><span class="streck"></span></div>
+      <div class="etikett ledig" style="left:40px;top:200px"><div class="pill"><b>Våning 2</b><span>6 lediga rum</span></div><span class="streck"></span></div>
+      <div class="etikett" style="left:20px;top:318px"><div class="pill"><b>Våning 1 · Kontoret</b><span>4 kollegor flyttar in</span></div><span class="streck"></span></div>
+    </div>
+  </div>
+
+  <div class="band">
+    <div class="ovre">ETT RUM PER JOBB</div>
+    <h2>Fyll rummen med de jobb som tar er tid.</h2>
+    <p class="under">Intervjun avgör vilka rum ni behöver. En målare får andra rum än en frisör — och de som inte behövs får inget rum.</p>
+    <div class="rumgrid">
+      <div class="rumkort"><img src="rum/assistent.png" alt=""><b>VD-assistent</b><span>Håller ihop veckan</span></div>
+      <div class="rumkort"><img src="rum/offert.png" alt=""><b>Offerter</b><span>Kalkyl, ROT, uppföljning</span></div>
+      <div class="rumkort"><img src="rum/post.png" alt=""><b>Kundposten</b><span>Mejl och sms</span></div>
+      <div class="rumkort"><img src="rum/bokforing.png" alt=""><b>Bokföring</b><span>Underlag och moms</span></div>
+      <div class="rumkort"><img src="rum/telefon.png" alt=""><b>Kundtjänst</b><span>Svar och bokningar</span></div>
+      <div class="rumkort"><img src="rum/verkstad.png" alt=""><b>Projekten</b><span>Material och tider</span></div>
+      <div class="rumkort"><img src="rum/arkiv.png" alt=""><b>Arkivet</b><span>Avtal och dokument</span></div>
+      <div class="rumkort"><img src="rum/analys.png" alt=""><b>Siffrorna</b><span>Vad gick bra i månaden</span></div>
+    </div>
+    <div class="vaxer">
+      <div><span class="tal">1</span><b>Flytta in</b><span>En våning, de rum intervjun visar att ni behöver. Gratis att bygga.</span></div>
+      <div><span class="tal">2</span><b>Inred</b><span>Ställ in ett arkivskåp, en kalender, en telefon. Varje möbel ger kollegan en ny förmåga.</span></div>
+      <div><span class="tal">3+</span><b>Bygg ut</b><span>En våning till för sälj, projekt eller ett nytt kontor. Så många kollegor ni behöver.</span></div>
+    </div>
+  </div>
+  <div class="slut"><div><h3>Ert kontor kan stå klart i dag.</h3><p>Börja med intervjun. Ni ser hela våningen innan ni bestämmer något.</p></div><a class="knapp">Flytta in — gratis</a></div>
+</section>
+
+<section class="skarm h800" id="portal">
+  <div class="p-top"><span class="logo"><i></i>Holms Måleri</span><span class="nasta">Nästa: <b>granska offerten till Brf Ekbacken</b></span></div>
+  <div class="p-kropp">
+    <aside class="vaningar">
+      <h3>Huset</h3>
+      <div class="vn tom"><b>+ Bygg en våning</b><span>För fler kollegor</span></div>
+      <div class="vn"><b>Våning 2 · Projekten</b><span>3 av 6 rum</span><div class="bar"><i style="width:50%"></i></div></div>
+      <div class="vn vald"><b>Våning 1 · Kontoret</b><span>5 av 6 rum</span><div class="bar"><i style="width:83%"></i></div></div>
+      <p class="pa">Rutiner, minne och möten finns i rummen — inred dem.</p>
+    </aside>
+    <div class="golv">
+      <div class="rubrik"><h2>Våning 1 · Kontoret</h2><span>2 saker väntar på dig</span></div>
+      <div class="rumrut">
+        <div class="rr"><span class="bricka">1 väntar</span><img class="rum" src="rum/assistent.png" alt=""><div class="vem"><img src="../../portal/avatars/avatar-04.png" alt=""><div><b>Agnes</b><span>VD-assistent</span></div></div></div>
+        <div class="rr"><span class="bricka">1 väntar</span><img class="rum" src="rum/offert.png" alt=""><div class="vem"><img src="../../portal/avatars/avatar-08.png" alt=""><div><b>Offertskrivaren</b><span>Offerter och ROT</span></div></div></div>
+        <div class="rr"><span class="bricka lugn">Arbetar</span><img class="rum" src="rum/post.png" alt=""><div class="vem"><img src="../../portal/avatars/avatar-15.png" alt=""><div><b>Kundposten</b><span>Mejl och sms</span></div></div></div>
+        <div class="rr"><span class="bricka lugn">Klar i dag</span><img class="rum" src="rum/bokforing.png" alt=""><div class="vem"><img src="../../portal/avatars/avatar-12.png" alt=""><div><b>Bokföraren</b><span>Underlag och moms</span></div></div></div>
+        <div class="rr"><img class="rum" src="rum/mote.png" alt=""><div class="vem"><div><b>Mötesrummet</b><span>Låt flera tycka till</span></div></div></div>
+        <div class="rr ledig"><img class="rum" src="rum/ledigt.png" alt=""><div class="vem"><div><b class="anstall">+ Anställ</b><span>Fakturajägaren föreslås</span></div></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="skarm h800" id="inred">
+  <div class="p-top"><span class="logo"><i></i>Holms Måleri</span><span class="nasta">Våning 1 · Agnes rum</span></div>
+  <div class="inred">
+    <div class="stor">
+      <span class="tillbaka">← Våningen</span>
+      <img class="rumbild" src="rum/assistent.png" alt=""><img class="mobel" src="rum/m-arkiv.png" alt="" style="width:110px;left:225px;top:470px"><img class="mobel" src="rum/m-vaxt.png" alt="" style="width:120px;left:590px;top:420px"><img class="mobel" src="rum/m-diplom.png" alt="" style="width:80px;left:330px;top:190px">
+      <div class="namn"><h2>Agnes rum</h2><span>VD-assistent · 4 möbler · 3 funktioner på</span></div>
+    </div>
+    <div class="val">
+      <h3>Inred rummet</h3>
+      <p class="under">Välj det som passar er. Varje möbel ger Agnes något hon kan göra åt er.</p>
+      <div class="mobler">
+        <div class="mb pa"><img src="rum/m-kalender.png" alt=""><b>Väggkalender</b><span>Veckorutin varje måndag</span></div>
+        <div class="mb pa"><img src="rum/m-arkiv.png" alt=""><b>Arkivskåp</b><span>Läser era underlag</span></div>
+        <div class="mb"><img src="rum/m-telefon.png" alt=""><b>Telefon</b><span>Nås från er Claude eller ChatGPT</span></div>
+        <div class="mb"><img src="rum/m-whiteboard.png" alt=""><b>Whiteboard</b><span>Håller koll på mål och beslut</span></div>
+        <div class="mb"><img src="rum/m-brev.png" alt=""><b>Brevkorg</b><span>Veckobrev till mejlen</span></div>
+        <div class="mb pa"><img src="rum/m-diplom.png" alt=""><b>Diplomet</b><span>Kontrollerade svenska regler</span></div>
+        <div class="mb pa"><img src="rum/m-vaxt.png" alt=""><b>Växt</b><span>Bara för att det är trevligt</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+</body></html>

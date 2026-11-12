@@ -1,0 +1,96 @@
+<title>Tre riktningar för mittaiteam.se</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700&family=Karla:wght@400;600;700&display=swap">
+<style>
+/* Layout: en kolumn, en riktning per avsnitt, tre bilder (start, portal, mobil) i rad */
+:root{--bg:#F1ECE3;--paper:#FCFAF6;--ink:#1E1913;--dim:#5C5446;--line:#DFD6C7;--ockra:#8A5C14;
+--display:'Archivo',system-ui,sans-serif;--body:'Karla',system-ui,sans-serif}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1C1915;--paper:#26221C;--ink:#F1ECE3;--dim:#B8AE9C;--line:#3A342B;--ockra:#D9A55A;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#1C1915;--paper:#26221C;--ink:#F1ECE3;--dim:#B8AE9C;--line:#3A342B;--ockra:#D9A55A;color-scheme:dark}
+body{background:var(--bg);color:var(--ink);font:17px/1.6 var(--body);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:48px 72px}
+.wrap{max-width:1180px;margin:0 auto}
+h1,h2{font-family:var(--display);letter-spacing:-.02em;text-wrap:balance}
+h1{font-size:clamp(32px,5vw,48px);line-height:1.05;margin:0 0 14px}
+.lede{color:var(--dim);max-width:62ch;margin:0 0 18px}
+.gemensamt{background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:18px 22px;max-width:780px}
+.gemensamt b{display:block;margin-bottom:6px}
+.gemensamt ul{margin:0;padding-left:20px;color:var(--dim)}
+section{margin-top:64px}
+.rubrik{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+.bokstav{font-family:var(--display);font-size:22px;color:var(--ockra)}
+h2{font-size:clamp(24px,3.4vw,34px);margin:0}
+section>p{color:var(--dim);max-width:66ch;margin:8px 0 20px}
+.bilder{display:grid;grid-template-columns:1fr 1fr 0.42fr;gap:14px;align-items:start}
+figure{margin:0;min-width:0}
+figure img{width:100%;display:block;border:1px solid var(--line);border-radius:6px}
+figcaption{font-size:14px;color:var(--dim);margin-top:6px}
+@media (max-width:760px){.bilder{grid-template-columns:1fr}.bilder figure:last-child img{max-width:300px}}
+.fot{margin-top:56px;color:var(--dim);font-size:15px;max-width:66ch}
+</style>
+
+<div class="wrap">
+  <h1>Tre riktningar för mittaiteam.se</h1>
+  <p class="lede">Fem riktningar, den senaste (E, Huset) överst. Samma innehåll i varje: startsidans första vy, portalen med VD-assistenten öppen och startsidan på mobil. Välj en, eller säg vad du vill blanda.</p>
+  <div class="gemensamt"><b>Gäller alla tre, oavsett val</b>
+    <ul>
+      <li>Ett budskap och en knapp per vy. Mono-etiketterna i versaler försvinner.</li>
+      <li>Två typsnitt i stället för tre, och inga emojis som ikoner.</li>
+      <li>Portalen visar ett nästa steg i stället för en arbetsyta med elva rader. Rutiner, minne och möten ligger ett klick bort.</li>
+      <li>Säljsidan och villkoren kortas och får samma lugna rytm.</li>
+    </ul>
+  </div>
+
+  <section>
+    <div class="rubrik"><span class="bokstav">E</span><h2>Huset — ny, större: våningar, rum och inredning</h2></div>
+    <p>Kontoret är ett hus som växer. Kunden flyttar in på en våning, bygger en till när teamet växer, och får plats med så många kollegor som behövs. Varje rum är en kollega. Rummen inreds efter smak, och varje möbel är en funktion: väggkalendern ger en veckorutin, arkivskåpet läser era underlag, telefonen kopplar rummet till er egen Claude eller ChatGPT, diplomet slår på de kontrollerade svenska reglerna. Tolv rumstyper och åtta möbler finns redan, alla i samma stil.</p>
+    <div class="bilder" style="grid-template-columns:1fr">
+      <figure><img src="e-huset-start.png" alt="Riktning E, startsidan"><figcaption>Startsidan: huset, rummen och hur kontoret växer</figcaption></figure>
+    </div>
+    <div class="bilder" style="grid-template-columns:1fr 1fr;margin-top:14px">
+      <figure><img src="e-huset-portal.png" alt="Riktning E, portalen"><figcaption>Portalen: våningarna till vänster, våningens rum som kort</figcaption></figure>
+      <figure><img src="e-huset-inred.png" alt="Riktning E, inred rummet"><figcaption>Inred rummet: varje möbel slår på en funktion</figcaption></figure>
+    </div>
+  </section>
+
+  <section>
+    <div class="rubrik"><span class="bokstav">D</span><h2>Våningen — ny, A med spelet</h2></div>
+    <p>A:s lugn, men med kontoret som spel. Startsidan visar en tom våning där ett rum är tänt: "Ert kontor står tomt. Fyll det." Tre våningar blir kapitel (Första anställningen, Mötesrummet, Pentryt), samma nivåer som portalen redan har. I portalen är laget rum: anställda med ansikte, låsta rum i grått, och en framstegsrad som visar våningen. Illustrationerna är gjorda i ElevenLabs i en och samma stil, så att allt hänger ihop.</p>
+    <div class="bilder">
+      <figure><img src="d-vaningen-start.png" alt="Riktning D, startsidan"><figcaption>Startsidan</figcaption></figure>
+      <figure><img src="d-vaningen-portal.png" alt="Riktning D, portalen"><figcaption>Portalen</figcaption></figure>
+      <figure><img src="d-vaningen-mobil.png" alt="Riktning D, mobil"><figcaption>Mobil</figcaption></figure>
+    </div>
+  </section>
+
+  <section>
+    <div class="rubrik"><span class="bokstav">A</span><h2>Lugnt</h2></div>
+    <p>Närmast det ni har i dag, men avskalat. Vänsterställt, mycket luft, tre steg längst ner. Portalen blir laget till vänster och samtalet i mitten. Säkrast och snabbast att bygga.</p>
+    <div class="bilder">
+      <figure><img src="a-lugnt-start.png" alt="Riktning A, startsidan"><figcaption>Startsidan</figcaption></figure>
+      <figure><img src="a-lugnt-portal.png" alt="Riktning A, portalen"><figcaption>Portalen</figcaption></figure>
+      <figure><img src="a-lugnt-mobil.png" alt="Riktning A, mobil"><figcaption>Mobil</figcaption></figure>
+    </div>
+  </section>
+
+  <section>
+    <div class="rubrik"><span class="bokstav">B</span><h2>Kontoret</h2></div>
+    <p>Varmare och mer eget. En tecknad kontorsvåning bär sidan (genererad med ElevenLabs), och portalen visar teamet som rum med ett tydligt "1 väntar". Behåller känslan av anställda utan intervjufilmen.</p>
+    <div class="bilder">
+      <figure><img src="b-kontoret-start.png" alt="Riktning B, startsidan"><figcaption>Startsidan</figcaption></figure>
+      <figure><img src="b-kontoret-portal.png" alt="Riktning B, portalen"><figcaption>Portalen</figcaption></figure>
+      <figure><img src="b-kontoret-mobil.png" alt="Riktning B, mobil"><figcaption>Mobil</figcaption></figure>
+    </div>
+  </section>
+
+  <section>
+    <div class="rubrik"><span class="bokstav">C</span><h2>Brevet</h2></div>
+    <p>Personligast. Kandidaten skriver ett brev till kunden, och portalen blir en tråd av korta brev med ett val under varje. Minst gränssnitt, men längst ifrån det som finns i dag.</p>
+    <div class="bilder">
+      <figure><img src="c-brevet-start.png" alt="Riktning C, startsidan"><figcaption>Startsidan</figcaption></figure>
+      <figure><img src="c-brevet-portal.png" alt="Riktning C, portalen"><figcaption>Portalen</figcaption></figure>
+      <figure><img src="c-brevet-mobil.png" alt="Riktning C, mobil"><figcaption>Mobil</figcaption></figure>
+    </div>
+  </section>
+
+  <p class="fot">Skisserna ligger i <code>design/omg2/</code>. Inget på sajten är ändrat än. Alla tio ElevenLabs-bilder (B, D och E) kostade tillsammans cirka 8 cent.</p>
+</div>

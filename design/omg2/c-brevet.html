@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="sv"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Riktning C — Brevet</title>
+<link rel="stylesheet" href="../../fonts/fonts.css">
+<style>
+:root{--bg:#EEE8DC;--paper:#FCFAF5;--ink:#22201B;--dim:#6A6152;--line:#DDD4C3;--rost:#9E4A2A}
+*{box-sizing:border-box;margin:0}
+body{background:#888;font-family:Karla,system-ui,sans-serif;color:var(--ink)}
+.skarm{width:1280px;height:800px;background:var(--bg);position:relative;overflow:hidden;margin:0 0 40px}
+.mobil{width:390px;height:844px}
+.serif{font-family:Georgia,'Times New Roman',serif}
+.knapp{display:inline-block;background:var(--rost);color:#fff;padding:15px 24px;border-radius:4px;font-weight:600;font-size:17px}
+.top{display:flex;justify-content:space-between;padding:26px 48px;font-size:15px;color:var(--dim)}
+.top .logo{color:var(--ink);font-weight:700}
+.brev{width:640px;margin:34px auto 0;background:var(--paper);padding:54px 64px 50px;box-shadow:0 1px 0 var(--line),0 20px 40px -24px rgba(0,0,0,.18)}
+.brev .datum{color:var(--dim);font-size:14.5px;margin-bottom:26px}
+.brev h1{font-family:Georgia,serif;font-weight:400;font-size:40px;line-height:1.15;margin-bottom:22px}
+.brev p{font-family:Georgia,serif;font-size:19px;line-height:1.65;margin-bottom:16px}
+.brev .sign{display:flex;align-items:center;gap:14px;margin:26px 0 30px}
+.brev .sign img{width:48px;height:48px;border-radius:50%;object-fit:cover}
+.brev .sign b{display:block}.brev .sign span{color:var(--dim);font-size:14.5px}
+.brev .fot{color:var(--dim);font-size:14.5px;margin-top:16px}
+/* portal */
+.p-top{display:flex;gap:6px;padding:20px 48px 0;border-bottom:1px solid var(--line)}
+.flik{padding:12px 18px;font-size:15.5px;color:var(--dim);border-bottom:2px solid transparent}
+.flik.vald{color:var(--ink);font-weight:700;border-color:var(--rost)}
+.flik .p{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--rost);margin-left:6px;vertical-align:middle}
+.trad{width:700px;margin:28px auto 0}
+.post{background:var(--paper);padding:26px 30px;margin-bottom:14px;box-shadow:0 1px 0 var(--line)}
+.post .fran{font-size:14px;color:var(--dim);margin-bottom:10px}
+.post p{font-family:Georgia,serif;font-size:18px;line-height:1.6}
+.post .val{margin-top:16px;display:flex;gap:10px}
+.post .val span{border:1px solid var(--line);padding:9px 14px;font-size:14.5px;border-radius:4px}
+.post .val span.prim{background:var(--ink);color:#fff;border-color:var(--ink)}
+.svar{width:700px;margin:14px auto 0;background:var(--paper);padding:18px 22px;color:var(--dim);font-size:16px;box-shadow:0 1px 0 var(--line)}
+/* mobil */
+.mobil .top{padding:18px 20px}
+.mobil .brev{width:auto;margin:10px 14px 0;padding:32px 24px}
+.mobil .brev h1{font-size:30px}
+.mobil .brev p{font-size:17px}
+</style></head><body>
+
+<section class="skarm" id="start">
+  <div class="top"><span class="logo">Mitt AI-team</span><span>Priser · Logga in</span></div>
+  <div class="brev">
+    <div class="datum">Måndag morgon</div>
+    <h1>Hej! Jag heter Agnes och söker jobbet som er assistent.</h1>
+    <p>Innan jag tackar ja vill jag förstå er firma. Berätta hur en vanlig vecka ser ut, så tar jag med mig kollegor som skriver era offerter, svarar på kundmejlen och påminner om det som ska in.</p>
+    <div class="sign"><img src="../../portal/avatars/avatar-04.png"><div><b>Agnes</b><span>Kandidat, VD-assistent</span></div></div>
+    <a class="knapp">Svara Agnes</a>
+    <p class="fot">En kvart. Gratis att bygga, inget konto och inget kort.</p>
+  </div>
+</section>
+
+<section class="skarm" id="portal">
+  <div class="p-top"><span class="flik vald">Agnes<span class="p"></span></span><span class="flik">Offertskrivaren</span><span class="flik">Kundposten</span><span class="flik" style="margin-left:auto">Rutiner</span><span class="flik">Minne</span></div>
+  <div class="trad">
+    <div class="post"><div class="fran">Agnes · i dag 07.40</div><p>God morgon Lena. Offerten till Brf Ekbacken är klar. Momsen för kvartal 3 ska in i dag — jag har lagt underlaget i Minne.</p>
+      <div class="val"><span class="prim">Läs offerten</span><span>Påminn mig 14.00</span></div></div>
+    <div class="post"><div class="fran">Kundposten · i går</div><p>Två kunder har frågat när målarna kommer. Jag har skrivit svar som väntar på dig.</p>
+      <div class="val"><span>Visa svaren</span></div></div>
+  </div>
+  <div class="svar">Skriv till Agnes …</div>
+</section>
+
+<section class="skarm mobil" id="mobil">
+  <div class="top"><span class="logo">Mitt AI-team</span><span>Logga in</span></div>
+  <div class="brev">
+    <div class="datum">Måndag morgon</div>
+    <h1>Hej! Jag heter Agnes och söker jobbet som er assistent.</h1>
+    <p>Berätta hur en vanlig vecka ser ut, så tar jag med mig kollegor som skriver offerter och svarar på kundmejlen.</p>
+    <a class="knapp">Svara Agnes</a>
+    <p class="fot">En kvart. Gratis att bygga.</p>
+  </div>
+</section>
+</body></html>

@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="sv"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Riktning B — Kontoret</title>
+<link rel="stylesheet" href="../../fonts/fonts.css">
+<style>
+:root{--bg:#FBF8F2;--paper:#FFFFFF;--ink:#1E1913;--dim:#6A6152;--line:#E7DFD1;--ockra:#D9973A;--ockra-text:#8A5C14;--sand:#EFE3CF}
+*{box-sizing:border-box;margin:0}
+body{background:#888;font-family:Karla,system-ui,sans-serif;color:var(--ink)}
+.skarm{width:1280px;height:800px;background:var(--bg);position:relative;overflow:hidden;margin:0 0 40px}
+.mobil{width:390px;height:844px}
+h1,h2,h3{font-family:Archivo,system-ui,sans-serif;letter-spacing:-.025em}
+.knapp{display:inline-block;background:var(--ink);color:#fff;padding:16px 26px;border-radius:999px;font-weight:600;font-size:17px}
+.top{display:flex;justify-content:space-between;align-items:center;padding:28px 64px;position:relative;z-index:2}
+.logo{font-family:Archivo;font-weight:700;font-size:18px}
+.top nav a{color:var(--dim);margin-left:28px;font-size:15px}
+.bild{position:absolute;left:0;right:0;bottom:-40px;height:600px;background:url(kontoret-1.webp) center bottom/1280px auto no-repeat}
+.hero{position:relative;z-index:2;text-align:center;padding-top:52px}
+.hero .ovre{font-size:16px;color:var(--ockra-text);font-weight:700;margin-bottom:16px}
+.hero h1{font-size:66px;line-height:1.03;font-weight:700}
+.hero p{font-size:20px;color:var(--dim);line-height:1.55;max-width:600px;margin:22px auto 34px}
+/* portal */
+.p-top{height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 32px;background:var(--paper);border-bottom:1px solid var(--line)}
+.vaning{padding:28px 32px 0;display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.rum{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:18px;height:170px;position:relative}
+.rum img{width:52px;height:52px;border-radius:50%;object-fit:cover;margin-bottom:10px}
+.rum b{display:block;font-family:Archivo;font-size:17px}.rum span{color:var(--dim);font-size:14px}
+.rum .vantar{position:absolute;top:16px;right:16px;background:var(--ockra);color:#fff;font-size:12.5px;font-weight:700;padding:4px 10px;border-radius:999px}
+.rum.tom{background:transparent;border-style:dashed;color:var(--dim)}
+.rum.oppen{outline:2px solid var(--ink)}
+.oppet{margin:20px 32px 0;background:var(--paper);border:1px solid var(--line);border-radius:16px;height:470px;display:grid;grid-template-columns:1fr 300px}
+.oppet .chatt{padding:26px 30px;display:flex;flex-direction:column}
+.bubbla{background:var(--sand);border-radius:14px;padding:16px 18px;font-size:16px;line-height:1.6;margin-bottom:12px;max-width:620px}
+.skriv{margin-top:auto;border:1px solid var(--line);border-radius:999px;padding:14px 20px;color:var(--dim);font-size:16px}
+.oppet .sido{border-left:1px solid var(--line);padding:26px 22px}
+.sido h3{font-size:15px;margin-bottom:12px}
+.jobb{border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:10px;font-size:14.5px}
+.jobb em{display:block;font-style:normal;color:var(--ockra-text);font-weight:700;font-size:12.5px;margin-top:4px}
+/* mobil */
+.mobil .top{padding:20px}
+.mobil .top nav a{margin-left:14px;font-size:14px}
+.mobil .hero{padding:30px 20px 0}
+.mobil .hero h1{font-size:40px}
+.mobil .hero p{font-size:17.5px}
+.mobil .bild{height:300px;bottom:-10px;background-size:900px auto}
+</style></head><body>
+
+<section class="skarm" id="start">
+  <div class="bild"></div>
+  <div class="top"><span class="logo">Mitt AI-team</span><nav><a>Så funkar det</a><a>Priser</a><a>Logga in</a></nav></div>
+  <div class="hero">
+    <div class="ovre">Ett kontor med kollegor som kan er firma</div>
+    <h1>Er nya personal<br>börjar på måndag.</h1>
+    <p>Berätta hur er vecka ser ut i en kort intervju. Vi anställer AI-kollegor som skriver offerter, svarar på kundmejl och håller koll på momsen.</p>
+    <a class="knapp">Boka intervjun — gratis</a>
+  </div>
+</section>
+
+<section class="skarm" id="portal">
+  <div class="p-top"><span class="logo">Holms Måleri</span><span style="font-size:15px">1 sak väntar på dig</span><span style="color:var(--dim);font-size:14.5px">Kunderna · Rutiner · Minne</span></div>
+  <div class="vaning">
+    <div class="rum oppen"><span class="vantar">1 väntar</span><img src="../../portal/avatars/avatar-04.png"><b>Agnes</b><span>VD-assistent</span></div>
+    <div class="rum"><img src="../../portal/avatars/avatar-08.png"><b>Offertskrivaren</b><span>Offerter och ROT</span></div>
+    <div class="rum"><img src="../../portal/avatars/avatar-15.png"><b>Kundposten</b><span>Mejl och sms</span></div>
+    <div class="rum tom"><b style="font-family:Karla;font-weight:600">Ledigt rum</b><span>Fakturajägaren anställs vecka 3</span></div>
+  </div>
+  <div class="oppet">
+    <div class="chatt">
+      <div class="bubbla">God morgon Lena. Offerten till Brf Ekbacken är klar och väntar på dig. Momsen för kvartal 3 ska in i dag.</div>
+      <div class="bubbla" style="background:transparent;border:1px solid var(--line)">Vill du att jag svarar de två kunderna som frågat när målarna kommer?</div>
+      <div class="skriv">Skriv till Agnes …</div>
+    </div>
+    <div class="sido"><h3>På Agnes skrivbord</h3>
+      <div class="jobb">Offert, Brf Ekbacken<em>Väntar på dig</em></div>
+      <div class="jobb">Veckobrev till kunderna<em style="color:var(--dim)">Pågår</em></div>
+    </div>
+  </div>
+</section>
+
+<section class="skarm mobil" id="mobil">
+  <div class="bild"></div>
+  <div class="top"><span class="logo">Mitt AI-team</span><nav><a>Priser</a><a>Logga in</a></nav></div>
+  <div class="hero">
+    <div class="ovre">Kollegor som kan er firma</div>
+    <h1>Er nya personal börjar på måndag.</h1>
+    <p>En kort intervju om er vecka, sedan anställer vi AI-kollegor som skriver offerter och svarar på kundmejl.</p>
+    <a class="knapp">Boka intervjun — gratis</a>
+  </div>
+</section>
+</body></html>

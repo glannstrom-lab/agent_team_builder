@@ -20,7 +20,7 @@ import { createHash } from "node:crypto";
 // inte längre — demoteamen visas inte utåt, "de får bygga sina egna". Av site/
 // följer bara designsystemet med; _redirects skickar de gamla adresserna hem.
 // Källfilerna ligger kvar i repot för våra egna tester.
-const ITEMS = ["index.html", "om.html", "404.html", "avatars.js", "atb-claude.js", "builder", "site/showcase.css", "portal", "fonts", "og.png", "sitemap.xml", "robots.txt", "_headers", "_redirects"];
+const ITEMS = ["index.html", "om.html", "404.html", "avatars.js", "atb-claude.js", "builder", "site/showcase.css", "portal", "fonts", "bild", "og.png", "sitemap.xml", "robots.txt", "_headers", "_redirects"];
 const PUBLICERA_BRANSCHSIDOR = false;
 
 // Juridiksidorna publiceras bara när de är ifyllda. Org.nr, momsreg.nr och
